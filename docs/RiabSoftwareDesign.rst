@@ -1,6 +1,6 @@
-Risk in a Box - Software Design Specification
+**Risk in a Box - Software Design Specification**
 
-Software Design Specification
+*Software Design Specification*
 
 .. image:: https://secure.gravatar.com/avatar/a28e6381946669e6a95c7d7ee58ca707?s=140&d=https://github.com%2Fimages%2Fgravatars%2Fgravatar-140.png
 
