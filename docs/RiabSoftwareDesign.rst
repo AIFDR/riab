@@ -98,7 +98,7 @@ subsystems which will communicate using XML-RPC.
 2.  Riab-Client: The web based front-end allowing both a simplified end-
     user front end and a more advanced administration mode.
 
-.. figure:: http://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
+.. figure:: https://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
 
 Figure 1: High Level Riab components
 
@@ -262,7 +262,7 @@ components. The various architectural components of Riab and the protocols
 used are described below (see .)[NOTE: GeoServer and pyplugin have been left
 out for the moment until we are sure about the overall structure.]
 
-.. image:: http://docs.google.com/drawings/pub?id=15rX-m0NnkiF54nphxImMpIp5V0erYBxWnl4GjscP90o&w=960&h=720
+.. figure:: https://docs.google.com/drawings/pub?id=15rX-m0NnkiF54nphxImMpIp5V0erYBxWnl4GjscP90o&w=960&h=720
 
 
 Figure 2: High Level Architecture Components
