@@ -1,9 +1,6 @@
-=============================================
 Risk in a Box - Software Design Specification
-=============================================
------------------------------
+
 Software Design Specification
------------------------------
 
 .. image:: https://secure.gravatar.com/avatar/a28e6381946669e6a95c7d7ee58ca707?s=140&d=https://github.com%2Fimages%2Fgravatars%2Fgravatar-140.png
 
@@ -26,8 +23,6 @@ Ariel              HTTP Rest API and riab-core lib.     0.1c        23/02/2011
 Ted Dunstone       Refactor with the new Arch           0.2         3/03/2011
 ================== ==================================== =========== ==========
 
-Contents
-=======
 
 .. contents::
 
