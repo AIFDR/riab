@@ -1,90 +1,36 @@
+=============================================
 Risk in a Box - Software Design Specification
-
-.. image:: pubimage?id=1zMydsejDBC27Cvxp2Ci5rIWu59fuC_6j7Mmbqi4Bck8&image
-    _id=1NZFgoNuKhRfUA8M12jHLDr08i4SAfw
-
-
+=============================================
+-----------------------------
 Software Design Specification
+-----------------------------
 
---------
+.. image:: https://secure.gravatar.com/avatar/a28e6381946669e6a95c7d7ee58ca707?s=140&d=https://github.com%2Fimages%2Fgravatars%2Fgravatar-140.png
 
---------
 
-Riab (Risk in a Box) Version 0.2
+.. sectnum::
 
-14/1/2011
 
-Name
+:Name:
+  Riab (Risk in a Box) 
 
-Changes
+:Version: 0.2
+:Date: 03/03/2011
 
-Doc Version
-
-Date
-
-Ted Dunstone
-
-Initial Document
-
-0.1a
-
-14/1/2011
-
-Ole Nielsen
-
-Update and questions
-
-0.1b
-
-? ? ? ? ?18/1/2011
-
-Ariel N??ez
-
-HTTP Rest API and riab-core python library.
-
-0.1c
-
-23/02/2011
-
+================== ==================================== =========== ==========
+Name               Changes                              Doc Vers    Date        
+================== ==================================== =========== ==========
+Ted Dunstone       Initial Document                     0.1a        14/1/2011
+Ole Nielsen        Update and questions                 0.1b        18/1/2011
+Ariel              HTTP Rest API and riab-core lib.     0.1c        23/02/2011
+Ted Dunstone       Refactor with the new Arch           0.2         3/03/2011
+================== ==================================== =========== ==========
 
 Contents
 ========
 
-`Contents`_
+.. contents::
 
-`Introduction`_
-
-`System Overview`_
-
-`Design Considerations`_
-
-`Assumptions and Dependencies`_
-
-`General Constraints`_
-
-`Goals and Guidelines`_
-
-`Architectural Strategies`_
-
-`System Architecture`_
-
-`Component Communications`_
-
-`Detailed System Design`_
-
-`Detailed Subsystem ? Riab-Server`_
-
-`Detailed Subsystem ? Riab-Django`_
-
-`Detailed Subsystem ? PyPlugin`_
-
-`Glossary`_
-
-`BibliographyBibliography`_
-
-
-
-------------------------
 
 
 Introduction
@@ -118,7 +64,7 @@ Django, Open Layers. This includes having a Java Runtime Environment
 installed.
 
 A document describing the aims of the risk in a box project in more detail is
-provided at: `Risk in a Box - Project Plan`_w
+provided at `Risk in a Box - Project Plan`_
 
 
 System Overview
@@ -152,9 +98,7 @@ subsystems which will communicate using XML-RPC.
 2.  Riab-Client: The web based front-end allowing both a simplified end-
     user front end and a more advanced administration mode.
 
-.. image:: http://docs.google.com/drawings/image?id=sSmpRKiYtVSU2JF-
-    7D3COGQ&rev=57&h=342&w=400&ac=1
-
+.. figure:: http://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
 
 Figure 1: High Level Riab components
 
@@ -190,10 +134,9 @@ The verson 1.0 assumptions are included below:
 1.  Riab will need to be able to run on a local disconnected PC via a USB
     interface.
 2.  Centralized server installation must also be supported
-3.  Windows and Linux (developed using Ubuntu .. image:: https://www.goog
-    le.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=%5Cgeq%7B%7D
-10.4) will need to be supported
-4.  End-user characteristics : Risk Managers
+3.  Windows and Linux (developed using Ubuntu >= 10.4) will need to be supported
+
+**End-user characteristics : Risk Managers**
 
 1.  Risk Managers will not be expert in hazard modelling
 2.  Will use the system through a web browser
@@ -205,19 +148,19 @@ The verson 1.0 assumptions are included below:
 6.  An expert advanced user mode should be supported for more experienced
     users.
 
-1.  End-user characteristics: Advanced Modellers
+**End-user characteristics: Advanced Modellers**
 
 1.  Must be able to upload maps layers and set layer metadata
 2.  Should be able to use the plugin API to define new risk/impact
     functions
 
-1.  End-user characteristics: Administrators
+**End-user characteristics: Administrators**
 
 1.  Should be able to setup users permissions
 2.  Review an audit of activities
 3.  Update local documentation
 
-1.  Possible and/or probable changes in functionality
+**Possible and/or probable changes in functionality**
 
 1.  Support for more complex impact models
 2.  Output should lead to a full risk management plan
@@ -234,44 +177,43 @@ Describe any global limitations or constraints that have a significant impact
 on the design of the system's software (and describe the associated impact).
 Such constraints may be imposed by any of the following:
 
-1.  Hardware or software environment
+* Hardware or software environment
 
-1.  Limitation of no network cases or low spec?ed machines
+* Limitation of no network cases or low spec?ed machines
 
-1.  End-user environment:
-2.  Standards compliance
+* End-user environment
 
-1.  Should conform with international standards including WMS
-    `http://www.opengeospatial.org/standards/wms)`_
+* Standards compliance
 
-1.  Interoperability requirements
+ +  Should conform with international standards including WMS `http://www.opengeospatial.org/standards/wms)`_
 
-1.  OGC compliant protocols (as above)
+* Interoperability requirements
 
-1.  Interface/protocol requirements
+ + OGC compliant protocols (as above)
 
-1.  Must be able to be completely distributed (i.e. remote geoservers) or
-    completely local (everything running on one PC)
+* Interface/protocol requirements
 
-1.  Data repository and distribution requirements
-2.  Security requirements (or other such regulations)
+ +  Must be able to be completely distributed (i.e. remote geoservers) or completely local (everything running on one PC)
 
-1.  The system should not hold user sensitive data
-2.  Consideration should be given to OpenID as a standard for
-    authentication.
+*  Data repository and distribution requirements
 
-1.  Memory and other capacity limitations
+*  Security requirements (or other such regulations)
 
-1.  ?
+ +  The system should not hold user sensitive data
 
-1.  Performance requirements
+ +  Consideration should be given to OpenID as a standard for authentication.
 
-1.  Peak transaction volume even when centralizated will be relatively
-    low (less than 1 request per second)
+*  Memory and other capacity limitations
 
-1.  Verification and validation requirements (testing)
+ + Restrictions may exist for the system when installed on a USB Stick
 
-1.  All builds should have a full test suite used
+*  Performance requirements
+
+  +  Peak transaction volume even when centralizated will be relatively low (less than 1 request per second)
+
+*  Verification and validation requirements (testing)
+
+ +  All builds should have a full test suite used
 
 
 Goals and Guidelines
@@ -292,16 +234,12 @@ Principles which embody the design of software include:
 
 
 
-=============================================================================
-=============================================================================
-=============================================================================
-==
 
 
 Architectural Strategies
 ========================
 
-The Riab server is designed to be stateless. This provides both greater
+The Riab_app is designed to be stateless. This provides both greater
 flexibility and robustness as it allows for easier scaling and for more
 comprehensive testing. The impact of this is a slight performance hit since
 reconnections (and re: authentication) to GeoServers need to be done for each
@@ -324,8 +262,7 @@ components. The various architectural components of Riab and the protocols
 used are described below (see .)[NOTE: GeoServer and pyplugin have been left
 out for the moment until we are sure about the overall structure.]
 
-.. image:: http://docs.google.com/drawings/image?id=s0eWz-
-    67LaPX24cFuGpBGHg&rev=55&h=362&w=562&ac=1
+.. image:: http://docs.google.com/drawings/pub?id=15rX-m0NnkiF54nphxImMpIp5V0erYBxWnl4GjscP90o&w=960&h=720
 
 
 Figure 2: High Level Architecture Components
@@ -352,8 +289,8 @@ assumptions
     are the original layer names.
 2.  Data points have been aligned so vector operations are allowed.
 3.  It is up to the plugin to know the semantics of names and attributes,
-    i.e. if there is a layer named ?WALL_TYPE? with attributes like ?Fibro?,
-    ?Timber?, ?Brick veneer? etc, the plugin must be aware of the meaning of
+    i.e. if there is a layer named WALL_TYPE with attributes like Fibro,
+    Timber, Brick veneer etc, the plugin must be aware of the meaning of
     these names and used them correctly.
 
 PyPlugin: A flexible python library to manage the plugins, find the
@@ -391,11 +328,8 @@ diagram includes a full test case including the initial upload of data into
 Geoserver. This will not be required for risk managers. The bold items show
 steps that are either input or output for the user.
 
-.. image:: pubimage?id=1zMydsejDBC27Cvxp2Ci5rIWu59fuC_6j7Mmbqi4Bck8&image
-    _id=1gxQ1nVMSfDjbz7MuPTrJ_eD5lcpu9Q
 
 
-``_
 
 Figure 3: Riab Component Communications Flow
 
@@ -413,260 +347,263 @@ This section contain a detailed designs of the Riab system components.
 RIAB HTTP API
 -------------
 
+The API documentation::
 
-All API calls start with
-?http://myriab.com/api/v1
-:::::::::::::::::::::::::::
+    All API calls start with
+    ?http://myriab.com/api/v1
+    :::::::::::::::::::::::::::
 
 
-Version
-:::::::
+    Version
+    :::::::
 
 
-All API calls begin with API version. For this documentation, we will assume
-every request begins with the above path.
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:::::::::::::::::::::::::::::::::::::::::
+    All API calls begin with API version. For this documentation, we will assume
+    every request begins with the above path.
+    :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    :::::::::::::::::::::::::::::::::::::::::
 
 
-Path
-::::
+    Path
+    ::::
 
 
-For this documentation, we will assume every request begins with the above
-path.
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:::
+    For this documentation, we will assume every request begins with the above
+    path.
+    :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    :::
 
 
-Units
-:::::
+    Units
+    :::::
 
 
-All coordinates are in WGS-84 (EPSG:4326) unless otherwise specified and all
-units of measurement are in the International System of Units (SI).
-:
+    All coordinates are in WGS-84 (EPSG:4326) unless otherwise specified and all
+    units of measurement are in the International System of Units (SI).
+    :
 
 
-Format
-::::::
+    Format
+    ::::::
 
 
-All calls are returned in JSON.
-:
+    All calls are returned in JSON.
+    :
 
 
-Status Codes
-::::::::::::
+    Status Codes
+    ::::::::::::
 
-1.  200 Successful GET and PUT.
-2.  201 Successful POST.
-3.  202 Successful calculation queued.
-4.  204 Successful DELETE
-5.  401 Unauthenticated.
-6.  409 Unsuccessful POST, PUT, or DELETE (Will return an errors object).
+    1.  200 Successful GET and PUT.
+    2.  201 Successful POST.
+    3.  202 Successful calculation queued.
+    4.  204 Successful DELETE
+    5.  401 Unauthenticated.
+    6.  409 Unsuccessful POST, PUT, or DELETE (Will return an errors object).
 
 
-Endpoints
-:::::::::
+    Endpoints
+    :::::::::
 
-1.  POST`/calculation`_
-2.  GET`/calculation/:id`_
-3.  GET`/calculation/:id/status`_
-4.  GET`/functions`_
-5.  GET`/functions/:id`_
+    1.  POST`/calculation`_
+    2.  GET`/calculation/:id`_
+    3.  GET`/calculation/:id/status`_
+    4.  GET`/functions`_
+    5.  GET`/functions/:id`_
 
 
-POST /calculation
-.................
+    POST /calculation
+    .................
 
-Calculate the Impact as a function of Hazards and Exposures. Required fields
-are:
+    Calculate the Impact as a function of Hazards and Exposures. Required fields
+    are:
 
-1.  impact_function: URI of the impact function to be run
-2.  hazards: A dictionary of named hazard levels .. {?h1?: H1, ?h2?: H2,
-    ? ?hn?: HN] each H is either a GeoNode layer uri or a geoserver layer
-    path where each layer follows the format
-    username:userpass@geoserver_url:layer_name
-3.  exposure: An array of exposure levels ..[E1,E2...EN] each E is either
-    a download url a geoserver layer path
-4.  impact_level: The output impact level
+    1.  impact_function: URI of the impact function to be run
+    2.  hazards: A dictionary of named hazard levels .. {?h1?: H1, ?h2?: H2,
+        ? ?hn?: HN] each H is either a GeoNode layer uri or a geoserver layer
+	    path where each layer follows the format
+	        username:userpass@geoserver_url:layer_name
+		3.  exposure: An array of exposure levels ..[E1,E2...EN] each E is either
+		    a download url a geoserver layer path
+		    4.  impact_level: The output impact level
 
-Possible responses include 202 or 409
+		    Possible responses include 202 or 409
 
-example request:
+		    example request:
 
-curl -u alice:cooper http://myriab.com/api/v1/calculation \
-? ?-F "impact_function=/functions/1" \
-? ?-F "hazards=/data/geonode:hazard1" \
-? ?-F "exposure=user:pass@geoserver_url:exposure_1" \
-? ?-F "impact_level=100" \
-? ?-F "keywords=some,keywords,added,to,the,created,map"
+		    curl -u alice:cooper http://myriab.com/api/v1/calculation \
+		    ? ?-F "impact_function=/functions/1" \
+		    ? ?-F "hazards=/data/geonode:hazard1" \
+		    ? ?-F "exposure=user:pass@geoserver_url:exposure_1" \
+		    ? ?-F "impact_level=100" \
+		    ? ?-F "keywords=some,keywords,added,to,the,created,map"
 
 
-response:
+		    response:
 
-202 Accepted
-?{
-? ?"uri": "/riab/calculation/9",
-? ?"transition_uri": "/riab/calculation/9/status",
-? ?"warnings": [ "Projection unknown, layer geoserver_url:exposure_1 does not
-have projection information" ]
-?}
+		    202 Accepted
+		    ?{
+		    ? ?"uri": "/riab/calculation/9",
+		    ? ?"transition_uri": "/riab/calculation/9/status",
+		    ? ?"warnings": [ "Projection unknown, layer geoserver_url:exposure_1 does not
+		    have projection information" ]
+		    ?}
 
-another possible response:
+		    another possible response:
 
-409 Conflict
-? [
-? ?"Invalid Impact function: Impact function does not support the hazard
-and/or exposure type",
-? ]
+		    409 Conflict
+		    ? [
+		    ? ?"Invalid Impact function: Impact function does not support the hazard
+		    and/or exposure type",
+		    ? ]
 
 
-GET /calculation/:id
-....................
+		    GET /calculation/:id
+		    ....................
 
-Returns the details of a given calculation. Api will respond with status 200
-if calculation has been completed and 404 if it is still in progress.
+		    Returns the details of a given calculation. Api will respond with status 200
+		    if calculation has been completed and 404 if it is still in progress.
 
-example request
+		    example request
 
 
-?$ curl -u alice:cooper http://myriab.com/api/v1/calculation/9
+		    ?$ curl -u alice:cooper http://myriab.com/api/v1/calculation/9
 
-response:
+		    response:
 
 
-? ?{
-? ? ?"uri": "/riab/calculation/9",
-? ? ?"result_uri": "/data/layer/54",
-? ? ?"calculation_map_uri": "/data/maps/23",
-? ? ?"info": ["Retrieving data for layer x", "Calculating impact", "Warning:
-Had to cast doubles to single precision", "Calculation finished
-successfully", "Uploading impact data", "Creating map in geonode with hazard,
-exposure and impact layers"]
-? ?}
+		    ? ?{
+		    ? ? ?"uri": "/riab/calculation/9",
+		    ? ? ?"result_uri": "/data/layer/54",
+		    ? ? ?"calculation_map_uri": "/data/maps/23",
+		    ? ? ?"info": ["Retrieving data for layer x", "Calculating impact", "Warning:
+		    Had to cast doubles to single precision", "Calculation finished
+		    successfully", "Uploading impact data", "Creating map in geonode with hazard,
+		    exposure and impact layers"]
+		    ? ?}
 
 
-GET /calculation/:id/status
-...........................
+		    GET /calculation/:id/status
+		    ...........................
 
-Gets the status of the calculation. It will usually respond with 200.
+		    Gets the status of the calculation. It will usually respond with 200.
 
-example request
+		    example request
 
 
-?$ curl -u alice:cooper http://myriab.com/api/calculation/9/status
+		    ?$ curl -u alice:cooper http://myriab.com/api/calculation/9/status
 
-response:
+		    response:
 
 
-? ?{
-? ? ?"success": "true",
-? ? ?"message": "The calculation has been performed successfully"
-? ?}
+		    ? ?{
+		    ? ? ?"success": "true",
+		    ? ? ?"message": "The calculation has been performed successfully"
+		    ? ?}
 
-another possible response:
+		    another possible response:
 
-? {
-? ? ?"success": "false",
-? ? ?"message": "An error has occurred during processing: (if you have admin
-rights a full stack trace can be found below)"
-? ?}
+		    ? {
+		    ? ? ?"success": "false",
+		    ? ? ?"message": "An error has occurred during processing: (if you have admin
+		    rights a full stack trace can be found below)"
+		    ? ?}
 
 
-GET /functions
-..............
+		    GET /functions
+		    ..............
 
-Returns a collection of impact functions, if no hazard or exposure levels are
-provided it returns all the available ones.. Response will be 200
+		    Returns a collection of impact functions, if no hazard or exposure levels are
+		    provided it returns all the available ones.. Response will be 200
 
-example request
+		    example request
 
-?$ curl -u alice:cooper http://myriab.com/api/v1/functions \
-? ?-F "hazards=/data/geonode:HazardZ" \
-? ?-F "exposure=/data/geonode:ExposureX"
+		    ?$ curl -u alice:cooper http://myriab.com/api/v1/functions \
+		    ? ?-F "hazards=/data/geonode:HazardZ" \
+		    ? ?-F "exposure=/data/geonode:ExposureX"
 
-response:
+		    response:
 
 
-[
-? ?{
-? ? ?"uri": "/functions/1",
-? ? ?"name": "Super duper impact function",
-? ? ?"author": "Alice cooper",
-? ? ?"description": "It does what you expect it to ...."
-? ?},
-? ?{
-? ? ?"uri": "/functions/2",
-? ? ?"name": "Another nice impact function",
-? ? ?"author": "Alice Cooper",
-? ? ?"description": "You can't imagine ..."
-? ?},
-? ?...
-?]
+		    [
+		    ? ?{
+		    ? ? ?"uri": "/functions/1",
+		    ? ? ?"name": "Super duper impact function",
+		    ? ? ?"author": "Alice cooper",
+		    ? ? ?"description": "It does what you expect it to ...."
+		    ? ?},
+		    ? ?{
+		    ? ? ?"uri": "/functions/2",
+		    ? ? ?"name": "Another nice impact function",
+		    ? ? ?"author": "Alice Cooper",
+		    ? ? ?"description": "You can't imagine ..."
+		    ? ?},
+		    ? ?...
+		    ?]
 
 
-GET /function/:id
-.................
+		    GET /function/:id
+		    .................
 
-Returns the details of the given impact function. Possible responses include
-200 or 404
+		    Returns the details of the given impact function. Possible responses include
+		    200 or 404
 
-example request
+		    example request
 
 
-?$ curl -u alice:cooper http://myriab.com/api/v1/function/1
+		    ?$ curl -u alice:cooper http://myriab.com/api/v1/function/1
 
-response:
+		    response:
 
-?{
-? ? ?"uri": "/functions/1",
-? ? ?"name": "Another nice impact function",
-? ? ?"author": "Alice Cooper",
-? ? ?"description": "You can't imagine ..."
-? ?}
+		    ?{
+		    ? ? ?"uri": "/functions/1",
+		    ? ? ?"name": "Another nice impact function",
+		    ? ? ?"author": "Alice Cooper",
+		    ? ? ?"description": "You can't imagine ..."
+		    ? ?}
 
 
-Detailed Subsystem ? Riab-Server
-----------------------------------
+		    Detailed Subsystem ? Riab-Server
+		    ----------------------------------
 
-See `http://www.aifdr.org/projects/riat/wiki/ApiDraft`_
+		    See `http://www.aifdr.org/projects/riat/wiki/ApiDraft`_
 
 
-`Detailed Subsystem ? Riab-Django`_
-----------------------------------
+		    `Detailed Subsystem ? Riab-Django`_
+		    ----------------------------------
 
-To be completed.
+		    To be completed.
 
 
-Detailed Subsystem ? PyPlugin
--------------------------------
+		    Detailed Subsystem ? PyPlugin
+		    -------------------------------
 
-To be completed.
+		    To be completed.
 
 
 Glossary
 ========
 
-Magnitude: The energy released at the source of the earthquake.
+Magnitude
+ The energy released at the source of the earthquake.
 
-Hazard Level: Ground acceleration, Maximum water depth, Ash Thickness,
-Acceleration at selected frequencies or modes are examples of Hazard levels.
+Hazard Level
+ Ground acceleration, Maximum water depth, Ash Thickness,Acceleration at selected frequencies or modes are examples of Hazard levels.
 
-Exposure Level: Population density or Infrastructures (house of building type
-or dollars per sqm)
+Exposure Level
+ Population density or Infrastructures (house of building type or dollars per sqm)
 
-Impact: Number of fatalities / Dollar Losses / Buildings Collapsed for
-example
+Impact
+ Number of fatalities / Dollar Losses / Buildings Collapsed for example
 
-Risk: Impact with an associated probability - how bad and how often
+Risk
+ Impact with an associated probability - how bad and how often
 
-Return Period: Inverse of probability. e.g. 100 year flood - flood event of
-probability of 1% per year
+Return Period
+ Inverse of probability. e.g. 100 year flood - flood event of probability of 1% per year
 
 
-BibliographyBibliography
+Bibliography
 ============
 
 References to other RIAB documentation
@@ -677,8 +614,7 @@ To be completed.
 
 `[1]`_
 
-`Edit laman ini`_ (jika Anda punya izin)-Diterbitkan oleh `Google
-Documents`_-`Laporkan Penyalahgunaan `_-Dimutakhirkan secara otomatis setiap
+`Edit laman ini`_ (jika Anda punya izin)-Diterbitkan oleh `Google Documents`_ -  `Laporkan Penyalahgunaan`_ -Dimutakhirkan secara otomatis setiap
 5 menit
 
 .. _Contents: #h.3akno4-ihzx49
@@ -698,39 +634,16 @@ Documents`_-`Laporkan Penyalahgunaan `_-Dimutakhirkan secara otomatis setiap
 .. _Glossary: #h.fx16zn-70naxf
 .. _BibliographyBibliography: #h.xpqokl-s1sliw
 .. _[1]: #ftnt1
-.. _Risk in a Box - Project Plan: https://docs.google.com/document/d/1CPM
-    1Vvm7uWCzBqhUfWNXdSrHRmEvn8oaLPbOQEZaF3s/edit?authkey=CJydxacH&hl=en&pli=
-    1%23
-.. _http://www.opengeospatial.org/standards/wms): http://www.google.com/u
-    rl?q=http%3A%2F%2Fwww.opengeospatial.org%2Fstandards%2Fwms)&sa=D&sntz=1&u
-    sg=AFQjCNGial1c8xt6RycdRG8xQhelrYRTlA
-.. _. The bold items show steps that are either input or output for the
-    user.: #
-.. _/calculation: http://www.google.com/url?q=http%3A%2F%2Fingenieroariel
-    .com%2Fstatic%2Friab%2F%23POST-%2Fcalculation&sa=D&sntz=1&usg=AFQjCNEiOzk
-    Z6EgGxJuVmsQjy9rIoxhZuQ
-.. _/calculation/:id: http://www.google.com/url?q=http%3A%2F%2Fingenieroa
-    riel.com%2Fstatic%2Friab%2F%23GET-%2Fcalculation%2F%3Aid&sa=D&sntz=1&usg=
-    AFQjCNG4avodyCqOlYPQH4ibu__kva1pmw
-.. _/calculation/:id/status: http://www.google.com/url?q=http%3A%2F%2Fing
-    enieroariel.com%2Fstatic%2Friab%2F%23GET-%2Fcalculation%2F%3Aid%2Fstatus&
-    sa=D&sntz=1&usg=AFQjCNHo5wE6fFwIeddxH3AtowqW-2sKGw
-.. _/functions: http://www.google.com/url?q=http%3A%2F%2Fingenieroariel.c
-    om%2Fstatic%2Friab%2F%23GET-%2Ffunctions&sa=D&sntz=1&usg=AFQjCNHfdOq3r-
-    tM7jcrtWJ3qar27OPErA
-.. _/functions/:id: http://www.google.com/url?q=http%3A%2F%2Fingenieroari
-    el.com%2Fstatic%2Friab%2F%23GET-%2Ffunctions%2F%3Aid&sa=D&sntz=1&usg=AFQj
-    CNFXyP2Q9JSztbA5bzeoKTL3hdsJUg
-.. _http://www.aifdr.org/projects/riat/wiki/ApiDraft: http://www.google.c
-    om/url?q=http%3A%2F%2Fwww.aifdr.org%2Fprojects%2Friat%2Fwiki%2FApiDraft&s
-    a=D&sntz=1&usg=AFQjCNG8e9ccRB-w1OoNJj4C48ZLVqQWGg
-.. _Detailed Subsystem ? Riab-Django: http://www.google.com/url?q=http%3A
-    %2F%2Fwww.cmcrossroads.com%2Fbradapp%2Fdocs%2Fsdd.html%23TOC_SEC16&sa=D&s
-    ntz=1&usg=AFQjCNE1wcow3rRA5bsZiAye6mZ2Ht6GXQ
-.. _[1]: #ftnt_ref1
-.. _Edit laman ini: https://docs.google.com/document/d/1zMydsejDBC27Cvxp2
-    Ci5rIWu59fuC_6j7Mmbqi4Bck8/edit (Risk in a Box - Software Design
-    Specification)
+.. _Risk in a Box - Project Plan: https://docs.google.com/document/d/1CPM1Vvm7uWCzBqhUfWNXdSrHRmEvn8oaLPbOQEZaF3s/edit?authkey=CJydxacH&hl=en&pli=1%23
+.. _http://www.opengeospatial.org/standards/wms): http://www.google.com/url?q=http%3A%2F%2Fwww.opengeospatial.org%2Fstandards%2Fwms)&sa=D&sntz=1&usg=AFQjCNGial1c8xt6RycdRG8xQhelrYRTlA
+.. _. The bold items show steps that are either input or output for the user.: #
+.. _/calculation: http://www.google.com/url?q=http%3A%2F%2Fingenieroariel.com%2Fstatic%2Friab%2F%23POST-%2Fcalculation&sa=D&sntz=1&usg=AFQjCNEiOzkZ6EgGxJuVmsQjy9rIoxhZuQ
+.. _/calculation/:id: http://www.google.com/url?q=http%3A%2F%2Fingenieroariel.com%2Fstatic%2Friab%2F%23GET-%2Fcalculation%2F%3Aid&sa=D&sntz=1&usg=AFQjCNG4avodyCqOlYPQH4ibu__kva1pmw
+.. _/calculation/:id/status: http://www.google.com/url?q=http%3A%2F%2Fingenieroariel.com%2Fstatic%2Friab%2F%23GET-%2Fcalculation%2F%3Aid%2Fstatus&sa=D&sntz=1&usg=AFQjCNHo5wE6fFwIeddxH3AtowqW-2sKGw
+.. _/functions: http://www.google.com/url?q=http%3A%2F%2Fingenieroariel.com%2Fstatic%2Friab%2F%23GET-%2Ffunctions&sa=D&sntz=1&usg=AFQjCNHfdOq3r-tM7jcrtWJ3qar27OPErA
+.. _/functions/:id: http://www.google.com/url?q=http%3A%2F%2Fingenieroariel.com%2Fstatic%2Friab%2F%23GET-%2Ffunctions%2F%3Aid&sa=D&sntz=1&usg=AFQjCNFXyP2Q9JSztbA5bzeoKTL3hdsJUg
+.. _http://www.aifdr.org/projects/riat/wiki/ApiDraft: http://www.google.com/url?q=http%3A%2F%2Fwww.aifdr.org%2Fprojects%2Friat%2Fwiki%2FApiDraft&sa=D&sntz=1&usg=AFQjCNG8e9ccRB-w1OoNJj4C48ZLVqQWGg
+.. _Edit laman ini: https://docs.google.com/document/d/1zMydsejDBC27Cvxp2Ci5rIWu59fuC_6j7Mmbqi4Bck8/edit (Risk in a Box - Software DesignSpecification)
 .. _Google Documents: //docs.google.com/ (Learn more about Google Docs)
 .. _Laporkan Penyalahgunaan :
     //docs.google.com/abuse?id=1zMydsejDBC27Cvxp2Ci5rIWu59fuC_6j7Mmbqi4Bck8
