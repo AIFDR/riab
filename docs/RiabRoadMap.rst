@@ -104,56 +104,56 @@ Scope
 The scope for this document is the development of Risk-in-a-Box version 1.0
 (RIAB v1.0) with the following features.
 
-1.  Ability to calculate impact from hazard and exposure levels provided
-    as raster, polygons, lines or point data at arbitrary resolutions.
+*  Ability to calculate impact from hazard and exposure levels provided
+   as raster, polygons, lines or point data at arbitrary resolutions.
 
-1.  Ability to optionally aggregate calculated impacts within arbitrary
-    polygons
+*  Ability to optionally aggregate calculated impacts within arbitrary
+   polygons
 
-1.  Ability to register impact functions according to type of hazard and
-    exposure data
-2.  Ability to import simple exposure data as points or polygons
+*  Ability to register impact functions according to type of hazard and
+   exposure data
+*  Ability to import simple exposure data as points or polygons
 
-1.  This may be through a stand-alone tool for upload and simple QC of
-    data. It should for instance allow users to upload a CSV file of data
-    with an option to select which column represent what data (e.g. latitue,
-    longitude, exposure level) - inspired a bit by EXCEL or ARC?s csv import
-    facility. The range of input formats and functionality should be
-    determined from use cases emerging from trials of Risk-in-a-box.
+*  This may be through a stand-alone tool for upload and simple QC of
+   data. It should for instance allow users to upload a CSV file of data
+   with an option to select which column represent what data (e.g. latitue,
+   longitude, exposure level) - inspired a bit by EXCEL or ARC?s csv import
+   facility. The range of input formats and functionality should be
+   determined from use cases emerging from trials of Risk-in-a-box.
 
-1.  Ability to import hazard levels from other sources (lower priority)
+*  Ability to import hazard levels from other sources (lower priority)
 
 The following functionality is considered out-of-scope for RIAB v1.0
 
-1.  RIAB v1.0 will not include fully probabilistic risk assessments as
-    these are usually dependent on the the individual hazard. Future versions
-    may well start to include this on a hazard by hazard basis.
+*  RIAB v1.0 will not include fully probabilistic risk assessments as
+   these are usually dependent on the the individual hazard. Future versions
+   may well start to include this on a hazard by hazard basis.
 
-1.  Although most impact models are simply a functional combination of a
-    hazard scenario with exposure data, there are examples where more complex
-    specific combinations are needed. For example adding ground acceleration,
-    site amplification, distance to known faults, distance to nearest
-    earthquake. While this is probably easy to do by programming to the API
-    it is not in scope for the RIAB v1.0 web front end.
-2.  RIAB v1.0 does not include any hazard modelling
+*  Although most impact models are simply a functional combination of a
+   hazard scenario with exposure data, there are examples where more complex
+   specific combinations are needed. For example adding ground acceleration,
+   site amplification, distance to known faults, distance to nearest
+   earthquake. While this is probably easy to do by programming to the API
+   it is not in scope for the RIAB v1.0 web front end.
+*  RIAB v1.0 does not include any hazard modelling
 
 Identified versions of RIAB are
 
-1.  RIAB v0.1: Current Ruby demonstrator:`
+*  RIAB v0.1: Current Ruby demonstrator:`
     `_`http://203.77.224.75:3000/`_
 
-1.  RIAB v0.2: Rebuild of demonstrator using chosen platform (e.g. Django
+*  RIAB v0.2: Rebuild of demonstrator using chosen platform (e.g. Django
     and Geonode)
 
-1.  RIAB v1.0: The version aimed at in this project plan
+*  RIAB v1.0: The version aimed at in this project plan
 
 Note (Don?t know where this fits):
 
-1.  RIAB v1.0 aims at determining admissible impact function based on the
-    ?type? of hazard and exposure levels. This type could be registered with
-    the keywords fields in GeoServer and extracted via REST. However, earlier
-    versions could skip this and just provide the user with a full list of
-    possible impact functions to select from.
+RIAB v1.0 aims at determining admissible impact function based on the
+?type? of hazard and exposure levels. This type could be registered with
+keywords fields in GeoServer and extracted via REST. However, earlier
+versions could skip this and just provide the user with a full list of
+possible impact functions to select from.
 
 
 Architecture
@@ -219,9 +219,10 @@ following data sets
 2.  A population data set is produced at the same grid resolution
     providing an estimate of the number of people present in each grid cell.
 3.  A simple model is adopted calculating estimated number of fatalities
-    at each grid cell as follows: .. image:: https://www.google.com/chart?cht
-    =tx&chf=bg,s,FFFFFF00&chco=000000&chl=F%5C+%3D%5C+1%7B0%7D%5E%7BaH-b%7DE
-, where
+    at each grid cell as follows:
+    .. image:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=960&h=720
+    .. figure:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=960&h=720
+
 
 1.  .. image::
     https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=H
