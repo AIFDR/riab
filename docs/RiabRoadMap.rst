@@ -2,10 +2,6 @@
 
 *Project Plan*
 
-.. image:: pubimage?id=1CPM1Vvm7uWCzBqhUfWNXdSrHRmEvn8oaLPbOQEZaF3s&image
-    _id=1egoYqNiHtd3mn6JYtoGmuSSpB6JkJQ
-
-
 .. sectnum::
 
 .. role:: raw-math(raw)
@@ -14,15 +10,15 @@
 :Name:
   Riab (Risk in a Box)
 
-:Version: 0.1b
-:Date: 19/12/2010
+:Version: 0.2
+:Date: 14/3/2011
 
 ================== ==================================== =========== ==========
 Name               Changes                              Doc Vers    Date
 ================== ==================================== =========== ==========
 Ole Nielsen        Initial Document                     0.1a        16/12/2010
-Ariel Nunez        Architecture modifications     .     0.1b        19/12/2010
-Ole Nielsen        Revision                             0.2         14/03/2011
+Ariel Nunez        Architecture modifications       0.1b        19/12/2010
+Ole Nielsen        Moved to RST format              0.2         14/03/2011
 ================== ==================================== =========== ==========
 
 
