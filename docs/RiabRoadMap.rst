@@ -24,6 +24,14 @@ Ole Nielsen        Moved to RST format                  0.2         14/03/2011
 
 .. contents::
 
+GITHUB
+.. image:: https://github.com/AIFDR/riab/blob/master/docs/images/ground_shaking.jpg
+
+LOCAL
+.. image:: images/ground_shaking.jpg
+
+GOOGLE
+.. image:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=480&h=360
 
 Background
 ==========
