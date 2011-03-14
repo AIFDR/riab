@@ -221,7 +221,7 @@ following data sets
 3.  A simple model is adopted calculating estimated number of fatalities
     at each grid cell as follows:
 
-.. figure:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=960&h=720
+.. figure:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=480&h=360
 
 1.  .. image::
     https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=H
