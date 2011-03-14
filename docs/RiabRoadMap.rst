@@ -221,9 +221,9 @@ following data sets
 3.  A simple model is adopted calculating estimated number of fatalities
     at each grid cell as follows:
 
-.. figure:: images/ground_shaking.jpg
+.. image:: images/ground_shaking.jpg
 
-.. figure:: https://github.com/AIFDR/riab/blob/master/docs/images/ground_shaking.jpg
+.. image:: https://github.com/AIFDR/riab/blob/master/docs/images/ground_shaking.jpg
 
 1.  .. image::
     https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=H
