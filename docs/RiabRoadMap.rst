@@ -25,6 +25,8 @@ Ole Nielsen        Moved to RST format                  0.2         14/03/2011
 .. contents::
 
 TEST
+.. image:: https://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
+
 .. figure:: https://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
 
 .. image:: https://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
