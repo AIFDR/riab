@@ -1,86 +1,32 @@
-Risk in a Box - Project Plan
+**Risk in a Box - Project Plan**
+
+*Project Plan*
 
 .. image:: pubimage?id=1CPM1Vvm7uWCzBqhUfWNXdSrHRmEvn8oaLPbOQEZaF3s&image
     _id=1egoYqNiHtd3mn6JYtoGmuSSpB6JkJQ
 
 
-Project Plan
+.. sectnum::
 
---------
+.. role:: raw-math(raw)
+    :format: latex html
 
---------
+:Name:
+  Riab (Risk in a Box)
 
-Riab (Risk in a Box) Version 0.1a
+:Version: 0.1b
+:Date: 19/12/2010
 
-16/12/2010
-
-Name
-
-Changes
-
-Doc Version
-
-Date
-
-Ole Nielsen
-
-AIFDR
-
-Initial Document
-
-0.1a
-
-16/12/2010
-
-Ariel N??ez
-
-GFDRR Labs - World Bank
-
-Architecture modifications
-
-0.1b
-
-19/02/2011
+================== ==================================== =========== ==========
+Name               Changes                              Doc Vers    Date
+================== ==================================== =========== ==========
+Ole Nielsen        Initial Document                     0.1a        16/12/2010
+Ariel Nunez        Architecture modifications     .     0.1b        19/12/2010
+Ole Nielsen        Revision                             0.2         14/03/2011
+================== ==================================== =========== ==========
 
 
-Contents
-========
-
-`Contents`_
-
-`Background`_
-
-`Summary`_
-
-`Scope`_
-
-`Architecture`_
-
-`Use Cases`_
-
-`National earthquake fatality estimate`_
-
-`Local earthquake scenario loss estimate`_
-
-`Collections of hazard scenarios`_
-
-`Example where impacts are aggregated`_
-
-`Tsunami Scenario Impact Assessment`_
-
-`Admissible Data Formats`_
-
-`Requirements`_
-
-`Timeline`_
-
-`Principles for development of Risk-in-a-Box`_
-
-`Style guides`_
-
-`Related resources`_
-
-`Related projects`_
+.. contents::
 
 
 Background
@@ -133,6 +79,10 @@ models for estimation of loss of life) and then aggregating the results
 according to some administrative boundary.
 
 Mathematically, this can be expressed as
+
+:raw-math:`\[ I_{h,i,k} = \sum F_{h, i}() \]`
+
+
 
 ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.. image:: https://www.google.com/chart?
 cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=%7BI%7D_%7Bh%2Ci%2Ck%7D%3D%5Csum%5Cl
