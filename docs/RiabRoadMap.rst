@@ -222,12 +222,10 @@ following data sets
     at each grid cell as follows:
 
 
-.. image:: images/ground_shaking.jpg
+
 
 .. figure:: images/ground_shaking.jpg
 
-
-.. figure:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=480&h=360
 
 1.  .. image::
     https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=H
