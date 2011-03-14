@@ -220,9 +220,8 @@ following data sets
     providing an estimate of the number of people present in each grid cell.
 3.  A simple model is adopted calculating estimated number of fatalities
     at each grid cell as follows:
-    .. image:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=960&h=720
-    .. figure:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=960&h=720
 
+.. figure:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=960&h=720
 
 1.  .. image::
     https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=H
