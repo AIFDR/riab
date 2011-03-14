@@ -25,6 +25,7 @@ Ole Nielsen        Moved to RST format                  0.2         14/03/2011
 .. contents::
 
 TEST
+
 .. image:: https://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
 
 .. figure:: https://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
@@ -32,24 +33,30 @@ TEST
 .. image:: https://docs.google.com/drawings/pub?id=1DG2RT3wREAd0fC0mGUqgbFR3YwNDY9QWHZ4Kb7p_uRU&w=960&h=720
 
 GITHUB
+
 .. image:: https://github.com/AIFDR/riab/blob/master/docs/images/ground_shaking.jpg
 
 LOCAL
+
 .. image:: images/ground_shaking.jpg
 
 GOOGLE
+
 .. image:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=480&h=360
 
 
 
 
 GITHUB
+
 .. figure:: https://github.com/AIFDR/riab/blob/master/docs/images/ground_shaking.jpg
 
 LOCAL
+
 .. figure:: images/ground_shaking.jpg
 
 GOOGLE
+
 .. figure:: https://docs.google.com/drawings/pub?id=14meGu1c8xRfUNlWq1eAk-vkiUHM1RoqRZ926jv1khlk&w=480&h=360
 
 
