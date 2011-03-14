@@ -17,8 +17,8 @@
 Name               Changes                              Doc Vers    Date
 ================== ==================================== =========== ==========
 Ole Nielsen        Initial Document                     0.1a        16/12/2010
-Ariel Nunez        Architecture modifications       0.1b        19/12/2010
-Ole Nielsen        Moved to RST format              0.2         14/03/2011
+Ariel Nunez        Architecture modifications           0.1b        19/12/2010
+Ole Nielsen        Moved to RST format                  0.2         14/03/2011
 ================== ==================================== =========== ==========
 
 
@@ -76,69 +76,20 @@ according to some administrative boundary.
 
 Mathematically, this can be expressed as
 
-:raw-math:`\[ I_{h,i,k} = \sum F_{h, i}() \]`
-
-
-
-? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.. image:: https://www.google.com/chart?
-cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=%7BI%7D_%7Bh%2Ci%2Ck%7D%3D%5Csum%5Cl
-imits_%7Bj%5C+%5Cin%7B%7D%5C+%7B%5COmega%7B%7D%7D_%7Bk%7D%7D%5E%7B%5C+%7D%5C+
-%7BF%7D_%7Bh%2Ci%7D%28%7B%5Clambda%7B%7D%7D_%7Bh%7D%28%7Bx%7D_%7Bj%7D%29%2C%5
-C+%7B%5Ckappa%7B%7D%7D_%7Bi%7D%28%7Bx%7D_%7Bj%7D%29%29
+:raw-math:`\[ I_{h,i,k} = \sum_{j \in \Omega_k} F_{h, i}(\lambda_h(x_j), \kappa_i(x_j) \]`
 
 
 where
 
-1.  .. image:: https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco
-    =000000&chl=%7BI%7D_%7Bh%2Ci%2Ck%7D
-is the impact level for hazard .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=h
-, exposure data .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=i
-and region .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=k
-
-2.  .. image:: https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco
-    =000000&chl=%7B%5COmega%7B%7D%7D_%7Bk%7D
-is the set of indices of points inside region .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=k
-
-3.  .. image:: https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco
-    =000000&chl=%7Bx%7D_%7Bj%7D
-is the coordinates of the .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=j
-?th point. Points will typically coincide with locations of exposure data
-4.  .. image:: https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco
-    =000000&chl=%7B%5Clambda%7B%7D%7D_%7Bh%7D%28x%29
-is the hazard level for hazard .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=h
-at point .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=x
-
-5.  .. image:: https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco
-    =000000&chl=%7B%5Ckappa%7B%7D%7D_%7Bi%7D%28x%29
-is the exposure value (e.g. population, value, etc) for exposure data ..
-image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=i
-at point .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=x
-
-6.  .. image:: https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco
-    =000000&chl=%7BF%7D_%7Bh%2Ci%7D%28a%2C%5C+b%29
-is the impact function for hazard .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=h
-and exposure data .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=i
-with hazard level .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=a
-and exposure value .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=b
-
+*  I_{h, i, k} is the impact level for hazard h, exposure data i and region k
+* \Omega_k is the set of indices of points inside region k
+* x_j are the coordinates of the j'th point. Points will typically coincide with locations of exposure data.
+* \lambda_h(x) is the hazard level for hazard h at point x
+* \kappa_i(x) is the exposure value (e.g. population, structure value) for exposure data i at point x
+* F_{h, i}(a, b) is the impact function for hazard h and exposure data i with hazard level a and exposure value b
 
 If there is the need for the impact function to also explicitly take location
-into account, it can be defined to take .. image::
-https://www.google.com/chart?cht=tx&chf=bg,s,FFFFFF00&chco=000000&chl=x
-as a third argument.
+into account, it can be defined to take x as a third argument.
 
 Hazard levels can also be vector values e.g. one for each mode of ground
 acceleration.
@@ -231,8 +182,9 @@ Risk-in-a-Box is conceived to consist of the following components
 2.  capture the meta data for new layers
 3.  can run either locally or on public web servers
 
-.. image:: http://docs.google.com/drawings/image?id=sKris7Asux1IOuYyItNpG
-    nw&rev=35&h=362&w=546&ac=1
+See
+https://github.com/AIFDR/riab/blob/master/docs/RiabSoftwareDesign.rst
+for design details.
 
 
 Platforms and languages
@@ -416,37 +368,18 @@ Admissible Data Formats
 Based on the use cases, the data formats required for each data type can be
 summarised as follows:
 
-Hazard Level
-
-Exposure Value
-
-Aggregation Region
-
-Impact Result
-
-Raster
-
-Y
-
-Y
-
-Y
-
-Polygon
-
-Y
-
-Y
-
-Y
-
-Line
-
-Point
-
-Y
-
-Y
++---------+--------+----------+-------------+--------+
+|         | Hazard | Exposure | Aggregation | Impact |
+|         | Level  | Value    | Region      | Result |
++=========+========+==========+=============+========+
+| Grid    | Y      | Y        |             | Y      |
++---------+--------+----------+-------------+--------+
+| Point   |        | Y        |             | Y      |
++---------+--------+----------+-------------+--------+
+| Line    |        |          |             |        |
++---------+--------+----------+-------------+--------+
+| Polygon |        | Y        | Y           | Y      |
++---------+--------+----------+-------------+--------+
 
 
 Requirements
@@ -549,63 +482,3 @@ Related projects
 2.  OpenQuake (GEM?s open earthquake risk tool)
 3.  CAPRA
 
-`Edit laman ini`_ (jika Anda punya izin)-Diterbitkan oleh `Google
-Documents`_-`Laporkan Penyalahgunaan `_-Dimutakhirkan secara otomatis setiap
-5 menit
-
-.. _Contents: #h.bbmyl3-4olzde
-.. _Background: #h.en66v5-kal601
-.. _Summary: #h.6f4jn0-n3ce40
-.. _Scope: #h.opsr9q-wii7ha
-.. _Architecture: #h.1dq99v-nyqg0z
-.. _Use Cases: #h.xzlihl-k7eay4
-.. _National earthquake fatality estimate: #h.i0rhae-g79cpj
-.. _Local earthquake scenario loss estimate: #h.58kud7-nrykx9
-.. _Collections of hazard scenarios: #h.yxet94-nlgu66
-.. _Example where impacts are aggregated: #h.no5dso-ehifrs
-.. _Tsunami Scenario Impact Assessment: #h.d3t94r-oao66r
-.. _Admissible Data Formats: #h.yeyx0e-pebf6s
-.. _Requirements: #h.597oss-utt5cx
-.. _Timeline: #h.250zvq-dmgnpi
-.. _Principles for development of Risk-in-a-Box: #h.amopde-v40vt3
-.. _Style guides: #h.ep32pj-egeuax
-.. _Related resources: #h.f9iyn6-xl01ng
-.. _Related projects: #h.9iii54-a0skd0
-.. _ : http://www.google.com/url?q=http%3A%2F%2F203.77.224.75%3A3000%2F&s
-    a=D&sntz=1&usg=AFQjCNHa3BIGv2wyq-KP-nYmYggjmo14mA
-.. _Refer to Google Doc: https://docs.google.com/document/d/1Jpr4HizjJbSq
-    6vuK50C6JrYxSyDAUZ7LJtrw7j9CfVY/edit?hl=en&pli=1
-.. _TsuDat2.0: https://docs.google.com/document/d/1Jpr4HizjJbSq6vuK50C6Jr
-    YxSyDAUZ7LJtrw7j9CfVY/edit?hl=en_GB#
-.. _http://www.python.org/dev/peps/pep-0008/: http://www.google.com/url?q
-    =http%3A%2F%2Fwww.python.org%2Fdev%2Fpeps%2Fpep-0008%2F&sa=D&sntz=1&usg
-    =AFQjCNH1s01EnCyxgqjn9F-rYlVN5aIkGw
-.. _http://www.python.org/dev/peps/pep-0257: http://www.google.com/url?q=
-    http%3A%2F%2Fwww.python.org%2Fdev%2Fpeps%2Fpep-0257&sa=D&sntz=1&usg
-    =AFQjCNGX8rJfh9sNC-sx_FBmO5tDulIEjw
-.. _http://www.kernel.org/pub/software/scm/git/docs/everyday.html: http:/
-    /www.google.com/url?q=http%3A%2F%2Fwww.kernel.org%2Fpub%2Fsoftware%2Fscm%
-    2Fgit%2Fdocs%2Feveryday.html&sa=D&sntz=1&usg=AFQjCNEPxXP0WU7kQla-
-    7Wtw_y5r1ROMRQ
-.. _http://spheredev.org/wiki/Git_for_the_lazy: http://www.google.com/url
-    ?q=http%3A%2F%2Fspheredev.org%2Fwiki%2FGit_for_the_lazy&sa=D&sntz=1&usg=A
-    FQjCNHK3GB_Uym0ujKEpYnD_6iTV7pMog
-.. _http://www.aifdr.org/projects/riat: http://www.google.com/url?q=http%
-    3A%2F%2Fwww.aifdr.org%2Fprojects%2Friat&sa=D&sntz=1&usg=AFQjCNEFfUMwsVeil
-    V_nYslshp7Pv6_RiA
-.. _http://203.77.224.75:3000: http://www.google.com/url?q=http%3A%2F%2F2
-    03.77.224.75%3A3000&sa=D&sntz=1&usg=AFQjCNEORH4YVspFmE1UkW70MYXB3915gA
-.. _www.aifdr.org:8080/geoserver: http://www.google.com/url?q=http%3A%2F%
-    2Fwww.aifdr.org%3A8080%2Fgeoserver&sa=D&sntz=1&usg=AFQjCNHO8QCMAgy7rHrmxv
-    Dec1PdDzmDUg
-.. _www.aifdr.org/riab/layers.html: http://www.google.com/url?q=http%3A%2
-    F%2Fwww.aifdr.org%2Friab%2Flayers.html&sa=D&sntz=1&usg=AFQjCNF7vcr47KJlIO
-    QrHX5CNMJWFJ3GwQ
-.. _http://www.cmcrossroads.com/bradapp/docs/sdd.html#TOC_SEC16: http://w
-    ww.google.com/url?q=http%3A%2F%2Fwww.cmcrossroads.com%2Fbradapp%2Fdocs%2F
-    sdd.html%23TOC_SEC16&sa=D&sntz=1&usg=AFQjCNE1wcow3rRA5bsZiAye6mZ2Ht6GXQ
-.. _Edit laman ini: https://docs.google.com/document/d/1CPM1Vvm7uWCzBqhUf
-    WNXdSrHRmEvn8oaLPbOQEZaF3s/edit (Risk in a Box - Project Plan)
-.. _Google Documents: //docs.google.com/ (Learn more about Google Docs)
-.. _Laporkan Penyalahgunaan :
-    //docs.google.com/abuse?id=1CPM1Vvm7uWCzBqhUfWNXdSrHRmEvn8oaLPbOQEZaF3s
