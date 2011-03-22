@@ -44,34 +44,16 @@ checkup AIFDR/riab_geonode.git riab_geonode
 checkup AIFDR/riab_server.git riab_server
 
 virtualenv riab_env
+#FIXME: This line is not idempotent, but harmless
+echo 'export DJANGO_SETTINGS_MODULE=riab.settings' >> riab_env/bin/activate
 source riab_env/bin/activate
 
-if [ -f "geonode-webapp.pybundle" ];
-then
-    wget http://203.77.224.75/geonode-webapp.pybundle
-    pip install geonode-webapp.pybundle
-fi
+# Install GeoNode and it's pre-requisites
+wget -c http://203.77.224.75/riab/geonode-webapp.pybundle
+pip install geonode-webapp.pybundle
 
 python riab_server/setup.py develop
-#python riab_geonode/setup.py develop
-
-# Make the server use the djriab project instead of geonode
-#sudo perl -pi -e 's/geonode.settings/djriab.settings/g' /var/www/geonode/wsgi/geonode.wsgi
-
-# Move the local_settings.py to the right place
-#mv /var/www/geonode/wsgi/geonode/src/GeoNodePy/geonode/local_settings.py ~/work/django-riab/djriab/
+python riab_geonode/setup.py develop
 
 # Reload apache to pickup the project changes
 #sudo /etc/init.d/apache2 reload
-
-# Install test requirements
-#cd ~/work/django-riab
-#pip install -r tests/requirements.txt
-
-#python setup.py test
-#cd tests
-#python manage.py test
-
-#cd ~/work/riab_core
-#python setup.py nosetests
-#pep8 -v riab_core
