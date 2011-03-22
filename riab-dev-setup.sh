@@ -26,11 +26,22 @@ sudo apt-get install -y --force-yes sun-java6-jdk
 # Python development prerequisites
 sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv
 
+function checkup() {
+  REPO="$1"
+  WORKING_DIR="$2"
+  if [ -d "${WORKING_DIR}" ];
+  then
+      echo "Updating ${WORKING_DIR} from upstream"
+      (cd "${WORKING_DIR}" && git pull)
+  else
+      git clone "git@github.com:${REPO}" "${WORKING_DIR}" || git clone "https://github.com/${REPO}" "${WORKING_DIR}"
+  fi
+}
+
 # Get riab source code
-git clone git@github.com:AIFDR/riab.git || git clone https://github.com/AIFDR/riab.git
-git clone git@github.com:AIFDR/riab_geonode.git || git clone https://github.com/AIFDR/riab_geonode.git
-git clone git@github.com:AIFDR/riab_server.git || git clone https://github.com/AIFDR/riab_server.git
-git clone git@github.com:geonode/geonode.git || git clone https://github.com/geonode/geonode.git
+checkup AIFDR/riab.git riab
+checkup AIFDR/riab_geonode.git riab_geonode
+checkup AIFDR/riab_server.git riab_server
 
 # Install riab_core
 #cd riab_core
