@@ -44,7 +44,7 @@ checkup AIFDR/riab_geonode.git riab_geonode
 checkup AIFDR/riab_server.git riab_server
 
 virtualenv riab_env
-source riab_env/activate
+source riab_env/bin/activate
 
 python riab_server/setup.py develop
 #python riab_geonode/setup.py develop
