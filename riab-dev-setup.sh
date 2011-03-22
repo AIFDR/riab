@@ -46,6 +46,12 @@ checkup AIFDR/riab_server.git riab_server
 virtualenv riab_env
 source riab_env/bin/activate
 
+if [ -f "geonode-webapp.pybundle" ];
+then
+    wget http://shiva.aifdr.org/geonode-webapp.pybundle
+    pip install geonode-webapp.pybundle
+fi
+
 python riab_server/setup.py develop
 #python riab_geonode/setup.py develop
 
