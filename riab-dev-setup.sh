@@ -24,7 +24,7 @@ sudo echo "sun-java6-jre shared/present-sun-dlj-v1-1 note" | sudo debconf-set-se
 sudo apt-get install -y --force-yes sun-java6-jdk
 
 # Python development prerequisites
-sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv
+sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy
 
 function checkup() {
   REPO="$1"
