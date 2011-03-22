@@ -24,23 +24,14 @@ sudo echo "sun-java6-jre shared/present-sun-dlj-v1-1 note" | sudo debconf-set-se
 sudo apt-get install -y --force-yes sun-java6-jdk
 
 # Python development prerequisites
-sudo apt-get install -y zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8
-
-sudo echo "geonode geonode/django_user string admin" | sudo debconf-set-selections
-sudo echo "geonode geonode/django_password password adm1n" | sudo debconf-set-selections
-sudo echo "geonode geonode/hostname string $HOST" | sudo debconf-set-selections
-sudo apt-get install -y --force-yes geonode
-
-# Set the owner of GeoNode's virtualenv to be your user (ubuntu in this case)
-sudo chown -R ubuntu:ubuntu /var/www/geonode/wsgi/geonode*
-echo "source /var/www/geonode/wsgi/geonode/bin/activate" >> ~/.bash_aliases
-source /var/www/geonode/wsgi/geonode/bin/activate
+sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv
 
 # Get riab source code
-mkdir -p ~/RIAB; cd ~/RIAB
-git clone https://github.com/AIFDR/riab_geonode.git
-git clone https://github.com/AIFDR/riab_client.git
-git clone https://github.com/AIFDR/riab_server.git
+#mkdir -p ~/RIAB; cd ~/RIAB
+#git clone https://github.com/AIFDR/riab.git
+#git clone https://github.com/AIFDR/riab_geonode.git
+#git clone https://github.com/AIFDR/riab_server.git
+#git clone https://github.com/geonode/geonode.git
 
 # Install riab_core
 #cd riab_core
@@ -69,7 +60,7 @@ git clone https://github.com/AIFDR/riab_server.git
 #mv /var/www/geonode/wsgi/geonode/src/GeoNodePy/geonode/local_settings.py ~/work/django-riab/djriab/
 
 # Reload apache to pickup the project changes
-sudo /etc/init.d/apache2 reload
+#sudo /etc/init.d/apache2 reload
 
 # Install test requirements
 #cd ~/work/django-riab
