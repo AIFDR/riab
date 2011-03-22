@@ -48,7 +48,7 @@ source riab_env/bin/activate
 
 if [ -f "geonode-webapp.pybundle" ];
 then
-    wget http://shiva.aifdr.org/geonode-webapp.pybundle
+    wget http://203.77.224.75/geonode-webapp.pybundle
     pip install geonode-webapp.pybundle
 fi
 
