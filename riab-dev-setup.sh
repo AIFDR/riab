@@ -43,25 +43,11 @@ checkup AIFDR/riab.git riab
 checkup AIFDR/riab_geonode.git riab_geonode
 checkup AIFDR/riab_server.git riab_server
 
-# Install riab_core
-#cd riab_core
-#python setup.py develop
-#cd ..
+virtualenv riab_env
+source riab_env/activate
 
-# Install django-riab (this will create a symlink in the virtualenv to your working dir)
-#cd django-riab
-#python setup.py develop
-#cd ..
-
-# Compile the javascript sources (minify, etc)
-#cd ~/work/riab-client
-#git submodule update --init
-#sudo apt-get install -y --no-install-recommends ant
-#export JAVA_HOME=/usr/lib/jvm/java-6-sun
-#ant zip
-
-# The zipped media dir would end in:
-# ~/work/riab-client/build/geonode-client.zip
+python riab_server/setup.py develop
+#python riab_geonode/setup.py develop
 
 # Make the server use the djriab project instead of geonode
 #sudo perl -pi -e 's/geonode.settings/djriab.settings/g' /var/www/geonode/wsgi/geonode.wsgi
