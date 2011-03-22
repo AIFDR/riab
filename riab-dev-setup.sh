@@ -27,11 +27,10 @@ sudo apt-get install -y --force-yes sun-java6-jdk
 sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv
 
 # Get riab source code
-#mkdir -p ~/RIAB; cd ~/RIAB
-#git clone https://github.com/AIFDR/riab.git
-#git clone https://github.com/AIFDR/riab_geonode.git
-#git clone https://github.com/AIFDR/riab_server.git
-#git clone https://github.com/geonode/geonode.git
+git clone git@github.com:AIFDR/riab.git || git clone https://github.com/AIFDR/riab.git
+git clone git@github.com:AIFDR/riab_geonode.git || git clone https://github.com/AIFDR/riab_geonode.git
+git clone git@github.com:AIFDR/riab_server.git || git clone https://github.com/AIFDR/riab_server.git
+git clone git@github.com:geonode/geonode.git || git clone https://github.com/geonode/geonode.git
 
 # Install riab_core
 #cd riab_core
