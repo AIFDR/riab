@@ -50,7 +50,9 @@ source riab_env/bin/activate
 
 # Install GeoNode and it's pre-requisites
 wget -c http://203.77.224.75/riab/geonode-webapp.pybundle
+wget -c http://203.77.224.75/riab/tomcat-redist.tar.gz
 pip install geonode-webapp.pybundle
+tar xzf tomcat-redist.tar.gz
 
 python riab_server/setup.py develop
 python riab_geonode/setup.py develop
