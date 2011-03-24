@@ -19,7 +19,10 @@ sudo echo "sun-java6-jre sun-java6-jre/jcepolicy note" | sudo debconf-set-select
 sudo echo "sun-java6-bin shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
 sudo echo "sun-java6-jdk shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
 sudo echo "sun-java6-jre shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
+# Recommended, and useful for Ubuntu 10.04
 sudo apt-get install -y --force-yes sun-java6-jdk
+# Needed for auto installation in Ubuntu 10.10
+sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
 # Python development prerequisites
 sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal
@@ -59,9 +62,6 @@ python riab_geonode/setup.py develop
 cd riab_server
 . run_tests.sh
 cd ..
-
-sudo bash -c "echo 'export JAVA_HOME=/usr/lib/jvm/java-6-sun/' >> /etc/environment"
-source /etc/environment
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
