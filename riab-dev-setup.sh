@@ -56,6 +56,10 @@ tar xzf tomcat-redist.tar.gz
 python riab_server/setup.py develop
 python riab_geonode/setup.py develop
 
-. riab_server/run_tests.sh
-# Reload apache to pickup the project changes
-#sudo /etc/init.d/apache2 reload
+cd riab_server
+. run_tests.sh
+cd ..
+
+echo "Congratulations, you have installed Risk in a Box"
+echo "To start the server run the following command:"
+echo ". riab/startup.sh"
