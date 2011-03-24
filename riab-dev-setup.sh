@@ -58,6 +58,8 @@ tar xzf tomcat-redist.tar.gz
 python riab_server/setup.py develop
 python riab_geonode/setup.py develop
 
+django-admin.py syncdb --noinput
+
 cd riab_server
 . run_tests.sh
 cd ..
