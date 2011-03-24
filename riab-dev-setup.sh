@@ -63,6 +63,8 @@ cd ..
 sudo bash -c "echo 'export JAVA_HOME=/usr/lib/jvm/java-6-sun/' >> /etc/environment"
 source /etc/environment
 
+echo ""
 echo "Congratulations, you have installed Risk in a Box"
 echo "To start the server run the following command:"
+echo ""
 echo ". riab/startup.sh"
