@@ -25,7 +25,7 @@ sudo apt-get install -y --force-yes sun-java6-jdk
 sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
 # Python development prerequisites
-sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal
+sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript
 
 function checkup() {
   REPO="$1"
@@ -54,7 +54,6 @@ wget -c http://203.77.224.75/riab/geonode-webapp.pybundle
 wget -c http://203.77.224.75/riab/tomcat-redist.tar.gz
 pip install geonode-webapp.pybundle
 tar xzf tomcat-redist.tar.gz
-./apache-tomcat-6.0.32/bin/startup.sh
 
 python riab_server/setup.py develop
 python riab_geonode/setup.py develop
