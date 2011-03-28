@@ -58,6 +58,9 @@ tar xzf tomcat-redist.tar.gz
 mv apache-tomcat* ../tomcat
 cd ..
 
+#FIXME: Workaround for wrong Django version
+pip install -U Django==1.2
+
 python riab_server/setup.py develop
 python riab_geonode/setup.py develop
 
