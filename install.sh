@@ -40,6 +40,7 @@ function checkup() {
 }
 
 # Get riab source code
+checkup GeoNode/geonode.git geonode
 checkup AIFDR/riab.git riab
 checkup AIFDR/riab_geonode.git riab_geonode
 checkup AIFDR/riab_server.git riab_server
@@ -51,29 +52,33 @@ source riab_env/bin/activate
 
 # Install GeoNode and it's pre-requisites
 mkdir temp; cd temp
-wget -c http://203.77.224.75/riab/geonode-webapp.pybundle
+wget -c http://203.77.224.75/riab/riab-libs.pybundle
 wget -c http://203.77.224.75/riab/tomcat-redist.tar.gz
-pip install geonode-webapp.pybundle
+pip install riab-libs.pybundle
 tar xzf tomcat-redist.tar.gz
 mv apache-tomcat* ../tomcat
 cd ..
 
-#FIXME: Workaround for wrong Django version
-pip install -U Django==1.2
+# Install GeoNode in development mode
+cd geonode/src/GeoNodePy/
+python setup.py develop
+cd ../../../
 
+# Install riab in development mode
 python riab_server/setup.py develop
 python riab_geonode/setup.py develop
 
 django-admin.py syncdb --noinput
-
-cd riab_server
-. run_tests.sh
-cd ..
-
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
 echo "Now it is time to create a super user for administration:"
 django-admin.py createsuperuser
+
+echo ""
+echo "Running the test suite"
+cd riab_server
+. run_tests.sh
+cd ..
 
 echo ""
 echo "To start the server run the following command:"
