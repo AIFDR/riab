@@ -72,6 +72,10 @@ cd ..
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
+echo "Now it is time to create a super user for administration:"
+django-admin.py createsuperuser
+
+echo ""
 echo "To start the server run the following command:"
 echo ""
 echo ". riab/startup.sh"
