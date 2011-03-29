@@ -63,14 +63,10 @@ mv apache-tomcat-6.0.32 ../tomcat
 cd ..
 
 echo ">>> Installing GeoNode and Riab in dev mode"
-# Install GeoNode in development mode
-cd geonode/src/GeoNodePy/
-python setup.py develop
-cd ../../../
+pip install -e geonode/src/GeoNodePy
+pip install -e riab_server
+pip install -e riab_geonode
 
-# Install riab in development mode
-python riab_server/setup.py develop
-python riab_geonode/setup.py develop
 
 django-admin.py syncdb --noinput
 echo ">>> Creating default user"
