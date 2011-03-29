@@ -47,9 +47,14 @@ checkup AIFDR/riab_geonode.git riab_geonode
 checkup AIFDR/riab_server.git riab_server
 
 echo ">>> Creating the virtual environment"
-virtualenv riab_env
-#FIXME: This line is not idempotent, but harmless
-echo 'export DJANGO_SETTINGS_MODULE=riab.settings' >> riab_env/bin/activate
+if [ -d riab_env ]; then
+    echo 'It already exists...'
+else
+    virtualenv riab_env
+    #FIXME: This line is not idempotent, but harmless
+    echo 'export DJANGO_SETTINGS_MODULE=riab.settings' >> riab_env/bin/activate
+fi
+
 source riab_env/bin/activate
 
 echo ">>> Downloading riab-libs.pybundle and tomcat bundle"
@@ -67,10 +72,7 @@ pip install -e geonode/src/GeoNodePy
 pip install -e riab_server
 pip install -e riab_geonode
 
-
 django-admin.py syncdb --noinput
-echo ">>> Creating default user"
-django-admin.py createsuperuser --username='default' --email=default@default.com --noinput
 
 echo ""
 echo ">>> Running the test suite"
