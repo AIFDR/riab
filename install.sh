@@ -1,29 +1,29 @@
-export DEBIAN_FRONTEND=noninteractive
-
-#sudo apt-get -y dist-upgrade  # This seems to pull in all sorts of stuff like Samba
-sudo apt-get update
-
-# For Java 6 JDK
-sudo add-apt-repository "deb http://archive.canonical.com/ lucid partner"
-
-# For GeoNode
-sudo add-apt-repository "deb http://apt.opengeo.org/lucid lucid main"
+#! /bin/bash
 
 sudo apt-get -y update
+
+#export DEBIAN_FRONTEND=noninteractive
+# For Java 6 JDK
+#sudo add-apt-repository "deb http://archive.canonical.com/ lucid partner"
+# For GeoNode
+#sudo add-apt-repository "deb http://apt.opengeo.org/lucid lucid main"
+#sudo apt-get -y update
  # 'Accept' SunOracle Licensing
-sudo echo "sun-java6-bin shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
-sudo echo "sun-java6-jdk shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
-sudo echo "sun-java6-jre shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
-sudo echo "sun-java6-jre sun-java6-jre/stopthread boolean true" | sudo debconf-set-selections
-sudo echo "sun-java6-jre sun-java6-jre/jcepolicy note" | sudo debconf-set-selections
-sudo echo "sun-java6-bin shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
-sudo echo "sun-java6-jdk shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
-sudo echo "sun-java6-jre shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
+#sudo echo "sun-java6-bin shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
+#sudo echo "sun-java6-jdk shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
+#sudo echo "sun-java6-jre shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
+#sudo echo "sun-java6-jre sun-java6-jre/stopthread boolean true" | sudo debconf-set-selections
+#sudo echo "sun-java6-jre sun-java6-jre/jcepolicy note" | sudo debconf-set-selections
+#sudo echo "sun-java6-bin shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
+#sudo echo "sun-java6-jdk shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
+#sudo echo "sun-java6-jre shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
 # Recommended, and useful for Ubuntu 10.04
-sudo apt-get install -y --force-yes sun-java6-jdk
+#sudo apt-get install -y --force-yes sun-java6-jdk
+
 # Needed for auto installation in Ubuntu 10.10
 sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
+echo ">>> Installing Ubuntu packages"
 # Python development prerequisites
 sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript
 
@@ -39,26 +39,30 @@ function checkup() {
   fi
 }
 
+echo ">>> Cloning the repositories"
 # Get riab source code
 checkup GeoNode/geonode.git geonode
 checkup AIFDR/riab.git riab
 checkup AIFDR/riab_geonode.git riab_geonode
 checkup AIFDR/riab_server.git riab_server
 
+echo ">>> Creating the virtual environment"
 virtualenv riab_env
 #FIXME: This line is not idempotent, but harmless
 echo 'export DJANGO_SETTINGS_MODULE=riab.settings' >> riab_env/bin/activate
 source riab_env/bin/activate
 
+echo ">>> Downloading riab-libs.pybundle and tomcat bundle"
 # Install GeoNode and it's pre-requisites
 mkdir temp; cd temp
 wget -c http://203.77.224.75/riab/riab-libs.pybundle
 wget -c http://203.77.224.75/riab/tomcat-redist.tar.gz
 pip install riab-libs.pybundle
 tar xzf tomcat-redist.tar.gz
-mv apache-tomcat* ../tomcat
+mv apache-tomcat-6.0.32 ../tomcat
 cd ..
 
+echo ">>> Installing GeoNode and Riab in dev mode"
 # Install GeoNode in development mode
 cd geonode/src/GeoNodePy/
 python setup.py develop
@@ -69,18 +73,17 @@ python riab_server/setup.py develop
 python riab_geonode/setup.py develop
 
 django-admin.py syncdb --noinput
-echo ""
-echo "Congratulations, you have installed Risk in a Box"
-echo "Now it is time to create a super user for administration:"
-django-admin.py createsuperuser
+echo ">>> Creating default user"
+django-admin.py createsuperuser --username='default' --email=default@default.com --noinput
 
 echo ""
-echo "Running the test suite"
+echo ">>> Running the test suite"
 cd riab_server
 . run_tests.sh
 cd ..
 
 echo ""
+echo "Congratulations, you have installed Risk in a Box"
 echo "To start the server run the following command:"
 echo ""
 echo ". riab/startup.sh"
