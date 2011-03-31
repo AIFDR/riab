@@ -1,4 +1,4 @@
-WSGIDaemonProcess riab user=software threads=1 processes=3 python-path=/home/software/riab_env/lib/python2.6/site-packages
+WSGIDaemonProcess riab user=software threads=1 processes=5 python-path=/home/software/riab_env/lib/python2.6/site-packages
 
 <VirtualHost *:80>
    ServerAdmin webmaster@localhost
