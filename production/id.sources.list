@@ -1,0 +1,13 @@
+deb http://id.archive.ubuntu.com/ubuntu/ maverick main restricted
+deb http://id.archive.ubuntu.com/ubuntu/ maverick-updates main restricted
+deb http://id.archive.ubuntu.com/ubuntu/ maverick universe
+deb http://id.archive.ubuntu.com/ubuntu/ maverick-updates universe
+deb http://id.archive.ubuntu.com/ubuntu/ maverick multiverse
+deb http://id.archive.ubuntu.com/ubuntu/ maverick-updates multiverse
+#deb http://extras.ubuntu.com/ubuntu maverick main
+#deb http://security.ubuntu.com/ubuntu maverick-security main restricted
+#deb http://security.ubuntu.com/ubuntu maverick-security universe
+#deb http://security.ubuntu.com/ubuntu maverick-security multiverse
+
+
+

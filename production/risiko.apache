@@ -1,0 +1,37 @@
+WSGIDaemonProcess riab user=software threads=1 processes=3 python-path=/home/software/riab_env/lib/python2.6/site-packages
+
+<VirtualHost *:80>
+   ServerAdmin webmaster@localhost
+   ServerName demo.riskinabox.org
+   ServerAlias localhost
+
+   ErrorLog /home/software/logs/apache.error.log
+
+   # Possible values include: debug, info, notice, warn, error, crit,
+   # alert, emerg.
+   LogLevel warn
+
+   CustomLog /home/software/logs/apache.access.log combined
+
+  <Directory "/home/software/riab_geonode/riab/deploy/">
+       Allow from all
+   </Directory>
+
+   Alias /media/ "/home/software/static/"
+   <Directory "/home/software/static/">
+     Order allow,deny
+     Options Indexes FollowSymLinks
+     Allow from all
+     IndexOptions FancyIndexing
+   </Directory>
+
+   WSGIProcessGroup riab
+   WSGIApplicationGroup %{GLOBAL}
+   WSGIScriptAlias / /home/software/riab_geonode/riab/deploy/project.wsgi
+   WSGIPassAuthorization On
+  
+   ProxyPass /geoserver-geonode-dev http://localhost:8001/geoserver-geonode-dev
+   ProxyPassReverse /geoserver-geonode-dev http://localhost:8001/geoserver-geonode-dev
+   ProxyPass /geonetwork http://localhost:8001/geonetwork/
+   ProxyPassReverse /geonetwork http://localhost:8001/geonetwork
+</VirtualHost>
