@@ -28,7 +28,7 @@ def production():
     # we need to drop it when we switch to django 1.3
     #run('django-admin.py collectstatic --noinput')
     run('. riab_env/bin/activate; pip install -U django-staticfiles==0.3')
-    run('. riab_env/bin/activate; django-admin.py build_static --noinput') 
+    run('. riab_env/bin/activate; django-admin.py build_static --noinput')
     put('tomcat6', 'tomcat6')
     sudo('/bin/mv -f tomcat6 /etc/init.d/')
     sudo('chmod +x /etc/init.d/tomcat6')
@@ -50,7 +50,7 @@ def manual():
     print "        and click on 'Global Settings', the fill the 'Proxy Base URL' setting with"
     print "        the same path you used to access geoserver (be default geoserver uses http://localhost:8001"
     # Step 2
-    print 
+    print
     print "Step 2. Create a superuser to administer Risk in a Box"
     print "        ssh into the production server and run:"
     print "        django-admin.py createsuperuser"
