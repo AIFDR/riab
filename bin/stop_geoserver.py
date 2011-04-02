@@ -10,7 +10,7 @@ t0 = time.time()
 time_out = 30 # Wait no more than these many seconds 
 running = True
 while running and time.time()-t0 < time_out:
-    p = Popen('ps aux | grep geoserver', shell=True,
+    p = Popen('ps aux | grep tomcat', shell=True,
               stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
               
     lines = p.stdout.readlines()
@@ -18,14 +18,14 @@ while running and time.time()-t0 < time_out:
     running = False
     for line in lines:
     
-        if 'DSTOP.KEY=geoserver' in line:
+        if 'java' in line:
             running = True
         
             # Get pid
             fields = line.strip().split()
 
             print 'Stopping Geoserver (process number %s)' % fields[1]
-            kill = 'sudo kill -9 %s 2> /dev/null' % fields[1]
+            kill = 'kill -9 %s 2> /dev/null' % fields[1]
             os.system(kill)
 
 
