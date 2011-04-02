@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Upload test data to GeoServer
 
 # Data is assumed to reside in subdirectories of ./data named by their workspace.
