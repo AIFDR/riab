@@ -41,6 +41,7 @@ function checkup() {
 
 echo ">>> Cloning the repositories"
 # Get riab source code
+checkup dwins/gsconfig.py
 checkup GeoNode/geonode.git geonode
 checkup AIFDR/riab.git riab
 checkup AIFDR/riab_geonode.git riab_geonode
@@ -68,6 +69,7 @@ mv apache-tomcat-6.0.32 ../tomcat
 cd ..
 
 echo ">>> Installing GeoNode and Riab in dev mode"
+pip install -e gsconfig.py
 pip install -e geonode/src/GeoNodePy
 pip install -e riab_server
 pip install -e riab_geonode

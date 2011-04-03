@@ -4,4 +4,3 @@
 rm -rf tomcat/webapps/geoserver-geonode-dev
 rm -rf tomcat/webapps/geonetwork
 rm -f riab_geonode/riab/development.db
-django-admin.py syncdb --noinput
