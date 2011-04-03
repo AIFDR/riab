@@ -41,7 +41,7 @@ function checkup() {
 
 echo ">>> Cloning the repositories"
 # Get riab source code
-checkup dwins/gsconfig.py
+checkup dwins/gsconfig.py gsconfig.py
 checkup GeoNode/geonode.git geonode
 checkup AIFDR/riab.git riab
 checkup AIFDR/riab_geonode.git riab_geonode
