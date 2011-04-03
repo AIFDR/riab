@@ -64,6 +64,8 @@ mkdir temp; cd temp
 wget -c http://203.77.224.75/riab/riab-libs.pybundle
 wget -c http://203.77.224.75/riab/tomcat-redist.tar.gz
 pip install riab-libs.pybundle
+#FIXME: Add this to the bundle
+pip install -U mock
 tar xzf tomcat-redist.tar.gz
 mv apache-tomcat-6.0.32 ../tomcat
 cd ..
