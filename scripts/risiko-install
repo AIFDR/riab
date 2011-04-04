@@ -65,7 +65,7 @@ if grep -Fxq "RIAB_HOME" ~/bash_aliases
 then
     echo
 else
-    echo 'export RIAB_HOME=`pwd`' >> ~/.bash_aliases 
+    echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases 
     echo "alias risikon='source $RIAB_HOME/riab_env/bin/activate'" >> ~/.bash_aliases 
 fi
 
