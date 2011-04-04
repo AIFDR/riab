@@ -3,7 +3,7 @@ import numpy
 import sys
 import os
 
-import riab_server
+import riab
 from utilities import TESTDATA
 
 

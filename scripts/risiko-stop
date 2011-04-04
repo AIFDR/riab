@@ -30,7 +30,6 @@ def kill(arg1, arg2):
                 # Get pid
                 fields = line.strip().split()
 
-                print line
                 print 'Stopping %s (process number %s)' % (arg1, fields[1])
                 kill = 'kill -9 %s 2> /dev/null' % fields[1]
                 os.system(kill)
