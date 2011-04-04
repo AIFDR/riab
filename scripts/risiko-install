@@ -41,11 +41,8 @@ function checkup() {
 
 echo ">>> Cloning the repositories"
 # Get riab source code
-checkup dwins/gsconfig.py gsconfig.py
 checkup GeoNode/geonode.git geonode
 checkup AIFDR/riab.git riab
-checkup AIFDR/riab_geonode.git riab_geonode
-checkup AIFDR/riab_server.git riab_server
 
 echo ">>> Creating the virtual environment"
 if [ -d riab_env ]; then
@@ -53,7 +50,7 @@ if [ -d riab_env ]; then
 else
     virtualenv riab_env
     #FIXME: This line is not idempotent, but harmless
-    echo 'export DJANGO_SETTINGS_MODULE=riab.settings' >> riab_env/bin/activate
+    echo 'export DJANGO_SETTINGS_MODULE=risiko.settings' >> riab_env/bin/activate
 fi
 
 source riab_env/bin/activate
@@ -71,18 +68,12 @@ mv apache-tomcat-6.0.32 ../tomcat
 cd ..
 
 echo ">>> Installing GeoNode and Riab in dev mode"
-pip install -e gsconfig.py
 pip install -e geonode/src/GeoNodePy
-pip install -e riab_server
-pip install -e riab_geonode
-
-django-admin.py syncdb --noinput
+pip install -e riab
 
 echo ""
 echo ">>> Running the test suite"
-cd riab_server
-. run_tests.sh
-cd ..
+risiko-test
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
@@ -91,4 +82,4 @@ echo "python django-admin.py createsuperuser"
 echo
 echo "To start the server run the following command:"
 echo ""
-echo ". riab/startup.sh"
+echo "risiko-start"
