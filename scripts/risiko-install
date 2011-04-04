@@ -70,7 +70,7 @@ else
 fi
 
 source ~/.bash_aliases
-risikon
+source riab_env/bin/activate
 
 echo ">>> Downloading riab-libs.pybundle and tomcat bundle"
 # Install GeoNode and it's pre-requisites
