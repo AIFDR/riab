@@ -108,6 +108,7 @@ else:
 
 
 setup(
+    name='risiko',
     version=distmeta.__version__,
     description=distmeta.__doc__,
     author=distmeta.__author__,

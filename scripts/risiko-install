@@ -49,11 +49,26 @@ if [ -d riab_env ]; then
     echo 'It already exists...'
 else
     virtualenv riab_env
-    #FIXME: This line is not idempotent, but harmless
+fi
+
+
+if grep -Fxq "DJANGO_SETTINGS_MODULE" riab_env/bin/activate
+then
+    # Do not do anything
+else
     echo 'export DJANGO_SETTINGS_MODULE=risiko.settings' >> riab_env/bin/activate
 fi
 
-source riab_env/bin/activate
+
+if grep -Fxq "RIAB_HOME" ~/bash_aliases
+then
+    # Do not do anything
+else
+    echo 'export RIAB_HOME=`pwd`' >> ~/.bash_aliases 
+    echo 'alias risikon=source $RIAB_HOME/riab_env/bin/activate' >> ~/.bash_aliases 
+fi
+
+source ~/.bash_aliases
 
 echo ">>> Downloading riab-libs.pybundle and tomcat bundle"
 # Install GeoNode and it's pre-requisites
