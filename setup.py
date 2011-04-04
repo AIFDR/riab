@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from distutils.core import setup
+from distutils.core import setup, Command
 from distutils.command.install_data import install_data
 from distutils.command.install import INSTALL_SCHEMES
 import os
 import sys
+import codecs
+
 
 class osx_install_data(install_data):
     # On MacOS, the platform-specific lib dir is /System/Library/Framework/Python/.../
@@ -52,7 +54,7 @@ if root_dir != '':
     os.chdir(root_dir)
 
 def add_dir(source_dir):
-    for dirpath, dirnames, filenames in os.walk(risiko_dir):
+    for dirpath, dirnames, filenames in os.walk(source_dir):
         # Ignore dirnames that start with '.'
         for i, dirname in enumerate(dirnames):
             if dirname.startswith('.'): del dirnames[i]
@@ -138,7 +140,11 @@ setup(
         'pylint', 'pep8'],
     test_suite='nose.collector',
     cmdclass = {"test": RunTests},
-    scripts = ['risiko/bin/*'],
+    scripts = ['scripts/risiko-clean',
+               'scripts/risiko-stop',
+               'scripts/risiko-start',
+               'scripts/risiko-test',
+              ],
     classifiers = [
         'Development Status :: 1 - Planning',
         'Environment :: Web Environment',
