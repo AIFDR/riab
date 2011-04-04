@@ -55,6 +55,7 @@ fi
 if grep -Fxq "DJANGO_SETTINGS_MODULE" riab_env/bin/activate
 then
     # Do not do anything
+    echo
 else
     echo 'export DJANGO_SETTINGS_MODULE=risiko.settings' >> riab_env/bin/activate
 fi
@@ -62,10 +63,10 @@ fi
 
 if grep -Fxq "RIAB_HOME" ~/bash_aliases
 then
-    # Do not do anything
+    echo
 else
     echo 'export RIAB_HOME=`pwd`' >> ~/.bash_aliases 
-    echo 'alias risikon=source $RIAB_HOME/riab_env/bin/activate' >> ~/.bash_aliases 
+    echo "alias risikon='source $RIAB_HOME/riab_env/bin/activate'" >> ~/.bash_aliases 
 fi
 
 source ~/.bash_aliases

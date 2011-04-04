@@ -1,9 +1,6 @@
-./riab/bin/clean.sh
+risiko-clean
 tomcat/bin/catalina.sh start
 django-admin.py syncdb --noinput
-paster serve --reload riab_geonode/riab/deploy/project.paste.ini &
-cd riab_geonode/riab
-./manage.py test calculations --verbosity=2 --failfast
-cd ../../
-django-admin.py loaddata riab/bin/users.json
-#./stop_all.py
+paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
+django-admin.py test impact --verbosity=2 --failfast
+risiko-stop
