@@ -58,7 +58,7 @@ then
 else
     echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases
     echo "export RIAB_DATA=$RIAB_HOME/riab_data" >> ~/.bash_aliases
-    echo 'alias risikon="source $RIAB_HOME/riab_env/bin/activate"' >> ~/.bash_aliases
+    echo 'alias risikon="source $RIAB_HOME/riab_env/bin/activate;cd $RIAB_HOME"' >> ~/.bash_aliases
     echo "Adding RIAB_HOME, RIAB_DATA and risikon to your ~/.bash_aliases"
 fi
 
