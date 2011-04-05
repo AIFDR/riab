@@ -29,7 +29,7 @@ from django.utils import simplejson as json
 from django.http import HttpResponse
 from django.conf import settings
 from impact import storage
-from imact.models import Calculation
+from impact.models import Calculation
 import urlparse
 import inspect
 import numpy
@@ -37,7 +37,7 @@ import numpy
 AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
 
 
-def calculate(request, save_output=storage.dummy_save):
+def calculate(request, save_output=storage.io.dummy_save):
     start = datetime.now()
 
     if request.method == 'GET':

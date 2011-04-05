@@ -1,13 +1,6 @@
-from riab_server.webapi.views import AIFDR_SERVER
 import unittest
-from mock import Mock
-from riab_server.webapi import storage
 from django.test.client import Client
 from django.utils import simplejson as json
-
-storage.upload = Mock()
-storage.upload.return_value = 'http://dummygeonode.com/data/layer'
-
 
 class Test_HTTP(unittest.TestCase):
 
@@ -63,8 +56,8 @@ class Test_HTTP(unittest.TestCase):
         assert 'result' in data.keys()
         assert 'keywords' in data.keys()
 
-
+suite = unittest.makeSuite(Test_HTTP, 'test')
+runner = unittest.TextTestRunner(verbosity=2)
+ 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_HTTP, 'test')
-    runner = unittest.TextTestRunner(verbosity=2)
-    runner.run(suite)
+   runner.run(suite)
