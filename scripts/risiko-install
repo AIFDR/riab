@@ -41,7 +41,7 @@ function checkup() {
 
 echo ">>> Cloning the repositories"
 # Get riab source code
-checkup GeoNode/geonode.git geonode
+checkup AIFDR/geonode.git geonode
 checkup AIFDR/riab.git riab
 
 echo ">>> Creating the virtual environment"
@@ -57,7 +57,6 @@ then
     echo "You already have RIAB_HOME in your ~/.bash_aliases"
 else
     echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases
-    echo "export RIAB_DATA=$RIAB_HOME/riab_data" >> ~/.bash_aliases
     echo 'alias risiko-activate="source $RIAB_HOME/riab_env/bin/activate;cd $RIAB_HOME;echo  Risk In a Box virtual environment activated. Available commands are:; echo;echo risiko-test risiko-start risiko-stop risiko-clean;echo"' >> ~/.bash_aliases
     echo "Adding RIAB_HOME, RIAB_DATA and risikon to your ~/.bash_aliases"
 fi
@@ -81,6 +80,8 @@ pip install temp/riab-libs.pybundle
 echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
 pip install -e riab
+
+export RIAB_DATA=$RIAB_HOME/riab_data
 
 echo ">>> Get bundled test and demo data"
 if [ -d $RIAB_DATA ]; then
