@@ -41,7 +41,7 @@ function checkup() {
 
 echo ">>> Cloning the repositories"
 # Get riab source code
-checkup GeoNode/geonode.git geonode
+checkup AIFDR/geonode.git geonode
 checkup AIFDR/riab.git riab
 
 echo ">>> Creating the virtual environment"
