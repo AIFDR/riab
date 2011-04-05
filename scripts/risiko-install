@@ -96,17 +96,21 @@ echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
 pip install -e riab
 
-echo ">>> Get bundled test data"
+echo ">>> Get bundled test and demo data"
 mkdir $RIAB_DATA; cd $RIAB_DATA
-export TESTDATA_BUNDLE='impact_test_data.tgz'
+export TESTDATA_BUNDLE='risiko_test_data.tgz'
 export TESTDATA_SOURCE="http://203.77.224.75/riab/$TESTDATA_BUNDLE"
-
-echo
-echo $TESTDATA_SOURCE
-echo '--'
-
 wget -c $TESTDATA_SOURCE
 tar xvfz $TESTDATA_BUNDLE
+/bin/rm $TESTDATA_BUNDLE
+
+export TESTDATA_BUNDLE='risiko_demo_data.tgz'
+export TESTDATA_SOURCE="http://203.77.224.75/riab/$TESTDATA_BUNDLE"
+wget -c $TESTDATA_SOURCE
+tar xvfz $TESTDATA_BUNDLE
+/bin/rm $TESTDATA_BUNDLE
+
+cd ..
 
 echo ""
 echo ">>> Running the test suite"
