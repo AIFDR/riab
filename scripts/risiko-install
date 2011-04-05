@@ -49,48 +49,36 @@ if [ -d riab_env ]; then
     echo 'It already exists...'
 else
     virtualenv riab_env
-fi
-
-
-if grep -Fxq "DJANGO_SETTINGS_MODULE" riab_env/bin/activate
-then
-    # Do not do anything
-    echo
-else
     echo 'export DJANGO_SETTINGS_MODULE=risiko.settings' >> riab_env/bin/activate
 fi
 
-
-if grep -Fxq "RIAB_HOME" ~/bash_aliases
+if grep -Fxq "RIAB_HOME" ~/.bash_aliases
 then
-    echo
+    echo "You already have RIAB_HOME in your ~/.bash_aliases"
 else
     echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases
-    echo 'alias risikon="source $RIAB_HOME/riab_env/bin/activate"' >> ~/.bash_aliases
-fi
-
-if grep -Fxq "RIAB_DATA" ~/bash_aliases
-then
-    echo
-else
     echo "export RIAB_DATA=$RIAB_HOME/riab_data" >> ~/.bash_aliases
+    echo 'alias risikon="source $RIAB_HOME/riab_env/bin/activate"' >> ~/.bash_aliases
+    echo "Adding RIAB_HOME, RIAB_DATA and risikon to your ~/.bash_aliases"
 fi
 
+echo ">>> Activating virtual environment"
 source ~/.bash_aliases
 source riab_env/bin/activate
 
-echo ">>> Downloading riab-libs.pybundle and tomcat bundle"
+echo ">>> Downloading tomcat bundle"
 # Install GeoNode and it's pre-requisites
 mkdir temp; cd temp
-wget -c http://203.77.224.75/riab/riab-libs.pybundle
 wget -c http://203.77.224.75/riab/tomcat-redist.tar.gz
-pip install riab-libs.pybundle
-
-#FIXME: Add this to the bundle
-pip install -U mock
 tar xzf tomcat-redist.tar.gz
 mv apache-tomcat-6.0.32 ../tomcat
+
+echo ">>> Downloading riab-libs.pybundle and installing riab dependencies"
+wget -c http://203.77.224.75/riab/riab-libs.pybundle
 cd ..
+pip install temp/riab-libs.pybundle
+#FIXME: Add this to the bundle
+pip install -U mock
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
@@ -100,7 +88,8 @@ echo ">>> Get bundled test and demo data"
 if [ -d $RIAB_DATA ]; then
     echo 'Test data area $RIAB_DATA already exists.'
 else
-    mkdir $RIAB_DATA; cd $RIAB_DATA
+    mkdir $RIAB_DATA;
+    cd $RIAB_DATA
 
     # FIXME: Do these two as a loop of data name
     export TESTDATA_NAME='risiko_test_data'
