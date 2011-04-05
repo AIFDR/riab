@@ -2,11 +2,11 @@
 import numpy
 import scipy
 
-from riab_server.function.plugins import FunctionProvider
 from django.template.loader import render_to_string
-from riab_server.core.utilities import MAXFLOAT
-from damage_curve import Damage_curve
+from impact.plugins.core import FunctionProvider
 
+from impact.engine.utilities import MAXFLOAT
+from impact.plugins.utilities import Damage_curve
 
 
 #------------------------------------------------------------

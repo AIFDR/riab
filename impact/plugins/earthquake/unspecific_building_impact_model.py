@@ -1,3 +1,7 @@
+from django.template.loader import render_to_string
+from impact.plugins.core import FunctionProvider
+
+
 class EarthquakeSchoolDamageFunction(FunctionProvider):
     """Risk plugin for earthquake damage to schools
 
@@ -36,7 +40,7 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
         style_by = 'Percent_damage'
         impact_range = (0, 50)
         levels = 5
-        return render_to_string('webapi/styles/ladder.sld',
+        return render_to_string('impact/styles/ladder.sld',
                                  {'field_name': style_by,
                                   'data_range': impact_range,
                                   'levels': levels})

@@ -5,7 +5,9 @@ import types
 ## for a description of plugins
 
 # To register the plugin, the module must be imported by the Python process
-# using it
+# using it.
+# FIXME (Ole): I think we should pass the module name to get_function to
+#              keep things together
 
 class PluginMount(type):
     def __init__(cls, name, bases, attrs):
