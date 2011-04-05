@@ -41,7 +41,7 @@ class Test_Engine(unittest.TestCase):
         HD = impact.storage.io.read_layer(hazard_filename)
         ED = impact.storage.io.read_layer(exposure_filename)
 
-        IF = riab_server.get_function('EarthquakeFatalityFunction')
+        IF = impact.plugins.core.get_function('EarthquakeFatalityFunction')
         impact_filename = impact.engine.calculate_impact(hazard_level=HD,
                                                          exposure_level=ED,
                                                          impact_function=IF)

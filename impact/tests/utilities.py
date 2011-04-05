@@ -1,3 +1,3 @@
 import os
 
-TESTDATA = os.environ['RIAB_DATA']
+TESTDATA = os.path.join(os.environ['RIAB_DATA'], 'risiko_test_data')

@@ -97,20 +97,36 @@ pip install -e geonode/src/GeoNodePy
 pip install -e riab
 
 echo ">>> Get bundled test and demo data"
-mkdir $RIAB_DATA; cd $RIAB_DATA
-export TESTDATA_BUNDLE='risiko_test_data.tgz'
-export TESTDATA_SOURCE="http://203.77.224.75/riab/$TESTDATA_BUNDLE"
-wget -c $TESTDATA_SOURCE
-tar xvfz $TESTDATA_BUNDLE
-/bin/rm $TESTDATA_BUNDLE
+if [ -d $RIAB_DATA ]; then
+    echo 'Test data area $RIAB_DATA already exists.'
+else
+    mkdir $RIAB_DATA; cd $RIAB_DATA
 
-export TESTDATA_BUNDLE='risiko_demo_data.tgz'
-export TESTDATA_SOURCE="http://203.77.224.75/riab/$TESTDATA_BUNDLE"
-wget -c $TESTDATA_SOURCE
-tar xvfz $TESTDATA_BUNDLE
-/bin/rm $TESTDATA_BUNDLE
+    # FIXME: Do these two as a loop of data name
+    export TESTDATA_NAME='risiko_test_data'
+    if [ -d $TESTDATA_NAME ]; then
+        echo 'Test data $TESTDATA_NAME already exists, skipping data download.'
+    else
+	export TESTDATA_BUNDLE="$TESTDATA_NAME.tgz"
+	export TESTDATA_SOURCE="http://203.77.224.75/riab/$TESTDATA_BUNDLE"
+	wget -c $TESTDATA_SOURCE
+	tar xvfz $TESTDATA_BUNDLE
+	/bin/rm $TESTDATA_BUNDLE
+    fi
 
-cd ..
+    export DEMODATA_NAME='risiko_demo_data'
+    if [ -d $DEMODATA_NAME ]; then
+        echo 'Demo data $DEMODATA_NAME already exists, skipping data download.'
+    else
+	export DEMODATA_BUNDLE="$DEMODATA_NAME.tgz"
+	export DEMODATA_SOURCE="http://203.77.224.75/riab/$DEMODATA_BUNDLE"
+	wget -c $DEMODATA_SOURCE
+	tar xvfz $DEMODATA_BUNDLE
+	/bin/rm $DEMODATA_BUNDLE
+    fi
+
+    cd ..
+fi
 
 echo ""
 echo ">>> Running the test suite"
