@@ -1,7 +1,7 @@
 To install RISIKO on a Ubuntu Linux system, cd to your favorite development area and run the following::
 
-  wget https://github.com/AIFDR/riab/raw/master/scripts/risiko-install --no-check-certificate
-  bash risiko-install
+wget https://github.com/AIFDR/riab/raw/master/scripts/risiko-install --no-check-certificate
+bash risiko-install
 
 This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it.
 
