@@ -6,7 +6,7 @@ bash risiko-install
 This will create a working development installation, run the test suite and provide guidance regarding setup.
 
 Note: If you wish to commit changes back to the repository, you must
-1. Get an account on github.com
-2. Get commit access to https://github.com/AIFDR/riab
-3. Setup and register your ssh keys with your account: https://github.com/account/ssh
+ 1. Get an account on github.com
+ 2. Get commit access to https://github.com/AIFDR/riab
+ 3. Setup and register your ssh keys with your account: https://github.com/account/ssh
 
