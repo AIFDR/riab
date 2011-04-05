@@ -65,8 +65,15 @@ if grep -Fxq "RIAB_HOME" ~/bash_aliases
 then
     echo
 else
-    echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases 
-    echo 'alias risikon="source $RIAB_HOME/riab_env/bin/activate"' >> ~/.bash_aliases 
+    echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases
+    echo 'alias risikon="source $RIAB_HOME/riab_env/bin/activate"' >> ~/.bash_aliases
+fi
+
+if grep -Fxq "RIAB_DATA" ~/bash_aliases
+then
+    echo
+else
+    echo "export RIAB_DATA=$RIAB_HOME/riab_data" >> ~/.bash_aliases
 fi
 
 source ~/.bash_aliases
@@ -78,6 +85,7 @@ mkdir temp; cd temp
 wget -c http://203.77.224.75/riab/riab-libs.pybundle
 wget -c http://203.77.224.75/riab/tomcat-redist.tar.gz
 pip install riab-libs.pybundle
+
 #FIXME: Add this to the bundle
 pip install -U mock
 tar xzf tomcat-redist.tar.gz
@@ -87,6 +95,18 @@ cd ..
 echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
 pip install -e riab
+
+echo ">>> Get bundled test data"
+mkdir $RIAB_DATA; cd $RIAB_DATA
+export TESTDATA_BUNDLE='impact_test_data.tgz'
+export TESTDATA_SOURCE="http://203.77.224.75/riab/$TESTDATA_BUNDLE"
+
+echo
+echo $TESTDATA_SOURCE
+echo '--'
+
+wget -c $TESTDATA_SOURCE
+tar xvfz $TESTDATA_BUNDLE
 
 echo ""
 echo ">>> Running the test suite"

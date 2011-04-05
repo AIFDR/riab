@@ -3,7 +3,7 @@ import numpy
 import sys
 import os
 
-import riab
+import impact
 from utilities import TESTDATA
 
 
@@ -38,13 +38,13 @@ class Test_Engine(unittest.TestCase):
         exposure_filename = '%s/Population_2010_clip.tif' % TESTDATA
 
         # Calculate impact using API
-        HD = riab_server.read_layer(hazard_filename)
-        ED = riab_server.read_layer(exposure_filename)
+        HD = impact.storage.io.read_layer(hazard_filename)
+        ED = impact.storage.io.read_layer(exposure_filename)
 
         IF = riab_server.get_function('EarthquakeFatalityFunction')
-        impact_filename = riab_server.calculate_impact(hazard_level=HD,
-                                                       exposure_level=ED,
-                                                       impact_function=IF)
+        impact_filename = impact.engine.calculate_impact(hazard_level=HD,
+                                                         exposure_level=ED,
+                                                         impact_function=IF)
 
         # Do calculation manually and check result
         hazard_raster = riab_server.read_layer(hazard_filename)
@@ -723,6 +723,6 @@ class Test_Engine(unittest.TestCase):
             assert depth_min <= interpolated_depth <= depth_max, msg
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_Engine, 'test')
+    suite = unittest.makeSuite(Test_Engine, 'test_earthquake_fatality')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
