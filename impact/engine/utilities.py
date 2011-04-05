@@ -4,30 +4,12 @@ import os
 import sys
 import numpy
 #from osgeo import ogr, gdal
-from tempfile import mkstemp
 
-# The projection string depends on the gdal version
-DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
+
 
 # A maximum floating point number for this package
 MAXFLOAT = float(sys.maxint)
 
-
-# Miscellaneous auxiliary functions
-def unique_filename(suffix=None):
-    """Create new filename guarenteed not to exist previoously
-
-    Use mkstemp to create the file, then remove it and return the name
-    """
-
-    _, filename = mkstemp(suffix=suffix)
-
-    try:
-        os.remove(filename)
-    except:
-        pass
-
-    return filename
 
 
 # GeoServer utility functions

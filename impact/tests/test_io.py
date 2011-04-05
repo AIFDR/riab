@@ -1,12 +1,16 @@
 import unittest
 import numpy
 import os
-import riab_server
+import impact
 
 from utilities import TESTDATA
-from riab_server.core.raster import Raster
-from riab_server.core.utilities import DEFAULT_PROJECTION
-from riab_server.core.projection import Projection
+from impact.storage.raster import Raster
+from impact.storage.projection import Projection
+from impact.storage.io import read_layer
+from impact.storage.io import write_point_data
+from impact.storage.io import write_coverage
+from impact.storage.utilities import unique_filename
+from impact.storage.utilities import DEFAULT_PROJECTION
 
 
 # Auxiliary function for raster test
@@ -32,18 +36,18 @@ class Test_IO(unittest.TestCase):
         """
 
         # First test that some error conditions are caught
-        filename = riab_server.unique_filename(suffix='nshoe66u')
+        filename = unique_filename(suffix='nshoe66u')
         try:
-            riab_server.read_layer(filename)
+            read_layer(filename)
         except Exception:
             pass
         else:
             msg = 'Exception for unknown extension should have been raised'
             raise Exception(msg)
 
-        filename = riab_server.unique_filename(suffix='.gml')
+        filename = unique_filename(suffix='.gml')
         try:
-            riab_server.read_layer(filename)
+            read_layer(filename)
         except IOError:
             pass
         else:
@@ -55,7 +59,7 @@ class Test_IO(unittest.TestCase):
                            'tsunami_exposure_BB.shp']:
 
             filename = '%s/%s' % (TESTDATA, vectorname)
-            layer = riab_server.read_layer(filename)
+            layer = read_layer(filename)
             coords, attributes = layer.get_data()
 
             # Check basic data integrity
@@ -96,11 +100,11 @@ class Test_IO(unittest.TestCase):
             # Write data back to file
             # FIXME (Ole): I would like to use gml here, but OGR does not
             #              store the spatial reference!
-            out_filename = riab_server.unique_filename(suffix='.shp')
-            riab_server.write_point_data(coords, wkt, attributes, out_filename)
+            out_filename = unique_filename(suffix='.shp')
+            write_point_data(coords, wkt, attributes, out_filename)
 
             # Read again and check
-            layer = riab_server.read_layer(out_filename)
+            layer = read_layer(out_filename)
             coords, attributes = layer.get_data()
 
             # Check basic data integrity
@@ -198,12 +202,12 @@ class Test_IO(unittest.TestCase):
         assert numlon == R1.columns, msg
 
         # Write back to new (tif) file
-        out_filename = riab_server.unique_filename(suffix='.tif')
+        out_filename = unique_filename(suffix='.tif')
         out_filename = 'small_test_raster.tif'
         R1.write_to_file(out_filename)
 
         # Read again and check consistency
-        R2 = riab_server.read_layer(out_filename)
+        R2 = read_layer(out_filename)
 
         msg = ('Dimensions of written raster array do not match those '
                'of input raster file\n')
@@ -242,7 +246,7 @@ class Test_IO(unittest.TestCase):
                              'population_padang_2.asc']:
 
             filename = '%s/%s' % (TESTDATA, coveragename)
-            R1 = riab_server.read_layer(filename)
+            R1 = read_layer(filename)
 
             # Check consistency of raster
             A1 = R1.get_data()
@@ -254,14 +258,14 @@ class Test_IO(unittest.TestCase):
             assert N == R1.columns, msg
 
             # Write back to new (tif) file
-            out_filename = riab_server.unique_filename(suffix='.tif')
-            riab_server.write_coverage(A1,
-                                     R1.get_projection(),
-                                     R1.get_geotransform(),
-                                     out_filename)
+            out_filename = unique_filename(suffix='.tif')
+            write_coverage(A1,
+                           R1.get_projection(),
+                           R1.get_geotransform(),
+                           out_filename)
 
             # Read again and check consistency
-            R2 = riab_server.read_layer(out_filename)
+            R2 = read_layer(out_filename)
 
             msg = ('Dimensions of written raster array do not match those '
                    'of input raster file\n')
@@ -300,7 +304,7 @@ class Test_IO(unittest.TestCase):
                              'population_padang_2.asc']:
 
             filename = '%s/%s' % (TESTDATA, coveragename)
-            R = riab_server.read_layer(filename)
+            R = read_layer(filename)
 
             # Check consistency of raster
 
@@ -329,7 +333,7 @@ class Test_IO(unittest.TestCase):
         for filename in ['%s/population_padang_1.asc' % TESTDATA,
                          '%s/test_grid.asc' % TESTDATA]:
 
-            R = riab_server.read_layer(filename)
+            R = read_layer(filename)
             min, max = R.get_extrema()
 
             for N in [2, 3, 5, 7, 10, 16]:

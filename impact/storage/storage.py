@@ -1,3 +1,6 @@
+
+#FIXME (Ole): Merge this into io.py
+
 """
 Python library to upload and download data from GeoNode
 """
