@@ -2,3 +2,6 @@ RISIKO_test_data
 RISIKO_test_data.tgz
 *.pyc
 *~
+risiko.egg-info/
+risiko/development.db
+impact/tests/small_test_raster.tif
