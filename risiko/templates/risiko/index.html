@@ -21,7 +21,7 @@
 <link rel="stylesheet" type="text/css" href="{{ GEONODE_CLIENT_LOCATION }}externals/PrintPreview/resources/css/printpreview.css" />
 <script src="{{GEOSERVER_BASE_URL}}pdf/info.json?var=printCapabilities" type="text/javascript"></script>
 {{ block.super }}
-<script src="{{ STATIC_URL }}riab/Riab.js" ></script>
+<script src="{{ STATIC_URL }}risiko/Risiko.js" ></script>
 
 <script type="text/javascript">
 var app;
@@ -72,7 +72,7 @@ Ext.onReady(function() {
                 "2": {"url": "{{ GEOSERVER_BASE_URL }}/wms", "ptype": "gx_wmssource"}}
     });
 
-    app = new Riab(config);
+    app = new Risiko(config);
 
     var permalinkTemplate = new Ext.Template("{protocol}//{host}/maps/{id}");
     var permalink = function(id) {

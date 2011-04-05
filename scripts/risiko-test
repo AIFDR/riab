@@ -2,4 +2,5 @@ risiko-clean
 tomcat/bin/catalina.sh start
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
 django-admin.py test impact --verbosity=2 --failfast
+python $RIAB_HOME/riab/risiko/tests/test_utilities.py
 risiko-stop

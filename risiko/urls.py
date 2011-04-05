@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 from staticfiles.urls import staticfiles_urlpatterns
-from riab.utilities import calculation_save as geonode_save
+from risiko.utilities import save_to_geonode
 from django.contrib import admin
 
 admin.autodiscover()
@@ -42,7 +42,7 @@ urlpatterns = patterns('',
     (r'^profiles/', include('profiles.urls')),
     (r'^rosetta/', include('rosetta.urls')),
     (r'^api/v1/', include('impact.urls')),
-    (r'^api/v1/calculate', 'impact.views.calculate', {'save_output': geonode_save}),
+    (r'^api/v1/calculate', 'impact.views.calculate', {'save_output': save_to_geonode}),
     )
 
 # Extra static file endpoint for development use

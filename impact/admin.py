@@ -1,5 +1,5 @@
 from django.contrib import admin
-from riab.calculations.models import Calculation, Server, Workspace
+from impact.models import Calculation, Server, Workspace
 
 class CalculationAdmin(admin.ModelAdmin):
     date_hierarchy = 'run_date'

@@ -114,7 +114,7 @@ LOCALE_PATHS = (
     os.path.join(GEONODE_ROOT, "maps", "locale"),
 )
 
-ROOT_URLCONF = 'riab.urls'
+ROOT_URLCONF = 'risiko.urls'
 
 # Note that Django automatically includes the "templates" dir in all the
 # INSTALLED_APPS, se there is no need to add maps/templates or admin/templates

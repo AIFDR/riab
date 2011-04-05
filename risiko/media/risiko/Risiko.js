@@ -4,8 +4,8 @@
  */
 
 /**
- * Constructor: Riab
- * Create a new Riab application.
+ * Constructor: Risiko
+ * Create a new Risiko application.
  *
  * Parameters:
  * config - {Object} Optional application configuration properties.
@@ -23,7 +23,7 @@
  * name - {String} Required WMS layer name.
  * title - {String} Optional title to display for layer.
  */
-var Riab = Ext.extend(gxp.Viewer, {
+var Risiko = Ext.extend(gxp.Viewer, {
     
     /**
      * api: config[localGeoServerBaseUrl]
@@ -349,7 +349,7 @@ var Riab = Ext.extend(gxp.Viewer, {
         }
         config.map.numZoomLevels = config.map.numZoomLevels || 22;
 
-        Riab.superclass.constructor.apply(this, arguments);
+        Risiko.superclass.constructor.apply(this, arguments);
 
         this.mapID = this.initialConfig.id;
     },
@@ -394,7 +394,7 @@ var Riab = Ext.extend(gxp.Viewer, {
             })
         }];
         
-        Riab.superclass.initMapPanel.apply(this, arguments);
+        Risiko.superclass.initMapPanel.apply(this, arguments);
         
         var layerCount = 0;
         
@@ -777,7 +777,7 @@ var Riab = Ext.extend(gxp.Viewer, {
      id: 'exposurestore',
      fields: ['name', 'server_url'],
      autoLoad: true,
-     url: '/riab/api/v1/layers/?category=exposure',
+     url: '/api/v1/layers/?category=exposure',
      root: 'objects'
      });
 
@@ -785,7 +785,7 @@ var Riab = Ext.extend(gxp.Viewer, {
      id: 'hazardstore',
      fields: ['name', 'server_url'],
      autoLoad: true,
-     url: '/riab/api/v1/layers/?category=hazard',
+     url: '/api/v1/layers/?category=hazard',
      root: 'objects'
      });
 
@@ -793,7 +793,7 @@ var Riab = Ext.extend(gxp.Viewer, {
      id: 'functionstore',
      fields: ['name','id'],
      autoLoad: true,
-     url: '/riab/api/v1/functions/',
+     url: '/api/v1/functions/',
      root: 'functions'
      });
 
@@ -869,7 +869,7 @@ function calculate()
 	      increment:5});
 
   Ext.Ajax.request({
-     url: '/riab/api/v1/calculate/',
+     url: '/api/v1/calculate/',
      loadMask: true,
      params: {
        hazard_server: hazard_server,
@@ -1083,7 +1083,7 @@ function calculate()
             }
         ];
         
-        Riab.superclass.initPortal.apply(this, arguments);
+        Risiko.superclass.initPortal.apply(this, arguments);
     },
     
     /** api: method[createStylesPanel]

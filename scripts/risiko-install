@@ -93,7 +93,7 @@ else
     # FIXME: Do these two as a loop of data name
     export TESTDATA_NAME='risiko_test_data'
     if [ -d $TESTDATA_NAME ]; then
-        echo 'Test data $TESTDATA_NAME already exists, skipping data download.'
+        echo "Test data $TESTDATA_NAME already exists, skipping data download."
     else
 	export TESTDATA_BUNDLE="$TESTDATA_NAME.tgz"
 	export TESTDATA_SOURCE="http://203.77.224.75/riab/$TESTDATA_BUNDLE"
