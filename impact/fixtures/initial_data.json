@@ -1,7 +1,7 @@
 [
     {
         "pk": 1, 
-        "model": "calculations.server", 
+        "model": "impact.server", 
         "fields": {
             "url": "http://www.aifdr.org:8080/geoserver/ows", 
             "name": "AIFDR"
@@ -9,7 +9,7 @@
     }, 
     {
         "pk": 1, 
-        "model": "calculations.workspace", 
+        "model": "impact.workspace", 
         "fields": {
             "user": 1, 
             "servers": [
