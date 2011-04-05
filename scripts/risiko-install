@@ -52,13 +52,13 @@ else
     echo 'export DJANGO_SETTINGS_MODULE=risiko.settings' >> riab_env/bin/activate
 fi
 
-if grep -Fxq "RIAB_HOME" ~/.bash_aliases
+if grep -q RIAB_HOME ~/.bash_aliases
 then
     echo "You already have RIAB_HOME in your ~/.bash_aliases"
 else
     echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases
     echo "export RIAB_DATA=$RIAB_HOME/riab_data" >> ~/.bash_aliases
-    echo 'alias risikon="source $RIAB_HOME/riab_env/bin/activate;cd $RIAB_HOME"' >> ~/.bash_aliases
+    echo 'alias risikon="source $RIAB_HOME/riab_env/bin/activate;cd $RIAB_HOME;echo  Risk In a Box virtual environment activated. Available commands are:; echo;echo risikon-test risikon-start risikon-stop risikon-clean;echo"' >> ~/.bash_aliases
     echo "Adding RIAB_HOME, RIAB_DATA and risikon to your ~/.bash_aliases"
 fi
 
@@ -77,8 +77,6 @@ echo ">>> Downloading riab-libs.pybundle and installing riab dependencies"
 wget -c http://203.77.224.75/riab/riab-libs.pybundle
 cd ..
 pip install temp/riab-libs.pybundle
-#FIXME: Add this to the bundle
-pip install -U mock
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
@@ -117,15 +115,13 @@ else
     cd ..
 fi
 
-echo ""
-echo ">>> Running the test suite"
-risiko-test
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
-echo "You may want to create a superuser to administer Risk in a Box as follows"
-echo "python django-admin.py createsuperuser"
 echo
-echo "To start the server run the following command:"
-echo ""
-echo "risiko-start"
+echo "We have added a shortcut called 'risikon' to your ~/.bash_aliases file to activate Risk In a Box"
+echo "~/.bash_aliases is sourced every time you open a new terminal. For now just do:"
+echo 
+echo "source ~/.bash_aliases"
+echo "risikon"
+echo
