@@ -2,6 +2,7 @@
 
 import storage
 import plugins
+import engine
 
 # Define package meta data
 VERSION = (0, 0, 1)

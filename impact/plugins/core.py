@@ -4,7 +4,8 @@ import types
 ## See http://effbot.org/zone/metaclass-plugins.htm
 ## for a description of plugins
 
-# FIXME(Ole): There is no information of how to register plugins e.g. by the pathname.
+# To register the plugin, the module must be imported by the Python process
+# using it
 
 class PluginMount(type):
     def __init__(cls, name, bases, attrs):
@@ -39,10 +40,13 @@ class FunctionProvider:
 
     @staticmethod
     def generate_style(data):
+        import os
+        print
+        print os.getcwd()
         if data.is_raster:
-            return render_to_string('webapi/styles/raster.sld')
+            return render_to_string('impact/styles/raster.sld')
         elif data.is_vector:
-            return render_to_string('webapi/styles/vector.sld')
+            return render_to_string('impact/styles/vector.sld')
 
 
 def get_function(name):

@@ -6,13 +6,18 @@ Provides the function calculate_impact()
 import os
 import io
 import numpy
-import riab_server
-from riab_server.core.interpolation import raster_spline
-from riab_server.core.vector import Vector
-from riab_server.core.raster import Raster
-from riab_server.core.projection import Projection
-from riab_server.core.utilities import DEFAULT_PROJECTION
 
+from impact.storage.raster import Raster
+from impact.storage.vector import Vector
+from impact.storage.projection import Projection
+from impact.storage.io import read_layer
+from impact.storage.io import write_point_data
+from impact.storage.io import write_coverage
+from impact.storage.utilities import unique_filename
+from impact.storage.utilities import DEFAULT_PROJECTION
+from impact.engine.interpolation import raster_spline
+
+from impact.storage.utilities import unique_filename
 
 def calculate_impact(hazard_level, exposure_level, impact_function,
                      comment=''):
@@ -100,7 +105,7 @@ def calculate_impact(hazard_level, exposure_level, impact_function,
         extension = '.shp'
         # use default style for vector
 
-    output_filename = riab_server.unique_filename(suffix=extension)
+    output_filename = unique_filename(suffix=extension)
 
     style = impact_function.generate_style(F)
     f = open(output_filename.replace(extension, '.sld'), 'w')

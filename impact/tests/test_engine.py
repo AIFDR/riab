@@ -4,6 +4,8 @@ import sys
 import os
 
 import impact
+from impact.engine.core import calculate_impact
+from impact.storage.io import read_layer
 from utilities import TESTDATA
 
 
@@ -33,24 +35,26 @@ class Test_Engine(unittest.TestCase):
            using aligned rasters
         """
 
+        from impact.plugins.earthquake import allen_fatality_model
+
         # Name file names for hazard level, exposure and expected fatalities
         hazard_filename = '%s/Earthquake_Ground_Shaking_clip.tif' % TESTDATA
         exposure_filename = '%s/Population_2010_clip.tif' % TESTDATA
 
         # Calculate impact using API
-        HD = impact.storage.io.read_layer(hazard_filename)
-        ED = impact.storage.io.read_layer(exposure_filename)
+        HD = read_layer(hazard_filename)
+        ED = read_layer(exposure_filename)
 
         IF = impact.plugins.core.get_function('EarthquakeFatalityFunction')
-        impact_filename = impact.engine.calculate_impact(hazard_level=HD,
-                                                         exposure_level=ED,
-                                                         impact_function=IF)
+        impact_filename = calculate_impact(hazard_level=HD,
+                                           exposure_level=ED,
+                                           impact_function=IF)
 
         # Do calculation manually and check result
-        hazard_raster = riab_server.read_layer(hazard_filename)
+        hazard_raster = read_layer(hazard_filename)
         H = hazard_raster.get_data()
 
-        exposure_raster = riab_server.read_layer(exposure_filename)
+        exposure_raster = read_layer(exposure_filename)
         E = exposure_raster.get_data()
 
         # Calculate impact manually
@@ -59,7 +63,7 @@ class Test_Engine(unittest.TestCase):
         F = 10 ** (a * H - b) * E
 
         # Verify correctness of result
-        calculated_raster = riab_server.read_layer(impact_filename)
+        calculated_raster = read_layer(impact_filename)
         C = calculated_raster.get_data()
 
         # Compare shape and extrema
@@ -100,9 +104,9 @@ class Test_Engine(unittest.TestCase):
         ED = riab_server.read_layer(exposure_filename)
 
         IF = riab_server.get_function('EarthquakeSchoolDamageFunction')
-        impact_filename = riab_server.calculate_impact(hazard_level=HD,
-                                                       exposure_level=ED,
-                                                       impact_function=IF)
+        impact_filename = calculate_impact(hazard_level=HD,
+                                           exposure_level=ED,
+                                           impact_function=IF)
 
         # Read input data
         hazard_raster = riab_server.read_layer(hazard_filename)
