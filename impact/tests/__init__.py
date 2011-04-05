@@ -1,3 +1,1 @@
-import test_api
-import test_io
-import test_engine
+from impact.tests import test_api, test_io, test_engine

@@ -12,8 +12,7 @@ class Test_utilities(unittest.TestCase):
     """
 
     def setUp(self):
-        self.datadir = TEST_DATA
-
+        pass
 
     def tearDown(self):
         pass
@@ -22,12 +21,37 @@ class Test_utilities(unittest.TestCase):
     def test_layer_upload(self):
         """Test that layers can be uploaded to running GeoNode/GeoServer
         """
-        uploaded = batch_upload(self.datadir)
+        layers = {}
+        expected_layers = []
+        datadir = TEST_DATA
+
+        for subdir in os.listdir(datadir):
+            subdir = os.path.join(datadir, subdir)
+            if os.path.isdir(subdir):
+                for filename in os.listdir(subdir):
+                    basename, extension = os.path.splitext(filename)
+                    if extension in ['.asc', '.tif', '.shp', '.zip']:
+                        expected_layers.append(os.path.join(subdir, filename))
+
+        uploaded = batch_upload(datadir)
+
         for item in uploaded:
             errors = 'errors' in item
             msg = 'Could not upload %s. ' % item['file']
-            assert errors == False, msg + 'Error was: %s' % item['errors']
+            assert errors is False, msg + 'Error was: %s' % item['errors']
+            msg = 'Upload should have returned either "name" or "errors" for file %s.' % item['file']
+            assert 'name' in item, msg
+            layers[item['file']]=item['name']
 
+        msg = ('There were %s compatible layers in the directory, but only %s '
+               'were sucessfully uploaded'  % (len(expected_layers), len(layers)))
+        assert len(layers) == len(expected_layers), msg
+        uploaded_layers = [layer for layer in layers.items()]
+        for layer in expected_layers:
+            msg = ('The following file should have been uploaded but was not: %s. '
+                    % layer)
+            assert layer in layers, msg
+        
 
 if __name__ == '__main__':
     import logging
