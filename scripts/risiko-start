@@ -1,4 +1,4 @@
-tomcat/bin/catalina.sh start
+$RIAB_HOME/tomcat/bin/catalina.sh start
 django-admin.py syncdb --noinput
-paster serve --reload riab_geonode/riab/deploy/project.paste.ini
-tomcat/bin/catalina.sh stop
+paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini
+$RIAB_HOME/tomcat/bin/catalina.sh stop
