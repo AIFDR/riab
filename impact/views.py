@@ -43,7 +43,7 @@ def calculate(request, save_output=storage.io.dummy_save):
         # this will not be supported in the final version,
         # it is here just for testing with default values
         AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
-        impact_function = 'Earthquake Fatality Function'
+        impact_function_name = 'Earthquake Fatality Function'
         bbox = '99.36,-2.199,102.237,0.00'
         hazard_server = AIFDR_SERVER
         hazard_layer = 'hazard:Earthquake_Ground_Shaking'

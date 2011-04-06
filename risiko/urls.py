@@ -41,8 +41,8 @@ urlpatterns = patterns('',
     (r'^accounts/', include('registration.urls')),
     (r'^profiles/', include('profiles.urls')),
     (r'^rosetta/', include('rosetta.urls')),
-    (r'^api/v1/', include('impact.urls')),
     (r'^api/v1/calculate', 'impact.views.calculate', {'save_output': save_to_geonode}),
+    (r'^api/v1/', include('impact.urls')),
     )
 
 # Extra static file endpoint for development use

@@ -791,7 +791,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
 
     this.functionstore = new Ext.data.JsonStore({
      id: 'functionstore',
-     fields: ['name','id'],
+     fields: ['name','doc', 'layers'],
      autoLoad: true,
      url: '/api/v1/functions/',
      root: 'functions'
@@ -799,9 +799,10 @@ var Risiko = Ext.extend(gxp.Viewer, {
 
 
 
-function addLayer(server_url, label, layer_name){
+function addLayer(server_url, label, layer_name, opacity_value){
       var layer = new OpenLayers.Layer.WMS(
-           label, server_url,{layers: layer_name, format: 'image/png', transparent: true}, {opacity: 0.5}
+           label, server_url,{layers: layer_name, format: 'image/png', transparent: true},
+                              {opacity: opacity_value}
       );
       var map = app.mapPanel.map;
       map.addLayer(layer);
@@ -811,7 +812,7 @@ function addLayerFromCombo(combo){
       var layer_name = combo.value;
       id = combo.store.find('name', combo.value,0,true,false)
       item = combo.store.data.items[id]
-      addLayer(item.data.server_url, layer_name, layer_name);
+      addLayer(item.data.server_url, layer_name, layer_name, 0.5);
 }
 
 function received(result, request) {
@@ -820,24 +821,26 @@ function received(result, request) {
     progressbar.hide(); 
  
     data = Ext.decode( result.responseText );
-    if (data.result.success == false){
-        var errors = data.result.errors;
-        alert('Calculation failed:'+ errors);
+    if (data.errors !== null){
+        alert('Calculation failed with error: '+ data.errors);
+        if (window.console && console.log){
+             console.log(data.stacktrace);
+        }
         return
     }
 
-    var layer_uri = data.result.layer_url;
+    var layer_uri = data.layer;
     var run_date = data.run_date;
     var run_duration = data.run_duration;
     var bbox = data.bbox;
     var keywords = data.keywords;
-    var exposure = data.exposure;
-    var hazard = data.hazard;
+    var exposure = data.exposure_layer;
+    var hazard = data.hazard_layer;
     var base_url = layer_uri.split('/')[2]
     var server_url = data.ows_server_url;
     var result_name = layer_uri.split('/')[4].split(':')[1]
     var result_label = exposure.split(':')[1] + ' X ' + hazard.split(':')[1] + '=' +result_name
-    addLayer(server_url, result_label, result_name);
+    addLayer(server_url, result_label, result_name, 0.9);
 }
 
 function calculate()
@@ -965,7 +968,7 @@ function calculate()
                              store: this.functionstore,
                              width: '100%',
                              displayField:'name',
-                             valueField:'id',
+                             valueField:'name',
                              fieldLabel: 'Function',
                              typeAhead: true,
                              mode: 'local',
