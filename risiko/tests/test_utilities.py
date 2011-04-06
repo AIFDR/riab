@@ -7,7 +7,7 @@ from django.conf import settings
 import urllib2
 
 
-TEST_DATA=os.path.join(os.environ['RIAB_HOME'], 'riab_data', 'risiko_demo_data')
+TEST_DATA=os.path.join(os.environ['RIAB_HOME'], 'riab_data', 'risiko_test_data')
 
 def get_web_page(url, username=None, password=None):
     """Get url page possible with username and password
