@@ -24,26 +24,26 @@ All API calls start with:
 """
 
 
-from datetime import datetime
 from django.utils import simplejson as json
 from django.http import HttpResponse
 from django.conf import settings
-from impact import storage
-from impact.models import Calculation
+from impact import storage, plugins, engine
+from impact.models import Calculation, Workspace
+from geonode.maps.utils import get_valid_user
 import urlparse
 import inspect
 import numpy
-
-AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
+import datetime
 
 
 def calculate(request, save_output=storage.io.dummy_save):
-    start = datetime.now()
+    start = datetime.datetime.now()
 
     if request.method == 'GET':
         # this will not be supported in the final version,
         # it is here just for testing with default values
-        impact_function = 'EarthquakeFatalityFunction'
+        AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
+        impact_function = 'Earthquake Fatality Function'
         bbox = '99.36,-2.199,102.237,0.00'
         hazard_server = AIFDR_SERVER
         hazard_layer = 'hazard:Earthquake_Ground_Shaking'
@@ -52,7 +52,7 @@ def calculate(request, save_output=storage.io.dummy_save):
         keywords = 'earthquake, jakarta'
     elif request.method == 'POST':
         data = request.POST
-        impact_function = data['impact_function']
+        impact_function_name = data['impact_function']
         hazard_server = data['hazard_server']
         hazard_layer = data['hazard']
         exposure_server = data['exposure_server']
@@ -60,24 +60,23 @@ def calculate(request, save_output=storage.io.dummy_save):
         bbox = data['bbox']
         keywords = data['keywords']
 
-    now = datetime.datetime.now()
 
     # Get a valid user
-    theuser = get_valid_user(user)
+    theuser = get_valid_user(request.user)
 
-    impact_function_name = metadata['impact_function']
-    impact_function = get_function(impact_function_name)
+    plugin_list = plugins.get_plugins(impact_function_name)
+    _, impact_function = plugin_list[0].items()[0]
     impact_function_source = inspect.getsource(impact_function)
 
     calculation = Calculation(user=theuser,
-                              run_date=now,
-                              hazard_server=metadata['hazard_server'],
-                              hazard_layer=metadata['hazard_layer'],
-                              exposure_server=metadata['exposure_server'],
-                              exposure_layer=metadata['exposure_layer'],
+                              run_date=start,
+                              hazard_server=hazard_server,
+                              hazard_layer=hazard_layer,
+                              exposure_server='exposure_server',
+                              exposure_layer='exposure_layer',
                               impact_function=impact_function_name,
                               impact_function_source=impact_function_source,
-                              bbox=metadata['bbox'],
+                              bbox=bbox,
                               success=False,
                             )
     calculation.save()
@@ -91,69 +90,48 @@ def calculate(request, save_output=storage.io.dummy_save):
     # Calculate impact using API
     HD = hazard_filename
     ED = exposure_filename
-    IF = riab_server.get_function(impact_function)
-    impact_filename = riab_server.calculate_impact(hazard_level=HD,
+    IF = impact_function
+    impact_filename = engine.calculate_impact(hazard_level=HD,
                                                    exposure_level=ED,
                                                    impact_function=IF)
     result = save_output(
                   filename=impact_filename,
                   title='output_%s' % start.isoformat(),
                   user=request.user,
-                  metadata=dict(
-                             keywords=keywords,
-                             hazard_server=hazard_server,
-                             hazard_layer=hazard_layer,
-                             exposure_server=exposure_server,
-                             exposure_layer=exposure_layer,
-                             impact_function=impact_function,
-                             bbox=bbox,
-                             abstract=('Calculated by Risk In a Box'
-                                      'using %s and %s with %s' %
-                                       (hazard_layer,
-                                        exposure_layer,
-                                        impact_function))))
+                 )
 
-    if isinstance(result, basestring):
-        # If it's a string, the we got the url
-        output = {'success': True, 'layer_url': result}
-    elif  isinstance(result, (list, tuple)):
-        output = {'success': False, 'errors': result}
-    else:
-        output = {'success': False,
-                  'errors': ["""The function did not return a url
-                             nor a list of error. Call me if this happens"""]}
-
-    calculation.layer = layer
+    calculation.layer = result
     calculation.success = True
     calculation.save()
 
 
-    output = dict(impact_function=impact_function,
-                  bbox=bbox,
-                  hazard=hazard_layer,
-                  exposure=exposure_layer,
-                  result=output,
-                  ows_server_url=settings.GEOSERVER_BASE_URL + 'ows',
-                  keywords=keywords,
-                  run_date='new Date("%s")' % calculation.run_date,
-                  run_duration=calculation.duration,
-                  )
+    output = calculation.__dict__
+    # json.dumps does not like datetime objects, let's make it a json string ourselves
+    output['run_date'] =  'new Date("%s")' % calculation.run_date
+    # FIXME:This should not be needed in and ideal world
+    output['ows_server_url'] = ows_server_url=settings.GEOSERVER_BASE_URL + 'ows',
+    # json.dumps does not like django users
+    output['user'] = calculation.user.username
+    # Delete _state and _user_cache item from the dict, they were created automatically by Django
+    del output['_user_cache']
+    del output['_state']
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')
-
-## Will provide a list of plugin functions and the layers that the plugins will
-## work with. Takes geoserver urls as a GET parameter can have a comma
-## separated list
-##
-## e.g. http://127.0.0.1:8000/riab/api/v1/functions/?geoservers=http:...
-## assumes version 1.0.0
 
 
 def functions(request):
     """Get a list of all the functions
+
+       Will provide a list of plugin functions and the layers that the plugins will
+       work with. Takes geoserver urls as a GET parameter can have a comma
+       separated list
+
+       e.g. http://127.0.0.1:8000/riab/api/v1/functions/?geoservers=http:...
+       assumes version 1.0.0
     """
-    plugins = riab_server.FunctionProvider.plugins
-    plugin_tools = riab_server.function.plugins
+
+
+    plugin_list = plugins.get_plugins()
 
     if 'geoservers' in request.GET:
         #TODO for the moment assume version 1.0.0
@@ -172,20 +150,19 @@ def functions(request):
     #and associated keywords
     for geoserver in geoservers:
         layers_metadata.extend(
-            utilities.get_layers_metadata(geoserver['url'],
+            storage.get_layers_metadata(geoserver['url'],
                                           geoserver['version']))
 
     #for each plugin return all layers that meet the requirements
     #an empty layer is returned where the plugin cannot run
-    requirements_met_plugins = [
+    annotated_plugins = [
         {
-         'id': f.__name__,
-         'name': plugin_tools.pretty_function_name(f),
+         'name': name,
          'doc': f.__doc__,
-         'layers': plugin_tools.requirements_met_layers(f, layers_metadata)}
-        for f in plugins]
+         'layers': plugins.compatible_layers(f, layers_metadata)}
+        for name, f in plugin_list.items()]
 
-    output = {'functions': requirements_met_plugins}
+    output = {'functions': annotated_plugins}
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')
 
@@ -233,7 +210,7 @@ def layers(request):
         >>> layers = Layer.objects.filter(category='hazard')
         >>> return json.dumps(layers)
     """
-    user = good_user(request.user)
+    user = get_valid_user(request.user)
     geoservers = get_servers(user)
 
     if 'category' in request.REQUEST:
@@ -244,7 +221,7 @@ def layers(request):
     #iterate across all available geoservers and return every layer
     #and associated keywords
     for geoserver in geoservers:
-        layers = get_layers_metadata(geoserver['url'],
+        layers = storage.get_layers_metadata(geoserver['url'],
                                         geoserver['version'])
         for layer in layers:
              out = {'name' : layer[0],
@@ -265,4 +242,3 @@ def layers(request):
     output = {'objects':layers_metadata}
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')
-

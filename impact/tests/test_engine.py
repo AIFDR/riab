@@ -7,7 +7,7 @@ import impact
 from impact.engine.core import calculate_impact
 from impact.engine.core import interpolate, raster_spline
 from impact.storage.io import read_layer
-from impact.plugins.core import get_function
+from impact import plugins
 from impact.storage.utilities import unique_filename
 from impact.storage.io import write_point_data
 from impact.storage.io import write_coverage
@@ -40,8 +40,6 @@ class Test_Engine(unittest.TestCase):
            using aligned rasters
         """
 
-        from impact.plugins.earthquake import allen_fatality_model
-
         # Name file names for hazard level, exposure and expected fatalities
         hazard_filename = '%s/Earthquake_Ground_Shaking_clip.tif' % TESTDATA
         exposure_filename = '%s/Population_2010_clip.tif' % TESTDATA
@@ -50,7 +48,9 @@ class Test_Engine(unittest.TestCase):
         HD = read_layer(hazard_filename)
         ED = read_layer(exposure_filename)
 
-        IF = get_function('EarthquakeFatalityFunction')
+        plugin_list = plugins.get_plugins('Earthquake Fatality Function')
+        # FIXME: Avoid this hacky way to get the impact function
+        _, IF = plugin_list[0].items()[0]
         impact_filename = calculate_impact(hazard_level=HD,
                                            exposure_level=ED,
                                            impact_function=IF)
@@ -100,8 +100,6 @@ class Test_Engine(unittest.TestCase):
         building locations (vector data).
         """
 
-        from impact.plugins.earthquake import unspecific_building_impact_model
-
         # Name file names for hazard level, exposure and expected fatalities
         hazard_filename = '%s/lembang_mmi_hazmap.asc' % TESTDATA
         exposure_filename = '%s/lembang_schools.shp' % TESTDATA
@@ -110,7 +108,10 @@ class Test_Engine(unittest.TestCase):
         HD = read_layer(hazard_filename)
         ED = read_layer(exposure_filename)
 
-        IF = get_function('EarthquakeSchoolDamageFunction')
+        plugin_list = plugins.get_plugins('Earthquake School Damage Function')
+        # FIXME: Avoid this hacky way to get the impact function
+        _, IF = plugin_list[0].items()[0]
+ 
         impact_filename = calculate_impact(hazard_level=HD,
                                            exposure_level=ED,
                                            impact_function=IF)
@@ -229,7 +230,10 @@ class Test_Engine(unittest.TestCase):
         HD = read_layer(hazard_filename)
         ED = read_layer(exposure_filename)
 
-        IF = get_function('TsunamiBuildingLossFunction')
+        plugin_list = plugins.get_plugins('Tsunami Building Loss Function')
+        # FIXME: Avoid this hacky way to get the impact function
+        _, IF = plugin_list[0].items()[0]
+ 
         impact_filename = calculate_impact(hazard_level=HD,
                                            exposure_level=ED,
                                            impact_function=IF)

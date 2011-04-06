@@ -20,7 +20,7 @@ from owslib.wcs import WebCoverageService
 from django.conf import settings
 from vector import Vector
 from raster import Raster
-
+from impact.storage.utilities import get_layers_metadata
 
 def read_layer(filename):
     """Read spatial layer from file.

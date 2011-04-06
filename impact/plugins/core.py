@@ -51,12 +51,26 @@ class FunctionProvider:
             return render_to_string('impact/styles/vector.sld')
 
 
-def get_function(name):
-    """Retrieves a plugin based on it's name
-    """
+def get_plugins(name=None):
+    """Retrieves a list of plugins that match the name you pass
 
-    plugins_dict = dict([(p.__name__, p) for p in FunctionProvider.plugins])
-    return plugins_dict[name]
+       Or all of them if no name is passed.
+    """
+    plugins_dict = dict([(pretty_function_name(p), p) for p in FunctionProvider.plugins])
+    if name is None:    
+        return plugins_dict
+
+    if isinstance(name, basestring):
+        plugins_dict = dict([(pretty_function_name(p), p) for p in FunctionProvider.plugins])
+        msg = ('No plugin named "%s" was found. List of available plugins is: %s'
+               % (name, ', '.join(plugins_dict.keys())))
+        assert name in plugins_dict, msg
+        return [{name: plugins_dict[name]}]
+    else:
+        msg = ('get_plugins expects either no parameters or a string '
+               'with the name of the plugin, you passed: '
+               '%s which is a %s' % (name, type(name)))
+        raise Exception(msg)
 
 
 def pretty_function_name(func):
@@ -145,7 +159,7 @@ def requirements_met(func, params, verbose=False):
         return None
 
 
-def requirements_met_layers(func, layers_data):
+def compatible_layers(func, layers_data):
     """ Returns all the layers that match the plugin requirements or
     returns [] if all requirements are not met"""
 
