@@ -3,7 +3,6 @@ import numpy
 import sys
 import os
 
-import impact
 from impact.engine.core import calculate_impact
 from impact.engine.core import interpolate, raster_spline
 from impact.storage.io import read_layer
@@ -11,7 +10,9 @@ from impact import plugins
 from impact.storage.utilities import unique_filename
 from impact.storage.io import write_point_data
 from impact.storage.io import write_coverage
-from utilities import TESTDATA
+
+TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
+                        'riab_data', 'risiko_test_data')
 
 
 def linear_function(x, y):

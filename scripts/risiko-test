@@ -2,7 +2,7 @@ risiko-clean
 tomcat/bin/catalina.sh start
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
 echo ">>> Running unit tests"
-django-admin.py test impact --verbosity=2 --failfast
+django-admin.py test impact --verbosity=1 --failfast
 echo ">>> Running online tests"
 django-admin.py syncdb --noinput
 python $RIAB_HOME/riab/impact/tests/test_*

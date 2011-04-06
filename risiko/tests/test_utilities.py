@@ -1,11 +1,9 @@
 import os
 import unittest
-from geonode.maps.utils import upload
+from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
-from impact.storage.io import metadata
-from django.conf import settings
 import urllib2
-
+from django.conf import settings
 
 TEST_DATA=os.path.join(os.environ['RIAB_HOME'], 'riab_data', 'risiko_test_data')
 
@@ -88,9 +86,10 @@ class Test_utilities(unittest.TestCase):
             # Check that layer is in geoserver
             found = False
             gs_username, gs_password = settings.GEOSERVER_CREDENTIALS
-    	    page = get_web_page(os.path.join(settings.GEOSERVER_BASE_URL, 'rest/layers'),
-                                     username=gs_username,
-                                     password=gs_password)
+    	    page = get_web_page(os.path.join(settings.GEOSERVER_BASE_URL,
+                                             'rest/layers'),
+                                             username=gs_username,
+                                             password=gs_password)
             for line in page:
                 if line.find('rest/layers/%s.html' % layer_name) > 0:
                     found = True
@@ -111,7 +110,7 @@ if __name__ == '__main__':
         _logger = logging.getLogger(_module)
         _logger.addHandler(logging.StreamHandler())
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-        _logger.setLevel(logging.DEBUG)
+        _logger.setLevel(logging.WARNING)
 
     suite = unittest.makeSuite(Test_utilities, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
