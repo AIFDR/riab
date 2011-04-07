@@ -59,8 +59,8 @@ NOSE_ARGS = [
       '--cover-inclusive',
       '--cover-tests',
       '--detailed-errors',
-      '--with-xunit',
-      '--with-color',
+#      '--with-xunit',
+#      '--with-color',
       ]
 
 #COVERAGE_EXCLUDE_MODULES = ('geonode',)
