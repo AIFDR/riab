@@ -48,8 +48,8 @@ SITE_ID = 1
 # Setting a custom test runner to avoid running the tests for some problematic 3rd party apps
 TEST_RUNNER='risiko.tests.test_runner.RisikoTestRunner'
 NOSE_ARGS = [
-      '--failed',
-      '--stop',
+#      '--failed',
+#      '--stop',
       '--verbosity=2',
       '--cover-erase',
       '--with-doctest',
