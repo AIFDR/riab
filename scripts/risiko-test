@@ -1,3 +1,5 @@
+#!/bin/bash
+export NOSE_WITH_COVERAGE=True
 echo; echo ">>> Cleaning up environment, deleting data from the development server"; echo
 risiko-clean
 echo; echo ">>> Starting tomcat server with GeoServer and GeoNetwork"; echo
