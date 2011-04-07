@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from distutils.core import setup, Command
+#from distutils.core import setup, Command
+from setuptools import setup, Command
 from distutils.command.install_data import install_data
 from distutils.command.install import INSTALL_SCHEMES
 import os
@@ -118,9 +119,8 @@ setup(
     license=distmeta.__license__,
     packages=packages,
     data_files=data_files,
-    zip_safe=False,
+   #zip_safe=False,
     install_requires=[
-
         # For the core, installed with apt-get
         # 'numpy', 'scipy', 'gdal',
 
@@ -139,7 +139,6 @@ setup(
 
         # for improving source code quality
         'pylint', 'pep8'],
-    test_suite='nose.collector',
     cmdclass = {"test": RunTests},
     scripts = ['scripts/risiko-clean',
                'scripts/risiko-stop',

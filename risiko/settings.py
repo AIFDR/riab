@@ -46,7 +46,24 @@ LANGUAGES = (
 SITE_ID = 1
 
 # Setting a custom test runner to avoid running the tests for some problematic 3rd party apps
-TEST_RUNNER='geonode.testrunner.GeoNodeTestRunner'
+TEST_RUNNER='risiko.tests.test_runner.RisikoTestRunner'
+NOSE_ARGS = [
+#      '--failed',
+#      '--stop',
+      '--verbosity=2',
+      '--cover-erase',
+#      '--with-doctest',
+#      '--nocapture',
+      '--with-coverage',
+      '--cover-package=risiko,impact',
+#      '--detailed-errors',
+      '--with-color',
+      ]
+
+COVERAGE_EXCLUDE_MODULES = ('geonode',)
+
+NOSE_PLUGINS = [
+        ]
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -248,7 +265,7 @@ INSTALLED_APPS = (
     'geonode.maps',
     'geonode.proxy',
     'impact',
-
+    'django_nose',
     # FIXME: Rosetta is only compatible with Django 1.3 but GeoNode is not (yet)
 #    'rosetta',
 )
