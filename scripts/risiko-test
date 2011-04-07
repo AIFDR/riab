@@ -2,8 +2,5 @@ risiko-clean
 $RIAB_HOME/tomcat/bin/catalina.sh start
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
 echo ">>> Running unit tests"
-cd $RIAB_HOME/riab
-django-admin.py test
-echo ">>> Running online tests"
-python $RIAB_HOME/riab/risiko/tests/test_utilities.py
+cd $RIAB_HOME/riab; django-admin.py test
 risiko-stop
