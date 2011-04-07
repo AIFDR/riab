@@ -24,7 +24,7 @@ class RisikoTestRunner(NoseTestSuiteRunner):
         # Django's auth module passes in objects that aren't model instances
         # and asks for their permissions.
                      'django.contrib.auth.models',
-                    'django_nose', 'nose',
+                     'django_nose',
     ]
 
     def build_suite(self, test_labels, extra_tests=None, **kwargs):
