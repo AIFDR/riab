@@ -1,10 +1,14 @@
 import unittest
 from django.test.client import Client
 from django.utils import simplejson as json
+from geonode.maps.utils import check_geonode_is_up
 
 AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
 
 class Test_HTTP(unittest.TestCase):
+
+    def setUp(self):
+        check_geonode_is_up()
 
     def test_functions(self):
         """Test it is possible to retrieve the list of functions from the HTTP Rest API
@@ -31,7 +35,7 @@ class Test_HTTP(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         data = json.loads(rv.content)
- 
+
 
     def test_calculate_fatality(self):
         """Test earthquake fatalities calculation via the HTTP Rest API

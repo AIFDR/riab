@@ -11,7 +11,7 @@ from impact.storage.io import write_coverage
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import DEFAULT_PROJECTION
 
-TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
+TESTDATA = os.path.join(os.environ['RIAB_HOME'],
                         'riab_data', 'risiko_test_data')
 
 # Auxiliary function for raster test

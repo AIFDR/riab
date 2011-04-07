@@ -202,13 +202,7 @@ def layers(request):
     """ Get the list of all layers annotated with metadata
 
         If a parameter called 'category' is passed, it will be
-        used to filter the list. For example:
-
-        >>> category = request.POST['category']
-        >>> category
-        'hazard'
-        >>> layers = Layer.objects.filter(category='hazard')
-        >>> return json.dumps(layers)
+        used to filter the list.
     """
     user = get_valid_user(request.user)
     geoservers = get_servers(user)
