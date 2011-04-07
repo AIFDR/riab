@@ -52,18 +52,20 @@ NOSE_ARGS = [
 #      '--stop',
       '--verbosity=2',
       '--cover-erase',
-#      '--with-doctest',
-#      '--nocapture',
+      '--with-doctest',
+      '--nocapture',
       '--with-coverage',
-      '--cover-package=risiko,impact',
-#      '--detailed-errors',
+      '--cover-package=risiko',
+      '--detailed-errors',
+      '--with-xunit',
+      '--with-xcover',
       '--with-color',
       ]
 
-COVERAGE_EXCLUDE_MODULES = ('geonode',)
+#COVERAGE_EXCLUDE_MODULES = ('geonode',)
 
-NOSE_PLUGINS = [
-        ]
+#NOSE_PLUGINS = [
+#        ]
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.

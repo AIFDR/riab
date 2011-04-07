@@ -1,3 +1,5 @@
+from impact.plugins import FunctionProvider
+
 class EmpiricalFatalityFunction(FunctionProvider):
     """Risk plugin for earthquake damage based on empirical results
 

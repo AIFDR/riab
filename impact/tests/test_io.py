@@ -10,9 +10,7 @@ from impact.storage.io import write_point_data
 from impact.storage.io import write_coverage
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import DEFAULT_PROJECTION
-
-TESTDATA = os.path.join(os.environ['RIAB_HOME'],
-                        'riab_data', 'risiko_test_data')
+from impact.tests.utilities import TESTDATA
 
 # Auxiliary function for raster test
 def linear_function(x, y):

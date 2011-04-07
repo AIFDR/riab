@@ -49,30 +49,45 @@ class Test_utilities(unittest.TestCase):
         """
         layers = {}
         expected_layers = []
+        not_expected_layers = []
         datadir = TEST_DATA
+        BAD_LAYERS = [
+            'lembang_schools_percentage_loss.shp',
+        ]
 
-        for subdir in os.listdir(datadir):
-            subdir = os.path.join(datadir, subdir)
-            if os.path.isdir(subdir):
-                for filename in os.listdir(subdir):
-                    basename, extension = os.path.splitext(filename)
-                    if extension in ['.asc', '.tif', '.shp', '.zip']:
-                        expected_layers.append(os.path.join(subdir, filename))
+        for filename in os.listdir(datadir):
+            basename, extension = os.path.splitext(filename)
+            if extension.lower() in ['.asc', '.tif', '.shp', '.zip']:
+                if filename.lower() not in BAD_LAYERS:
+                    expected_layers.append(os.path.join(datadir, filename))
+                else:
+                    not_expected_layers.append(
+                                    os.path.join(datadir, filename).lower()
+                                             )
 
         uploaded = upload(datadir)
 
         for item in uploaded:
             errors = 'errors' in item
-            msg = 'Could not upload %s. ' % item['file']
-            assert errors is False, msg + 'Error was: %s' % item['errors']
-            msg = 'Upload should have returned either "name" or "errors" for file %s.' % item['file']
-            assert 'name' in item, msg
-            layers[item['file']]=item['name']
+            if errors:
+                # should this file have been uploaded?
+                if item['file'] in not_expected_layers:
+                    continue
+
+                msg = 'Could not upload %s. ' % item['file']
+                assert errors is False, msg + 'Error was: %s' % item['errors']
+                msg = ('Upload should have returned either "name" or '
+                  '"errors" for file %s.' % item['file'])
+            else:
+                assert 'name' in item, msg
+                layers[item['file']]=item['name']
 
         msg = ('There were %s compatible layers in the directory, but only %s '
                'were sucessfully uploaded'  % (len(expected_layers), len(layers)))
         assert len(layers) == len(expected_layers), msg
+
         uploaded_layers = [layer for layer in layers.items()]
+
         for layer in expected_layers:
             msg = ('The following file should have been uploaded but was not: %s. '
                     % layer)
@@ -81,12 +96,12 @@ class Test_utilities(unittest.TestCase):
             layer_name=layers[layer]
 
             # Check the layer is in the Django database
-            Layer.objects.get(name=layer_name)      
+            Layer.objects.get(name=layer_name)
 
             # Check that layer is in geoserver
             found = False
             gs_username, gs_password = settings.GEOSERVER_CREDENTIALS
-    	    page = get_web_page(os.path.join(settings.GEOSERVER_BASE_URL,
+            page = get_web_page(os.path.join(settings.GEOSERVER_BASE_URL,
                                              'rest/layers'),
                                              username=gs_username,
                                              password=gs_password)

@@ -10,9 +10,7 @@ from impact import plugins
 from impact.storage.utilities import unique_filename
 from impact.storage.io import write_point_data
 from impact.storage.io import write_coverage
-
-TESTDATA = os.path.join(os.environ['RIAB_HOME'],
-                        'riab_data', 'risiko_test_data')
+from impact.tests.utilities import TESTDATA
 
 
 def linear_function(x, y):
