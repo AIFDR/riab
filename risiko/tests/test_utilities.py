@@ -57,7 +57,7 @@ class Test_utilities(unittest.TestCase):
         layers = {}
         expected_layers = []
         not_expected_layers = []
-        datadir = TEST_DATA+'/single'
+        datadir = TEST_DATA
         BAD_LAYERS = [
             'lembang_schools_percentage_loss.shp',
         ]

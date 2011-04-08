@@ -12,7 +12,7 @@ class Test_HTTP(unittest.TestCase):
         check_geonode_is_up()
 
     def test_functions(self):
-        """Test it is possible to retrieve the list of functions from the HTTP Rest API
+        """Functions can be retrieved from the HTTP Rest API
         """
         c = Client()
 
@@ -28,7 +28,7 @@ class Test_HTTP(unittest.TestCase):
         assert len(functions) > 0, msg
 
     def test_layers(self):
-        """Test it is possible to retrieve the list of layers from the HTTP Rest API
+        """Layers can be retrieved from the HTTP Rest API
         """
         c = Client()
 
@@ -39,7 +39,7 @@ class Test_HTTP(unittest.TestCase):
 
 
     def test_calculate_fatality(self):
-        """Test earthquake fatalities calculation via the HTTP Rest API
+        """Earthquake fatalities calculation via the HTTP Rest API is correct
         """
 
         c = Client()
@@ -72,7 +72,7 @@ class Test_HTTP(unittest.TestCase):
         layer = Layer.objects.get(name=name)
 
         msg = ('A new style should have been created for layer [%s] '
-               'got [%s] style instead.' % (name, layer.default_style.name ))
+               'got [%s] style instead.' % (name, layer.default_style.name))
         assert layer.default_style.name==name, msg
 
     def test_calculate_school_damage(self):

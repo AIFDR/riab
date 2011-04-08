@@ -96,7 +96,7 @@ WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'
 
 
-def metadata(server_url, layer_name):
+def get_metadata(server_url, layer_name):
     """Uses OWS services to determine if the data is raster or vector
     """
     themetadata = get_layers_metadata(server_url, version='1.0.0')
@@ -139,7 +139,7 @@ def download(server_url, layer_name, bbox):
        Data_type can be either 'vector' or 'raster'
     """
     template = None
-    layer_metadata = metadata(server_url, layer_name)
+    layer_metadata = get_metadata(server_url, layer_name)
     data_type = layer_metadata['layerType']
     if data_type == 'feature':
         template = WFS_TEMPLATE
