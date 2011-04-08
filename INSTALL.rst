@@ -19,10 +19,12 @@ If you wish to commit changes back to the repository, you must
 PRODUCTION
 ===========
 
-To deploy RISIKO in production mode on a Ubuntu Linux system, go to your development system (installed as per instructions above) and do the following::
+It is assumed that a development system is already running ((installed as per instructions above) and that the production system is a separate Ubuntu server.
+
+To deploy RISIKO in production mode from your development system to the remote server::
 
  risiko-activate
  cd $RIAB_HOME/riab/extras
- fab risiko -H username@hostname
+ fab risiko -H username@remote.server
 
 
