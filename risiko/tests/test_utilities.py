@@ -121,7 +121,6 @@ class Test_utilities(unittest.TestCase):
                 raise GeoNodeException(msg)
 
         # Verify that the GeoServer GetCapabilities record is accesible:
-        
 
 if __name__ == '__main__':
     import logging
