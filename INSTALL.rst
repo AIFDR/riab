@@ -36,5 +36,4 @@ You can update an existing production system to the latest revision with the com
   fab pull -H username@remote.server
 
 
-The production deployment procedure is scripted in the file fabfile.py and the fabric framework is documented at http://docs.fabfile.org/en/1.0.1/index.html  
- fab pull 
+The production deployment procedure is scripted in the file fabfile.py and the fabric framework is documented at http://docs.fabfile.org  
