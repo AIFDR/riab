@@ -90,10 +90,17 @@ def get_layers_metadata(url, version, feature=None):
 
     _capabilities = WFSCapabilitiesReader(version).read(url, feature)
 
+    request_url = WFSCapabilitiesReader(version).capabilities_url(url, feature)
+
     layers = []
     serviceidentelem = _capabilities.find(NAMESPACE + 'Service')
 
     featuretypelistelem = _capabilities.find(NAMESPACE + typelist)
+
+    msg = ('Could not find element "%s" in namespace %s on %s'
+           % (typelist, NAMESPACE, request_url))
+    assert featuretypelistelem is not None, msg
+
     featuretypeelems = featuretypelistelem.findall(NAMESPACE + typeelms)
     for f in featuretypeelems:
         keywords = keywords_base.copy()
@@ -194,8 +201,9 @@ class WFSCapabilitiesReader(object):
         """
         request = self.capabilities_url(url, feature)
         u = urlopen(request)
-        self.xml = u.read()
-        #print self.xml
+        response = u.read()
+        #FIXME: Make sure it is not an html page with an error message.
+        self.xml = response
         return etree.fromstring(self.xml)
 
     def readString(self, st):

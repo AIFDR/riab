@@ -2,6 +2,7 @@ import os
 import unittest
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
+from impact.storage.utilities import get_layers_metadata
 import urllib2
 from django.conf import settings
 
@@ -56,7 +57,7 @@ class Test_utilities(unittest.TestCase):
         layers = {}
         expected_layers = []
         not_expected_layers = []
-        datadir = TEST_DATA
+        datadir = TEST_DATA+'/single'
         BAD_LAYERS = [
             'lembang_schools_percentage_loss.shp',
         ]
@@ -120,7 +121,12 @@ class Test_utilities(unittest.TestCase):
                    'this should never happen.' % (layer_name, settings.GEOSERVER_BASE_URL))
                 raise GeoNodeException(msg)
 
+        server_url = settings.GEOSERVER_BASE_URL + 'ows?'
         # Verify that the GeoServer GetCapabilities record is accesible:
+        metadata = get_layers_metadata(server_url, '1.0.0')
+        msg = ('The metadata list should not be empty in server %s' % server_url)
+        assert len(metadata)>0, msg
+        # Check the keywords are recognized too
 
 if __name__ == '__main__':
     import logging
