@@ -34,14 +34,3 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
             school_damage.append({'Percent_damage': value, 'MMI': x})
 
         return school_damage
-
-    @staticmethod
-    def generate_style(data):
-        style_by = 'Percent_damage'
-        impact_range = (0, 50)
-        levels = 5
-        return render_to_string('impact/styles/ladder.sld',
-                                 {'field_name': style_by,
-                                  'data_range': impact_range,
-                                  'levels': levels})
-
