@@ -42,13 +42,17 @@ class FunctionProvider:
 
     @staticmethod
     def generate_style(data):
-        import os
-        print
-        print os.getcwd()
+        params = {
+                   'name': data.get_name(),
+        }
+                 }
         if data.is_raster:
-            return render_to_string('impact/styles/raster.sld')
+            return render_to_string('impact/styles/raster.sld', params)
         elif data.is_vector:
-            return render_to_string('impact/styles/vector.sld')
+            #FIXME: How do we get the target_value from here?
+            params['damage'] = 'Percent_da'
+            params['stroke'] = False
+            return render_to_string('impact/styles/vector.sld', params)
 
 
 def get_plugins(name=None):
