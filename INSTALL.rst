@@ -31,4 +31,10 @@ If something goes wrong, you can check the logs with the command::
   
  fab log -H username@remote.server
 
- 
+You can update an existing production system to the latest revision with the command:
+
+  fab pull -H username@remote.server
+
+
+The production deployment procedure is scripted in the file fabfile.py and the fabric framework is documented at http://docs.fabfile.org/en/1.0.1/index.html  
+ fab pull 
