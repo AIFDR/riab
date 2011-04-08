@@ -27,4 +27,8 @@ To deploy RISIKO in production mode from your development system to the remote s
  cd $RIAB_HOME/riab/extras
  fab risiko -H username@remote.server
 
+If something goes wrong, you can check the logs with the command::
+  
+ fab log -H username@remote.server
 
+ 
