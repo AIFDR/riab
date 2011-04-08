@@ -773,6 +773,42 @@ var Risiko = Ext.extend(gxp.Viewer, {
             activeTab: 0
         });
 
+
+     this.polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
+
+    //FIXME: Implement drawing the polygon with the bounding box at the end
+    //       of the calculation
+   function drawBox(bbox){
+ 
+     this.polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
+       var style_green =
+         {
+         strokeColor: "#000000",
+         strokeOpacity: 1,
+         strokeWidth: 2,
+         fillColor: "#00FF00",
+         fillOpacity: 0.6
+         };
+
+      var p1 = new OpenLayers.Geometry.Point(439000, 114000);
+     var p2 = new OpenLayers.Geometry.Point(440000, 115000);
+     var p3 = new OpenLayers.Geometry.Point(437000, 116000);
+     var p4 = new OpenLayers.Geometry.Point(436000, 115000);
+     var p5 = new OpenLayers.Geometry.Point(436500, 113000);
+  
+     var points = [];
+     points.push(p1);
+     points.push(p2);
+     points.push(p3);
+     points.push(p4);
+     points.push(p5);
+  
+     // create a polygon feature from a list of points
+     var linearRing = new OpenLayers.Geometry.LinearRing(points);
+     var polygonFeature = new OpenLayers.Feature.Vector(linearRing, null, style_green);
+    drawBox(NaN); 
+     this.polygonLayer.addFeatures([polygonFeature]); 
+    };
     this.exposurestore = new Ext.data.JsonStore({
      id: 'exposurestore',
      fields: ['name', 'server_url'],
@@ -813,6 +849,52 @@ function addLayerFromCombo(combo){
       id = combo.store.find('name', combo.value,0,true,false)
       item = combo.store.data.items[id]
       addLayer(item.data.server_url, layer_name, layer_name, 0.5);
+}
+
+function hazardSelected(combo){
+       addLayerFromCombo(combo);
+       Ext.getCmp('exposurecombo').enable()
+       Ext.getCmp('functioncombo').disable()
+}
+function exposureSelected(combo){
+       addLayerFromCombo(combo);
+       // Get the complete list of functions and it's compatible layers
+       var combo = Ext.getCmp('functioncombo');
+
+       var hazard_name = Ext.getCmp('hazardcombo').value;
+       var exposure_name = Ext.getCmp('exposurecombo').value;
+
+       var compatible = [];
+
+       Ext.getCmp('functioncombo').enable();
+       items = combo.store.data.items;
+       for each (var item in items){
+          if (item.data === undefined){
+              continue;
+          }
+          name = item.data.name;
+          layers = item.data.layers;
+          found_exposure = false;
+          found_hazard = false;
+          // Find if hazard is in layers
+          for each(var lay in layers){
+               if (lay === exposure_name) {              
+                    found_exposure = true;
+               } 
+               if (lay === hazard_name) {              
+                    found_hazard = true;
+               } 
+          }
+
+          if (found_exposure && found_hazard){
+              compatible.push(name);
+          }
+       }
+       if (compatible.length > 0){
+            name = compatible[0];
+            combo = Ext.getCmp('functioncombo');
+            combo.setValue(name);
+       }
 }
 
 function received(result, request) {
@@ -944,7 +1026,7 @@ function calculate()
                              emptyText:'Select Hazard...',
                              selectOnFocus:false,
                              listeners: {
-                                "select": addLayerFromCombo
+                                "select": hazardSelected
                              }
                            },{
                              xtype: 'combo',
@@ -959,8 +1041,9 @@ function calculate()
                              triggerAction: 'all',
                              emptyText:'Select Exposure...',
                              selectOnFocus:false,
+                             disabled: true,
                              listeners: {
-                                "select": addLayerFromCombo
+                                "select": exposureSelected
                              }
                    },{
                              xtype: 'combo',
@@ -973,6 +1056,7 @@ function calculate()
                              typeAhead: true,
                              mode: 'local',
                              triggerAction: 'all',
+                             disabled: true,
                              emptyText:'Select Function...',
                              selectOnFocus:false
 		    }, {
@@ -1560,7 +1644,17 @@ function calculate()
                                         zoomBoxEnabled: false
                                     }),
                                     new OpenLayers.Control.PanPanel(),
-                                    new OpenLayers.Control.Attribution()
+                                    new OpenLayers.Control.Attribution(),
+                                    new OpenLayers.Control.DrawFeature(
+                                            this.polygonLayer,
+                                            OpenLayers.Handler.RegularPolygon,
+                                            {handlerOptions: {
+                                                     sides: 4,
+                                                     irregular: true
+                                            }
+                                    })
+
+
                                 ],
                                 eventListeners: {
                                     "preaddlayer": function(evt) {
