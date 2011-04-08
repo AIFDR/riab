@@ -89,6 +89,7 @@ pip install temp/riab-libs.pybundle
 echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
 pip install -e riab
+pip install fabric
 
 export RIAB_DATA=$RIAB_HOME/riab_data
 

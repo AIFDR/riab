@@ -71,7 +71,8 @@ def pull():
     run('cd riab; git pull')
     run('cd geonode; git pull')
     run('touch riab/extras/project.wsgi')
-
+    sudo('/etc/init.d/tomcat6 restart')
+    sudo('/etc/init.d/apache2 restart')
 
 def log():
     """Handy way to check the logs
