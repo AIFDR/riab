@@ -9,13 +9,13 @@ def install():
     """
     sudo('apt-get install -y curl')
     run('curl https://github.com/AIFDR/riab/raw/master/install.sh | bash')
-    put('bash_aliases', '.bash_aliases')
+    run('echo "risiko-activate" >> .bash_aliases')
 
 
 def production():
     """Install and configure Apache and Tomcat
     """
-    put('local_settings.py', 'riab_geonode/riab/')
+    put('local_settings.py', 'riab/risiko')
     sudo('apt-get install -y libapache2-mod-wsgi')
     put('risiko.apache', 'risiko.apache')
     sudo('/bin/mv -f risiko.apache /etc/apache2/sites-available/risiko')
@@ -45,7 +45,7 @@ def manual():
     print
     # Step 1
     print "Step 1. Set up the geoserver proxy url setting to point to the apache frontend proxy"
-    print "        if you don't, you will get errors when calling /riab/api/v1/layers"
+    print "        if you don't, you will get errors when calling /api/v1/layers"
     print "        Navigate to http://%s/geoserver-geonode-dev/" % env.host
     print "        and click on 'Global Settings', the fill the 'Proxy Base URL' setting with"
     print "        the same path you used to access geoserver (be default geoserver uses http://localhost:8001"
@@ -59,7 +59,8 @@ def manual():
 def test():
     """Run the tests
     """
-    run('cd riab_server; ./test_all.sh')
+    #FIXME: Refactor this to use risiko-activate
+    run('source riab_env/bin/activate; risiko-test')
 
 
 def risiko():
@@ -78,9 +79,7 @@ def pull():
 
     run('cd riab; git pull')
     run('cd geonode; git pull')
-    run('cd riab_server; git pull')
-    run('cd riab_geonode; git pull')
-    run('touch riab_geonode/riab/deploy/project.wsgi')
+    run('touch riab/extras/project.wsgi')
 
 
 def log():

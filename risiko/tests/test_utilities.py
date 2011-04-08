@@ -24,9 +24,15 @@ def get_web_page(url, username=None, password=None):
 
     try:
         pagehandle = urllib2.urlopen(url)
+    except HTTPError, e:
+        msg = ('The server couldn\'t fulfill the request. '
+                'Error code: ' % e.code)
+        e.args = (msg,)
+        raise
     except urllib2.URLError, e:
         msg = 'Could not open URL "%s": %s' % (url, e)
-        raise urllib2.URLError(msg)
+        e.args = (msg,)
+        raise
     else:
         page = pagehandle.readlines()
 
@@ -114,6 +120,8 @@ class Test_utilities(unittest.TestCase):
                    'this should never happen.' % (layer_name, settings.GEOSERVER_BASE_URL))
                 raise GeoNodeException(msg)
 
+        # Verify that the GeoServer GetCapabilities record is accesible:
+        
 
 if __name__ == '__main__':
     import logging
