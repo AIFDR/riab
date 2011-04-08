@@ -31,7 +31,7 @@ If something goes wrong, you can check the logs with the command::
   
  fab log -H username@remote.server
 
-You can update an existing production system to the latest revision with the command:
+You can update an existing production system to the latest revision with the command::
 
   fab pull -H username@remote.server
 
