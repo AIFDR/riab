@@ -45,7 +45,6 @@ class FunctionProvider:
         params = {
                    'name': data.get_name(),
         }
-                 }
         if data.is_raster:
             return render_to_string('impact/styles/raster.sld', params)
         elif data.is_vector:
