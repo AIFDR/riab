@@ -1,4 +1,8 @@
-To install RISIKO on a Ubuntu Linux system, cd to your favorite development area and run the following::
+============
+DEVELOPMENT
+============
+
+To install a RISIKO development environment on a Ubuntu Linux system, cd to your favorite development area and run the following::
 
  wget https://github.com/AIFDR/riab/raw/master/scripts/risiko-install --no-check-certificate
  bash risiko-install
@@ -10,4 +14,15 @@ If you wish to commit changes back to the repository, you must
  1. Get an account on github.com
  2. Get commit access to https://github.com/AIFDR/riab
  3. Setup and register your ssh keys with your account: https://github.com/account/ssh
+
+===========
+PRODUCTION
+===========
+
+To deploy RISIKO in production mode on a Ubuntu Linux system, go to your development system (installed as per instructions above) and do the following::
+
+ risiko-activate
+ cd $RIAB_HOME/riab/extras
+ fab risiko -H username@hostname
+
 
