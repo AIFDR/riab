@@ -4,6 +4,7 @@ import os
 import impact
 
 from impact.storage.raster import Raster
+from impact.storage.vector import Vector
 from impact.storage.projection import Projection
 from impact.storage.io import read_layer
 from impact.storage.io import write_point_data
@@ -29,6 +30,17 @@ class Test_IO(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    def test_instantiation_of_empty_layer(self):
+        """Vector and Raster objects can be instantiated with None
+        """
+
+        v = Vector(None)
+        assert v.get_name().startswith('Empty vector')
+
+        r = Raster(None)
+        assert r.get_name().startswith('Empty raster')
+
 
     def test_reading_and_writing_of_vector_data(self):
         """Test that vector data can be read and written correctly
@@ -65,6 +77,9 @@ class Test_IO(unittest.TestCase):
             N = len(attributes)
             assert coords.shape[0] == N
             assert coords.shape[1] == 2
+            assert len(layer) == N
+
+            assert isinstance(layer.get_name(), basestring)
 
             # Check projection
             wkt = layer.get_projection(proj4=False)
