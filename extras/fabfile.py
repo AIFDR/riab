@@ -8,7 +8,7 @@ def install():
     """Install RISIKO and it's dependencies
     """
     sudo('apt-get install -y curl')
-    run('curl https://github.com/AIFDR/riab/raw/master/install.sh | bash')
+    run('curl https://github.com/AIFDR/riab/raw/master/scripts/risiko-install | bash')
     run('echo "risiko-activate" >> .bash_aliases')
 
 
@@ -56,21 +56,12 @@ def manual():
     print "        django-admin.py createsuperuser"
 
 
-def test():
-    """Run the tests
-    """
-    #FIXME: Refactor this to use risiko-activate
-    run('source riab_env/bin/activate; risiko-test')
-
-
 def risiko():
     """Do a full production setup of RISIKO
     """
     install()
     production()
     manual()
-    test()
-
 
 def pull():
     """
