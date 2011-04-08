@@ -16,9 +16,8 @@ Assumptions:
  - The platform is using the default /etc/sources.list as it comes in a fresh Ubuntu installation. You may want to change this to a local mirror if the internet connection is slow (see e.g. https://help.ubuntu.com/community/Repositories/CommandLine) for details.
 
 
-============
-DEVELOPMENT
-============
+Development
+---------------------
 
 To install a RISIKO development environment, cd to your favorite development area and run the following::
 
@@ -33,9 +32,8 @@ If you wish to commit changes back to the repository, you must
  2. Get commit access to https://github.com/AIFDR/riab
  3. Setup and register your ssh keys with your account: https://github.com/account/ssh
 
-===========
-PRODUCTION
-===========
+Production
+-----------------
 
 It is assumed that a development system is already running ((installed as per instructions above) and that the production system is a separate server that can be accessed via ssh (ssh username@remote.server).
 
