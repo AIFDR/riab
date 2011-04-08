@@ -9,7 +9,7 @@ Assumptions:
 DEVELOPMENT
 ============
 
-To install a RISIKO development environment on a Ubuntu Linux system, cd to your favorite development area and run the following::
+To install a RISIKO development environment, cd to your favorite development area and run the following::
 
  wget https://github.com/AIFDR/riab/raw/master/scripts/risiko-install --no-check-certificate
  bash risiko-install
@@ -26,7 +26,7 @@ If you wish to commit changes back to the repository, you must
 PRODUCTION
 ===========
 
-It is assumed that a development system is already running ((installed as per instructions above) and that the production system is a separate Ubuntu server that can be accessed via ssh (ssh username@remote.server).
+It is assumed that a development system is already running ((installed as per instructions above) and that the production system is a separate server that can be accessed via ssh (ssh username@remote.server).
 
 To deploy RISIKO in production mode from your development system to the remote server run the following::
 
