@@ -46,7 +46,7 @@ LANGUAGES = (
 SITE_ID = 1
 
 # Setting a custom test runner to avoid running the tests for some problematic 3rd party apps
-TEST_RUNNER='risiko.tests.test_runner.RisikoTestRunner'
+TEST_RUNNER='risiko.tests.runner.RisikoTestRunner'
 NOSE_ARGS = [
 #      '--failed',
 #      '--stop',
