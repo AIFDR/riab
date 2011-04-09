@@ -167,8 +167,9 @@ def functions(request):
 def get_servers(user):
     """ Gets the list of servers for a given user
     """
+    theuser = get_valid_user(user)
     try:
-        workspace = Workspace.objects.get(user=user)
+        workspace = Workspace.objects.get(user=theuser)
     except Workspace.DoesNotExist:
         workspace = Workspace.objects.get(user__username='default')
     servers = workspace.servers.all()
@@ -189,8 +190,7 @@ def servers(request):
 
         If no user is passed, it will use a default one.
     """
-    user = valid_user(request.user)
-    geoservers = get_servers(user)
+    geoservers = get_servers(request.user)
     output = {'servers': geoservers}
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')

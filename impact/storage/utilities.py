@@ -44,6 +44,16 @@ def unique_filename(suffix=None):
 WFS_NAMESPACE = '{http://www.opengis.net/wfs}'
 WCS_NAMESPACE = '{http://www.opengis.net/wcs}'
 
+def is_server_reachable(url):
+    """Make an http connection to url to see if it is accesible.
+
+       Returns boolean
+    """
+    #FIXME: Implement real version
+    if 'aifdr.org' in url:
+        return False
+    else:
+        return True
 
 def get_layers_metadata(url, version, feature=None):
     '''
@@ -64,6 +74,11 @@ def get_layers_metadata(url, version, feature=None):
         http://trac.gispython.org/lab/browser/OWSLib/...
               trunk/owslib/feature/wfs200.py#L402
     '''
+    # Make sure the server is reachable before continuing
+    msg = ('Server %s is not reachable' % url) 
+    if not is_server_reachable(url):
+        raise Exception(msg)
+
     if not feature:
         typelist = 'ContentMetadata'
         typeelms = 'CoverageOfferingBrief'
@@ -188,11 +203,18 @@ class WFSCapabilitiesReader(object):
             The URL to the WFS capabilities document.
         """
         request = self.capabilities_url(url, feature)
-        u = urlopen(request)
-        response = u.read()
-        #FIXME: Make sure it is not an html page with an error message.
-        self.xml = response
-        return etree.fromstring(self.xml)
+        try:
+            u = urlopen(request)
+        except Exception, e:
+            msg = ('Can not complete the request to %s, error was %s.'
+                   % (url, str(e)))
+            e.args = (msg,)
+            raise
+        else:
+            response = u.read()
+            #FIXME: Make sure it is not an html page with an error message.
+            self.xml = response
+            return etree.fromstring(self.xml)
 
     def readString(self, st):
         """Parse a WFS capabilities document, returning an
