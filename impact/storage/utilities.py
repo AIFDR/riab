@@ -49,8 +49,9 @@ def is_server_reachable(url):
 
        Returns boolean
     """
-    #FIXME: Implement real version
-    if 'aifdr.org' in url:
+    try:
+        urlopen(url)
+    except Exception, e:
         return False
     else:
         return True
@@ -75,7 +76,7 @@ def get_layers_metadata(url, version, feature=None):
               trunk/owslib/feature/wfs200.py#L402
     '''
     # Make sure the server is reachable before continuing
-    msg = ('Server %s is not reachable' % url) 
+    msg = ('Server %s is not reachable' % url)
     if not is_server_reachable(url):
         raise Exception(msg)
 
@@ -207,7 +208,7 @@ class WFSCapabilitiesReader(object):
             u = urlopen(request)
         except Exception, e:
             msg = ('Can not complete the request to %s, error was %s.'
-                   % (url, str(e)))
+                   % (request, str(e)))
             e.args = (msg,)
             raise
         else:
