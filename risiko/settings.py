@@ -22,8 +22,8 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(PROJECT_ROOT,"development.db"),
-        'TEST_NAME': os.path.join(PROJECT_ROOT,"development.db"),
+        'NAME': os.path.join(PROJECT_ROOT, "development.db"),
+        'TEST_NAME': os.path.join(PROJECT_ROOT, "development.db"),
     },
 }
 
@@ -45,11 +45,12 @@ LANGUAGES = (
 
 SITE_ID = 1
 
-# Setting a custom test runner to avoid running the tests for some problematic 3rd party apps
-TEST_RUNNER='risiko.tests.runner.RisikoTestRunner'
+# Setting a custom test runner to avoid running the tests for
+# some problematic 3rd party apps
+TEST_RUNNER = 'risiko.tests.runner.RisikoTestRunner'
 NOSE_ARGS = [
 #      '--failed',
-#      '--stop',
+      '--stop',
       '--verbosity=2',
       '--cover-erase',
       '--with-doctest',
@@ -61,6 +62,7 @@ NOSE_ARGS = [
       '--detailed-errors',
 #      '--with-xunit',
 #      '--with-color',
+#      '--with-pdb',
       ]
 
 #COVERAGE_EXCLUDE_MODULES = ('geonode',)
@@ -127,7 +129,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-# This isn't required for running the geonode site, but it when running sites that inherit the geonode.settings module.
+# This isn't required for running the geonode site,
+# but it when running sites that inherit the
+# geonode.settings module.
 LOCALE_PATHS = (
     os.path.join(PROJECT_ROOT, "locale"),
     os.path.join(GEONODE_ROOT, "locale"),
@@ -139,14 +143,15 @@ ROOT_URLCONF = 'risiko.urls'
 # Note that Django automatically includes the "templates" dir in all the
 # INSTALLED_APPS, se there is no need to add maps/templates or admin/templates
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_ROOT,"templates"),
-    os.path.join(GEONODE_ROOT,"templates"),
+    os.path.join(PROJECT_ROOT, "templates"),
+    os.path.join(GEONODE_ROOT, "templates"),
 )
 
 # The FULLY QUALIFIED url to the GeoServer instance for this GeoNode.
 GEOSERVER_BASE_URL = "http://localhost:8001/geoserver-geonode-dev/"
 
-# The username and password for a user that can add and edit layer details on GeoServer
+# The username and password for a user that can add and edit layer
+# details on GeoServer
 GEOSERVER_CREDENTIALS = "foo", "bar"
 
 # The FULLY QUALIFIED url to the GeoNetwork instance for this GeoNode
@@ -157,10 +162,11 @@ GEONETWORK_CREDENTIALS = "admin", "admin"
 
 AUTHENTICATION_BACKENDS = ('geonode.core.auth.GranularBackend',)
 
-GOOGLE_API_KEY = "ABQIAAAAkofooZxTfcCv9Wi3zzGTVxTnme5EwnLVtEDGnh-lFVzRJhbdQhQgAhB1eT_2muZtc0dl-ZSWrtzmrw"
-LOGIN_REDIRECT_URL = "/"
+GOOGLE_API_KEY = ('ABQIAAAAkofooZxTfcCv9Wi3zzGTVxTnme5EwnLVtEDGnh-'
+                  'lFVzRJhbdQhQgAhB1eT_2muZtc0dl-ZSWrtzmrw')
+LOGIN_REDIRECT_URL = '/'
 
-DEFAULT_LAYERS_OWNER='admin'
+DEFAULT_LAYERS_OWNER = 'admin'
 
 # Where should newly created maps be focused?
 DEFAULT_MAP_CENTER = (112.3, -7.9)
@@ -171,14 +177,14 @@ DEFAULT_MAP_CENTER = (112.3, -7.9)
 DEFAULT_MAP_ZOOM = 5
 
 MAP_BASELAYERSOURCES = {
-    "any": {
-        "ptype":"gx_olsource"
+    "any" : {
+        "ptype": "gx_olsource"
     },
-    "capra": {
+    "capra" : {
         "url": GEOSERVER_BASE_URL + "wms"
     },
-    "google":{
-        "ptype":"gx_googlesource",
+    "google" : {
+        "ptype" : "gx_googlesource",
         "apiKey": GOOGLE_API_KEY
     }
 }
@@ -190,14 +196,14 @@ MAP_BASELAYERS = [{
     "visibility": False,
     "fixed": True,
     "group":"background"
-  },{
+  }, {
     "source":"any",
     "type":"OpenLayers.Layer.OSM",
     "args":["OpenStreetMap"],
     "visibility": True,
     "fixed": True,
     "group":"background"
-  },{
+  }, {
     "source":"any",
     "type":"OpenLayers.Layer.WMS",
     "group":"background",
@@ -210,11 +216,11 @@ MAP_BASELAYERS = [{
         "layers":["bluemarble"],
         "format":"image/png",
         "tiled": True,
-        "tilesOrigin":[-20037508.34,-20037508.34]
+        "tilesOrigin":[-20037508.34, -20037508.34]
       },
       {"buffer":0}
     ]
-  },{
+  }, {
     "source":"google",
     "group":"background",
     "name":"SATELLITE",
@@ -269,11 +275,15 @@ INSTALLED_APPS = (
     'geonode.proxy',
     'impact',
     'django_nose',
-    # FIXME: Rosetta is only compatible with Django 1.3 but GeoNode is not (yet)
+     # FIXME: Rosetta is only compatible with Django 1.3
+     # but GeoNode is not (yet)
 #    'rosetta',
 )
 
+
 def get_user_url(u):
+    """Helper function for profile module
+    """
     from django.contrib.sites.models import Site
     s = Site.objects.get_current()
     return "http://" + s.domain + "/profiles/" + u.username
@@ -286,7 +296,7 @@ ABSOLUTE_URL_OVERRIDES = {
 AUTH_PROFILE_MODULE = 'maps.Contact'
 REGISTRATION_OPEN = False
 
-SERVE_MEDIA = DEBUG;
+SERVE_MEDIA = DEBUG
 
 GEONODE_CLIENT_LOCATION = "/media/geonode/"
 
@@ -295,7 +305,8 @@ for _module in ["geonode.maps.views", "geonode.maps.gs_helpers"]:
     _logger = logging.getLogger(_module)
     _logger.addHandler(logging.StreamHandler())
     # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-    # The earlier a level appears in this list, the more output it will produce in the log file.
+    # The earlier a level appears in this list,
+    # the more output it will produce in the log file.
     _logger.setLevel(logging.DEBUG)
 
 

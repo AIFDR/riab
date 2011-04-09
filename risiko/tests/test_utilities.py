@@ -1,12 +1,14 @@
-import os
-import unittest
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata
-import urllib2
 from django.conf import settings
+import os
+import unittest
+import urllib2
 
-TEST_DATA=os.path.join(os.environ['RIAB_HOME'], 'riab_data', 'risiko_test_data')
+TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
+                       'riab_data', 'risiko_test_data')
+
 
 def get_web_page(url, username=None, password=None):
     """Get url page possible with username and password
@@ -50,7 +52,6 @@ class Test_utilities(unittest.TestCase):
     def tearDown(self):
         pass
 
-
     def test_layer_upload(self):
         """Test that layers can be uploaded to running GeoNode/GeoServer
         """
@@ -65,13 +66,12 @@ class Test_utilities(unittest.TestCase):
         for filename in os.listdir(datadir):
             basename, extension = os.path.splitext(filename)
             if extension.lower() in ['.asc', '.tif', '.shp', '.zip']:
-                if filename.lower() not in BAD_LAYERS:
+                if filename not in BAD_LAYERS:
                     expected_layers.append(os.path.join(datadir, filename))
                 else:
                     not_expected_layers.append(
-                                    os.path.join(datadir, filename).lower()
+                                    os.path.join(datadir, filename)
                                              )
-
         uploaded = upload(datadir)
 
         for item in uploaded:
@@ -80,27 +80,27 @@ class Test_utilities(unittest.TestCase):
                 # should this file have been uploaded?
                 if item['file'] in not_expected_layers:
                     continue
-
                 msg = 'Could not upload %s. ' % item['file']
                 assert errors is False, msg + 'Error was: %s' % item['errors']
                 msg = ('Upload should have returned either "name" or '
                   '"errors" for file %s.' % item['file'])
             else:
                 assert 'name' in item, msg
-                layers[item['file']]=item['name']
+                layers[item['file']] = item['name']
 
-        msg = ('There were %s compatible layers in the directory, but only %s '
-               'were sucessfully uploaded'  % (len(expected_layers), len(layers)))
+        msg = ('There were %s compatible layers in the directory,'
+               ' but only %s were sucessfully uploaded' %
+               (len(expected_layers), len(layers)))
         assert len(layers) == len(expected_layers), msg
 
         uploaded_layers = [layer for layer in layers.items()]
 
         for layer in expected_layers:
-            msg = ('The following file should have been uploaded but was not: %s. '
-                    % layer)
+            msg = ('The following file should have been uploaded'
+                   'but was not: %s. ' % layer)
             assert layer in layers, msg
 
-            layer_name=layers[layer]
+            layer_name = layers[layer]
 
             # Check the layer is in the Django database
             Layer.objects.get(name=layer_name)
@@ -118,14 +118,16 @@ class Test_utilities(unittest.TestCase):
             if not found:
                 msg = ('Upload could not be verified, the layer %s is not '
                    'in geoserver %s, but GeoNode did not raise any errors, '
-                   'this should never happen.' % (layer_name, settings.GEOSERVER_BASE_URL))
+                   'this should never happen.' %
+                   (layer_name, settings.GEOSERVER_BASE_URL))
                 raise GeoNodeException(msg)
 
         server_url = settings.GEOSERVER_BASE_URL + 'ows?'
         # Verify that the GeoServer GetCapabilities record is accesible:
         metadata = get_layers_metadata(server_url, '1.0.0')
-        msg = ('The metadata list should not be empty in server %s' % server_url)
-        assert len(metadata)>0, msg
+        msg = ('The metadata list should not be empty in server %s'
+                % server_url)
+        assert len(metadata) > 0, msg
         # Check the keywords are recognized too
 
 if __name__ == '__main__':
