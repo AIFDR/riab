@@ -16,6 +16,6 @@ find $RIAB_HOME/riab/impact -name '*.py' -print0 | xargs -0 cat | wc -l
 echo -n "   In risiko: "
 find $RIAB_HOME/riab/risiko -name '*.py' -print0 | xargs -0 cat | wc -l
 echo;echo ">>> Running unit tests";echo
-cd $RIAB_HOME/riab/risiko; ./manage.py test --verbosity=0
+cd $RIAB_HOME/riab/risiko; ./manage.py test risiko impact --verbosity=0
 echo;echo ">>> Stopping all servers";echo
 risiko-stop

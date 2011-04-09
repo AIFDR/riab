@@ -124,18 +124,6 @@ def get_layers_metadata(url, version, feature=None):
                         k, v = val.split(':')
                         keywords[k.strip()] = v.strip()
 
-        # Also allow for keywords to be set in the abstract
-        if abstract is not None and len(abstract) > 0:
-            assert len(abstract) == 1
-            abstract_text = abstract[0].text
-            # only use keywords containing at least one :
-            if str(abstract_text).find(':') > -1:
-                #split out the options
-                keypairs = str(abstract_text).split(',')
-                #split all the kepairs
-                for val in keypairs:
-                    k, v = val.split(':')
-                    keywords[k.strip()] = v.strip()
         layers.append([layer_name, keywords])
     return layers
 

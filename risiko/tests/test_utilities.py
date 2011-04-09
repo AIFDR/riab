@@ -1,4 +1,4 @@
-from geonode.maps.utils import upload, GeoNodeException
+from geonode.maps.utils import upload, file_upload, GeoNodeException
 from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata
 from django.conf import settings
@@ -9,9 +9,17 @@ import urllib2
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                        'riab_data', 'risiko_test_data')
 
+def check_layer(uploaded):
+    """Verify if an object is a valid Layer.
+    """
+    msg = ('Was expecting layer object, got %s' % (type(uploaded)))
+    assert type(uploaded) is Layer, msg
+    msg = ('The layer does not have a valid name: %s' % uploaded.name)
+    assert len(uploaded.name) > 0, msg
+
 
 def get_web_page(url, username=None, password=None):
-    """Get url page possible with username and password
+    """Get url page possible with username and password.
     """
 
     if username is not None:
@@ -129,6 +137,75 @@ class Test_utilities(unittest.TestCase):
                 % server_url)
         assert len(metadata) > 0, msg
         # Check the keywords are recognized too
+
+    def test_extension_not_implemented(self):
+        """Verify a GeoNodeException is returned for not compatible extensions
+        """
+        sampletxt = os.path.join(TEST_DATA, 'lembang_schools_percentage_loss.dbf')
+        try:
+            file_upload(sampletxt)
+        except GeoNodeException, e:
+            pass
+        except Exception, e:
+            msg = ('Was expecting a %s, got %s instead.' %
+                   (GeoNodeException, type(e)))
+            assert e is GeoNodeException, msg
+
+
+    def test_shapefile(self):
+        """Uploading a good shapefile
+        """
+        thefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
+        uploaded = file_upload(thefile)
+        check_layer(uploaded)
+
+
+    def test_bad_shapefile(self):
+        """Verifying GeoNode complains about a shapefile without .prj
+        """
+
+        thefile = os.path.join(TEST_DATA, 'lembang_schools_percentage_loss.shp')
+        try:
+            uploaded = file_upload(thefile)
+        except GeoNodeException, e:
+            pass
+        except Exception, e:
+            msg = ('Was expecting a %s, got %s instead.' %
+                   (GeoNodeException, type(e)))
+            assert e is GeoNodeException, msg
+
+
+    def test_tiff(self):
+        """Uploading a good tiff
+        """
+        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
+        uploaded = file_upload(thefile)
+        check_layer(uploaded)
+
+
+    def test_asc(self):
+        """Uploading a good .asc
+        """
+        thefile = os.path.join(TEST_DATA, 'test_grid.asc')
+        uploaded = file_upload(thefile)
+        check_layer(uploaded)
+
+
+    def test_repeated_upload(self):
+        """Upload the same file more than once
+        """
+        thefile = os.path.join(TEST_DATA, 'test_grid.asc')
+        uploaded1 = file_upload(thefile)
+        check_layer(uploaded1)
+        uploaded2 = file_upload(thefile, overwrite=True)
+        check_layer(uploaded2)
+        uploaded3 = file_upload(thefile, overwrite=False)
+        check_layer(uploaded3)
+        msg = ('Expected %s but got %s' % (uploaded1.name, uploaded2.name))
+        assert uploaded1.name == uploaded2.name, msg
+        msg = ('Expected a different name when uploading %s using '
+               'overwrite=False but got %s' % (thefile, uploaded3.name))
+        assert uploaded1.name != uploaded3.name, msg
 
 if __name__ == '__main__':
     import logging
