@@ -44,6 +44,17 @@ def unique_filename(suffix=None):
 WFS_NAMESPACE = '{http://www.opengis.net/wfs}'
 WCS_NAMESPACE = '{http://www.opengis.net/wcs}'
 
+def is_server_reachable(url):
+    """Make an http connection to url to see if it is accesible.
+
+       Returns boolean
+    """
+    try:
+        urlopen(url)
+    except Exception, e:
+        return False
+    else:
+        return True
 
 def get_layers_metadata(url, version, feature=None):
     '''
@@ -64,6 +75,11 @@ def get_layers_metadata(url, version, feature=None):
         http://trac.gispython.org/lab/browser/OWSLib/...
               trunk/owslib/feature/wfs200.py#L402
     '''
+    # Make sure the server is reachable before continuing
+    msg = ('Server %s is not reachable' % url)
+    if not is_server_reachable(url):
+        raise Exception(msg)
+
     if not feature:
         typelist = 'ContentMetadata'
         typeelms = 'CoverageOfferingBrief'
@@ -90,10 +106,17 @@ def get_layers_metadata(url, version, feature=None):
 
     _capabilities = WFSCapabilitiesReader(version).read(url, feature)
 
+    request_url = WFSCapabilitiesReader(version).capabilities_url(url, feature)
+
     layers = []
     serviceidentelem = _capabilities.find(NAMESPACE + 'Service')
 
     featuretypelistelem = _capabilities.find(NAMESPACE + typelist)
+
+    msg = ('Could not find element "%s" in namespace %s on %s'
+           % (typelist, NAMESPACE, request_url))
+    assert featuretypelistelem is not None, msg
+
     featuretypeelems = featuretypelistelem.findall(NAMESPACE + typeelms)
     for f in featuretypeelems:
         keywords = keywords_base.copy()
@@ -117,18 +140,6 @@ def get_layers_metadata(url, version, feature=None):
                         k, v = val.split(':')
                         keywords[k.strip()] = v.strip()
 
-        # Also allow for keywords to be set in the abstract
-        if abstract is not None and len(abstract) > 0:
-            assert len(abstract) == 1
-            abstract_text = abstract[0].text
-            # only use keywords containing at least one :
-            if str(abstract_text).find(':') > -1:
-                #split out the options
-                keypairs = str(abstract_text).split(',')
-                #split all the kepairs
-                for val in keypairs:
-                    k, v = val.split(':')
-                    keywords[k.strip()] = v.strip()
         layers.append([layer_name, keywords])
     return layers
 
@@ -193,10 +204,18 @@ class WFSCapabilitiesReader(object):
             The URL to the WFS capabilities document.
         """
         request = self.capabilities_url(url, feature)
-        u = urlopen(request)
-        self.xml = u.read()
-        #print self.xml
-        return etree.fromstring(self.xml)
+        try:
+            u = urlopen(request)
+        except Exception, e:
+            msg = ('Can not complete the request to %s, error was %s.'
+                   % (request, str(e)))
+            e.args = (msg,)
+            raise
+        else:
+            response = u.read()
+            #FIXME: Make sure it is not an html page with an error message.
+            self.xml = response
+            return etree.fromstring(self.xml)
 
     def readString(self, st):
         """Parse a WFS capabilities document, returning an

@@ -134,15 +134,12 @@ def functions(request):
     plugin_list = plugins.get_plugins()
 
     if 'geoservers' in request.GET:
-        #TODO for the moment assume version 1.0.0
+        #FIXME for the moment assume version 1.0.0
         geolist = request.GET['geoservers'].split(',')
         geoservers = [{'url':geoserver, 'version':'1.0.0'}
                            for geoserver in geolist]
     else:
-        # TODO: need to fetch the list of servers from GeoNode
-        # hardcoded for the moment
-        geoservers = [{'url': 'http://www.aifdr.org:8080/geoserver/ows',
-                       'version': '1.0.0'}]
+        geoservers = get_servers(request.user)
 
     layers_metadata = []
 
@@ -170,8 +167,9 @@ def functions(request):
 def get_servers(user):
     """ Gets the list of servers for a given user
     """
+    theuser = get_valid_user(user)
     try:
-        workspace = Workspace.objects.get(user=user)
+        workspace = Workspace.objects.get(user=theuser)
     except Workspace.DoesNotExist:
         workspace = Workspace.objects.get(user__username='default')
     servers = workspace.servers.all()
@@ -192,8 +190,7 @@ def servers(request):
 
         If no user is passed, it will use a default one.
     """
-    user = valid_user(request.user)
-    geoservers = get_servers(user)
+    geoservers = get_servers(request.user)
     output = {'servers': geoservers}
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')

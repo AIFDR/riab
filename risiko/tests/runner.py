@@ -1,5 +1,6 @@
 from django_nose import NoseTestSuiteRunner
-from django.test.simple import reorder_suite, build_test, build_suite
+from django.test.simple import reorder_suite, build_suite
+from django.test.simple import build_test as please_build_test
 from django.db.models import get_app, get_apps
 
 
@@ -15,7 +16,7 @@ class RisikoTestRunner(NoseTestSuiteRunner):
         # Django extensions tries to import keyczar to test the encryption
         # that import failing aborts the test suite run.
         # Keyczar test problems issue is being tracked at:
-        # http://github.com/django-extensions/django-extensions/issues#issue/17  
+        # http://github.com/django-extensions/django-extensions/issues#issue/17
                      'django_extensions.models',
         # Django avatar requires PIL to be compiled with the libjpeg bindings
         # in some development systems (MacOSX) this is not done with the
@@ -33,10 +34,10 @@ class RisikoTestRunner(NoseTestSuiteRunner):
         if test_labels:
             for label in test_labels:
                 if '.' in label:
-                    suite.addTest(build_test(label))
+                    suite.addTest(please_build_test(label))
                 else:
                     app = get_app(label)
-                    suite.addTest(build_suite(app))
+                    suite.addTest(please_build_suite(app))
         else:
             for app in get_apps():
                 if app.__name__ not in self.EXCLUDED_APPS:

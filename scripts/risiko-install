@@ -1,5 +1,14 @@
 #! /bin/bash
 
+echo "---------------------------------------------------------"
+echo "Installing Risiko and all its dependencies"
+echo "This will take a little while depending on"
+echo "the internet speed."
+echo 
+echo "In any case, now is great time to go get a cup of coffee!"
+echo "---------------------------------------------------------"
+
+
 sudo apt-get -y update
 
 #export DEBIAN_FRONTEND=noninteractive
@@ -80,6 +89,7 @@ pip install temp/riab-libs.pybundle
 echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
 pip install -e riab
+pip install fabric
 
 export RIAB_DATA=$RIAB_HOME/riab_data
 

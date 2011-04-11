@@ -32,6 +32,12 @@ class Raster:
 
         if data is None:
             # Instantiate empty object
+            self.name = 'Empty raster layer'
+            self.projection = None
+            self.attributes = {}
+            self.coordinates = None
+            self.filename = None
+
             return
 
         if isinstance(data, basestring):

@@ -28,6 +28,12 @@ class Vector:
 
         if data is None:
             # Instantiate empty object
+            self.name = 'Empty vector layer'
+            self.projection = None
+            self.attributes = {}
+            self.coordinates = None
+            self.filename = None
+
             return
 
         if isinstance(data, basestring):
@@ -69,6 +75,9 @@ class Vector:
         * http://www.packtpub.com/article/geospatial-data-python-geometry
         """
 
+        
+        self.name, _ = os.path.splitext(filename)
+ 
         fid = ogr.Open(filename)
         if fid is None:
             msg = 'Could not open %s' % filename
@@ -105,7 +114,9 @@ class Vector:
                 coordinates.append((G.GetX(), G.GetY()))
             else:
                 msg = ('Only point geometries are supported. '
-                       'Geometry in filename %s was %s.' % (filename, G))
+                       'Geometry in filename %s '
+                       'was %s.' % (filename, 
+                                    G.GetGeometryType()))
                 raise Exception(msg)
 
             # Record attributes by name

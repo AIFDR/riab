@@ -1,5 +1,6 @@
 from geonode.maps.utils import file_upload
 
+
 def save_to_geonode(filename, user, title):
     """Saves a calculation from Risk In a Box in GeoNode
     """

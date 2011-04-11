@@ -13,7 +13,7 @@ WSGIDaemonProcess riab user=software threads=1 processes=5 python-path=/home/sof
 
    CustomLog /home/software/logs/apache.access.log combined
 
-  <Directory "/home/software/riab_geonode/riab/deploy/">
+  <Directory "/home/software/riab/extras/deploy/">
        Allow from all
    </Directory>
 
@@ -27,7 +27,7 @@ WSGIDaemonProcess riab user=software threads=1 processes=5 python-path=/home/sof
 
    WSGIProcessGroup riab
    WSGIApplicationGroup %{GLOBAL}
-   WSGIScriptAlias / /home/software/riab_geonode/riab/deploy/project.wsgi
+   WSGIScriptAlias / /home/software/riab/extras/project.wsgi
    WSGIPassAuthorization On
   
    ProxyPass /geoserver-geonode-dev http://localhost:8001/geoserver-geonode-dev
