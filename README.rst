@@ -1,8 +1,9 @@
-=============
-Risk in a Box
-=============
+======================
+RISIKO - RISK IN A BOX
+======================
 
-This is the project: Risk in a Box. It consists of the following modules:
+This is the project: "Risiko - Risk in a Box".
+It consists of the following modules:
 
 - https://github.com/AIFDR/riab/tree/master/risiko: The web application
 - https://github.com/AIFDR/riab/tree/master/impact: Module for risk calculations, gis functionality and plugin management
