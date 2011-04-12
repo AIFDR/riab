@@ -1,10 +1,25 @@
 import unittest
 from django.test.client import Client
 from django.utils import simplejson as json
+
+# FIXME (Ole): Not sure it is good to rely on GeoNode inside
+#              the impact module. It might be better to move
+#              these tests to risiko/tests
+
 from geonode.maps.utils import check_geonode_is_up
 from geonode.maps.models import Layer
+from geonode.maps.utils import upload, file_upload, GeoNodeException
 
+import os
+
+
+TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
+                         'riab_data', 'risiko_test_data')
+
+# FIXME (Ole): Need to use local server
 AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
+
+
 
 class Test_HTTP(unittest.TestCase):
 
@@ -99,6 +114,23 @@ class Test_HTTP(unittest.TestCase):
         assert 'run_date' in data.keys()
         assert 'layer' in data.keys()
 
+        # FIXME (Ole): Download result and check.
+
+
+
+    def test_school_example(self):
+        """Test building earthquake impact calculation using local server
+        """
+
+        # Upload input data
+        hazardfile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
+        uploaded = file_upload(hazardfile)
+
+        exposurefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
+        uploaded = file_upload(exposurefile)
+
+        # Call calculation routine and test
+        # FIXME (Ole): What is the name of the local server?
 
 if __name__ == '__main__':
    suite = unittest.makeSuite(Test_HTTP, 'test')

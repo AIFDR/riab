@@ -825,11 +825,9 @@ var Risiko = Ext.extend(gxp.Viewer, {
      root: 'objects'
      });
 
-    this.functionstore = new Ext.data.JsonStore({
-     id: 'functionstore',
+    this.combo_functionstore = new Ext.data.JsonStore({
+     id: 'combo_functionstore',
      fields: ['name','doc', 'layers'],
-     autoLoad: true,
-     url: '/api/v1/functions/',
      root: 'functions'
      });
 
@@ -844,6 +842,18 @@ function addLayer(server_url, label, layer_name, opacity_value){
       map.addLayer(layer);
 }
 
+function removeLayer(layer_name){
+      var map = app.mapPanel.map;
+      layers = map.getLayersByName(layer_name);
+      if (layers.length > 0) {
+	  //for each(var lay in layers){
+		  map.removeLayer(layers[0]);
+		  //  }	
+      }
+}
+
+
+
 function addLayerFromCombo(combo){
       var layer_name = combo.value;
       id = combo.store.find('name', combo.value,0,true,false)
@@ -851,11 +861,45 @@ function addLayerFromCombo(combo){
       addLayer(item.data.server_url, layer_name, layer_name, 0.5);
 }
 
+var lastHazardSelect="None";
+var lastExposureSelect="None";
+var lastImpactSelect="None";
+
 function hazardSelected(combo){
+       removeLayer(lastHazardSelect);
        addLayerFromCombo(combo);
        Ext.getCmp('exposurecombo').enable()
        Ext.getCmp('functioncombo').disable()
+       lastHazardSelect=combo.getValue()
 }
+
+// Need function store separate from the function combo box
+// since the combo box is rebuilt depending on the selection
+functionstore = new Ext.data.JsonStore({
+     id: 'functionstore',
+     fields: ['name','doc', 'layers'],
+     autoLoad: true,
+     url: '/api/v1/functions/',
+     root: 'functions'
+     });
+
+function reset_view() {
+    exposure=Ext.getCmp('exposurecombo')
+    hazard=Ext.getCmp('hazardcombo')
+
+    removeLayer(exposure.getValue());
+    removeLayer(hazard.getValue());
+    removeLayer(lastImpactSelect)
+    lastImpactSelect="None"
+    lastExposureSelect="None"
+    lastHaxardSelect="None"
+    exposure.setValue("");
+    hazard.setValue("");
+    exposure.disable();
+    Ext.getCmp('functioncombo').disable();
+    Ext.getCmp('functioncombo').setValue("");
+}
+
 function exposureSelected(combo){
        addLayerFromCombo(combo);
        // Get the complete list of functions and it's compatible layers
@@ -863,11 +907,17 @@ function exposureSelected(combo){
 
        var hazard_name = Ext.getCmp('hazardcombo').value;
        var exposure_name = Ext.getCmp('exposurecombo').value;
-
-       var compatible = [];
+       
+       removeLayer(lastExposureSelect);
+       lastExposureSelect=exposure_name
 
        Ext.getCmp('functioncombo').enable();
-       items = combo.store.data.items;
+       items = functionstore.data.items;
+       
+       // Clear the function combobox
+       combo.store.removeAll(); 
+       combo.store.totalLength = 0;
+       
        for each (var item in items){
           if (item.data === undefined){
               continue;
@@ -887,14 +937,12 @@ function exposureSelected(combo){
           }
 
           if (found_exposure && found_hazard){
-              compatible.push(name);
-          }
+	      // add the function name to the combo box
+	      combo.store.insert(0, new Ext.data.Record({name:name}));
+	      combo.setValue(name)
+             }
        }
-       if (compatible.length > 0){
-            name = compatible[0];
-            combo = Ext.getCmp('functioncombo');
-            combo.setValue(name);
-       }
+
 }
 
 function received(result, request) {
@@ -910,7 +958,8 @@ function received(result, request) {
         }
         return
     }
-
+    reset_view();
+    //removeLayer(lastImpactSelect);
     var layer_uri = data.layer;
     var run_date = data.run_date;
     var run_duration = data.run_duration;
@@ -922,7 +971,10 @@ function received(result, request) {
     var server_url = data.ows_server_url;
     var result_name = layer_uri.split('/')[4].split(':')[1]
     var result_label = exposure.split(':')[1] + ' X ' + hazard.split(':')[1] + '=' +result_name
+    lastImpactSelect=result_label
     addLayer(server_url, result_label, result_name, 0.9);
+    //removeLayer(lastExposureSelect);
+    //removeLayer(lastHazardSelect);
 }
 
 function calculate()
@@ -1048,7 +1100,7 @@ function calculate()
                    },{
                              xtype: 'combo',
                              id: 'functioncombo',
-                             store: this.functionstore,
+                             store: this.combo_functionstore,
                              width: '100%',
                              displayField:'name',
                              valueField:'name',
@@ -1069,10 +1121,12 @@ function calculate()
 		    }
 		    ],
 
-		    buttons: [{
+		buttons: [{text:'Reset',
+			   handler:reset_view}
+		         ,{
                            text: 'Calculate',
                            handler: calculate
-                         }]
+			  }]
              },{
                 id: "logopanel",
                 flex: 2,
