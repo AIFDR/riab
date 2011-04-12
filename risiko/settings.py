@@ -50,7 +50,7 @@ SITE_ID = 1
 TEST_RUNNER = 'risiko.tests.runner.RisikoTestRunner'
 NOSE_ARGS = [
 #      '--failed',
-      '--stop',
+#      '--stop',
       '--verbosity=2',
       '--cover-erase',
       '--with-doctest',
