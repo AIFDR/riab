@@ -146,10 +146,9 @@ class Test_utilities(unittest.TestCase):
             file_upload(sampletxt)
         except GeoNodeException, e:
             pass
-        except Exception, e:
-            msg = ('Was expecting a %s, got %s instead.' %
-                   (GeoNodeException, type(e)))
-            assert e is GeoNodeException, msg
+        else:
+            msg = ('Expected an exception for invalid .dbf type')
+            assert False, msg
 
 
     def test_shapefile(self):
@@ -206,6 +205,93 @@ class Test_utilities(unittest.TestCase):
         msg = ('Expected a different name when uploading %s using '
                'overwrite=False but got %s' % (thefile, uploaded3.name))
         assert uploaded1.name != uploaded3.name, msg
+
+    def test_layer_name_validation(self):
+        """Test get_valid_layer_name utility function in corner cases
+        """
+        from geonode.maps.utils import get_valid_layer_name
+        import datetime
+        try:
+            get_valid_layer_name(datetime.datetime.now())
+        except GeoNodeException, e:
+            pass
+        else:
+            msg = 'get_valid_layer_name accepted a time object and did not complain'
+            assert False, msg
+
+
+    def test_non_existing_file(self):
+        """Verify a GeoNodeException is returned for not existing file
+        """
+        sampletxt = os.path.join(TEST_DATA, 'smoothoperator.shp')
+        try:
+            file_upload(sampletxt)
+        except GeoNodeException, e:
+            pass
+        else:
+            msg = ('Expected an exception for non existing file')
+            assert False, msg
+
+    def test_non_existing_dir(self):
+        """Verify a GeoNodeException is returned for not existing dir
+        """
+        sampletxt = os.path.join(TEST_DATA, 'smoothoperator')
+
+        try:
+            upload(sampletxt)
+        except GeoNodeException, e:
+            pass
+        else:
+            msg = ('Expected an exception for non existing file')
+            assert False, msg
+
+
+    def test_single_file_batch(self):
+        """Test single file using batch upload function
+        """
+        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
+        uploaded_files = upload(thefile)
+        i = 0
+        for uploaded in uploaded_files:
+            layer = Layer.objects.get(name='geonode:'+uploaded['name'])
+            check_layer(layer)
+            i += 1
+        msg = ('Only one file was expected and got %d' % i)
+        assert i == 1, msg
+
+
+    def test_cleanup(self):
+        """Test the cleanup functions in the utils module
+        """
+        from geonode.maps.utils import cleanup
+
+        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
+        uploaded = file_upload(thefile)
+        check_layer(uploaded)
+
+        name = uploaded.name
+        uuid = uploaded.uuid
+        pk = uploaded.pk
+
+        # try calling the cleanup function when the django record exists:
+        try:
+            cleanup(name, uuid)
+        except GeoNodeException, e:
+            pass
+        else:
+            msg = ('Cleaup should raise an exception if the layer [%s] exists in the django db' % name)
+            assert False, msg
+
+        # Manually delete the layer object with SQL
+        from django.db import connection, transaction
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM maps_layer WHERE id= %d' % pk)
+        transaction.commit_unless_managed()
+
+        # After this, the records should not live in GeoServer or Geonetwork
+        cleanup(name, uuid)
+
+        #FIXME: Verify the record does not exist in GS or GN
 
 if __name__ == '__main__':
     import logging
