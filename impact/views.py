@@ -40,6 +40,7 @@ def calculate(request, save_output=storage.io.dummy_save):
     start = datetime.datetime.now()
 
     if request.method == 'GET':
+        # FIXME: Hardwired.
         # this will not be supported in the final version,
         # it is here just for testing with default values
         AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
