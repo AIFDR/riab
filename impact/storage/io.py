@@ -148,7 +148,7 @@ def download(server_url, layer_name, bbox):
 
        Input
            server_url: String such as 'http://www.aifdr.org:8080/geoserver/ows'
-           layer_name: String such as 'Earthquake_Ground_Shaking'
+           layer_name: String such as 'geonode:Earthquake_Ground_Shaking'
            bbox: Bounding box for layer. This can either be a string or a list
                  with format [west, south, east, north], e.g.
                  '87.998242,-8.269822,117.046094,5.097895'
@@ -161,6 +161,7 @@ def download(server_url, layer_name, bbox):
     assert isinstance(server_url, basestring)
 
     assert isinstance(layer_name, basestring)
+
 
     if isinstance(bbox, list):
         assert len(bbox) == 4
@@ -176,6 +177,10 @@ def download(server_url, layer_name, bbox):
     #             layer names are encountered.
     #             Currently something bad is downloaded in those cases.
     #             See test_calculation
+
+    # FIXME (Ole): Currently it is OK to pass a raster name without workspace
+    #              whereas vector layers must have one.
+    #              This should be consistent
 
     #print
     #print server_url

@@ -1,8 +1,10 @@
 from geonode.maps.utils import upload, file_upload, GeoNodeException
 from impact import storage
+from impact.storage import download
 from impact.storage.io import get_bounding_box
 from django.test.client import Client
 from django.conf import settings
+from django.utils import simplejson as json
 from impact.views import calculate
 
 import numpy
@@ -40,8 +42,6 @@ class Test_calculations(unittest.TestCase):
             msg = 'Expected layer name to be "geonode". Got %s' % workspace
             assert workspace == 'geonode', msg
 
-
-            #if not layer.service_type == 'WFS':
             # Check metadata
             assert isinstance(layer.geographic_bounding_box, basestring)
 
@@ -70,26 +70,26 @@ class Test_calculations(unittest.TestCase):
             assert numpy.allclose(bbox, ref_bbox), msg
 
             # Download layer again using workspace:name
-            downloaded_layer = storage.download(internal_server,
-                                                '%s:%s' % (workspace,
-                                                layer_name),
-                                                bbox)
+            downloaded_layer = download(internal_server,
+                                        '%s:%s' % (workspace,
+                                                   layer_name),
+                                        bbox)
             assert os.path.exists(downloaded_layer.filename)
 
             # Using only name without using workspace
             # FIXME (Ole): This works for raster but not for vector layers
             #
-            #downloaded_layer = storage.download(internal_server,
-            #                                    layer_name,
-            #                                    bbox)
+            #downloaded_layer = download(internal_server,
+            #                            layer_name,
+            #                            bbox)
             #assert os.path.exists(downloaded_layer.filename)
 
 
             # Check handling of invalid workspace name
             #try:
-            #    downloaded_layer = storage.download(internal_server,
-            #                                        'glokurp:%s' % layer_name,
-            #                                        bbox)
+            #    downloaded_layer = download(internal_server,
+            #                                'glokurp:%s' % layer_name,
+            #                                bbox)
             #except:
             #    msg = 'Write exception handling of invalid workspace name'
             #    print msg
@@ -97,24 +97,28 @@ class Test_calculations(unittest.TestCase):
 
 
 
-    def Xtest_school_example(self):
+    def test_school_example(self):
         """Test building earthquake impact calculation
         """
-
 
         # Upload input data
         hazardfile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
         hazard_layer = file_upload(hazardfile)
-        hazard_name = hazard_layer.name
+        hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
 
         exposurefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
         exposure_layer = file_upload(exposurefile)
-        exposure_name = exposure_layer.name
+        exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                   exposure_layer.name)
 
         # Call calculation routine
         bbox = '105.592,-7.809,110.159,-5.647'
-        c = Client()
 
+        #print
+        #print get_bounding_box(hazardfile)
+        #print get_bounding_box(exposurefile)
+
+        c = Client()
         rv = c.post('/api/v1/calculate/', data=dict(
                 hazard_server=internal_server,
                 hazard=hazard_name,
@@ -134,6 +138,9 @@ class Test_calculations(unittest.TestCase):
         assert 'run_duration' in data.keys()
         assert 'run_date' in data.keys()
         assert 'layer' in data.keys()
+
+        # Download result and check
+
 
 
 
