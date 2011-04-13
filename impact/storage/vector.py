@@ -75,9 +75,9 @@ class Vector:
         * http://www.packtpub.com/article/geospatial-data-python-geometry
         """
 
-        
+
         self.name, _ = os.path.splitext(filename)
- 
+
         fid = ogr.Open(filename)
         if fid is None:
             msg = 'Could not open %s' % filename
@@ -115,7 +115,7 @@ class Vector:
             else:
                 msg = ('Only point geometries are supported. '
                        'Geometry in filename %s '
-                       'was %s.' % (filename, 
+                       'was %s.' % (filename,
                                     G.GetGeometryType()))
                 raise Exception(msg)
 
