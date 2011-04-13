@@ -30,7 +30,6 @@ def lembang_damage_function(x):
     return value
 
 
-
 class Test_calculations(unittest.TestCase):
     """Tests of Risiko calculations
     """
@@ -70,10 +69,10 @@ class Test_calculations(unittest.TestCase):
             bbox_string = str(layer.geographic_bounding_box[i:j])
             A = numpy.array([[float(x[0]), float(x[1])] for x in
                                  (p.split() for p in bbox_string.split(','))])
-            south = min(A[:,1])
-            north = max(A[:,1])
-            west = min(A[:,0])
-            east = max(A[:,0])
+            south = min(A[:, 1])
+            north = max(A[:, 1])
+            west = min(A[:, 0])
+            east = max(A[:, 0])
             bbox = [west, south, east, north]
 
             # Check correctness of bounding box against reference
@@ -98,7 +97,6 @@ class Test_calculations(unittest.TestCase):
             #                            bbox)
             #assert os.path.exists(downloaded_layer.filename)
 
-
             # Check handling of invalid workspace name
             #try:
             #    downloaded_layer = download(internal_server,
@@ -109,10 +107,8 @@ class Test_calculations(unittest.TestCase):
             #    print msg
             #    #raise Exception(msg)
 
-
-
     def test_lembang_school_example(self):
-        """Test building earthquake impact calculation
+        """Lembang building impact calculation works through the API
         """
 
         # Upload input data
@@ -152,7 +148,6 @@ class Test_calculations(unittest.TestCase):
         assert 'run_duration' in data.keys()
         assert 'run_date' in data.keys()
         assert 'layer' in data.keys()
-
 
         # Download result and check
         layer_name = data['layer'].split('/')[-1]
@@ -196,7 +191,7 @@ class Test_calculations(unittest.TestCase):
             count += 1
 
         # Make only a few points were 0
-        assert count > len(attributes)- 4
+        assert count > len(attributes) - 4
 
 if __name__ == '__main__':
     import logging
@@ -213,4 +208,3 @@ if __name__ == '__main__':
     suite = unittest.makeSuite(Test_calculations, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-
