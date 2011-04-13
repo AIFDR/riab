@@ -236,13 +236,14 @@ class Test_utilities(unittest.TestCase):
         """Verify a GeoNodeException is returned for not existing dir
         """
         sampletxt = os.path.join(TEST_DATA, 'smoothoperator')
-
         try:
-            upload(sampletxt)
+            uploaded_files = upload(sampletxt)
+            for uploaded in uploaded_files:
+                print uploaded
         except GeoNodeException, e:
             pass
         else:
-            msg = ('Expected an exception for non existing file')
+            msg = ('Expected an exception for non existing dir')
             assert False, msg
 
 
@@ -253,7 +254,7 @@ class Test_utilities(unittest.TestCase):
         uploaded_files = upload(thefile)
         i = 0
         for uploaded in uploaded_files:
-            layer = Layer.objects.get(name='geonode:'+uploaded['name'])
+            layer = Layer.objects.get(name=uploaded['name'])
             check_layer(layer)
             i += 1
         msg = ('Only one file was expected and got %d' % i)
