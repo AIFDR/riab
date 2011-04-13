@@ -11,6 +11,7 @@ import numpy
 import os
 import sys
 import unittest
+import warnings
 
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
@@ -133,17 +134,20 @@ class Test_calculations(unittest.TestCase):
             #print get_bounding_box(hazardfile)
             #print get_bounding_box(exposurefile)
 
-            c = Client()
-            rv = c.post('/api/v1/calculate/', data=dict(
-                    hazard_server=internal_server,
-                    hazard=hazard_name,
-                    exposure_server=internal_server,
-                    exposure=exposure_name,
-                    bbox=bbox,
-                    impact_function='Earthquake School Damage Function',
-                    impact_level=10,
-                    keywords='test,schools,lembang',
-                    ))
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+
+                c = Client()
+                rv = c.post('/api/v1/calculate/', data=dict(
+                        hazard_server=internal_server,
+                        hazard=hazard_name,
+                        exposure_server=internal_server,
+                        exposure=exposure_name,
+                        bbox=bbox,
+                        impact_function='Earthquake School Damage Function',
+                        impact_level=10,
+                        keywords='test,schools,lembang',
+                        ))
 
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(rv['Content-Type'], 'application/json')
