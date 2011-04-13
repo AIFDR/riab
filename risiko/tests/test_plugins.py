@@ -14,6 +14,8 @@ from django.utils import simplejson as json
 
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
+import warnings
+
 class BasicFunction(FunctionProvider):
     """Risk plugin for testing
 
@@ -102,8 +104,10 @@ class Test_plugins(unittest.TestCase):
     def test_django_plugins(self):
         """Call the django plugin functions"""
 
-        c = Client()
-        rv = c.post('/api/v1/functions/', data={})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            c = Client()
+            rv = c.post('/api/v1/functions/', data={})
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
