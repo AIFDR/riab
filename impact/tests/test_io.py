@@ -44,7 +44,7 @@ class Test_IO(unittest.TestCase):
 
 
     def test_reading_and_writing_of_vector_data(self):
-        """Test that vector data can be read and written correctly
+        """Vector data can be read and written correctly
         """
 
         # First test that some error conditions are caught
@@ -155,7 +155,7 @@ class Test_IO(unittest.TestCase):
                     assert field_names == attributes[i].keys()
 
     def test_rasters_and_arrays(self):
-        """Test consistency of rasters and associated arrays
+        """Consistency of rasters and associated arrays
         """
 
         # Create test data
@@ -251,7 +251,7 @@ class Test_IO(unittest.TestCase):
         assert p1 == p1, msg
 
     def test_reading_and_writing_of_real_rasters(self):
-        """Test that rasters can be read and written correctly
+        """Rasters can be read and written correctly
         """
 
         for coveragename in ['Earthquake_Ground_Shaking_clip.tif',
@@ -309,7 +309,7 @@ class Test_IO(unittest.TestCase):
             assert p1 == p1, msg
 
     def test_raster_extrema_with_NAN(self):
-        """Test that raster extrema including NAN's are correct.
+        """Raster extrema including NAN's are correct.
         """
 
         for coveragename in ['Earthquake_Ground_Shaking_clip.tif',
@@ -342,7 +342,7 @@ class Test_IO(unittest.TestCase):
             assert numpy.allclose(minimum, numpy.nanmin(B[:]))
 
     def test_bins(self):
-        """Test that linear and quantile bins are correct
+        """Linear and quantile bins are correct
         """
 
         for filename in ['%s/population_padang_1.asc' % TESTDATA,
