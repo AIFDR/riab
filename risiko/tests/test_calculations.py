@@ -107,91 +107,102 @@ class Test_calculations(unittest.TestCase):
             #    print msg
             #    #raise Exception(msg)
 
-    def test_lembang_school_example(self):
+    def test_lembang_building_examples(self):
         """Lembang building impact calculation works through the API
         """
 
-        # Upload input data
-        hazardfile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
-        hazard_layer = file_upload(hazardfile)
-        hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
+        # Test for a range of hazard layers
 
-        exposurefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
-        exposure_layer = file_upload(exposurefile)
-        exposure_name = '%s:%s' % (exposure_layer.workspace,
-                                   exposure_layer.name)
+        for mmi_filename in ['lembang_mmi_hazmap.tif']:
+                             #'Lembang_Earthquake_Scenario.asc']:
+            # Upload input data
 
-        # Call calculation routine
-        bbox = '105.592,-7.809,110.159,-5.647'
+            hazardfile = os.path.join(TEST_DATA, mmi_filename)
+            hazard_layer = file_upload(hazardfile)
+            hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
 
-        #print
-        #print get_bounding_box(hazardfile)
-        #print get_bounding_box(exposurefile)
+            exposurefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
+            exposure_layer = file_upload(exposurefile)
+            exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                       exposure_layer.name)
 
-        c = Client()
-        rv = c.post('/api/v1/calculate/', data=dict(
-                hazard_server=internal_server,
-                hazard=hazard_name,
-                exposure_server=internal_server,
-                exposure=exposure_name,
-                bbox=bbox,
-                impact_function='Earthquake School Damage Function',
-                impact_level=10,
-                keywords='test,schools,lembang',
-                ))
+            # Call calculation routine
+            bbox = '105.592,-7.809,110.159,-5.647'
 
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        data = json.loads(rv.content)
-        assert 'hazard_layer' in data.keys()
-        assert 'exposure_layer' in data.keys()
-        assert 'run_duration' in data.keys()
-        assert 'run_date' in data.keys()
-        assert 'layer' in data.keys()
+            #print
+            #print get_bounding_box(hazardfile)
+            #print get_bounding_box(exposurefile)
 
-        # Download result and check
-        layer_name = data['layer'].split('/')[-1]
+            c = Client()
+            rv = c.post('/api/v1/calculate/', data=dict(
+                    hazard_server=internal_server,
+                    hazard=hazard_name,
+                    exposure_server=internal_server,
+                    exposure=exposure_name,
+                    bbox=bbox,
+                    impact_function='Earthquake School Damage Function',
+                    impact_level=10,
+                    keywords='test,schools,lembang',
+                    ))
 
-        result_layer = download(internal_server,
-                                layer_name,
-                                bbox)
-        assert os.path.exists(result_layer.filename)
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            data = json.loads(rv.content)
+            assert 'hazard_layer' in data.keys()
+            assert 'exposure_layer' in data.keys()
+            assert 'run_duration' in data.keys()
+            assert 'run_date' in data.keys()
+            assert 'layer' in data.keys()
 
-        # Read hazard data for reference
-        hazard_raster = read_layer(hazardfile)
-        A = hazard_raster.get_data()
-        mmi_min, mmi_max = hazard_raster.get_extrema()
+            # Download result and check
+            layer_name = data['layer'].split('/')[-1]
 
-        # Read calculated result
-        impact_vector = read_layer(result_layer.filename)
-        coordinates, attributes = impact_vector.get_data()
+            result_layer = download(internal_server,
+                                    layer_name,
+                                    bbox)
+            assert os.path.exists(result_layer.filename)
 
-        # Verify calculated result
-        count = 0
-        for i in range(len(attributes)):
-            calculated_mmi = attributes[i]['MMI']
+            # Read hazard data for reference
+            hazard_raster = read_layer(hazardfile)
+            A = hazard_raster.get_data()
+            mmi_min, mmi_max = hazard_raster.get_extrema()
 
-            if calculated_mmi == 0.0:
-                # FIXME (Ole): Some points have MMI==0 here.
-                # Weird but not a show stopper
-                continue
+            # Read calculated result
+            impact_vector = read_layer(result_layer.filename)
+            coordinates, attributes = impact_vector.get_data()
 
-            # Check that interpolated points are within range
-            msg = ('Interpolated mmi %f was outside extrema: '
-                   '[%f, %f]. ' % (calculated_mmi, mmi_min, mmi_max))
-            assert mmi_min <= calculated_mmi <= mmi_max, msg
+            # Verify calculated result
+            count = 0
+            for i in range(len(attributes)):
+                lon, lat = coordinates[i][:]
+                calculated_mmi = attributes[i]['MMI']
 
-            # Check calculated damage
-            calculated_dam = attributes[i]['Percent_da']
+                if calculated_mmi == 0.0:
+                    # FIXME (Ole): Some points have MMI==0 here.
+                    # Weird but not a show stopper
+                    continue
 
-            ref_dam = lembang_damage_function(calculated_mmi)
-            msg = ('Calculated damage was not as expected')
-            assert numpy.allclose(calculated_dam, ref_dam, rtol=1.0e-12), msg
+                # Check that interpolated points are within range
+                msg = ('Interpolated mmi %f was outside extrema: '
+                       '[%f, %f] at location '
+                       '[%f, %f]. ' % (calculated_mmi,
+                                       mmi_min, mmi_max,
+                                       lon, lat))
+                assert mmi_min <= calculated_mmi <= mmi_max, msg
 
-            count += 1
+                # Check calculated damage
+                calculated_dam = attributes[i]['Percent_da']
 
-        # Make only a few points were 0
-        assert count > len(attributes) - 4
+                ref_dam = lembang_damage_function(calculated_mmi)
+                msg = ('Calculated damage was not as expected '
+                       'for hazard layer %s' % hazardfile)
+                assert numpy.allclose(calculated_dam, ref_dam,
+                                      rtol=1.0e-12), msg
+
+                count += 1
+
+            # Make only a few points were 0
+            assert count > len(attributes) - 4
 
 if __name__ == '__main__':
     import logging
