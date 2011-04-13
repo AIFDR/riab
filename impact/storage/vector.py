@@ -134,6 +134,7 @@ class Vector:
 
         self.coordinates = numpy.array(coordinates, dtype='d', copy=False)
         self.attributes = attributes
+        self.filename = filename
 
     def write_to_file(self, filename):
         """Save vector data to file
