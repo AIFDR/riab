@@ -10,7 +10,7 @@ from impact.storage.io import read_layer
 from impact.storage.io import write_point_data
 from impact.storage.io import write_coverage
 from impact.storage.utilities import unique_filename
-from impact.storage.utilities import get_bounding_box
+from impact.storage.io import get_bounding_box
 from impact.storage.utilities import DEFAULT_PROJECTION
 from impact.tests.utilities import TESTDATA
 
@@ -449,6 +449,6 @@ class Test_IO(unittest.TestCase):
             assert numpy.allclose(bbox, ref_bbox[filename])
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test_get_bounding')
+    suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

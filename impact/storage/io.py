@@ -96,6 +96,16 @@ WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'
 
 
+
+
+def get_bounding_box(filename, verbose=False):
+    """Get bounding box for specified raster or vector file
+    """
+
+    layer = read_layer(filename)
+    return layer.get_bounding_box()
+
+
 def get_metadata(server_url, layer_name):
     """Uses OWS services to determine if the data is raster or vector
     """
@@ -203,3 +213,7 @@ def dummy_save(filename, title, user, metadata=''):
     """Take a file-like object and uploads it to a GeoNode
     """
     return 'http://dummy/data/geonode:' + filename + '_by_' + user.username
+
+
+
+

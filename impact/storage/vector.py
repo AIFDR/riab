@@ -91,6 +91,9 @@ class Vector:
                    'used.' % (filename, fid.GetLayerCount()))
         layer = fid.GetLayerByIndex(0)
 
+        # Get spatial extent
+        self.extent = layer.GetExtent()
+
         # Get projection
         p = layer.GetSpatialRef()
         self.projection = Projection(p)
@@ -296,6 +299,17 @@ class Vector:
 
     def get_projection(self, proj4=False):
         return self.projection.get_projection(proj4)
+
+    def get_bounding_box(self):
+        """Get bounding box coordinates for vector layer.
+
+        Format is [West, South, East, North]
+        """
+        e = self.extent
+        return [e[0], # West
+                e[2], # South
+                e[1], # East
+                e[3]] # North
 
     @property
     def is_raster(self):
