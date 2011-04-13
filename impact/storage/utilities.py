@@ -1,6 +1,7 @@
 """Utilities for impact.storage
 """
 
+import os
 import numpy
 from osgeo import ogr, gdal
 from tempfile import mkstemp
@@ -228,4 +229,3 @@ class WFSCapabilitiesReader(object):
                 "String must be of type string, not %s" % type(st))
         return etree.fromstring(st)
 
-#########################################

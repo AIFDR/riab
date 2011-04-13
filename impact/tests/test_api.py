@@ -117,21 +117,6 @@ class Test_HTTP(unittest.TestCase):
         # FIXME (Ole): Download result and check.
 
 
-
-    def test_school_example(self):
-        """Test building earthquake impact calculation using local server
-        """
-
-        # Upload input data
-        hazardfile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
-        uploaded = file_upload(hazardfile)
-
-        exposurefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
-        uploaded = file_upload(exposurefile)
-
-        # Call calculation routine and test
-        # FIXME (Ole): What is the name of the local server?
-
 if __name__ == '__main__':
    suite = unittest.makeSuite(Test_HTTP, 'test')
    runner = unittest.TextTestRunner(verbosity=2)

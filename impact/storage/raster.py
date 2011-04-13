@@ -309,6 +309,32 @@ class Raster:
 
         return levels
 
+
+    def get_bounding_box(self):
+        """Get bounding box coordinates for raster layer
+
+        Format is [West, South, East, North]
+        """
+
+        geotransform = self.geotransform
+
+        x_origin    = geotransform[0] # top left x
+        x_res       = geotransform[1] # w-e pixel resolution
+        y_origin    = geotransform[3] # top left y
+        y_res       = geotransform[5] # n-s pixel resolution
+        # geotransform[4]  # rotation, 0 if image is "north up"
+        # geotransform[2]  # rotation, 0 if image is "north up"
+        x_pix       = self.columns
+        y_pix       = self.rows
+
+        minx = x_origin
+        maxx = x_origin + (x_pix * x_res)
+        miny = y_origin + (y_pix * y_res) # x_res -ve
+        maxy = y_origin
+
+        return [minx, miny, maxx, maxy]
+
+
     @property
     def is_raster(self):
         return True

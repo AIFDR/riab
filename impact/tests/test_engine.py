@@ -35,7 +35,7 @@ def lembang_damage_function(x):
 class Test_Engine(unittest.TestCase):
 
     def test_earthquake_fatality_estimation(self):
-        """Test that fatalities from ground shaking can be computed correctly
+        """Fatalities from ground shaking can be computed correctly
            using aligned rasters
         """
 
@@ -93,7 +93,7 @@ class Test_Engine(unittest.TestCase):
             assert numpy.min(E) == -9999
 
     def test_earthquake_damage_schools(self):
-        """Test (school) building damage from ground shaking
+        """Lembang building damage from ground shaking works
 
         This test also exercises ineterpolation of hazard level (raster) to
         building locations (vector data).
@@ -110,7 +110,7 @@ class Test_Engine(unittest.TestCase):
         plugin_list = plugins.get_plugins('Earthquake School Damage Function')
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
- 
+
         impact_filename = calculate_impact(hazard_level=HD,
                                            exposure_level=ED,
                                            impact_function=IF)
@@ -151,7 +151,6 @@ class Test_Engine(unittest.TestCase):
         # Verify interpolated MMI with test result
         min_damage = sys.maxint
         max_damage = -min_damage
-        print
         for i in range(len(MMI)):
             #print i, iattributes[i]
             calculated_mmi = iattributes[i]['MMI']
@@ -207,7 +206,7 @@ class Test_Engine(unittest.TestCase):
         #print len(MMI)
 
     def test_tsunami_loss_use_case(self):
-        """Test building loss from tsunami use case
+        """Building loss from tsunami use case works
         """
 
         from impact.plugins.tsunami import NEXIS_building_impact_model
@@ -232,7 +231,7 @@ class Test_Engine(unittest.TestCase):
         plugin_list = plugins.get_plugins('Tsunami Building Loss Function')
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
- 
+
         impact_filename = calculate_impact(hazard_level=HD,
                                            exposure_level=ED,
                                            impact_function=IF)
@@ -498,7 +497,7 @@ class Test_Engine(unittest.TestCase):
         assert riab_server.__license__ == 'GPL'
 
     def test_interpolation_wrapper(self):
-        """Test underlying interpolation library
+        """Interpolation library works for linear function
         """
 
         # Create test data
@@ -552,7 +551,7 @@ class Test_Engine(unittest.TestCase):
         #              They should be NaN or something
 
     def test_riab_interpolation(self):
-        """Test riabs interpolation using Raster and Vector objects
+        """Interpolation using Raster and Vector objects
         """
 
         # Create test data
@@ -648,7 +647,7 @@ class Test_Engine(unittest.TestCase):
         os.remove(vector_filename)
 
     def test_interpolation_lembang(self):
-        """Test interpolation using Lembang data set
+        """Interpolation using Lembang data set
         """
 
         # Name file names for hazard level, exposure and expected fatalities
@@ -702,7 +701,7 @@ class Test_Engine(unittest.TestCase):
             assert numpy.allclose(calculated_mmi, MMI[i], rtol=0.02)
 
     def test_interpolation_tsunami(self):
-        """Test interpolation using tsunami data set
+        """Interpolation using tsunami data set
         """
 
         # Name file names for hazard level, exposure and expected fatalities
@@ -738,8 +737,6 @@ class Test_Engine(unittest.TestCase):
             assert depth_min <= interpolated_depth <= depth_max, msg
 
 if __name__ == '__main__':
-    #suite = unittest.makeSuite(Test_Engine, 'test_earthquake_damage_schools')
     suite = unittest.makeSuite(Test_Engine, 'test')
-    #suite = unittest.makeSuite(Test_Engine, 'test_earthquake_fatality_estim')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

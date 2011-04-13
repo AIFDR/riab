@@ -59,14 +59,19 @@ def get_plugins(name=None):
 
        Or all of them if no name is passed.
     """
+
     plugins_dict = dict([(pretty_function_name(p), p) for p in FunctionProvider.plugins])
+    
     if name is None:    
         return plugins_dict
 
     if isinstance(name, basestring):
-        plugins_dict = dict([(pretty_function_name(p), p) for p in FunctionProvider.plugins])
+        #Add the names
+        plugins_dict.update(dict([(p.__name__, p) for p in FunctionProvider.plugins]))
+
         msg = ('No plugin named "%s" was found. List of available plugins is: %s'
                % (name, ', '.join(plugins_dict.keys())))
+            
         assert name in plugins_dict, msg
         return [{name: plugins_dict[name]}]
     else:
@@ -141,7 +146,7 @@ def requirement_check(params, require_str, verbose=False):
     except NameError:
         pass
     except SyntaxError:
-        #TODO: Something more sensible re:logging error
+        #TODO(Ted): Something more sensible re:logging error
         print "Syntax Error", execstr
     return False
 

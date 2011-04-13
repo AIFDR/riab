@@ -96,6 +96,16 @@ WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'
 
 
+
+
+def get_bounding_box(filename, verbose=False):
+    """Get bounding box for specified raster or vector file
+    """
+
+    layer = read_layer(filename)
+    return layer.get_bounding_box()
+
+
 def get_metadata(server_url, layer_name):
     """Uses OWS services to determine if the data is raster or vector
     """
@@ -136,15 +146,54 @@ def get_file(download_url, suffix):
 def download(server_url, layer_name, bbox):
     """Download the source data of a given layer.
 
-       Data_type can be either 'vector' or 'raster'
+       Input
+           server_url: String such as 'http://www.aifdr.org:8080/geoserver/ows'
+           layer_name: String such as 'geonode:Earthquake_Ground_Shaking'
+           bbox: Bounding box for layer. This can either be a string or a list
+                 with format [west, south, east, north], e.g.
+                 '87.998242,-8.269822,117.046094,5.097895'
+
+
+       Layer type can be either 'vector' or 'raster'
     """
+
+    # Input checks
+    assert isinstance(server_url, basestring)
+
+    assert isinstance(layer_name, basestring)
+
+
+    if isinstance(bbox, list):
+        assert len(bbox) == 4
+        bbox_string = '%f,%f,%f,%f' % tuple(bbox)
+    elif isinstance(bbox, basestring):
+        bbox_string = bbox
+    else:
+        msg = ('Bounding box must be a string or a list of coordinates with '
+               'format [west, south, east, north]. I got %s' % bbox)
+        raise Exception(msg)
+
+    # FIXME(Ole): Throw meaningful exception when invalid workspace and
+    #             layer names are encountered.
+    #             Currently something bad is downloaded in those cases.
+    #             See test_calculation
+
+    # FIXME (Ole): Currently it is OK to pass a raster name without workspace
+    #              whereas vector layers must have one.
+    #              This should be consistent
+
+    #print
+    #print server_url
+    #print layer_name
+    #print bbox_string
+
     template = None
     layer_metadata = get_metadata(server_url, layer_name)
     data_type = layer_metadata['layerType']
     if data_type == 'feature':
         template = WFS_TEMPLATE
         suffix = '.zip'
-        download_url = template % (server_url, layer_name, bbox)
+        download_url = template % (server_url, layer_name, bbox_string)
         thefilename = get_file(download_url, suffix)
         dirname = os.path.dirname(thefilename)
         t = open(thefilename, 'r')
@@ -156,9 +205,10 @@ def download(server_url, layer_name, bbox):
     elif data_type == 'raster':
         template = WCS_TEMPLATE
         suffix = '.tif'
-        download_url = template % (server_url, layer_name, bbox)
+        download_url = template % (server_url, layer_name, bbox_string)
         filename = get_file(download_url, suffix)
     lyr = read_layer(filename)
+
     #FIXME (Ariel) Don't monkeypatch the layer object
     lyr.metadata = layer_metadata
     return lyr
@@ -168,3 +218,7 @@ def dummy_save(filename, title, user, metadata=''):
     """Take a file-like object and uploads it to a GeoNode
     """
     return 'http://dummy/data/geonode:' + filename + '_by_' + user.username
+
+
+
+

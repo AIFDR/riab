@@ -836,7 +836,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
 function addLayer(server_url, label, layer_name, opacity_value){
       var layer = new OpenLayers.Layer.WMS(
            label, server_url,{layers: layer_name, format: 'image/png', transparent: true},
-                              {opacity: opacity_value}
+	   {opacity: opacity_value}, {attribution: 'My attribuion'}
       );
       var map = app.mapPanel.map;
       map.addLayer(layer);
@@ -970,7 +970,7 @@ function received(result, request) {
     var base_url = layer_uri.split('/')[2]
     var server_url = data.ows_server_url;
     var result_name = layer_uri.split('/')[4].split(':')[1]
-    var result_label = exposure.split(':')[1] + ' X ' + hazard.split(':')[1] + '=' +result_name
+    var result_label = exposure + ' X ' + hazard + '=' +result_name
     lastImpactSelect=result_label
     addLayer(server_url, result_label, result_name, 0.9);
     //removeLayer(lastExposureSelect);

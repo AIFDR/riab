@@ -75,9 +75,9 @@ class Vector:
         * http://www.packtpub.com/article/geospatial-data-python-geometry
         """
 
-        
+
         self.name, _ = os.path.splitext(filename)
- 
+
         fid = ogr.Open(filename)
         if fid is None:
             msg = 'Could not open %s' % filename
@@ -90,6 +90,9 @@ class Vector:
                    'Only the first layer will currently be '
                    'used.' % (filename, fid.GetLayerCount()))
         layer = fid.GetLayerByIndex(0)
+
+        # Get spatial extent
+        self.extent = layer.GetExtent()
 
         # Get projection
         p = layer.GetSpatialRef()
@@ -115,7 +118,7 @@ class Vector:
             else:
                 msg = ('Only point geometries are supported. '
                        'Geometry in filename %s '
-                       'was %s.' % (filename, 
+                       'was %s.' % (filename,
                                     G.GetGeometryType()))
                 raise Exception(msg)
 
@@ -131,6 +134,7 @@ class Vector:
 
         self.coordinates = numpy.array(coordinates, dtype='d', copy=False)
         self.attributes = attributes
+        self.filename = filename
 
     def write_to_file(self, filename):
         """Save vector data to file
@@ -296,6 +300,17 @@ class Vector:
 
     def get_projection(self, proj4=False):
         return self.projection.get_projection(proj4)
+
+    def get_bounding_box(self):
+        """Get bounding box coordinates for vector layer.
+
+        Format is [West, South, East, North]
+        """
+        e = self.extent
+        return [e[0], # West
+                e[2], # South
+                e[1], # East
+                e[3]] # North
 
     @property
     def is_raster(self):

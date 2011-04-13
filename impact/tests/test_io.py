@@ -10,6 +10,7 @@ from impact.storage.io import read_layer
 from impact.storage.io import write_point_data
 from impact.storage.io import write_coverage
 from impact.storage.utilities import unique_filename
+from impact.storage.io import get_bounding_box
 from impact.storage.utilities import DEFAULT_PROJECTION
 from impact.tests.utilities import TESTDATA
 
@@ -43,7 +44,7 @@ class Test_IO(unittest.TestCase):
 
 
     def test_reading_and_writing_of_vector_data(self):
-        """Test that vector data can be read and written correctly
+        """Vector data can be read and written correctly
         """
 
         # First test that some error conditions are caught
@@ -154,7 +155,7 @@ class Test_IO(unittest.TestCase):
                     assert field_names == attributes[i].keys()
 
     def test_rasters_and_arrays(self):
-        """Test consistency of rasters and associated arrays
+        """Consistency of rasters and associated arrays
         """
 
         # Create test data
@@ -250,7 +251,7 @@ class Test_IO(unittest.TestCase):
         assert p1 == p1, msg
 
     def test_reading_and_writing_of_real_rasters(self):
-        """Test that rasters can be read and written correctly
+        """Rasters can be read and written correctly
         """
 
         for coveragename in ['Earthquake_Ground_Shaking_clip.tif',
@@ -308,7 +309,7 @@ class Test_IO(unittest.TestCase):
             assert p1 == p1, msg
 
     def test_raster_extrema_with_NAN(self):
-        """Test that raster extrema including NAN's are correct.
+        """Raster extrema including NAN's are correct.
         """
 
         for coveragename in ['Earthquake_Ground_Shaking_clip.tif',
@@ -341,7 +342,7 @@ class Test_IO(unittest.TestCase):
             assert numpy.allclose(minimum, numpy.nanmin(B[:]))
 
     def test_bins(self):
-        """Test that linear and quantile bins are correct
+        """Linear and quantile bins are correct
         """
 
         for filename in ['%s/population_padang_1.asc' % TESTDATA,
@@ -397,6 +398,55 @@ class Test_IO(unittest.TestCase):
 
                     i0 = i1
 
+    def test_get_bounding_box(self):
+        """Bounding box is correctly extracted from file.
+
+        # Reference data:
+        gdalinfo Earthquake_Ground_Shaking_clip.tif
+        Driver: GTiff/GeoTIFF
+        Files: Earthquake_Ground_Shaking_clip.tif
+        Size is 345, 263
+        Coordinate System is:
+        GEOGCS["WGS 84",
+            DATUM["WGS_1984",
+                SPHEROID["WGS 84",6378137,298.2572235630016,
+                    AUTHORITY["EPSG","7030"]],
+                AUTHORITY["EPSG","6326"]],
+            PRIMEM["Greenwich",0],
+            UNIT["degree",0.0174532925199433],
+            AUTHORITY["EPSG","4326"]]
+        Origin = (99.364169565217395,-0.004180608365019)
+        Pixel Size = (0.008339130434783,-0.008361216730038)
+        Metadata:
+          AREA_OR_POINT=Point
+          TIFFTAG_XRESOLUTION=1
+          TIFFTAG_YRESOLUTION=1
+          TIFFTAG_RESOLUTIONUNIT=1 (unitless)
+        Image Structure Metadata:
+          COMPRESSION=LZW
+          INTERLEAVE=BAND
+        Corner Coordinates:
+        Upper Left  (  99.3641696,  -0.0041806) ( 99d21'51.01"E,  0d 0'15.05"S)
+        Lower Left  (  99.3641696,  -2.2031806) ( 99d21'51.01"E,  2d12'11.45"S)
+        Upper Right ( 102.2411696,  -0.0041806) (102d14'28.21"E,  0d 0'15.05"S)
+        Lower Right ( 102.2411696,  -2.2031806) (102d14'28.21"E,  2d12'11.45"S)
+        Center      ( 100.8026696,  -1.1036806) (100d48'9.61"E,  1d 6'13.25"S)
+        Band 1 Block=256x256 Type=Float64, ColorInterp=Gray
+
+        """
+
+        ref_bbox = {'tsunami_exposure_BB.shp': [150.124,  # West
+                                                -35.7856, # South
+                                                150.295,  # East
+                                                -35.6546], # North
+                    'Earthquake_Ground_Shaking_clip.tif': [99.3641696,
+                                                           -2.2031806,
+                                                           102.2411696,
+                                                           -0.0041806]}
+
+        for filename in ['Earthquake_Ground_Shaking_clip.tif', 'tsunami_exposure_BB.shp']:
+            bbox = get_bounding_box(os.path.join(TESTDATA, filename))
+            assert numpy.allclose(bbox, ref_bbox[filename])
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')

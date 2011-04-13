@@ -10,7 +10,7 @@ DEFAULT_PLUGINS=(
 class Test_Functions(unittest.TestCase):
 
     def test_get_plugins(self):
-        """Test it is possible to retrieve the list of functions
+        """It is possible to retrieve the list of functions
         """
         plugin_list = plugins.get_plugins()
         msg = ('No plugins were found, not even the built-in ones')
