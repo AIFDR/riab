@@ -110,7 +110,7 @@ class Test_Engine(unittest.TestCase):
         plugin_list = plugins.get_plugins('Earthquake School Damage Function')
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
- 
+
         impact_filename = calculate_impact(hazard_level=HD,
                                            exposure_level=ED,
                                            impact_function=IF)
@@ -151,7 +151,6 @@ class Test_Engine(unittest.TestCase):
         # Verify interpolated MMI with test result
         min_damage = sys.maxint
         max_damage = -min_damage
-        print
         for i in range(len(MMI)):
             #print i, iattributes[i]
             calculated_mmi = iattributes[i]['MMI']
@@ -232,7 +231,7 @@ class Test_Engine(unittest.TestCase):
         plugin_list = plugins.get_plugins('Tsunami Building Loss Function')
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
- 
+
         impact_filename = calculate_impact(hazard_level=HD,
                                            exposure_level=ED,
                                            impact_function=IF)

@@ -1,7 +1,7 @@
 from geonode.maps.utils import upload, file_upload, GeoNodeException
 from impact import storage
 from impact.storage import download
-from impact.storage.io import get_bounding_box
+from impact.storage.io import get_bounding_box, read_layer
 from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
@@ -9,12 +9,26 @@ from impact.views import calculate
 
 import numpy
 import os
+import sys
 import unittest
 
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_test_data')
+
+
+def lembang_damage_function(x):
+    if x < 6.0:
+        value = 0.0
+    else:
+        value = (0.692 * (x ** 4) -
+                 15.82 * (x ** 3) +
+                 135.0 * (x ** 2) -
+                 509.0 * x +
+                 714.4)
+    return value
+
 
 
 class Test_calculations(unittest.TestCase):
@@ -97,7 +111,7 @@ class Test_calculations(unittest.TestCase):
 
 
 
-    def test_school_example(self):
+    def test_lembang_school_example(self):
         """Test building earthquake impact calculation
         """
 
@@ -127,7 +141,7 @@ class Test_calculations(unittest.TestCase):
                 bbox=bbox,
                 impact_function='Earthquake School Damage Function',
                 impact_level=10,
-                keywords="test,schools,lembang",
+                keywords='test,schools,lembang',
                 ))
 
         self.assertEqual(rv.status_code, 200)
@@ -139,16 +153,55 @@ class Test_calculations(unittest.TestCase):
         assert 'run_date' in data.keys()
         assert 'layer' in data.keys()
 
+
         # Download result and check
+        layer_name = data['layer'].split('/')[-1]
 
+        result_layer = download(internal_server,
+                                layer_name,
+                                bbox)
+        assert os.path.exists(result_layer.filename)
 
+        # Read hazard data for reference
+        hazard_raster = read_layer(hazardfile)
+        A = hazard_raster.get_data()
+        mmi_min, mmi_max = hazard_raster.get_extrema()
 
+        # Read calculated result
+        impact_vector = read_layer(result_layer.filename)
+        coordinates, attributes = impact_vector.get_data()
 
+        # Verify calculated result
+        count = 0
+        for i in range(len(attributes)):
+            calculated_mmi = attributes[i]['MMI']
+
+            if calculated_mmi == 0.0:
+                # FIXME (Ole): Some points have MMI==0 here.
+                # Weird but not a show stopper
+                continue
+
+            # Check that interpolated points are within range
+            msg = ('Interpolated mmi %f was outside extrema: '
+                   '[%f, %f]. ' % (calculated_mmi, mmi_min, mmi_max))
+            assert mmi_min <= calculated_mmi <= mmi_max, msg
+
+            # Check calculated damage
+            calculated_dam = attributes[i]['Percent_da']
+
+            ref_dam = lembang_damage_function(calculated_mmi)
+            msg = ('Calculated damage was not as expected')
+            assert numpy.allclose(calculated_dam, ref_dam, rtol=1.0e-12), msg
+
+            count += 1
+
+        # Make only a few points were 0
+        assert count > len(attributes)- 4
 
 if __name__ == '__main__':
     import logging
 
-    os.environ["DJANGO_SETTINGS_MODULE"] = "risiko.settings"
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
 
     # Set up logging
     for _module in ['geonode.maps.utils']:
