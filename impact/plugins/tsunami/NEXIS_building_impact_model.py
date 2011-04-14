@@ -73,8 +73,7 @@ class TsunamiBuildingLossFunction(FunctionProvider):
             #-------------------
             # Extract parameters
             #-------------------
-            depth = float(inundation[i]
-                          ['tsunami_max_inundation_depth_BB_geographic_nan0'])
+            depth = float(inundation[i].values()[0])
             shore_distance = float(buildings[i]['SHORE_DIST'])
             wall_type = str(buildings[i]['WALL_TYPE'])
             number_of_people_in_building = int(buildings[i]['NEXIS_PEOP'])

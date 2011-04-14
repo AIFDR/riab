@@ -326,14 +326,16 @@ def call_impact_function_raster(impact_function,
     Result is also a raster data set.
     """
 
+    # FIXME (Ole): Replace NODATA with 0 (nan=0) until we can
+    #              handle proper NaN
     hazard_data = {}
     for name in hazard_layers:
-        hazard_data[name] = hazard_layers[name].get_data()
+        hazard_data[name] = hazard_layers[name].get_data(nan=0)
         assert hazard_layers[name].is_raster
 
     exposure_data = {}
     for name in exposure_layers:
-        exposure_data[name] = exposure_layers[name].get_data()
+        exposure_data[name] = exposure_layers[name].get_data(nan=0)
         assert exposure_layers[name].is_raster
 
         projection = exposure_layers[name].get_projection()

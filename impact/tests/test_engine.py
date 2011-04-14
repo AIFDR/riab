@@ -57,10 +57,10 @@ class Test_Engine(unittest.TestCase):
 
         # Do calculation manually and check result
         hazard_raster = read_layer(hazard_filename)
-        H = hazard_raster.get_data()
+        H = hazard_raster.get_data(nan=0)
 
         exposure_raster = read_layer(exposure_filename)
-        E = exposure_raster.get_data()
+        E = exposure_raster.get_data(nan=0)
 
         # Calculate impact manually
         a = 0.97429
@@ -69,7 +69,7 @@ class Test_Engine(unittest.TestCase):
 
         # Verify correctness of result
         calculated_raster = read_layer(impact_filename)
-        C = calculated_raster.get_data()
+        C = calculated_raster.get_data(nan=0)
 
         # Compare shape and extrema
         msg = ('Shape of calculated raster differs from reference raster: '
@@ -89,9 +89,13 @@ class Test_Engine(unittest.TestCase):
         msg = 'Array values of written raster array were not as expected'
         assert numpy.allclose(C, F, rtol=1e-12, atol=1e-12), msg
 
-        # Check that extrema are in range (except for ESRI ASCII NODATA)
-        if numpy.min(C) < 0:
-            assert numpy.min(E) == -9999
+        # Check that extrema are in range
+
+        xmin, xmax = calculated_raster.get_extrema()
+        assert numpy.alltrue(C >= xmin)
+        assert numpy.alltrue(C <= xmax)
+        assert numpy.alltrue(C >= 0)
+
 
     def test_earthquake_damage_schools(self):
         """Lembang building damage from ground shaking works
@@ -182,7 +186,7 @@ class Test_Engine(unittest.TestCase):
                 msg = ('Calculated MMI %f deviated more than %.1f%% from '
                        'what was expected %f' % (calculated_mmi, pct, MMI[i]))
                 assert numpy.allclose(calculated_mmi, MMI[i],
-                                      rtol=float(pct)/100), msg
+                                      rtol = float(pct) / 100), msg
 
                 # FIXME (Ole): Has to shorten name to 10 characters
                 #              until issue #1 has been resolved.
@@ -234,10 +238,8 @@ class Test_Engine(unittest.TestCase):
         # no reference data. It does check the sanity of values as
         # far as possible.
 
-        # FIXME (Ole): Replace this with normal ASCII raster when
-        #              NaN interpolation has been sorted out (issue #6)
         hazard_filename = ('%s/tsunami_max_inundation_depth_BB_'
-                           'geographic_nan0.asc' % TESTDATA)
+                           'geographic.asc' % TESTDATA)
         exposure_filename = ('%s/tsunami_exposure_BB.shp' % TESTDATA)
         exposure_with_depth_filename = ('%s/tsunami_exposure_BB_'
                                         'with_depth.shp' % TESTDATA)
@@ -337,171 +339,6 @@ class Test_Engine(unittest.TestCase):
             # to different damage curves and should therefore be different
             if depth > 0 and contents_damage > 0:
                 assert contents_damage != structural_damage
-
-    def XXXtest_tsunami_loss_buildings(self):
-        """Test building loss from tsunami against reference data
-        """
-
-        # FIXME (Ole): This test is stuffed as the reference data
-        # was shuffled.
-
-        # FIXME (Ole): Replace this with normal ASCII raster when
-        #              NaN interpolation has been sorted out (issue #6)
-        hazard_filename = ('%s/tsunami_max_inundation_depth_BB_'
-                           'geographic_nan0.asc' % TESTDATA)
-        exposure_filename = ('%s/tsunami_exposure_BB.shp' % TESTDATA)
-        exposure_with_depth_filename = ('%s/tsunami_exposure_BB_'
-                                        'with_depth.shp' % TESTDATA)
-        reference_impact_filename = ('%s/tsunami_impact_assessment_'
-                                     'BB.shp' % TESTDATA)
-
-        # Calculate impact using API
-        HD = hazard_filename
-        ED = exposure_filename
-        IF = get_function('TsunamiBuildingLossFunction')
-        impact_filename = calculate_impact(hazard_level=HD,
-                                                       exposure_level=ED,
-                                                       impact_function=IF)
-
-        # Read calculated result
-        impact_vector = read_layer(impact_filename)
-        icoordinates, iattributes = impact_vector.get_data()
-        N = len(icoordinates)
-
-        # Ensure that calculated point locations coincide with
-        # original exposure point locations
-        ref_exp = read_layer(exposure_filename)
-        refcoordinates, _ = ref_exp.get_data()
-
-        assert N == len(refcoordinates)
-        msg = ('Coordinates of impact results do not match those of '
-               'exposure data')
-        assert numpy.allclose(icoordinates, refcoordinates), msg
-
-        # Ensure that calculated point locations coincide with
-        # original exposure point (with depth) locations
-        ref_depth = riab_server.read_layer(exposure_with_depth_filename)
-        refdepth_coordinates, refdepth_attributes = ref_depth.get_data()
-        assert N == len(refdepth_coordinates)
-        msg = ('Coordinates of impact results do not match those of '
-               'exposure data (with depth)')
-        assert numpy.allclose(icoordinates, refdepth_coordinates), msg
-
-        # Read reference results
-        hazard_raster = riab_server.read_layer(hazard_filename)
-        A = hazard_raster.get_data()
-        depth_min, depth_max = hazard_raster.get_extrema()
-
-        ref_impact = riab_server.read_layer(reference_impact_filename)
-        refimpact_coordinates, refimpact_attributes = ref_impact.get_data()
-
-        # FIXME (Ole): Reconsider from this point on
-        return
-
-        # Read reference data
-        import pickle
-        try:
-            fid = open('tsunami_reference_impact.pkl')
-        except:
-
-            # Reference impact data does not use the same order for exposure
-            # coordinates and the calculated impact locations :-(
-            # Therefore we need to reorder before comparison.
-
-            print
-            print 'Reorder reference data and pickle.'
-            print 'This will take a while but need only be done once.'
-            print 'Have patience.'
-            print 'This test will be replaced at a later stage anyway.'
-            newrefimpact_coor = numpy.zeros((N, 2))
-            newrefimpact_attr = [None] * N
-            for i in range(N):
-                lon, lat = icoordinates[i, :]
-                #print i, N
-                for j in range(N):
-                    rlon, rlat = refimpact_coordinates[j, :]
-
-                    if lon == rlon and lat == rlat:
-                        newrefimpact_coor[i, :] = refimpact_coordinates[j, :]
-                        newrefimpact_attr[i] = refimpact_attributes[j]
-
-            refimpact_coordinates = newrefimpact_coor
-            refimpact_attributes = newrefimpact_attr
-
-            # Pickle reference data
-            import pickle
-            fid = open('tsunami_reference_impact.pkl', 'wb')
-            pickle.dump((refimpact_coordinates, refimpact_attributes), fid)
-            fid.close()
-        else:
-            #print 'Reading reordered data from pickle'
-            refimpact_coordinates, refimpact_attributes = pickle.load(fid)
-
-        # Verify that coordinates are now consistent
-        msg = 'Reference data coordinates do not match those calculated'
-        assert numpy.allclose(icoordinates, refimpact_coordinates), msg
-
-        for i in range(N):
-            if refimpact_attributes[i] is None:
-                msg = 'Element %i was None' % i
-                raise Exception(msg)
-
-        # Check that interpolated depths are OK
-        count = 0
-        for i in range(N):
-            d = iattributes[i]['DEPTH']
-            ref_d = refdepth_attributes[i]['MAX_DEPTH_']
-
-            if numpy.isnan(d):
-                continue
-
-            #if d < 0.0:
-            #    print d, ref_d
-
-            lon, lat = icoordinates[i, :]
-            msg = ('Interpolated depth %f was outside extrema: [%f, %f] at '
-                   'location (%f, %f). ' % (d, depth_min, depth_max, lon, lat))
-            assert depth_min - 1 <= d <= depth_max, msg
-
-            # Count how many are within a 2% tolerance.
-            # Due to the very different sources we can't ask
-            # for more here.
-            if numpy.allclose(d, ref_d, rtol=1.0e-6, atol=0.06):
-                count += 1
-            #else:
-            #    print i, d, ref_d
-
-        #print count * 100. / N
-        msg = 'Less than 90\% of interpolated depth points were outside 2%'
-        assert count * 100. / N > 90, msg
-
-        # FIXME: Still issue with field width - see issue #2
-        for a in ['PEOPLE_AFF',
-                  'PEOPLE_SEV',
-                  'STRUCT_INU',
-                  'STRUCT_DAM',
-                  'CONTENTS_D',
-                  'STRUCT_LOS',    # TODO........
-                  'CONTENTS_L']:
-
-            count = 0
-
-            for i in range(N):
-                lon, lat = icoordinates[i, :]
-                imp = iattributes[i][a]
-                ref = refimpact_attributes[i][a]
-
-                if numpy.isnan(imp):
-                    continue
-
-                if numpy.allclose(imp, ref, rtol=1.0e-2, atol=1.0e-1):
-                    count += 1
-                #else:
-                #    print a, i, lon, lat, imp, ref
-
-            msg = ('Less than 90\% of calculated impact attributes '
-                   'were outside 2%')
-            assert count * 100. / N > 90, msg
 
     def XXtest_package_metadata(self):
         """Test that riab package loads
@@ -724,11 +561,8 @@ class Test_Engine(unittest.TestCase):
         """
 
         # Name file names for hazard level, exposure and expected fatalities
-
-        # FIXME (Ole): Replace this with normal ASCII raster when
-        #              NaN interpolation has been sorted out (issue #6)
         hazard_filename = ('%s/tsunami_max_inundation_depth_BB_'
-                           'geographic_nan0.asc' % TESTDATA)
+                           'geographic.asc' % TESTDATA)
         exposure_filename = ('%s/tsunami_exposure_BB.shp' % TESTDATA)
 
         # Read input data

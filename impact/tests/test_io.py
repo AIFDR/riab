@@ -364,15 +364,12 @@ class Test_IO(unittest.TestCase):
             # Check that extrema are OK
             assert numpy.allclose(maximum, numpy.max(A[:]))
             assert numpy.allclose(maximum, numpy.nanmax(B[:]))
-
             assert numpy.allclose(minimum, numpy.nanmin(B[:]))
-
 
             # Check that nodata can be replaced by 0.0
             C = R.get_data(nan=0.0)
             msg = '-9999 should have been replaced by 0.0 in %s' % coveragename
             assert min(C.flat[:]) != -9999, msg
-
 
     def test_bins(self):
         """Linear and quantile bins are correct
