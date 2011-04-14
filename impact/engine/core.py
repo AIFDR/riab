@@ -264,7 +264,7 @@ def interpolate_raster_vector(R, V, name=None):
 
     # FIXME (Ole): Replace NODATA with 0 until we can handle proper NaNs
     A = R.get_data(nan=0.0)
-    longitudes, latitudes = R.get_axes()
+    longitudes, latitudes = R.get_geometry()
     assert len(longitudes) == A.shape[1]
     assert len(latitudes) == A.shape[0]
 

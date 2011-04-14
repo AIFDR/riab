@@ -12,7 +12,7 @@ class Raster:
     """Internal representation of raster (coverage) data
     """
 
-    def __init__(self, data, projection=None, geotransform=None, name=''):
+    def __init__(self, data=None, projection=None, geotransform=None, name=''):
         """Initialise object with either data or filename
 
         Input
@@ -58,6 +58,9 @@ class Raster:
             self.columns = data.shape[1]
 
             self.number_of_bands = 1
+
+    def __len__(self):
+        return len(self.data.flat)
 
     def get_name(self):
         return self.name
@@ -202,8 +205,8 @@ class Raster:
 
         return self.geotransform
 
-    def get_axes(self):
-        """Return longitudes and latitudes for grid.
+    def get_geometry(self):
+        """Return longitudes and latitudes (the axes) for grid.
 
         Return two vectors (longitudes and latitudes) corresponding to
         grid. The values are offset by half a pixel size to correspond to

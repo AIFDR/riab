@@ -90,7 +90,6 @@ class Test_Engine(unittest.TestCase):
         assert numpy.allclose(C, F, rtol=1e-12, atol=1e-12), msg
 
         # Check that extrema are in range
-
         xmin, xmax = calculated_raster.get_extrema()
         assert numpy.alltrue(C >= xmin)
         assert numpy.alltrue(C <= xmax)
@@ -472,7 +471,7 @@ class Test_Engine(unittest.TestCase):
         V = read_layer(vector_filename)
 
         # Then test that axes and coveraged returned by R are correct
-        x, y = R.get_axes()
+        x, y = R.get_geometry()
         msg = 'X axes was %s, should have been %s' % (longitudes, x)
         assert numpy.allclose(longitudes, x), msg
         msg = 'Y axes was %s, should have been %s' % (latitudes, y)

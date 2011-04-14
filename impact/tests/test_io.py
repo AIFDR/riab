@@ -11,6 +11,7 @@ from impact.storage.io import write_point_data
 from impact.storage.io import write_coverage
 from impact.storage.utilities import unique_filename
 from impact.storage.io import get_bounding_box
+from impact.tests.utilities import same_API
 from impact.storage.utilities import DEFAULT_PROJECTION
 from impact.tests.utilities import TESTDATA
 
@@ -478,6 +479,25 @@ class Test_IO(unittest.TestCase):
                          'tsunami_exposure_BB.shp']:
             bbox = get_bounding_box(os.path.join(TESTDATA, filename))
             assert numpy.allclose(bbox, ref_bbox[filename])
+
+    def Xtest_layer_API(self):
+        """Vector and Raster instances have the same API
+        """
+
+        V = Vector()  # Empty vector instance
+        R = Raster()  # Empty raster instance
+
+        assert same_API(V, R)
+
+        for layername in ['lembang_schools.shp',
+                          'Lembang_Earthquake_Scenario.asc']:
+
+            filename = '%s/%s' % (TESTDATA, layername)
+            L = read_layer(filename)
+
+            assert same_API(L, V)
+            assert same_API(L, R)
+
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')
