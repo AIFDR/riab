@@ -478,6 +478,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
             return record;
         };
 
+	
         var getSelectedLayerRecord = function() {
             var node = layerTree.getSelectionModel().getSelectedNode();
             return getRecordFromNode(node);
@@ -832,6 +833,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
      });
 
 
+	
 
 function addLayer(server_url, label, layer_name, opacity_value){
       var layer = new OpenLayers.Layer.WMS(
@@ -840,7 +842,32 @@ function addLayer(server_url, label, layer_name, opacity_value){
       );
       var map = app.mapPanel.map;
       map.addLayer(layer);
+      return layer;
 }
+
+function createPopup(feature)
+{
+	var content = "<div style='font-size:.9em; width:270px;'><b>" + feature.attributes.name + "</b><hr />" + "</div>";
+	popup = new GeoExt.Popup({
+		title: 'Details',
+		feature: feature,
+		width:270,
+		height:170,
+		html: content,
+		collapsible: true
+	});
+	popup.on({
+		close: function() 
+		{
+			if(OpenLayers.Util.indexOf(vecLayer.selectedFeatures, this.feature) > -1) 
+			{
+				selectControl.unselect(this.feature);
+			}
+		}
+	});
+	popup.show();
+}
+
 
 function removeLayer(layer_name){
       var map = app.mapPanel.map;
@@ -972,9 +999,19 @@ function received(result, request) {
     var result_name = layer_uri.split('/')[4].split(':')[1]
     var result_label = exposure + ' X ' + hazard + '=' +result_name
     lastImpactSelect=result_label
-    addLayer(server_url, result_label, result_name, 0.9);
-    //removeLayer(lastExposureSelect);
-    //removeLayer(lastHazardSelect);
+    layer=addLayer(server_url, result_label, result_name, 0.9);
+
+    /*    var selectControl = new OpenLayers.Control.SelectFeature([layer]);
+
+    app.mapPanel.map.addControl(selectControl);
+    layer.events.on({
+	featureselected: function(e)
+	{
+		createPopup(e.feature);
+	}
+    });
+    selectControl.activate();
+    */
 }
 
 function calculate()
@@ -1059,7 +1096,7 @@ function calculate()
 
           items:[{
                 id: "calcform",
-                title: "Impact Calculator",
+                title: "Kalkulator Dampak Bencana", //TODO: Use proper internationalization TR:"Impact Calculator",
                 xtype: 'form',
                 labelWidth: 60,
                 height: 180,
@@ -1071,11 +1108,11 @@ function calculate()
                              width: '100%',
                              displayField:'name',
                              valueField: 'name',
-                             fieldLabel: 'Hazard',
+                             fieldLabel: 'Bahaya',//TR:'Hazard',
                              typeAhead: true,
                              mode: 'local',
                              triggerAction: 'all',
-                             emptyText:'Select Hazard...',
+                             emptyText:'Pilih Bahaya...',//TR:'Select Hazard...',
                              selectOnFocus:false,
                              listeners: {
                                 "select": hazardSelected
@@ -1087,11 +1124,11 @@ function calculate()
                              width: '100%',
                              displayField:'name',
                              valueField:'name',
-                             fieldLabel: 'Exposure',
+                             fieldLabel: 'Paparan',//TR:'Exposure',
                              typeAhead: true,
                              mode: 'local',
                              triggerAction: 'all',
-                             emptyText:'Select Exposure...',
+                             emptyText:'Pilih Paparan...',//TR:'Select Exposure...',
                              selectOnFocus:false,
                              disabled: true,
                              listeners: {
@@ -1104,27 +1141,27 @@ function calculate()
                              width: '100%',
                              displayField:'name',
                              valueField:'name',
-                             fieldLabel: 'Function',
+                             fieldLabel: 'Fungsi',//TR:Function',
                              typeAhead: true,
                              mode: 'local',
                              triggerAction: 'all',
                              disabled: true,
-                             emptyText:'Select Function...',
+                             emptyText:'Pilih Fungsi...', //TR:Select Function
                              selectOnFocus:false
 		    }, {
                              xtype: 'progress',
                              id: 'calculateprogress',
 			     cls: 'right-align',
                              displayField:'name',
-			     fieldLabel: 'Calculating',
+			     fieldLabel: 'Menghitung',//'TR:Calculating',
                              hidden: true
 		    }
 		    ],
 
-		buttons: [{text:'Reset',
+		buttons: [{text:'Jelas', //'Reset',
 			   handler:reset_view}
 		         ,{
-                           text: 'Calculate',
+				text: 'Menghitung',//'TR:Calculate',
                            handler: calculate
 			  }]
              },{
@@ -1132,11 +1169,16 @@ function calculate()
                 flex: 2,
                 frame: false,
                 border: false,
-                html:
-            "<img src='/media/theme/img/bnpb_logo.jpg' alt='BNPB' title='BNPB' width=60 style='padding-left: 40px;margin-top:20px'/>" +
-            "<img src='/media/theme/img/bppt_logo.jpg' alt='BPPT' title='BPPT' width=100 style='padding-left: 40px;margin-top:20px'/>" +
-            "<img src='/media/theme/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=200 style='padding-left:40px;margin-top:20px'/>" +
-            "<img src='/media/theme/img/aifdr.png' alt='AIFDR' title='AIFDR' width=200 style='padding-left:40px;padding-top:20px'/>" +
+                html:"<table border=0 width=100% height=100%>"+
+			    "<tr><td><P>&nbsp;<P>&nbsp;</td></tr>"+
+            "<tr><td align='center' valign='bottom'>"+
+            "<img src='/media/theme/img/bnpb_logo.jpg' alt='BNPB' title='BNPB' width=120 style='padding-left: 40px;margin-top:20px'/><P>"+
+            "<img src='/media/theme/img/bppt_logo.jpg' alt='BPPT' title='BPPT' width=150 style='padding-left: 40px;margin-top:20px'/>" +
+            "</td></tr><tr><td align='center' valign='bottom'>"+
+            "Didukung oleh:<P>"+
+	    "<img src='/media/theme/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=100 style='padding-left:40px;margin-top:20px'/><P>" + 
+            "<img src='/media/theme/img/aifdr.png' alt='AIFDR' title='AIFDR' width=100 style='padding-left:40px;padding-top:20px'/>" +
+	    "</td></tr></table>"+
                "",
                 xtype: "panel",
                 defaults:{hideBorders: true}
@@ -1810,11 +1852,11 @@ function calculate()
         });
 
         var updateInfo = function() {
-            var queryableLayers = this.mapPanel.layers.queryBy(function(x){
+            var queryableLayers = app.mapPanel.layers.queryBy(function(x){
                 return x.get("queryable");
             });
 
-            var map = this.mapPanel.map;
+            var map = app.mapPanel.map;
             var control;
             for (var i = 0, len = info.controls.length; i < len; i++){
                 control = info.controls[i];
@@ -1830,17 +1872,17 @@ function calculate()
                     layers: [x.getLayer()],
                     eventListeners: {
                         getfeatureinfo: function(evt) {
-                            this.displayPopup(evt, x.get("title") || x.get("name"));
+                            app.displayPopup(evt, x.get("title") || x.get("name"));
                         },
-                        scope: this
-                    }
-                });
+                        scope: app
+			}}
+                );
                 map.addControl(control);
                 info.controls.push(control);
                 if(infoButton.pressed) {
                     control.activate();
                 }
-            }, this);
+            }, app);
         };
 
         this.mapPanel.layers.on("update", updateInfo, this);
@@ -1946,6 +1988,9 @@ function calculate()
                 disabled: !this.mapID
             }),
             window.printCapabilities ? printButton : "",
+            "-",
+	    infoButton,
+	    measureSplit,
             "-",
             new Ext.Button({
                 handler: function(){
