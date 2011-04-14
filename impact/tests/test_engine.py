@@ -48,6 +48,7 @@ class Test_Engine(unittest.TestCase):
         ED = read_layer(exposure_filename)
 
         plugin_list = plugins.get_plugins('Earthquake Fatality Function')
+
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
         impact_filename = calculate_impact(hazard_level=HD,
@@ -99,111 +100,130 @@ class Test_Engine(unittest.TestCase):
         building locations (vector data).
         """
 
-        # Name file names for hazard level, exposure and expected fatalities
-        hazard_filename = '%s/lembang_mmi_hazmap.asc' % TESTDATA
-        exposure_filename = '%s/lembang_schools.shp' % TESTDATA
+        for mmi_filename in ['lembang_mmi_hazmap.asc',
+                             'Earthquake_Ground_Shaking_clip.tif',  # NaN's
+                             'Lembang_Earthquake_Scenario.asc']:
 
-        # Calculate impact using API
-        HD = read_layer(hazard_filename)
-        ED = read_layer(exposure_filename)
+            # Name file names for hazard level and exposure
+            hazard_filename = '%s/%s' % (TESTDATA, mmi_filename)
+            exposure_filename = '%s/lembang_schools.shp' % TESTDATA
 
-        plugin_list = plugins.get_plugins('Earthquake School Damage Function')
-        # FIXME: Avoid this hacky way to get the impact function
-        _, IF = plugin_list[0].items()[0]
+            # Calculate impact using API
+            HD = read_layer(hazard_filename)
+            ED = read_layer(exposure_filename)
 
-        impact_filename = calculate_impact(hazard_level=HD,
-                                           exposure_level=ED,
-                                           impact_function=IF)
+            plugin_name = 'Earthquake School Damage Function'
+            plugin_list = plugins.get_plugins(plugin_name)
+            # FIXME: Avoid this hacky way to get the impact function
+            _, IF = plugin_list[0].items()[0]
 
-        # Read input data
-        hazard_raster = read_layer(hazard_filename)
-        A = hazard_raster.get_data()
-        mmi_min, mmi_max = hazard_raster.get_extrema()
+            impact_filename = calculate_impact(hazard_level=HD,
+                                               exposure_level=ED,
+                                               impact_function=IF)
 
-        exposure_vector = read_layer(exposure_filename)
-        coordinates, attributes = exposure_vector.get_data()
+            # Read input data
+            hazard_raster = read_layer(hazard_filename)
+            A = hazard_raster.get_data()
+            mmi_min, mmi_max = hazard_raster.get_extrema()
 
-        # Read calculated result
-        impact_vector = read_layer(impact_filename)
-        icoordinates, iattributes = impact_vector.get_data()
+            exposure_vector = read_layer(exposure_filename)
+            coordinates, attributes = exposure_vector.get_data()
 
-        # First check that interpolated MMI was done as expected
-        fid = open('%s/lembang_schools_percentage_loss_and_mmi.txt' % TESTDATA)
-        reference_points = []
-        MMI = []
-        DAM = []
-        for line in fid.readlines()[1:]:
-            fields = line.strip().split(',')
+            # Read calculated result
+            impact_vector = read_layer(impact_filename)
+            icoordinates, iattributes = impact_vector.get_data()
 
-            lon = float(fields[4][1:-1])
-            lat = float(fields[3][1:-1])
-            mmi = float(fields[-1][1:-1])
-            dam = float(fields[-2][1:-1])
+            # First check that interpolated MMI was done as expected
+            fid = open('%s/lembang_schools_percentage_loss_and_mmi.txt'
+                       % TESTDATA)
+            reference_points = []
+            MMI = []
+            DAM = []
+            for line in fid.readlines()[1:]:
+                fields = line.strip().split(',')
 
-            reference_points.append((lon, lat))
-            MMI.append(mmi)
-            DAM.append(dam)
+                lon = float(fields[4][1:-1])
+                lat = float(fields[3][1:-1])
+                mmi = float(fields[-1][1:-1])
+                dam = float(fields[-2][1:-1])
 
-        # Verify that coordinates are consistent
-        msg = 'Interpolated coordinates do not match those of test data'
-        assert numpy.allclose(icoordinates, reference_points), msg
+                reference_points.append((lon, lat))
+                MMI.append(mmi)
+                DAM.append(dam)
 
-        # Verify interpolated MMI with test result
-        min_damage = sys.maxint
-        max_damage = -min_damage
-        for i in range(len(MMI)):
-            #print i, iattributes[i]
-            calculated_mmi = iattributes[i]['MMI']
+            # Verify that coordinates are consistent
+            msg = 'Interpolated coordinates do not match those of test data'
+            assert numpy.allclose(icoordinates, reference_points), msg
 
-            # Check that interpolated points are within range
-            msg = ('Interpolated mmi %f was outside extrema: '
-                   '[%f, %f]. ' % (calculated_mmi, mmi_min, mmi_max))
-            assert mmi_min <= calculated_mmi <= mmi_max, msg
+            # Verify interpolated MMI with test result
+            min_damage = sys.maxint
+            max_damage = -min_damage
+            for i in range(len(MMI)):
+                lon, lat = icoordinates[i][:]
+                calculated_mmi = iattributes[i]['MMI']
 
-            # Check that result is within 2%
-            msg = ('Calculated MMI deviated more than 2\% from '
-                   'what was expected')
-            assert numpy.allclose(calculated_mmi, MMI[i], rtol=0.02), msg
+                if numpy.isnan(calculated_mmi):
+                    continue
 
-            # FIXME (Ole): Has to shorten name to 10 characters
-            #              until issue #1 has been resolved.
-            calculated_dam = iattributes[i]['Percent_da']
-            if calculated_dam > max_damage:
-                max_damage = calculated_dam
+                # Check that interpolated points are within range
+                msg = ('Interpolated mmi %f from file %s was outside '
+                       'extrema: [%f, %f] at location '
+                       '[%f, %f].' % (calculated_mmi, hazard_filename,
+                                      mmi_min, mmi_max, lon, lat))
+                assert mmi_min <= calculated_mmi <= mmi_max, msg
 
-            if calculated_dam < min_damage:
-                min_damage = calculated_dam
+                # Set up some tolerances. Revise when NaN interpolation works
+                if mmi_filename.startswith('Lembang_Earthquake'):
+                    pct = 10
+                else:
+                    pct = 2
 
-            ref_dam = lembang_damage_function(calculated_mmi)
-            msg = ('Calculated damage was not as expected')
-            assert numpy.allclose(calculated_dam, ref_dam, rtol=1.0e-12), msg
+                # Check that interpolated result is within specified tolerance
+                msg = ('Calculated MMI %f deviated more than %.1f%% from '
+                       'what was expected %f' % (calculated_mmi, pct, MMI[i]))
+                assert numpy.allclose(calculated_mmi, MMI[i],
+                                      rtol=float(pct)/100), msg
 
-            # Test that test data is correct by calculating damage based
-            # on reference MMI.
-            # FIXME (Ole): UNCOMMENT WHEN WE GET THE CORRECT DATASET
-            #expected_test_damage = lembang_damage_function(MMI[i])
-            #msg = ('Test data is inconsistent: i = %i, MMI = %f,'
-            #       'expected_test_damage = %f, '
-            #       'actual_test_damage = %f' % (i, MMI[i],
-            #                                    expected_test_damage,
-            #                                    DAM[i]))
-            #if not numpy.allclose(expected_test_damage,
-            #                      DAM[i], rtol=1.0e-12):
-            #    print msg
+                # FIXME (Ole): Has to shorten name to 10 characters
+                #              until issue #1 has been resolved.
+                calculated_dam = iattributes[i]['Percent_da']
+                if calculated_dam > max_damage:
+                    max_damage = calculated_dam
 
-            # Note this test doesn't work, but the question is whether the
-            # independent test data is correct.
-            # Also small fluctuations in MMI can cause very large changes
-            # in computed damage for this example.
-            # print mmi, MMI[i], calculated_damage, DAM[i]
-            #msg = ('Calculated damage was not as expected for point %i:'
-            #       'Got %f, expected %f' % (i, calculated_dam, DAM[i]))
-            #assert numpy.allclose(calculated_dam, DAM[i], rtol=0.8), msg
+                if calculated_dam < min_damage:
+                    min_damage = calculated_dam
 
-        assert min_damage >= 0
-        assert max_damage <= 100
-        #print 'Extrema', min_damage, max_damage
-        #print len(MMI)
+                ref_dam = lembang_damage_function(calculated_mmi)
+                msg = ('Calculated damage was not as expected')
+                assert numpy.allclose(calculated_dam, ref_dam,
+                                      rtol=1.0e-12), msg
+
+                # Test that test data is correct by calculating damage based
+                # on reference MMI.
+                # FIXME (Ole): UNCOMMENT WHEN WE GET THE CORRECT DATASET
+                #expected_test_damage = lembang_damage_function(MMI[i])
+                #msg = ('Test data is inconsistent: i = %i, MMI = %f,'
+                #       'expected_test_damage = %f, '
+                #       'actual_test_damage = %f' % (i, MMI[i],
+                #                                    expected_test_damage,
+                #                                    DAM[i]))
+                #if not numpy.allclose(expected_test_damage,
+                #                      DAM[i], rtol=1.0e-12):
+                #    print msg
+
+                # Note this test doesn't work, but the question is whether the
+                # independent test data is correct.
+                # Also small fluctuations in MMI can cause very large changes
+                # in computed damage for this example.
+                # print mmi, MMI[i], calculated_damage, DAM[i]
+                #msg = ('Calculated damage was not as expected for point %i:'
+                #       'Got %f, expected %f' % (i, calculated_dam, DAM[i]))
+                #assert numpy.allclose(calculated_dam, DAM[i], rtol=0.8), msg
+
+            assert min_damage >= 0
+            assert max_damage <= 100
+            #print 'Extrema', mmi_filename, min_damage, max_damage
+            #print len(MMI)
 
     def test_tsunami_loss_use_case(self):
         """Building loss from tsunami use case works

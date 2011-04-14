@@ -308,6 +308,32 @@ class Test_IO(unittest.TestCase):
             msg = 'Projections were different: %s != %s' % (p1, p2)
             assert p1 == p1, msg
 
+    def test_nodata_value(self):
+        """NODATA value is correctly recorded in GDAL
+        """
+
+        # Read files with -9999 as nominated nodata value
+        for rastername in ['Population_2010_clip.tif',
+                           'Lembang_Earthquake_Scenario.asc',
+                           'Earthquake_Ground_Shaking.asc']:
+
+            filename = '%s/%s' % (TESTDATA, rastername)
+            R = read_layer(filename)
+
+            A = R.get_data()
+
+            # Verify nodata value
+            Amin = min(A.flat[:])
+            msg = ('Raster must have -9999 as its minimum for this test. '
+                   'We got %f for file %s' % (Amin, filename))
+            assert Amin == -9999, msg
+
+            # Verify that GDAL knows about this
+            nodata = R.get_nodata_value()
+            msg = ('File %s should have registered nodata '
+                   'value %i but it was %s' % (filename, Amin, nodata))
+            assert nodata == Amin, msg
+
     def test_raster_extrema_with_NAN(self):
         """Raster extrema including NAN's are correct.
         """
@@ -340,6 +366,13 @@ class Test_IO(unittest.TestCase):
             assert numpy.allclose(maximum, numpy.nanmax(B[:]))
 
             assert numpy.allclose(minimum, numpy.nanmin(B[:]))
+
+
+            # Check that nodata can be replaced by 0.0
+            C = R.get_data(nan=0.0)
+            msg = '-9999 should have been replaced by 0.0 in %s' % coveragename
+            assert min(C.flat[:]) != -9999, msg
+
 
     def test_bins(self):
         """Linear and quantile bins are correct

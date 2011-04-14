@@ -261,8 +261,9 @@ def interpolate_raster_vector(R, V, name=None):
     assert V.is_vector
 
     # Get raster data and corresponding x and y axes
-    #A = R.get_data(nan=True) FIXME: Deal with -9999 in tsunami case
-    A = R.get_data(nan=False)
+
+    # FIXME (Ole): Replace NODATA with 0 until we can handle proper NaNs
+    A = R.get_data(nan=0.0)
     longitudes, latitudes = R.get_axes()
     assert len(longitudes) == A.shape[1]
     assert len(latitudes) == A.shape[0]

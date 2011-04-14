@@ -149,7 +149,11 @@ class Raster:
     def get_data(self, nan=False):
         """Get raster data as numeric array
         If keyword nan is True, nodata values will be replaced with NaN
+        If keyword nan has a numeric value, that will be used for NODATA
         """
+
+        # FIXME (Ole): Once we have the ability to use numpy.nan throughout,
+        #              make that the default and name everything better
 
         if hasattr(self, 'data'):
             A = self.data
@@ -164,11 +168,18 @@ class Raster:
             assert M == self.rows, msg
             assert N == self.columns, msg
 
-        if nan:
+        if nan is False:
+            pass
+        else:
+            if nan is True:
+                NAN = numpy.nan
+            else:
+                NAN = nan
+
             # Replace NODATA_VALUE with NaN
             nodata = self.get_nodata_value()
 
-            NaN = numpy.zeros(A.shape, A.dtype) * numpy.nan
+            NaN = numpy.ones(A.shape, A.dtype) * NAN
             A = numpy.where(A == nodata, NaN, A)
 
         return A
@@ -264,10 +275,17 @@ class Raster:
 
     def get_nodata_value(self):
         """Get the internal representation of NODATA
-        This may be None
+
+        If the internal value is None, the standard -9999 is assumed
         """
 
-        return self.band.GetNoDataValue()
+        nodata = self.band.GetNoDataValue()
+
+        # Use common default in case nodata was not registered in raster file
+        if nodata is None:
+            nodata = -9999
+
+        return nodata
 
     def get_bins(self, N=10, quantiles=False):
         """Get N values between the min and the max occurred in this dataset.
