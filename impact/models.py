@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import datetime
 
+
 class Calculation(models.Model):
     user = models.ForeignKey(User)
     success = models.BooleanField()
@@ -24,10 +25,11 @@ class Calculation(models.Model):
 
     def __unicode__(self):
         if self.success:
-             name = 'Sucessful Calculation'
+            name = 'Sucessful Calculation'
         else:
-             name = 'Failed Calculation'
-        return "%s at %s" % (name, self.run_date)
+            name = 'Failed Calculation'
+        return '%s at %s' % (name, self.run_date)
+
 
 class Server(models.Model):
     name = models.CharField(max_length=255)
@@ -36,12 +38,14 @@ class Server(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Workspace(models.Model):
     user = models.ForeignKey(User)
     servers = models.ManyToManyField(Server)
 
     def __unicode__(self):
         return self.user.username
+
 
 def duration(sender, **kwargs):
     instance = kwargs['instance']

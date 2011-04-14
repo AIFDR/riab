@@ -19,13 +19,10 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(PROJECT_ROOT, 'development.db'),
-        'TEST_NAME': os.path.join(PROJECT_ROOT, 'development.db'),
-    },
-}
+DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3',
+                         'NAME': os.path.join(PROJECT_ROOT, 'development.db'),
+                         'TEST_NAME': os.path.join(PROJECT_ROOT,
+                                                   'development.db')}}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -182,75 +179,68 @@ MAP_BASELAYERSOURCES = {
     'google': {'ptype': 'gx_googlesource',
                'apiKey': GOOGLE_API_KEY}}
 
-MAP_BASELAYERS = [{
-    'source':'any',
-    'type':'OpenLayers.Layer',
-    'args':['No background'],
-    'visibility': False,
-    'fixed': True,
-    'group':'background'
-  }, {
-    'source':'any',
-    'type':'OpenLayers.Layer.OSM',
-    'args':['OpenStreetMap'],
-    'visibility': True,
-    'fixed': True,
-    'group':'background'
-  }, {
-    'source':'any',
-    'type':'OpenLayers.Layer.WMS',
-    'group':'background',
-    'visibility': False,
-    'fixed': True,
-    'args':[
-      'bluemarble',
-      'http://maps.opengeo.org/geowebcache/service/wms',
-      {
-        'layers':['bluemarble'],
-        'format':'image/png',
-        'tiled': True,
-        'tilesOrigin':[-20037508.34, -20037508.34]
-      },
-      {'buffer':0}
-    ]
-  }, {
-    'source':'google',
-    'group':'background',
-    'name':'SATELLITE',
-    'visibility': False,
-    'fixed': True,
-}]
+MAP_BASELAYERS = \
+    [{'source': 'any',
+      'type': 'OpenLayers.Layer',
+      'args': ['No background'],
+      'visibility': False,
+      'fixed': True,
+      'group': 'background'},
+     {'source':'any',
+      'type': 'OpenLayers.Layer.OSM',
+      'args': ['OpenStreetMap'],
+      'visibility': True,
+      'fixed': True,
+      'group':'background'},
+     {'source': 'any',
+      'type': 'OpenLayers.Layer.WMS',
+      'group': 'background',
+      'visibility': False,
+      'fixed': True,
+      'args': ['bluemarble',
+               'http://maps.opengeo.org/geowebcache/service/wms',
+               {'layers': ['bluemarble'],
+                'format': 'image/png',
+                'tiled': True,
+                'tilesOrigin': [-20037508.34, -20037508.34]},
+               {'buffer':0}]},
+     {'source': 'google',
+      'group': 'background',
+      'name': 'SATELLITE',
+      'visibility': False,
+      'fixed': True,
+      }]
 
 # NAVBAR expects a dict of dicts or a path to an ini file
 NAVBAR = \
-{'maps': {'id': '%sLink',
-               'item_class': '',
-               'link_class': '',
-               'text': 'Maps',
-               'url': 'geonode.maps.views.maps'},
- 'data': {'id': '%sLink',
-          'item_class': '',
-          'link_class': '',
-          'text': 'Data',
-          'url': 'geonode.maps.views.browse_data'},
-#  'index': {'id': '%sLink',
-#            'item_class': '',
-#            'link_class': '',
-#            'text': 'Featured Map',
-#            'url': 'geonode.views.index'},
- 'master': {'id': '%sLink',
-            'item_class': '',
-            'link_class': '',
-            'text': 'This page has no tab for this navigation'},
- 'meta': {'active_class': 'here',
-          'default_id': '%sLink',
-          'default_item_class': '',
-          'default_link_class': '',
-          'end_class': 'last',
-          'id': '%sLink',
-          'item_class': '',
-          'link_class': '',
-          'visible': 'data\nmaps'}}
+    {'maps': {'id': '%sLink',
+              'item_class': '',
+              'link_class': '',
+              'text': 'Maps',
+              'url': 'geonode.maps.views.maps'},
+     'data': {'id': '%sLink',
+              'item_class': '',
+              'link_class': '',
+              'text': 'Data',
+              'url': 'geonode.maps.views.browse_data'},
+     #  'index': {'id': '%sLink',
+     #            'item_class': '',
+     #            'link_class': '',
+     #            'text': 'Featured Map',
+     #            'url': 'geonode.views.index'},
+     'master': {'id': '%sLink',
+                'item_class': '',
+                'link_class': '',
+                'text': 'This page has no tab for this navigation'},
+     'meta': {'active_class': 'here',
+              'default_id': '%sLink',
+              'default_item_class': '',
+              'default_link_class': '',
+              'end_class': 'last',
+              'id': '%sLink',
+              'item_class': '',
+              'link_class': '',
+              'visible': 'data\nmaps'}}
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -275,16 +265,15 @@ INSTALLED_APPS = (
 
 
 def get_user_url(u):
-    '''Helper function for profile module
-    '''
+    """Helper function for profile module
+    """
+
     from django.contrib.sites.models import Site
     s = Site.objects.get_current()
     return 'http://' + s.domain + '/profiles/' + u.username
 
 
-ABSOLUTE_URL_OVERRIDES = {
-    'auth.user': get_user_url
-}
+ABSOLUTE_URL_OVERRIDES = {'auth.user': get_user_url}
 
 AUTH_PROFILE_MODULE = 'maps.Contact'
 REGISTRATION_OPEN = False

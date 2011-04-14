@@ -61,7 +61,6 @@ def calculate(request, save_output=storage.io.dummy_save):
         bbox = data['bbox']
         keywords = data['keywords']
 
-
     # Get a valid user
     theuser = get_valid_user(request.user)
 
@@ -81,7 +80,6 @@ def calculate(request, save_output=storage.io.dummy_save):
                               success=False,
                             )
     calculation.save()
-
 
     hazard_filename = storage.download(hazard_server, hazard_layer, bbox)
     exposure_filename = storage.download(exposure_server,
@@ -105,15 +103,21 @@ def calculate(request, save_output=storage.io.dummy_save):
     calculation.success = True
     calculation.save()
 
-
     output = calculation.__dict__
-    # json.dumps does not like datetime objects, let's make it a json string ourselves
-    output['run_date'] =  'new Date("%s")' % calculation.run_date
+
+    # json.dumps does not like datetime objects,
+    # let's make it a json string ourselves
+    output['run_date'] = 'new Date("%s")' % calculation.run_date
+
     # FIXME:This should not be needed in and ideal world
-    output['ows_server_url'] = ows_server_url=settings.GEOSERVER_BASE_URL + 'ows',
+    ows_server_url = settings.GEOSERVER_BASE_URL + 'ows',
+    output['ows_server_url'] = ows_server_url
+
     # json.dumps does not like django users
     output['user'] = calculation.user.username
-    # Delete _state and _user_cache item from the dict, they were created automatically by Django
+
+    # Delete _state and _user_cache item from the dict,
+    # they were created automatically by Django
     del output['_user_cache']
     del output['_state']
     jsondata = json.dumps(output)
@@ -123,14 +127,13 @@ def calculate(request, save_output=storage.io.dummy_save):
 def functions(request):
     """Get a list of all the functions
 
-       Will provide a list of plugin functions and the layers that the plugins will
-       work with. Takes geoserver urls as a GET parameter can have a comma
-       separated list
+       Will provide a list of plugin functions and the layers that
+       the plugins will work with. Takes geoserver urls as a GET
+       parameter can have a comma separated list
 
        e.g. http://127.0.0.1:8000/riab/api/v1/functions/?geoservers=http:...
        assumes version 1.0.0
     """
-
 
     plugin_list = plugins.get_plugins()
 
@@ -174,7 +177,7 @@ def get_servers(user):
     except Workspace.DoesNotExist:
         workspace = Workspace.objects.get(user__username='default')
     servers = workspace.servers.all()
-    geoservers = [{'url': settings.GEOSERVER_BASE_URL+ 'ows',
+    geoservers = [{'url': settings.GEOSERVER_BASE_URL + 'ows',
                    'name': 'Local Geoserver',
                    'version': '1.0.0', 'id':0}]
     for server in servers:
@@ -182,9 +185,10 @@ def get_servers(user):
         geoservers.append({'url': server.url,
                            'name': server.name,
                            'id': server.id,
-                           'version':'1.0.0'})
+                           'version': '1.0.0'})
 
     return geoservers
+
 
 def servers(request):
     """ Get the list of all the servers registered for a given user.
@@ -195,6 +199,7 @@ def servers(request):
     output = {'servers': geoservers}
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')
+
 
 def layers(request):
     """ Get the list of all layers annotated with metadata
@@ -210,27 +215,27 @@ def layers(request):
     else:
         requested_category = None
     layers_metadata = []
-    #iterate across all available geoservers and return every layer
-    #and associated keywords
+
+    # Iterate across all available geoservers and return every layer
+    # and associated keywords
     for geoserver in geoservers:
         layers = storage.get_layers_metadata(geoserver['url'],
-                                        geoserver['version'])
+                                             geoserver['version'])
         for layer in layers:
-             out = {'name' : layer[0],
-                    'server_url' : geoserver['url'],
-                   }
-             metadata = layer[1]
-             if 'category' in metadata.keys():
-                 category = metadata['category']
-             else:
-                 category = None
+            out = {'name': layer[0],
+                   'server_url': geoserver['url']}
+            metadata = layer[1]
+            if 'category' in metadata.keys():
+                category = metadata['category']
+            else:
+                category = None
 
-             if requested_category is not None:
-                 if requested_category == category:
-                     layers_metadata.append(out)
-             else:
-                 layers_metadata.append(out)
+            if requested_category is not None:
+                if requested_category == category:
+                    layers_metadata.append(out)
+            else:
+                layers_metadata.append(out)
 
-    output = {'objects':layers_metadata}
+    output = {'objects': layers_metadata}
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')

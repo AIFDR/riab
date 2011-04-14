@@ -1,5 +1,5 @@
-
 from impact.plugins.core import FunctionProvider
+
 
 class EarthquakeFatalityFunction(FunctionProvider):
     """Risk plugin for earthquake damage
@@ -25,4 +25,3 @@ class EarthquakeFatalityFunction(FunctionProvider):
 
         # Return
         return F
-

@@ -9,6 +9,7 @@ import types
 # FIXME (Ole): I think we should pass the module name to get_function to
 #              keep things together
 
+
 class PluginMount(type):
     def __init__(cls, name, bases, attrs):
         if not hasattr(cls, 'plugins'):
@@ -60,18 +61,21 @@ def get_plugins(name=None):
        Or all of them if no name is passed.
     """
 
-    plugins_dict = dict([(pretty_function_name(p), p) for p in FunctionProvider.plugins])
-    
-    if name is None:    
+    plugins_dict = dict([(pretty_function_name(p), p)
+                         for p in FunctionProvider.plugins])
+
+    if name is None:
         return plugins_dict
 
     if isinstance(name, basestring):
         #Add the names
-        plugins_dict.update(dict([(p.__name__, p) for p in FunctionProvider.plugins]))
+        plugins_dict.update(dict([(p.__name__, p)
+                                  for p in FunctionProvider.plugins]))
 
-        msg = ('No plugin named "%s" was found. List of available plugins is: %s'
+        msg = ('No plugin named "%s" was found. '
+               'List of available plugins is: %s'
                % (name, ', '.join(plugins_dict.keys())))
-            
+
         assert name in plugins_dict, msg
         return [{name: plugins_dict[name]}]
     else:

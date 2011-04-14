@@ -7,11 +7,13 @@ import unittest
 import urllib2
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
-                       'riab_data', 'risiko_test_data')
+                         'riab_data', 'risiko_test_data')
+
 
 def check_layer(uploaded):
     """Verify if an object is a valid Layer.
     """
+
     msg = ('Was expecting layer object, got %s' % (type(uploaded)))
     assert type(uploaded) is Layer, msg
     msg = ('The layer does not have a valid name: %s' % uploaded.name)
@@ -67,9 +69,7 @@ class Test_utilities(unittest.TestCase):
         expected_layers = []
         not_expected_layers = []
         datadir = TEST_DATA
-        BAD_LAYERS = [
-            'lembang_schools_percentage_loss.shp',
-        ]
+        BAD_LAYERS = ['lembang_schools_percentage_loss.shp']
 
         for filename in os.listdir(datadir):
             basename, extension = os.path.splitext(filename)
@@ -77,9 +77,7 @@ class Test_utilities(unittest.TestCase):
                 if filename not in BAD_LAYERS:
                     expected_layers.append(os.path.join(datadir, filename))
                 else:
-                    not_expected_layers.append(
-                                    os.path.join(datadir, filename)
-                                             )
+                    not_expected_layers.append(os.path.join(datadir, filename))
         uploaded = upload(datadir)
 
         for item in uploaded:
@@ -141,7 +139,8 @@ class Test_utilities(unittest.TestCase):
     def test_extension_not_implemented(self):
         """Verify a GeoNodeException is returned for not compatible extensions
         """
-        sampletxt = os.path.join(TEST_DATA, 'lembang_schools_percentage_loss.dbf')
+        sampletxt = os.path.join(TEST_DATA,
+                                 'lembang_schools_percentage_loss.dbf')
         try:
             file_upload(sampletxt)
         except GeoNodeException, e:
@@ -150,7 +149,6 @@ class Test_utilities(unittest.TestCase):
             msg = ('Expected an exception for invalid .dbf type')
             assert False, msg
 
-
     def test_shapefile(self):
         """Uploading a good shapefile
         """
@@ -158,12 +156,12 @@ class Test_utilities(unittest.TestCase):
         uploaded = file_upload(thefile)
         check_layer(uploaded)
 
-
     def test_bad_shapefile(self):
         """Verifying GeoNode complains about a shapefile without .prj
         """
 
-        thefile = os.path.join(TEST_DATA, 'lembang_schools_percentage_loss.shp')
+        thefile = os.path.join(TEST_DATA,
+                               'lembang_schools_percentage_loss.shp')
         try:
             uploaded = file_upload(thefile)
         except GeoNodeException, e:
@@ -173,7 +171,6 @@ class Test_utilities(unittest.TestCase):
                    (GeoNodeException, type(e)))
             assert e is GeoNodeException, msg
 
-
     def test_tiff(self):
         """Uploading a good tiff
         """
@@ -181,14 +178,12 @@ class Test_utilities(unittest.TestCase):
         uploaded = file_upload(thefile)
         check_layer(uploaded)
 
-
     def test_asc(self):
         """Uploading a good .asc
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
         uploaded = file_upload(thefile)
         check_layer(uploaded)
-
 
     def test_repeated_upload(self):
         """Upload the same file more than once
@@ -216,9 +211,9 @@ class Test_utilities(unittest.TestCase):
         except GeoNodeException, e:
             pass
         else:
-            msg = 'get_valid_layer_name accepted a time object and did not complain'
+            msg = ('Get_valid_layer_name accepted a time'
+                   ' object and did not complain')
             assert False, msg
-
 
     def test_non_existing_file(self):
         """Verify a GeoNodeException is returned for not existing file
@@ -246,7 +241,6 @@ class Test_utilities(unittest.TestCase):
             msg = ('Expected an exception for non existing dir')
             assert False, msg
 
-
     def test_single_file_batch(self):
         """Test single file using batch upload function
         """
@@ -259,7 +253,6 @@ class Test_utilities(unittest.TestCase):
             i += 1
         msg = ('Only one file was expected and got %d' % i)
         assert i == 1, msg
-
 
     def test_cleanup(self):
         """Test the cleanup functions in the utils module
@@ -280,7 +273,8 @@ class Test_utilities(unittest.TestCase):
         except GeoNodeException, e:
             pass
         else:
-            msg = ('Cleaup should raise an exception if the layer [%s] exists in the django db' % name)
+            msg = ('Cleaup should raise an exception if the layer [%s]'
+                   ' exists in the django db' % name)
             assert False, msg
 
         # Manually delete the layer object with SQL

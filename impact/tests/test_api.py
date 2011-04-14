@@ -20,7 +20,6 @@ TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
 AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
 
 
-
 class Test_HTTP(unittest.TestCase):
 
     def setUp(self):
@@ -29,17 +28,21 @@ class Test_HTTP(unittest.TestCase):
     def test_functions(self):
         """Functions can be retrieved from the HTTP Rest API
         """
+
         c = Client()
 
         rv = c.get('/api/v1/functions/')
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         data = json.loads(rv.content)
+
         msg = ('The api should return a dictionary with at least one item. '
                'The key of that item should be "functions"')
         assert 'functions' in data, msg
         functions = data['functions']
-        msg = ('No functions were found in the functions list, not even the built-in ones')
+
+        msg = ('No functions were found in the functions list, '
+               'not even the built-in ones')
         assert len(functions) > 0, msg
 
     def test_layers(self):
@@ -51,7 +54,6 @@ class Test_HTTP(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         data = json.loads(rv.content)
-
 
     def test_calculate_fatality(self):
         """Earthquake fatalities calculation via the HTTP Rest API is correct
@@ -88,7 +90,7 @@ class Test_HTTP(unittest.TestCase):
 
         msg = ('A new style should have been created for layer [%s] '
                'got [%s] style instead.' % (name, layer.default_style.name))
-        assert layer.default_style.name==name, msg
+        assert layer.default_style.name == name, msg
 
     def test_calculate_school_damage(self):
         """Test earthquake school damage calculation via the HTTP Rest API
@@ -118,6 +120,6 @@ class Test_HTTP(unittest.TestCase):
 
 
 if __name__ == '__main__':
-   suite = unittest.makeSuite(Test_HTTP, 'test')
-   runner = unittest.TextTestRunner(verbosity=2)
-   runner.run(suite)
+    suite = unittest.makeSuite(Test_HTTP, 'test')
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(suite)

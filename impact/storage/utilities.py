@@ -45,6 +45,7 @@ def unique_filename(suffix=None):
 WFS_NAMESPACE = '{http://www.opengis.net/wfs}'
 WCS_NAMESPACE = '{http://www.opengis.net/wcs}'
 
+
 def is_server_reachable(url):
     """Make an http connection to url to see if it is accesible.
 
@@ -56,6 +57,7 @@ def is_server_reachable(url):
         return False
     else:
         return True
+
 
 def get_layers_metadata(url, version, feature=None):
     '''
@@ -228,4 +230,3 @@ class WFSCapabilitiesReader(object):
             raise ValueError(
                 "String must be of type string, not %s" % type(st))
         return etree.fromstring(st)
-

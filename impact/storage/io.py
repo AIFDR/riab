@@ -22,6 +22,7 @@ from vector import Vector
 from raster import Raster
 from impact.storage.utilities import get_layers_metadata
 
+
 def read_layer(filename):
     """Read spatial layer from file.
     This can be either coverage or vector data.
@@ -96,8 +97,6 @@ WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'
 
 
-
-
 def get_bounding_box(filename, verbose=False):
     """Get bounding box for specified raster or vector file
     """
@@ -162,7 +161,6 @@ def download(server_url, layer_name, bbox):
 
     assert isinstance(layer_name, basestring)
 
-
     if isinstance(bbox, list):
         assert len(bbox) == 4
         bbox_string = '%f,%f,%f,%f' % tuple(bbox)
@@ -218,7 +216,3 @@ def dummy_save(filename, title, user, metadata=''):
     """Take a file-like object and uploads it to a GeoNode
     """
     return 'http://dummy/data/geonode:' + filename + '_by_' + user.username
-
-
-
-

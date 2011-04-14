@@ -19,6 +19,7 @@ from impact.engine.interpolation import raster_spline
 
 from impact.storage.utilities import unique_filename
 
+
 def calculate_impact(hazard_level, exposure_level, impact_function,
                      comment=''):
     """Calculate impact levels as a function of hazard and exposure levels

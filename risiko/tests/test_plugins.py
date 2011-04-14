@@ -20,6 +20,7 @@ internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
 import warnings
 
+
 class BasicFunction(FunctionProvider):
     """Risk plugin for testing
 
@@ -65,10 +66,9 @@ class Test_plugins(unittest.TestCase):
         plugin_list = get_plugins('BasicFunction')
         assert(len(plugin_list) == 1)
 
-
         requirements = requirements_collect(plugin_list[0].values()[0])
-        msg = 'requirements are %s' % requirements
-        assert(len(requirements)==1), msg
+        msg = 'Requirements are %s' % requirements
+        assert(len(requirements) == 1), msg
         for req_str in requirements:
             msg = 'Should eval to True'
             assert(requirement_check({'category': 'hazard'},
@@ -91,7 +91,7 @@ class Test_plugins(unittest.TestCase):
         plugin_list = get_plugins()
         assert(len(plugin_list) > 0)
 
-        geoserver = {'url': settings.GEOSERVER_BASE_URL+ 'ows',
+        geoserver = {'url': settings.GEOSERVER_BASE_URL + 'ows',
                      'name': 'Local Geoserver',
                      'version': '1.0.0',
                      'id': 0}
@@ -110,7 +110,6 @@ class Test_plugins(unittest.TestCase):
             msg = 'layers for %s are empty' % v['name']
             assert(len(v['layers']) > 0), msg
 #        print str(annotated_plugins)
-
 
     def test_django_plugins(self):
         """Django plugin functions can be retrieved correctly
@@ -151,4 +150,3 @@ if __name__ == '__main__':
     suite = unittest.makeSuite(Test_plugins, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-

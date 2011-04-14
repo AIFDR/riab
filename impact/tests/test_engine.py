@@ -465,8 +465,7 @@ class Test_Engine(unittest.TestCase):
                   'CONTENTS_L']:
 
             count = 0
-            #print
-            #print a
+
             for i in range(N):
                 lon, lat = icoordinates[i, :]
                 imp = iattributes[i][a]

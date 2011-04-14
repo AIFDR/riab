@@ -75,7 +75,6 @@ class Vector:
         * http://www.packtpub.com/article/geospatial-data-python-geometry
         """
 
-
         self.name, _ = os.path.splitext(filename)
 
         fid = ogr.Open(filename)
@@ -307,10 +306,10 @@ class Vector:
         Format is [West, South, East, North]
         """
         e = self.extent
-        return [e[0], # West
-                e[2], # South
-                e[1], # East
-                e[3]] # North
+        return [e[0],  # West
+                e[2],  # South
+                e[1],  # East
+                e[3]]  # North
 
     @property
     def is_raster(self):

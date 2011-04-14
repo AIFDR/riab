@@ -1,5 +1,6 @@
 from impact.plugins import FunctionProvider
 
+
 class EmpiricalFatalityFunction(FunctionProvider):
     """Risk plugin for earthquake damage based on empirical results
 
@@ -22,12 +23,12 @@ class EmpiricalFatalityFunction(FunctionProvider):
         # Calculate impact
         logHazard = 1 / beta * scipy.log(H / teta)
 
-        ## for some reason cdf function requires all the values to be stanard floats
-        ## the next line just converts them to floats
-        arryout = numpy.array([[float(value) for value in row] for row in logHazard])
-        F = scipy.stats.norm.cdf(arryout * E)
+        # Convert array to be standard floats expected by cdf
+        arrayout = numpy.array([[float(value) for value in row]
+                               for row in logHazard])
+        F = scipy.stats.norm.cdf(arrayout * E)
 
-        # F = round(arryout * E)
+        # F = round(arrayout * E)
         return F
 
 

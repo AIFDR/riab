@@ -14,6 +14,7 @@ from impact.storage.io import get_bounding_box
 from impact.storage.utilities import DEFAULT_PROJECTION
 from impact.tests.utilities import TESTDATA
 
+
 # Auxiliary function for raster test
 def linear_function(x, y):
     """Auxiliary function for use with raster test
@@ -41,7 +42,6 @@ class Test_IO(unittest.TestCase):
 
         r = Raster(None)
         assert r.get_name().startswith('Empty raster')
-
 
     def test_reading_and_writing_of_vector_data(self):
         """Vector data can be read and written correctly
@@ -435,16 +435,17 @@ class Test_IO(unittest.TestCase):
 
         """
 
-        ref_bbox = {'tsunami_exposure_BB.shp': [150.124,  # West
-                                                -35.7856, # South
-                                                150.295,  # East
-                                                -35.6546], # North
+        ref_bbox = {'tsunami_exposure_BB.shp': [150.124,
+                                                -35.7856,
+                                                150.295,
+                                                -35.6546],
                     'Earthquake_Ground_Shaking_clip.tif': [99.3641696,
                                                            -2.2031806,
                                                            102.2411696,
                                                            -0.0041806]}
 
-        for filename in ['Earthquake_Ground_Shaking_clip.tif', 'tsunami_exposure_BB.shp']:
+        for filename in ['Earthquake_Ground_Shaking_clip.tif',
+                         'tsunami_exposure_BB.shp']:
             bbox = get_bounding_box(os.path.join(TESTDATA, filename))
             assert numpy.allclose(bbox, ref_bbox[filename])
 
