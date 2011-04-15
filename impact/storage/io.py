@@ -108,6 +108,7 @@ def get_bounding_box(filename, verbose=False):
 def get_metadata(server_url, layer_name):
     """Uses OWS services to determine if the data is raster or vector
     """
+
     themetadata = get_layers_metadata(server_url, version='1.0.0')
 
     stuff = [x[1] for x in themetadata if x[0] == layer_name]
@@ -171,20 +172,19 @@ def download(server_url, layer_name, bbox):
                'format [west, south, east, north]. I got %s' % bbox)
         raise Exception(msg)
 
+    # In GeoNode/GeoServer it is OK to pass a raster name without workspace
+    # whereas vector layers must have one.
+    # Here we enforce the requirement to always provide workspace
+    msg = ('Layer must have the format "workspace:name". I got "%s".'
+           % layer_name)
+    assert layer_name.find(':') > -1 and len(layer_name.split(':')) == 2, msg
+
     # FIXME(Ole): Throw meaningful exception when invalid workspace and
     #             layer names are encountered.
     #             Currently something bad is downloaded in those cases.
-    #             See test_calculation
+    #             See uncommented test for this in test_calculation
 
-    # FIXME (Ole): Currently it is OK to pass a raster name without workspace
-    #              whereas vector layers must have one.
-    #              This should be consistent
-
-    #print
-    #print server_url
-    #print layer_name
-    #print bbox_string
-
+    # Create REST request and download file
     template = None
     layer_metadata = get_metadata(server_url, layer_name)
     data_type = layer_metadata['layerType']

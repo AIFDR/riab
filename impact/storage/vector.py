@@ -294,6 +294,11 @@ class Vector:
                    'coordinates and attributes')
             raise Exception(msg)
 
+    # FIXME: Start using this
+    def get_geometry(self):
+        return self.coordinates
+
+    # FIXME: Retire this
     def get_coordinates(self):
         return self.coordinates
 

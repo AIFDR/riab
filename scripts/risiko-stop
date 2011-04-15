@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-"""Stop Geoserver
+"""Stop process
 """
 
 import os, time
 from subprocess import Popen, PIPE
-
 
 def kill(arg1, arg2):
     """Stops a proces that contains arg1 and is filtered by arg2
@@ -34,14 +33,16 @@ def kill(arg1, arg2):
                 kill = 'kill -9 %s 2> /dev/null' % fields[1]
                 os.system(kill)
 
-
         # Give it a little more time
         time.sleep(1)
     else:
-        print 'There are no process containing "%s" running' % arg1
+        #print 'There are no process containing "%s" running' % arg1
+        pass
+
     if running:
-        raise Exception('Could not stop geoserver: '
-                        'Processes are\n %s' % str(lines))
+        raise Exception('Could not stop %s: '
+                        'Running processes are\n%s'
+                        % (arg1, '\n'.join([l.strip() for l in lines])))
 
 # Kill GeoServer
 kill('tomcat', 'java')
