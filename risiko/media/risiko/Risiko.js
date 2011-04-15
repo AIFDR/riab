@@ -945,8 +945,10 @@ function exposureSelected(combo){
        combo.store.removeAll(); 
        combo.store.totalLength = 0;
        
-       for each (var item in items){
-          if (item.data === undefined){
+       
+       for (var ii =0; ii< items.length; ii++) {
+	   var item=items[ii];
+	 if (item.data == undefined){
               continue;
           }
           name = item.data.name;
@@ -954,11 +956,12 @@ function exposureSelected(combo){
           found_exposure = false;
           found_hazard = false;
           // Find if hazard is in layers
-          for each(var lay in layers){
-               if (lay === exposure_name) {              
+          for (var li=0; li<layers.length; li++){
+	       lay=layers[li];
+               if (lay == exposure_name) {              
                     found_exposure = true;
                } 
-               if (lay === hazard_name) {              
+               if (lay == hazard_name) {              
                     found_hazard = true;
                } 
           }
@@ -1001,7 +1004,7 @@ function received(result, request) {
     lastImpactSelect=result_label
     layer=addLayer(server_url, result_label, result_name, 0.9);
 
-    /*    var selectControl = new OpenLayers.Control.SelectFeature([layer]);
+    var selectControl = new OpenLayers.Control.SelectFeature(layer);
 
     app.mapPanel.map.addControl(selectControl);
     layer.events.on({
@@ -1011,7 +1014,7 @@ function received(result, request) {
 	}
     });
     selectControl.activate();
-    */
+    
 }
 
 function calculate()
