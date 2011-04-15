@@ -75,7 +75,7 @@ class Projection:
         return p.strip()
 
     def __eq__(self, other):
-        """Override '=' to allow comparison with other projection objecs
+        """Override '==' to allow comparison with other projection objecs
         """
 
         try:

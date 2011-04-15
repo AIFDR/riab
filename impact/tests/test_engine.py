@@ -339,6 +339,44 @@ class Test_Engine(unittest.TestCase):
             if depth > 0 and contents_damage > 0:
                 assert contents_damage != structural_damage
 
+
+    def Xtest_tephra_load_impact(self):
+        """Hypothetical tephra load scenario can be computed
+
+        This test also exercises reprojection of UTM data
+        """
+
+        # File names for hazard level and exposure
+        hazard_filename = '%s/%s' % (TESTDATA,
+                                     'hypothetical_tephra_load.asc')
+        exposure_filename = '%s/lembang_schools.shp' % TESTDATA
+
+        # Calculate impact using API
+        HD = read_layer(hazard_filename)
+        ED = read_layer(exposure_filename)
+
+        plugin_name = 'Earthquake School Damage Function'
+        plugin_list = plugins.get_plugins(plugin_name)
+        # FIXME: Avoid this hacky way to get the impact function
+        _, IF = plugin_list[0].items()[0]
+
+        impact_filename = calculate_impact(hazard_level=HD,
+                                           exposure_level=ED,
+                                           impact_function=IF)
+
+        # Read input data
+        hazard_raster = read_layer(hazard_filename)
+        A = hazard_raster.get_data()
+        mmi_min, mmi_max = hazard_raster.get_extrema()
+
+        exposure_vector = read_layer(exposure_filename)
+        coordinates, attributes = exposure_vector.get_data()
+
+        # Read calculated result
+        impact_vector = read_layer(impact_filename)
+        coordinates, attributes = impact_vector.get_data()
+
+
     def XXtest_package_metadata(self):
         """Test that riab package loads
         """
