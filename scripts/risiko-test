@@ -8,6 +8,8 @@ echo; echo ">>> Starting Django server with GeoNode"; echo
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
 echo; echo ">>> Running pylint to check code quality. See pylint.output for details"; echo
 cd $RIAB_HOME/riab/;pylint risiko impact > pylint.output 2> pylint.err
+echo; echo ">>> Reporting FIXME's in source code"; echo
+cd $RIAB_HOME/riab/;grep -n -R --exclude *.pyc --exclude *.log --exclude *.log.* FIXME risiko impact
 echo; echo ">>> Reporting PEP8 non compliances"; echo
 cd $RIAB_HOME/riab/;pep8 --repeat --ignore=E203 risiko impact
 echo; echo  ">>> Total number of lines: "
