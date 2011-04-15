@@ -176,14 +176,13 @@ def download(server_url, layer_name, bbox):
     #             Currently something bad is downloaded in those cases.
     #             See test_calculation
 
-    # FIXME (Ole): Currently it is OK to pass a raster name without workspace
-    #              whereas vector layers must have one.
-    #              This should be consistent
-
-    #print
-    #print server_url
-    #print layer_name
-    #print bbox_string
+    # In GeoNode/GeoServer it is OK to pass a raster name without workspace
+    # whereas vector layers must have one.
+    # Here we enforce the requirement to always provide workspace in order to
+    # be consistent
+    msg = ('Layer must have the format "workspace:name". I got "%s".'
+           % layer_name)
+    assert layer_name.find(':') > -1 and len(layer_name.split(':')) == 2, msg
 
     template = None
     layer_metadata = get_metadata(server_url, layer_name)

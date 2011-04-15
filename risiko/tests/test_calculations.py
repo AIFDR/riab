@@ -39,7 +39,7 @@ class Test_calculations(unittest.TestCase):
         """Data can be uploaded and downloaded from internal GeoServer
         """
 
-        # Upload a data set
+        # Upload a raster and a vector data set
         for filename in ['lembang_mmi_hazmap.tif', 'lembang_schools.shp']:
             basename, ext = os.path.splitext(filename)
 
@@ -90,13 +90,24 @@ class Test_calculations(unittest.TestCase):
                                         bbox)
             assert os.path.exists(downloaded_layer.filename)
 
-            # Using only name without using workspace
+            # Check that exception is raised when using name without workspace
             # FIXME (Ole): This works for raster but not for vector layers
             #
-            #downloaded_layer = download(internal_server,
-            #                            layer_name,
-            #                            bbox)
-            #assert os.path.exists(downloaded_layer.filename)
+            try:
+                downloaded_layer = download(internal_server,
+                                            layer_name,
+                                            bbox)
+            except AssertionError, e:
+                expected_error = 'Layer must have the format "workspace:name"'
+                msg = ('Exception was raised but error message was: %s\n'
+                       'I expected error message: %s...' % (e, expected_error))
+                assert str(e).startswith(expected_error), msg
+            else:
+                msg = ('Assertion error should have been raised for layer '
+                       'name %s which is not preceded by workspace'
+                       % layer_name)
+                raise Exception(msg)
+
 
             # Check handling of invalid workspace name
             #try:
