@@ -60,8 +60,7 @@ def is_server_reachable(url):
 
 
 def get_layers_metadata(url, version, feature=None):
-    '''
-    Return the metadata for each layers as an dict formed from the keywords
+    """Return the metadata for each layers as an dict formed from the keywords
 
     Assumes the format for the keywords is "identifier:value"
 
@@ -77,7 +76,8 @@ def get_layers_metadata(url, version, feature=None):
         based on OWSLib vs 2.0.0.
         http://trac.gispython.org/lab/browser/OWSLib/...
               trunk/owslib/feature/wfs200.py#L402
-    '''
+    """
+
     # Make sure the server is reachable before continuing
     msg = ('Server %s is not reachable' % url)
     if not is_server_reachable(url):
@@ -135,10 +135,10 @@ def get_layers_metadata(url, version, feature=None):
             kwds = kwds[0].findall(NAMESPACE + 'keyword')
         if kwds is not None:
             for kwd in kwds[:]:
-                #split all the kepairs
+                # Split all the kepairs
                 keypairs = str(kwd.text).split(',')
                 for val in keypairs:
-                    # only use keywords containing at least one :
+                    # Only use keywords containing at least one :
                     if str(val).find(':') > -1:
                         k, v = val.split(':')
                         keywords[k.strip()] = v.strip()

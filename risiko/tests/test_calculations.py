@@ -91,8 +91,6 @@ class Test_calculations(unittest.TestCase):
             assert os.path.exists(downloaded_layer.filename)
 
             # Check that exception is raised when using name without workspace
-            # FIXME (Ole): This works for raster but not for vector layers
-            #
             try:
                 downloaded_layer = download(internal_server,
                                             layer_name,
