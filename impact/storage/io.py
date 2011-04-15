@@ -131,6 +131,7 @@ def get_metadata(server_url, layer_name):
 def get_file(download_url, suffix):
     """Download a file from an HTTP server.
     """
+
     tempdir = '/tmp/%s' % str(time.time())
     os.mkdir(tempdir)
     t = tempfile.NamedTemporaryFile(delete=False,
@@ -172,12 +173,16 @@ def download(server_url, layer_name, bbox):
                'format [west, south, east, north]. I got %s' % bbox)
         raise Exception(msg)
 
+
     # In GeoNode/GeoServer it is OK to pass a raster name without workspace
     # whereas vector layers must have one.
     # Here we enforce the requirement to always provide workspace
     msg = ('Layer must have the format "workspace:name". I got "%s".'
            % layer_name)
-    assert layer_name.find(':') > -1 and len(layer_name.split(':')) == 2, msg
+    # FIXME (Ole): I have disabled this test because raster layer
+    # names come from GeoServer without preceding workspace.
+    # This has been raised in issue #31
+    #assert layer_name.find(':') > -1 and len(layer_name.split(':')) == 2, msg
 
     # FIXME(Ole): Throw meaningful exception when invalid workspace and
     #             layer names are encountered.

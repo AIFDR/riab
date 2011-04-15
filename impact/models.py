@@ -5,6 +5,9 @@ import datetime
 
 
 class Calculation(models.Model):
+    """Calculation model
+    """
+
     user = models.ForeignKey(User)
     success = models.BooleanField()
     run_date = models.DateTimeField()

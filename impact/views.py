@@ -68,6 +68,7 @@ def calculate(request, save_output=storage.io.dummy_save):
     _, impact_function = plugin_list[0].items()[0]
     impact_function_source = inspect.getsource(impact_function)
 
+    # Create entry in database
     calculation = Calculation(user=theuser,
                               run_date=start,
                               hazard_server=hazard_server,
@@ -81,6 +82,11 @@ def calculate(request, save_output=storage.io.dummy_save):
                             )
     calculation.save()
 
+    # Download selected layers
+    print 'Downloading'
+    print hazard_layer
+    print exposure_layer
+
     hazard_filename = storage.download(hazard_server, hazard_layer, bbox)
     exposure_filename = storage.download(exposure_server,
                                          exposure_layer,
@@ -91,8 +97,8 @@ def calculate(request, save_output=storage.io.dummy_save):
     ED = exposure_filename
     IF = impact_function
     impact_filename = engine.calculate_impact(hazard_level=HD,
-                                                   exposure_level=ED,
-                                                   impact_function=IF)
+                                              exposure_level=ED,
+                                              impact_function=IF)
     result = save_output(
                   filename=impact_filename,
                   title='output_%s' % start.isoformat(),
