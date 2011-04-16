@@ -478,7 +478,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
             return record;
         };
 
-	
+
         var getSelectedLayerRecord = function() {
             var node = layerTree.getSelectionModel().getSelectedNode();
             return getRecordFromNode(node);
@@ -780,7 +780,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
     //FIXME: Implement drawing the polygon with the bounding box at the end
     //       of the calculation
    function drawBox(bbox){
- 
+
      this.polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
        var style_green =
          {
@@ -796,19 +796,19 @@ var Risiko = Ext.extend(gxp.Viewer, {
      var p3 = new OpenLayers.Geometry.Point(437000, 116000);
      var p4 = new OpenLayers.Geometry.Point(436000, 115000);
      var p5 = new OpenLayers.Geometry.Point(436500, 113000);
-  
+
      var points = [];
      points.push(p1);
      points.push(p2);
      points.push(p3);
      points.push(p4);
      points.push(p5);
-  
+
      // create a polygon feature from a list of points
      var linearRing = new OpenLayers.Geometry.LinearRing(points);
      var polygonFeature = new OpenLayers.Feature.Vector(linearRing, null, style_green);
-    drawBox(NaN); 
-     this.polygonLayer.addFeatures([polygonFeature]); 
+    drawBox(NaN);
+     this.polygonLayer.addFeatures([polygonFeature]);
     };
     this.exposurestore = new Ext.data.JsonStore({
      id: 'exposurestore',
@@ -833,7 +833,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
      });
 
 
-	
+
 
 function addLayer(server_url, label, layer_name, opacity_value){
       var layer = new OpenLayers.Layer.WMS(
@@ -857,9 +857,9 @@ function createPopup(feature)
 		collapsible: true
 	});
 	popup.on({
-		close: function() 
+		close: function()
 		{
-			if(OpenLayers.Util.indexOf(vecLayer.selectedFeatures, this.feature) > -1) 
+			if(OpenLayers.Util.indexOf(vecLayer.selectedFeatures, this.feature) > -1)
 			{
 				selectControl.unselect(this.feature);
 			}
@@ -875,7 +875,7 @@ function removeLayer(layer_name){
       if (layers.length > 0) {
 	  //for each(var lay in layers){
 		  map.removeLayer(layers[0]);
-		  //  }	
+		  //  }
       }
 }
 
@@ -934,18 +934,18 @@ function exposureSelected(combo){
 
        var hazard_name = Ext.getCmp('hazardcombo').value;
        var exposure_name = Ext.getCmp('exposurecombo').value;
-       
+
        removeLayer(lastExposureSelect);
        lastExposureSelect=exposure_name
 
        Ext.getCmp('functioncombo').enable();
        items = functionstore.data.items;
-       
+
        // Clear the function combobox
-       combo.store.removeAll(); 
+       combo.store.removeAll();
        combo.store.totalLength = 0;
-       
-       
+
+
        for (var ii =0; ii< items.length; ii++) {
 	   var item=items[ii];
 	 if (item.data == undefined){
@@ -958,12 +958,12 @@ function exposureSelected(combo){
           // Find if hazard is in layers
           for (var li=0; li<layers.length; li++){
 	       lay=layers[li];
-               if (lay == exposure_name) {              
+               if (lay == exposure_name) {
                     found_exposure = true;
-               } 
-               if (lay == hazard_name) {              
+               }
+               if (lay == hazard_name) {
                     found_hazard = true;
-               } 
+               }
           }
 
           if (found_exposure && found_hazard){
@@ -1014,7 +1014,7 @@ function received(result, request) {
 	}
     });
     selectControl.activate();
-    
+
 }
 
 function calculate()
@@ -1161,7 +1161,7 @@ function calculate()
 		    }
 		    ],
 
-		buttons: [{text:'Jelas', //'Reset',
+		buttons: [{text:'Memulai lagi', //'Reset',
 			   handler:reset_view}
 		         ,{
 				text: 'Menghitung',//'TR:Calculate',
@@ -1179,7 +1179,7 @@ function calculate()
             "<img src='/media/theme/img/bppt_logo.jpg' alt='BPPT' title='BPPT' width=150 style='padding-left: 40px;margin-top:20px'/>" +
             "</td></tr><tr><td align='center' valign='bottom'>"+
             "Didukung oleh:<P>"+
-	    "<img src='/media/theme/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=100 style='padding-left:40px;margin-top:20px'/><P>" + 
+	    "<img src='/media/theme/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=100 style='padding-left:40px;margin-top:20px'/><P>" +
             "<img src='/media/theme/img/aifdr.png' alt='AIFDR' title='AIFDR' width=100 style='padding-left:40px;padding-top:20px'/>" +
 	    "</td></tr></table>"+
                "",
