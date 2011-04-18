@@ -181,7 +181,7 @@ def download(server_url, layer_name, bbox):
            % layer_name)
     # FIXME (Ole): I have disabled this test because raster layer
     # names come from GeoServer without preceding workspace.
-    # This has been raised in issue #31
+    # This has been raised in issue #39
     #assert layer_name.find(':') > -1 and len(layer_name.split(':')) == 2, msg
 
     # FIXME(Ole): Throw meaningful exception when invalid workspace and

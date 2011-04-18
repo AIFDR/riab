@@ -83,9 +83,9 @@ def calculate(request, save_output=storage.io.dummy_save):
     calculation.save()
 
     # Download selected layers
-    print 'Downloading'
-    print hazard_layer
-    print exposure_layer
+    #print 'Downloading'
+    #print hazard_layer
+    #print exposure_layer
 
     hazard_filename = storage.download(hazard_server, hazard_layer, bbox)
     exposure_filename = storage.download(exposure_server,
