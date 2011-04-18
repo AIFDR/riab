@@ -157,7 +157,8 @@ class Vector:
             raise Exception(msg)
 
         # Get vector data
-        coordinates, attributes = self.get_data()
+        coordinates = self.get_geometry()
+        attributes = self.get_data()
 
         # Input checks
         N = coordinates.shape[0]
@@ -283,16 +284,21 @@ class Vector:
         return self.geometry.shape[0]
 
     def get_data(self, nan=False):
-        """Get vector data as numeric array
-        If keyword nan is True, nodata values will be replaced with NaN
+        """Get vector data as list of attributes
+
+        Output is a list of same length as that returned by get_geometry().
+        Each entry is a dictionary of attributes for one feature.
+
+        Entries in get_geometry() and get_data() are related as 1-to-1
+
+        # FIXME: Not yet considered here
+        (If keyword nan is True, nodata values will be replaced with NaN)
         """
 
-        # FIXME: Return only attributes
-        if hasattr(self, 'geometry') and hasattr(self, 'attributes'):
-            return self.geometry, self.attributes
+        if hasattr(self, 'attributes'):
+            return self.attributes
         else:
-            msg = ('Vector data instance does not have both'
-                   'coordinates and attributes')
+            msg = 'Vector data instance does not have attributes'
             raise Exception(msg)
 
     def get_geometry(self):

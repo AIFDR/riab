@@ -272,7 +272,8 @@ def interpolate_raster_vector(R, V, name=None):
     f = raster_spline(longitudes, latitudes, A)
 
     # Get vector points but ignore attributes
-    coordinates, expected_values = V.get_data()
+    coordinates = V.get_geometry()
+    expected_values = V.get_data()
 
     # Interpolate and create new attribute
     N = len(V)
@@ -364,7 +365,9 @@ def call_impact_function_vector(impact_function,
     coordinates = None
     hazard_data = {}
     for name in hazard_layers:
-        hazard_data[name] = hazard_layers[name].get_data()
+        C = hazard_layers[name].get_geometry()
+        D = hazard_layers[name].get_data()
+        hazard_data[name] = C, D
         assert hazard_layers[name].is_vector
 
         # SANITY
@@ -376,7 +379,10 @@ def call_impact_function_vector(impact_function,
 
     exposure_data = {}
     for name in exposure_layers:
-        exposure_data[name] = exposure_layers[name].get_data()
+
+        C = exposure_layers[name].get_geometry()
+        D = exposure_layers[name].get_data()
+        exposure_data[name] = C, D
         assert exposure_layers[name].is_vector
 
         projection = exposure_layers[name].get_projection()

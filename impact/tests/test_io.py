@@ -73,7 +73,8 @@ class Test_IO(unittest.TestCase):
 
             filename = '%s/%s' % (TESTDATA, vectorname)
             layer = read_layer(filename)
-            coords, attributes = layer.get_data()
+            coords = layer.get_geometry()
+            attributes = layer.get_data()
 
             # Check basic data integrity
             N = len(attributes)
@@ -121,7 +122,8 @@ class Test_IO(unittest.TestCase):
 
             # Read again and check
             layer = read_layer(out_filename)
-            coords, attributes = layer.get_data()
+            coords = layer.get_geometry()
+            attributes = layer.get_data()
 
             # Check basic data integrity
             N = len(attributes)

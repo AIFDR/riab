@@ -183,7 +183,8 @@ class Test_calculations(unittest.TestCase):
 
             # Read calculated result
             impact_vector = read_layer(result_layer.filename)
-            coordinates, attributes = impact_vector.get_data()
+            coordinates = impact_vector.get_geometry()
+            attributes = impact_vector.get_data()
 
             # Verify calculated result
             count = 0

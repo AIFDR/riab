@@ -130,11 +130,13 @@ class Test_Engine(unittest.TestCase):
             mmi_min, mmi_max = hazard_raster.get_extrema()
 
             exposure_vector = read_layer(exposure_filename)
-            coordinates, attributes = exposure_vector.get_data()
+            coordinates = exposure_vector.get_geometry()
+            attributes = exposure_vector.get_data()
 
             # Read calculated result
             impact_vector = read_layer(impact_filename)
-            icoordinates, iattributes = impact_vector.get_data()
+            icoordinates = impact_vector.get_geometry()
+            iattributes = impact_vector.get_data()
 
             # First check that interpolated MMI was done as expected
             fid = open('%s/lembang_schools_percentage_loss_and_mmi.txt'
@@ -259,13 +261,14 @@ class Test_Engine(unittest.TestCase):
 
         # Read calculated result
         impact_vector = read_layer(impact_filename)
-        icoordinates, iattributes = impact_vector.get_data()
+        icoordinates = impact_vector.get_geometry()
+        iattributes = impact_vector.get_data()
         N = len(icoordinates)
 
         # Ensure that calculated point locations coincide with
         # original exposure point locations
         ref_exp = read_layer(exposure_filename)
-        refcoordinates, _ = ref_exp.get_data()
+        refcoordinates = ref_exp.get_geometry()
 
         assert N == len(refcoordinates)
         msg = ('Coordinates of impact results do not match those of '
@@ -275,7 +278,8 @@ class Test_Engine(unittest.TestCase):
         # Ensure that calculated point locations coincide with
         # original exposure point (with depth) locations
         ref_depth = read_layer(exposure_with_depth_filename)
-        refdepth_coordinates, refdepth_attributes = ref_depth.get_data()
+        refdepth_coordinates = ref_depth.get_geometry()
+        refdepth_attributes = ref_depth.get_data()
         assert N == len(refdepth_coordinates)
         msg = ('Coordinates of impact results do not match those of '
                'exposure data (with depth)')
@@ -287,7 +291,8 @@ class Test_Engine(unittest.TestCase):
         depth_min, depth_max = hazard_raster.get_extrema()
 
         ref_impact = read_layer(reference_impact_filename)
-        refimpact_coordinates, refimpact_attributes = ref_impact.get_data()
+        refimpact_coordinates = ref_impact.get_geometry()
+        refimpact_attributes = ref_impact.get_data()
 
         # Check for None
         for i in range(N):
@@ -370,11 +375,13 @@ class Test_Engine(unittest.TestCase):
         mmi_min, mmi_max = hazard_raster.get_extrema()
 
         exposure_vector = read_layer(exposure_filename)
-        coordinates, attributes = exposure_vector.get_data()
+        coordinates = exposure_vector.get_geometry()
+        attributes = exposure_vector.get_data()
 
         # Read calculated result
         impact_vector = read_layer(impact_filename)
-        coordinates, attributes = impact_vector.get_data()
+        coordinates = impact_vector.get_geometry()
+        attributes = impact_vector.get_data()
 
 
     def XXtest_package_metadata(self):
@@ -520,7 +527,8 @@ class Test_Engine(unittest.TestCase):
 
         # Test riab's interpolation function
         I = interpolate(R, V, name='value')
-        Icoordinates, Iattributes = I.get_data()
+        Icoordinates = I.get_geometry()
+        Iattributes = I.get_data()
 
         assert numpy.allclose(Icoordinates, coordinates)
 
@@ -553,12 +561,14 @@ class Test_Engine(unittest.TestCase):
         mmi_min, mmi_max = hazard_raster.get_extrema()
 
         exposure_vector = read_layer(exposure_filename)
-        coordinates, attributes = exposure_vector.get_data()
+        coordinates = exposure_vector.get_geometry()
+        attributes = exposure_vector.get_data()
 
         # Test riab's interpolation function
         I = interpolate(hazard_raster, exposure_vector,
                         name='mmi')
-        Icoordinates, Iattributes = I.get_data()
+        Icoordinates = I.get_geometry()
+        Iattributes = I.get_data()
         assert numpy.allclose(Icoordinates, coordinates)
 
         # Check that interpolated MMI was done as expected
@@ -608,12 +618,14 @@ class Test_Engine(unittest.TestCase):
         depth_min, depth_max = hazard_raster.get_extrema()
 
         exposure_vector = read_layer(exposure_filename)
-        coordinates, attributes = exposure_vector.get_data()
+        coordinates = exposure_vector.get_geometry()
+        attributes = exposure_vector.get_data()
 
         # Test riab's interpolation function
         I = interpolate(hazard_raster, exposure_vector,
                         name='depth')
-        Icoordinates, Iattributes = I.get_data()
+        Icoordinates = I.get_geometry()
+        Iattributes = I.get_data()
         assert numpy.allclose(Icoordinates, coordinates)
 
         # Verify interpolated values with test result
