@@ -83,14 +83,17 @@ def calculate(request, save_output=storage.io.dummy_save):
     calculation.save()
 
     # Download selected layers
-    #print 'Downloading'
-    #print hazard_layer
-    #print exposure_layer
-
     hazard_filename = storage.download(hazard_server, hazard_layer, bbox)
     exposure_filename = storage.download(exposure_server,
                                          exposure_layer,
                                          bbox)
+
+    # Instantiate layer objects and pass them to calculation
+    # FIXME (Ole): If this is the go, we could build read_layer into download
+    #H = storage.read_layer(hazard_filename)
+    #E = storage.read_layer(exposure_filename)
+    #impact = engine.calculate_impact(layers = [H, E],
+    #                                 impact_function=impact_function)
 
     # Calculate impact using API
     HD = hazard_filename
