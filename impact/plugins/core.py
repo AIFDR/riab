@@ -92,10 +92,10 @@ def pretty_function_name(func):
 
     if not hasattr(func, 'plugin_name'):
         nounderscore_name = func.__name__.replace('_', ' ')
-        func_name = ""
+        func_name = ''
         for i, c in enumerate(nounderscore_name):
             if c.isupper() and i > 0:
-                func_name += " " + c
+                func_name += ' ' + c
             else:
                 func_name += c
     else:
@@ -133,25 +133,37 @@ def requirement_check(params, require_str, verbose=False):
     in require_str. Require_str must be a valid python expression
     and evaluate to True or False"""
 
-    execstr = "def check():\n"
+    execstr = 'def check():\n'
     for key in params.keys():
-        if type(params[key]) == type(""):  # is it a string param
-            execstr += "  %s = '%s' \n" % (key.strip(), params[key])
-        else:
-            execstr += "  %s = %s \n" % (key.strip(), params[key])
+        if key == '':
+            if params[''] != '':
+                # This should never happen
+                msg = ('Empty key found in requirements with '
+                       'non-empty value: %s' % params[''])
+                raise Exception(msg)
+            else:
+                continue
 
-    execstr += "  return " + require_str
+        if type(params[key]) == type(''):  # is it a string param
+            execstr += '  %s = "%s" \n' % (key.strip(), params[key])
+        else:
+            execstr += '  %s = %s \n' % (key.strip(), params[key])
+
+    execstr += '  return ' + require_str
 
     if verbose:
         print execstr
     try:
-        exec(compile(execstr, "<string>", "exec"))
+        exec(compile(execstr, '<string>', 'exec'))
         return check()
     except NameError:
         pass
     except SyntaxError:
-        #TODO(Ted): Something more sensible re:logging error
-        print "Syntax Error", execstr
+        # TODO(Ted and Ole): This exceptions should be handle by the callee
+        #                    as we don't want errors in plugins to
+        #                    crash the system.
+        msg = 'Syntax error in plugin requirements header: %s' % execstr
+        raise SyntaxError(msg)
     return False
 
 
@@ -161,8 +173,14 @@ def requirements_met(func, params, verbose=False):
 
     requirements = requirements_collect(func)
     if requirements:
-        is_met = [requirement_check(params, requires)
-                  for requires in requirements]
+        try:
+            is_met = [requirement_check(params, requires)
+                      for requires in requirements]
+        except SyntaxError, e:
+            # TODO (Ted): Need log this
+            msg = 'Syntax error in plugin %s: %s' % (func.__name__, e)
+            print msg
+
         if True in is_met:
             return is_met.index(True)
         else:
@@ -172,7 +190,7 @@ def requirements_met(func, params, verbose=False):
 
 
 def compatible_layers(func, layers_data):
-    """ Returns all the layers that match the plugin requirements or
+    """ Return all the layers that match the plugin requirements or
     returns [] if all requirements are not met"""
 
     layers = []

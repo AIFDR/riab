@@ -16,7 +16,7 @@ import os
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_test_data')
 
-# FIXME (Ole): Need to use local server
+# FIXME (Ole): Need to use local server when we have one
 AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
 
 
@@ -30,7 +30,6 @@ class Test_HTTP(unittest.TestCase):
         """
 
         c = Client()
-
         rv = c.get('/api/v1/functions/')
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
@@ -48,8 +47,8 @@ class Test_HTTP(unittest.TestCase):
     def test_layers(self):
         """Layers can be retrieved from the HTTP Rest API
         """
-        c = Client()
 
+        c = Client()
         rv = c.get('/api/v1/layers/')
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
