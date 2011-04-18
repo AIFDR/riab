@@ -89,6 +89,7 @@ def calculate(request, save_output=storage.io.dummy_save):
                                          bbox)
 
     # Instantiate layer objects and pass them to calculation
+    # This is one step towards implementation of issue #21
     # FIXME (Ole): If this is the go, we could build read_layer into download
     #H = storage.read_layer(hazard_filename)
     #E = storage.read_layer(exposure_filename)
