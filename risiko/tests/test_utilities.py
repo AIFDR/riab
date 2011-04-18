@@ -62,7 +62,7 @@ class Test_utilities(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def XXtest_layer_upload(self):
+    def test_layer_upload(self):
         """Test that layers can be uploaded to running GeoNode/GeoServer
         """
         layers = {}
