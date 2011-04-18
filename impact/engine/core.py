@@ -157,12 +157,12 @@ def check_data_integrity(layer_files):
         # are the same
         if layer.is_vector:
             if coordinates is None:
-                coordinates = layer.get_coordinates()
+                coordinates = layer.get_geometry()
             else:
                 msg = ('Coordinates in input vector layers are different: '
-                       '%s %s' % (coordinates, layer.get_coordinates()))
+                       '%s %s' % (coordinates, layer.get_geometry()))
                 assert numpy.allclose(coordinates,
-                                      layer.get_coordinates()), msg
+                                      layer.get_geometry()), msg
 
 
 def read_hazard_data(hazard_levels):
@@ -369,10 +369,10 @@ def call_impact_function_vector(impact_function,
 
         # SANITY
         if coordinates is None:
-            coordinates = hazard_layers[name].get_coordinates()
+            coordinates = hazard_layers[name].get_geometry()
         else:
             assert numpy.allclose(coordinates,
-                                  hazard_layers[name].get_coordinates())
+                                  hazard_layers[name].get_geometry())
 
     exposure_data = {}
     for name in exposure_layers:
@@ -383,10 +383,10 @@ def call_impact_function_vector(impact_function,
 
         # SANITY
         if coordinates is None:
-            coordinates = exposure_layers[name].get_coordinates()
+            coordinates = exposure_layers[name].get_geometry()
         else:
             assert numpy.allclose(coordinates,
-                                  exposure_layers[name].get_coordinates())
+                                  exposure_layers[name].get_geometry())
 
     # FIXME: Use only one layer at a time for the time being
     H = hazard_data.values()[0]

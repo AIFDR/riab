@@ -87,11 +87,13 @@ def write_point_data(coordinates, projection, attributes, filename):
     V = Vector(coordinates, projection, attributes)
     V.write_to_file(filename)
 
+# FIXME (Ole): Why is the resolution hard coded here?
 WCS_TEMPLATE = '%s?version=1.0.0' + \
                       '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
                       'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
                       '&resx=0.030741064&resy=0.030741064'
 
+# FIXME (Ole): Why is maxFeatures hard coded?
 WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&request=GetFeature&typeName=%s&maxFeatures=500' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'

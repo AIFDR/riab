@@ -31,7 +31,7 @@ class Vector:
             self.name = 'Empty vector layer'
             self.projection = None
             self.attributes = {}
-            self.coordinates = None
+            self.geometry = None
             self.filename = None
 
             return
@@ -42,7 +42,7 @@ class Vector:
             # Assume that data is provided as an array
             # with extra keyword arguments supplying metadata
 
-            self.coordinates = numpy.array(data, dtype='d', copy=False)
+            self.geometry = numpy.array(data, dtype='d', copy=False)
 
             self.filename = None
             self.name = name
@@ -131,7 +131,7 @@ class Vector:
 
             attributes.append(fields)
 
-        self.coordinates = numpy.array(coordinates, dtype='d', copy=False)
+        self.geometry = numpy.array(coordinates, dtype='d', copy=False)
         self.attributes = attributes
         self.filename = filename
 
@@ -280,27 +280,34 @@ class Vector:
             feature.Destroy()
 
     def __len__(self):
-        return self.coordinates.shape[0]
+        return self.geometry.shape[0]
 
     def get_data(self, nan=False):
         """Get vector data as numeric array
         If keyword nan is True, nodata values will be replaced with NaN
         """
 
-        if hasattr(self, 'coordinates') and hasattr(self, 'attributes'):
-            return self.coordinates, self.attributes
+        # FIXME: Return only attributes
+        if hasattr(self, 'geometry') and hasattr(self, 'attributes'):
+            return self.geometry, self.attributes
         else:
             msg = ('Vector data instance does not have both'
                    'coordinates and attributes')
             raise Exception(msg)
 
-    # FIXME: Start using this
     def get_geometry(self):
-        return self.coordinates
+        """Return geometry for vector layer.
 
-    # FIXME: Retire this
-    def get_coordinates(self):
-        return self.coordinates
+        Depending on the feature type, geometry is
+
+        geometry type     output type
+        -----------------------------
+        point             coordinates (Nx2 array of longitudes and latitudes)
+        line              TODO
+        polygon           TODO
+
+        """
+        return self.geometry
 
     def get_projection(self, proj4=False):
         return self.projection.get_projection(proj4)

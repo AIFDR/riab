@@ -837,7 +837,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
 
 function addLayer(server_url, label, layer_name, opacity_value){
       var layer = new OpenLayers.Layer.WMS(
-           label, server_url,{layers: layer_name, format: 'image/png', transparent: true},
+           label, server_url, {layers: layer_name, format: 'image/png', transparent: true},
 	   {opacity: opacity_value}, {attribution: 'My attribuion'}
       );
       var map = app.mapPanel.map;
