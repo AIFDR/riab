@@ -23,9 +23,9 @@ def production():
     sudo('a2ensite risiko')
     sudo('a2enmod proxy_http')
     run('mkdir -p logs')
-    #FIXME: The staticfiles version we ship is wrong,
+    # FIXME: The staticfiles version we ship is wrong,
     # we need to drop it when we switch to django 1.3
-    #run('django-admin.py collectstatic --noinput')
+    # run('django-admin.py collectstatic --noinput')
     run('. riab_env/bin/activate; pip install -U django-staticfiles==0.3')
     run('. riab_env/bin/activate; django-admin.py build_static --noinput')
     put('tomcat6', 'tomcat6')
@@ -33,6 +33,7 @@ def production():
     sudo('chmod +x /etc/init.d/tomcat6')
     sudo('ln -sf /etc/init.d/tomcat6 /etc/rc1.d/K99tomcat')
     sudo('ln -sf /etc/init.d/tomcat6 /etc/rc2.d/S99tomcat')
+    clean() # Just in case we are installing on top of an existing server
     start()
 
 def manual():
@@ -81,7 +82,7 @@ def start():
 
 def refresh():
 
-
+    clean()
     run('touch riab/extras/project.wsgi')
 
 
