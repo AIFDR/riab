@@ -6,10 +6,12 @@ import os
 from impact.engine.core import calculate_impact
 from impact.engine.interpolation import raster_spline
 from impact.storage.io import read_layer
-from impact import plugins
+
 from impact.storage.utilities import unique_filename
 from impact.storage.io import write_point_data
 from impact.storage.io import write_coverage
+from impact.plugins import get_plugins
+
 from impact.tests.utilities import TESTDATA
 
 
@@ -46,7 +48,7 @@ class Test_Engine(unittest.TestCase):
         # Calculate impact using API
         H = read_layer(hazard_filename)
         E = read_layer(exposure_filename)
-        plugin_list = plugins.get_plugins('Earthquake Fatality Function')
+        plugin_list = get_plugins('Earthquake Fatality Function')
 
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
@@ -115,7 +117,7 @@ class Test_Engine(unittest.TestCase):
             E = read_layer(exposure_filename)
 
             plugin_name = 'Earthquake School Damage Function'
-            plugin_list = plugins.get_plugins(plugin_name)
+            plugin_list = get_plugins(plugin_name)
             # FIXME: Avoid this hacky way to get the impact function
             _, IF = plugin_list[0].items()[0]
 
@@ -249,7 +251,7 @@ class Test_Engine(unittest.TestCase):
         H = read_layer(hazard_filename)
         E = read_layer(exposure_filename)
 
-        plugin_list = plugins.get_plugins('Tsunami Building Loss Function')
+        plugin_list = get_plugins('Tsunami Building Loss Function')
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
 
@@ -357,7 +359,7 @@ class Test_Engine(unittest.TestCase):
         E = read_layer(exposure_filename)
 
         plugin_name = 'Earthquake School Damage Function'
-        plugin_list = plugins.get_plugins(plugin_name)
+        plugin_list = get_plugins(plugin_name)
 
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]

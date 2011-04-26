@@ -1,23 +1,24 @@
-from geonode.maps.utils import upload, file_upload, GeoNodeException
-from impact import storage
-from impact.storage import download
-from impact.storage.io import get_bounding_box, read_layer
-from django.test.client import Client
-from django.conf import settings
-from django.utils import simplejson as json
-from impact.views import calculate
-
 import numpy
 import os
 import sys
 import unittest
 import warnings
 
+from django.test.client import Client
+from django.conf import settings
+from django.utils import simplejson as json
+
+from geonode.maps.utils import upload, file_upload, GeoNodeException
+
+from impact.views import calculate
+from impact.storage.io import download
+from impact.storage.io import get_bounding_box
+from impact.storage.io import read_layer
+
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_test_data')
-
 
 def lembang_damage_function(x):
     if x < 6.0:

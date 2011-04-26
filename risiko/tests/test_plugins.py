@@ -1,5 +1,6 @@
 import os
 import unittest
+import warnings
 
 from geonode.maps.utils import upload, file_upload, GeoNodeException
 
@@ -8,8 +9,10 @@ from impact.plugins.core import FunctionProvider
 from impact.plugins.core import requirements_collect
 from impact.plugins.core import requirement_check
 from impact.plugins.core import get_plugins
+from impact.plugins.core import compatible_layers
 
-from impact import storage, plugins, engine
+from impact.storage.utilities import get_layers_metadata
+
 from impact.models import Calculation, Workspace
 
 from django.test.client import Client
@@ -17,8 +20,6 @@ from django.conf import settings
 from django.utils import simplejson as json
 
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
-
-import warnings
 
 
 class BasicFunction(FunctionProvider):
@@ -95,15 +96,15 @@ class Test_plugins(unittest.TestCase):
                      'name': 'Local Geoserver',
                      'version': '1.0.0',
                      'id': 0}
-        layers = storage.get_layers_metadata(geoserver['url'],
-                                             geoserver['version'])
+        layers = get_layers_metadata(geoserver['url'],
+                                     geoserver['version'])
 
         msg = 'Should > 1 layer in test geoserver'
         assert(len(layers) > 0), msg
 
         annotated_plugins = [{'name': name,
                               'doc': f.__doc__,
-                              'layers': plugins.compatible_layers(f, layers)}
+                              'layers': compatible_layers(f, layers)}
                              for name, f in plugin_list.items()]
 
         for v in annotated_plugins:
