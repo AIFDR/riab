@@ -4,7 +4,7 @@ import sys
 import os
 
 from impact.engine.core import calculate_impact
-from impact.engine.core import interpolate, raster_spline
+from impact.engine.core import raster_spline
 from impact.storage.io import read_layer
 from impact import plugins
 from impact.storage.utilities import unique_filename
@@ -44,15 +44,15 @@ class Test_Engine(unittest.TestCase):
         exposure_filename = '%s/Population_2010_clip.tif' % TESTDATA
 
         # Calculate impact using API
-        HD = read_layer(hazard_filename)
-        ED = read_layer(exposure_filename)
-
+        H = read_layer(hazard_filename)
+        E = read_layer(exposure_filename)
         plugin_list = plugins.get_plugins('Earthquake Fatality Function')
 
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
-        impact_filename = calculate_impact(hazard_level=HD,
-                                           exposure_level=ED,
+
+        # Call calculation engine
+        impact_filename = calculate_impact(layers=[H, E],
                                            impact_function=IF)
 
         # Do calculation manually and check result
@@ -95,7 +95,6 @@ class Test_Engine(unittest.TestCase):
         assert numpy.alltrue(C <= xmax)
         assert numpy.alltrue(C >= 0)
 
-
     def test_earthquake_damage_schools(self):
         """Lembang building damage from ground shaking works
 
@@ -112,16 +111,15 @@ class Test_Engine(unittest.TestCase):
             exposure_filename = '%s/lembang_schools.shp' % TESTDATA
 
             # Calculate impact using API
-            HD = read_layer(hazard_filename)
-            ED = read_layer(exposure_filename)
+            H = read_layer(hazard_filename)
+            E = read_layer(exposure_filename)
 
             plugin_name = 'Earthquake School Damage Function'
             plugin_list = plugins.get_plugins(plugin_name)
             # FIXME: Avoid this hacky way to get the impact function
             _, IF = plugin_list[0].items()[0]
 
-            impact_filename = calculate_impact(hazard_level=HD,
-                                               exposure_level=ED,
+            impact_filename = calculate_impact(layers=[H, E],
                                                impact_function=IF)
 
             # Read input data
@@ -187,7 +185,7 @@ class Test_Engine(unittest.TestCase):
                 msg = ('Calculated MMI %f deviated more than %.1f%% from '
                        'what was expected %f' % (calculated_mmi, pct, MMI[i]))
                 assert numpy.allclose(calculated_mmi, MMI[i],
-                                      rtol = float(pct) / 100), msg
+                                      rtol=float(pct) / 100), msg
 
                 # FIXME (Ole): Has to shorten name to 10 characters
                 #              until issue #1 has been resolved.
@@ -248,15 +246,14 @@ class Test_Engine(unittest.TestCase):
                                      'BB.shp' % TESTDATA)
 
         # Calculate impact using API
-        HD = read_layer(hazard_filename)
-        ED = read_layer(exposure_filename)
+        H = read_layer(hazard_filename)
+        E = read_layer(exposure_filename)
 
         plugin_list = plugins.get_plugins('Tsunami Building Loss Function')
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
 
-        impact_filename = calculate_impact(hazard_level=HD,
-                                           exposure_level=ED,
+        impact_filename = calculate_impact(layers=[H, E],
                                            impact_function=IF)
 
         # Read calculated result
@@ -344,7 +341,6 @@ class Test_Engine(unittest.TestCase):
             if depth > 0 and contents_damage > 0:
                 assert contents_damage != structural_damage
 
-
     def Xtest_tephra_load_impact(self):
         """Hypothetical tephra load scenario can be computed
 
@@ -357,16 +353,15 @@ class Test_Engine(unittest.TestCase):
         exposure_filename = '%s/lembang_schools.shp' % TESTDATA
 
         # Calculate impact using API
-        HD = read_layer(hazard_filename)
-        ED = read_layer(exposure_filename)
+        H = read_layer(hazard_filename)
+        E = read_layer(exposure_filename)
 
         plugin_name = 'Earthquake School Damage Function'
         plugin_list = plugins.get_plugins(plugin_name)
+
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
-
-        impact_filename = calculate_impact(hazard_level=HD,
-                                           exposure_level=ED,
+        impact_filename = calculate_impact(layers=[H, E],
                                            impact_function=IF)
 
         # Read input data
@@ -382,7 +377,6 @@ class Test_Engine(unittest.TestCase):
         impact_vector = read_layer(impact_filename)
         coordinates = impact_vector.get_geometry()
         attributes = impact_vector.get_data()
-
 
     def XXtest_package_metadata(self):
         """Test that riab package loads
@@ -526,7 +520,7 @@ class Test_Engine(unittest.TestCase):
         assert numpy.allclose(AA, A), msg
 
         # Test riab's interpolation function
-        I = interpolate(R, V, name='value')
+        I = R.interpolate(V, name='value')
         Icoordinates = I.get_geometry()
         Iattributes = I.get_data()
 
@@ -565,8 +559,8 @@ class Test_Engine(unittest.TestCase):
         attributes = exposure_vector.get_data()
 
         # Test riab's interpolation function
-        I = interpolate(hazard_raster, exposure_vector,
-                        name='mmi')
+        I = hazard_raster.interpolate(exposure_vector,
+                                      name='mmi')
         Icoordinates = I.get_geometry()
         Iattributes = I.get_data()
         assert numpy.allclose(Icoordinates, coordinates)
@@ -622,8 +616,8 @@ class Test_Engine(unittest.TestCase):
         attributes = exposure_vector.get_data()
 
         # Test riab's interpolation function
-        I = interpolate(hazard_raster, exposure_vector,
-                        name='depth')
+        I = hazard_raster.interpolate(exposure_vector,
+                                      name='depth')
         Icoordinates = I.get_geometry()
         Iattributes = I.get_data()
         assert numpy.allclose(Icoordinates, coordinates)

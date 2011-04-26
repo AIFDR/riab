@@ -1,6 +1,9 @@
 from impact.plugins import FunctionProvider
 
 
+# FIXME (Ole): This will not run.
+# Please write similar to allen_fatality_model.py
+
 class EmpiricalFatalityFunction(FunctionProvider):
     """Risk plugin for earthquake damage based on empirical results
 
@@ -30,5 +33,3 @@ class EmpiricalFatalityFunction(FunctionProvider):
 
         # F = round(arrayout * E)
         return F
-
-

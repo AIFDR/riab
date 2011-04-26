@@ -175,7 +175,6 @@ def download(server_url, layer_name, bbox):
                'format [west, south, east, north]. I got %s' % bbox)
         raise Exception(msg)
 
-
     # In GeoNode/GeoServer it is OK to pass a raster name without workspace
     # whereas vector layers must have one.
     # Here we enforce the requirement to always provide workspace
@@ -212,6 +211,8 @@ def download(server_url, layer_name, bbox):
         suffix = '.tif'
         download_url = template % (server_url, layer_name, bbox_string)
         filename = get_file(download_url, suffix)
+
+    # Instantiate layer from file
     lyr = read_layer(filename)
 
     #FIXME (Ariel) Don't monkeypatch the layer object

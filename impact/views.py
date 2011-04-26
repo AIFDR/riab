@@ -24,19 +24,24 @@ All API calls start with:
 """
 
 
-from django.utils import simplejson as json
-from django.http import HttpResponse
-from django.conf import settings
-from impact import storage, plugins, engine
-from impact.models import Calculation, Workspace
-from geonode.maps.utils import get_valid_user
 import urlparse
 import inspect
 import numpy
 import datetime
 
+from django.utils import simplejson as json
+from django.http import HttpResponse
+from django.conf import settings
 
-def calculate(request, save_output=storage.io.dummy_save):
+from geonode.maps.utils import get_valid_user
+
+from impact.storage.io import dummy_save, download, get_layers_metadata
+from impact.plugins.core import get_plugins, compatible_layers
+from impact.engine.core import calculate_impact
+from impact.models import Calculation, Workspace
+
+
+def calculate(request, save_output=dummy_save):
     start = datetime.datetime.now()
 
     if request.method == 'GET':
@@ -64,7 +69,7 @@ def calculate(request, save_output=storage.io.dummy_save):
     # Get a valid user
     theuser = get_valid_user(request.user)
 
-    plugin_list = plugins.get_plugins(impact_function_name)
+    plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
     impact_function_source = inspect.getsource(impact_function)
 
@@ -78,36 +83,21 @@ def calculate(request, save_output=storage.io.dummy_save):
                               impact_function=impact_function_name,
                               impact_function_source=impact_function_source,
                               bbox=bbox,
-                              success=False,
-                            )
+                              success=False)
     calculation.save()
 
-    # Download selected layers
-    hazard_filename = storage.download(hazard_server, hazard_layer, bbox)
-    exposure_filename = storage.download(exposure_server,
-                                         exposure_layer,
-                                         bbox)
+    # Download selected layer objects
+    H = download(hazard_server, hazard_layer, bbox)
+    E = download(exposure_server, exposure_layer, bbox)
 
-    # Instantiate layer objects and pass them to calculation
-    # This is one step towards implementation of issue #21
-    # FIXME (Ole): If this is the go, we could build read_layer into download
-    #H = storage.read_layer(hazard_filename)
-    #E = storage.read_layer(exposure_filename)
-    #impact = engine.calculate_impact(layers = [H, E],
-    #                                 impact_function=impact_function)
+    # Call plugin
+    impact_filename = calculate_impact(layers=[H, E],
+                                       impact_function=impact_function)
 
-    # Calculate impact using API
-    HD = hazard_filename
-    ED = exposure_filename
-    IF = impact_function
-    impact_filename = engine.calculate_impact(hazard_level=HD,
-                                              exposure_level=ED,
-                                              impact_function=IF)
-    result = save_output(
-                  filename=impact_filename,
-                  title='output_%s' % start.isoformat(),
-                  user=request.user,
-                 )
+    # Upload result to internal GeoServer
+    result = save_output(filename=impact_filename,
+                         title='output_%s' % start.isoformat(),
+                         user=request.user)
 
     calculation.layer = result
     calculation.success = True
@@ -145,7 +135,7 @@ def functions(request):
        assumes version 1.0.0
     """
 
-    plugin_list = plugins.get_plugins()
+    plugin_list = get_plugins()
 
     if 'geoservers' in request.GET:
         #FIXME for the moment assume version 1.0.0
@@ -157,20 +147,20 @@ def functions(request):
 
     layers_metadata = []
 
-    #iterate across all available geoservers and return every layer
-    #and associated keywords
+    # Iterate across all available geoservers and return every layer
+    # and associated keywords
     for geoserver in geoservers:
         layers_metadata.extend(
-            storage.get_layers_metadata(geoserver['url'],
-                                          geoserver['version']))
+            get_layers_metadata(geoserver['url'],
+                                geoserver['version']))
 
-    #for each plugin return all layers that meet the requirements
-    #an empty layer is returned where the plugin cannot run
+    # For each plugin return all layers that meet the requirements
+    # an empty layer is returned where the plugin cannot run
     annotated_plugins = [
         {
          'name': name,
          'doc': f.__doc__,
-         'layers': plugins.compatible_layers(f, layers_metadata)}
+         'layers': compatible_layers(f, layers_metadata)}
         for name, f in plugin_list.items()]
 
     output = {'functions': annotated_plugins}
@@ -181,6 +171,7 @@ def functions(request):
 def get_servers(user):
     """ Gets the list of servers for a given user
     """
+
     theuser = get_valid_user(user)
     try:
         workspace = Workspace.objects.get(user=theuser)
@@ -191,7 +182,7 @@ def get_servers(user):
                    'name': 'Local Geoserver',
                    'version': '1.0.0', 'id':0}]
     for server in servers:
-        #TODO for the moment assume version 1.0.0
+        # TODO for the moment assume version 1.0.0
         geoservers.append({'url': server.url,
                            'name': server.name,
                            'id': server.id,
@@ -229,8 +220,8 @@ def layers(request):
     # Iterate across all available geoservers and return every layer
     # and associated keywords
     for geoserver in geoservers:
-        layers = storage.get_layers_metadata(geoserver['url'],
-                                             geoserver['version'])
+        layers = get_layers_metadata(geoserver['url'],
+                                     geoserver['version'])
         for layer in layers:
             out = {'name': layer[0],
                    'server_url': geoserver['url']}

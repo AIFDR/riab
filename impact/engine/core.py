@@ -20,22 +20,18 @@ from impact.engine.interpolation import raster_spline
 from impact.storage.utilities import unique_filename
 
 
-def calculate_impact(hazard_level, exposure_level, impact_function,
+def calculate_impact(layers, impact_function,
                      comment=''):
-    """Calculate impact levels as a function of hazard and exposure levels
+    """Calculate impact levels as a function of list of input layers
 
     Input
 
-        I.e. for the moment we take only one unnamed hazard level
-        and one unnamed exposure level.
+        FIXME (Ole): For the moment we take only a list with two
+        elements containing one hazard level one xposure level
 
         FIXME: This is has been reverted back to single names, so the doc
         string below is not current.
-        hazard_levels: A dictionary of named hazard levels,
-                       {'h1': H1, 'h2': H2, ..., 'hn': Hn} where each H is a
-                       filename and h is a name associated with that layer.
-        exposure_levels: A dictionary of exposure levels or name of GML file
-                         with exposure attributes.
+
         impact_function: Function of the form f(H, E) where H and E are
                          dictionaries of aligned numpy arrays named the same
                          way as the input layers
@@ -45,6 +41,8 @@ def calculate_impact(hazard_level, exposure_level, impact_function,
         filename of resulting impact layer (GML). Comment is embedded as
         metadata. Filename is generated from input data and date.
 
+
+    # FIXME (Ole): Redo doc string to reflect ticket #21
     Note
         The admissible file types are tif and asc/prj for coverages and
         gml (or shp?) for vector data
@@ -66,38 +64,17 @@ def calculate_impact(hazard_level, exposure_level, impact_function,
     FIXME: Need to deal with values like -9999 for nodata here.
     """
 
-    # FIXME: Convert single layers to dictionaries with default names.
-    hazard_levels = {'hazard': hazard_level}
-    exposure_levels = {'exposure': exposure_level}
-
     # Input checks
-    check_data_integrity(hazard_levels.values() + exposure_levels.values())
+    check_data_integrity(layers)
 
-    # Read hazard data
-    hazard_layers = read_hazard_data(hazard_levels)
-
-    # Read exposure data
-    exposure_layers = read_exposure_data(exposure_levels)
-
-    # Establish interpolated hazard values at points that are aligned
-    # with those of the exposure layers. Exposure layers are all assumed
-    # to be aligned already.
-    interpolation_layer = exposure_layers.values()[0]
-    interpolated_hazard_layers = {}
-    for name in hazard_layers:
-        hazard_layer = hazard_layers[name]
-        H = interpolate(hazard_layer, interpolation_layer)
-        interpolated_hazard_layers[name] = H
-
-    # Pass hazard and exposure dictionaries to plugin
-    F = call_impact_function(impact_function,
-                             interpolated_hazard_layers,
-                             exposure_layers,
-                             name='Impact')  # FIXME: Think about this
+    # Pass input layers to plugin
+    F = impact_function.run(layers)
 
     # Write result and return filename
     # FIXME (Ole): Maybe this filename should be defined in the plugin
     #              Oh Yes it should.
+    # FIXME (Ole): When issue #21 has been fully implemented, this
+    #              return value should be a list of layers.
 
     if F.__class__ == Raster:
         extension = '.tif'
@@ -203,99 +180,9 @@ def read_exposure_data(exposure_levels):
     return exposure_layers
 
 
-def interpolate(Source, Target, name=None):
-    """Interpolate values from Source to locations in Target
-
-    Input
-        Source: Data set containing values at given locations
-        Target: Data set containing locations where values form
-                Source are sought
-        name: Name for new attribute.
-              If None (default) the name of Source is used
-
-    Output
-        Data set with values form Source interpolated to locations at Target
-        It will have the same type and dimensionality as Target.
-    """
-
-    if Source.is_raster and Target.is_vector:
-        return interpolate_raster_vector(Source, Target, name)
-
-    if Source.is_raster and Target.is_raster:
-        if Source.get_geotransform() == Target.get_geotransform():
-            # No need to interpolate
-            return Source
-        else:
-            # Need interpolation between grids
-            msg = 'Intergrid interpolation not yet implemented'
-            raise Exception(msg)
-
-    if Source.is_vector:
-        # Need interpolation from vector data
-        msg = 'Interpolation from vector data not yet implemented'
-        raise Exception(msg)
-
-
-def interpolate_raster_vector(R, V, name=None):
-    """Interpolate from raster layer to point data
-
-    Input
-        R: Raster data set (coverage)
-        V: Vector data set (points)
-        name: Name for new attribute.
-              If None (default) the name of R is used
-
-    Output
-        I: Vector data set; points located as V with values interpolated from R
-
-    """
-
-    # FIXME: We probably need to rename this to interpolate_raster_vector
-    #        and have another called interpolate_raster_raster and so on.
-
-    # FIXME: I think this interpolation can do grids as well if the
-    #        interpolator is called with x and y being 1D arrays (axes)
-
-    # Input checks
-    assert R.is_raster
-    assert V.is_vector
-
-    # Get raster data and corresponding x and y axes
-
-    # FIXME (Ole): Replace NODATA with 0 until we can handle proper NaNs
-    A = R.get_data(nan=0.0)
-    longitudes, latitudes = R.get_geometry()
-    assert len(longitudes) == A.shape[1]
-    assert len(latitudes) == A.shape[0]
-
-    # Create interpolator
-    f = raster_spline(longitudes, latitudes, A)
-
-    # Get vector points but ignore attributes
-    coordinates = V.get_geometry()
-    expected_values = V.get_data()
-
-    # Interpolate and create new attribute
-    N = len(V)
-    attributes = []
-    if name is None:
-        name = R.get_name()
-
-    # FIXME (Ole): Profiling may suggest that his loop should be written in C
-    for i in range(N):
-        xi = coordinates[i, 0]   # Longitude
-        eta = coordinates[i, 1]  # Latitude
-
-        # Use layer name from raster for new attribute
-        value = float(f(xi, eta))
-        attributes.append({name: value})
-
-    return Vector(coordinates, V.get_projection(), attributes)
-
-
-def call_impact_function(impact_function,
-                         hazard_layers,
-                         exposure_layers,
+# OBSOLETE ---------------------------------------
+def Xcall_impact_function(layers,
+                         impact_function,
                          name=''):
     """Extract numerical data from all layers and call impact function
 
@@ -317,7 +204,7 @@ def call_impact_function(impact_function,
                                            name)
 
 
-def call_impact_function_raster(impact_function,
+def Xcall_impact_function_raster(impact_function,
                                 hazard_layers,
                                 exposure_layers,
                                 impact_name=''):
@@ -352,7 +239,7 @@ def call_impact_function_raster(impact_function,
     return R
 
 
-def call_impact_function_vector(impact_function,
+def Xcall_impact_function_vector(impact_function,
                                 hazard_layers,
                                 exposure_layers,
                                 impact_name=''):

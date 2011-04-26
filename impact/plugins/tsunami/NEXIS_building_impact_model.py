@@ -7,7 +7,7 @@ from impact.plugins.core import FunctionProvider
 
 from impact.engine.utilities import MAXFLOAT
 from impact.plugins.utilities import Damage_curve
-
+from impact.storage.vector import Vector
 
 #------------------------------------------------------------
 # Define damage curves for tsunami structural building damage
@@ -58,15 +58,26 @@ class TsunamiBuildingLossFunction(FunctionProvider):
     """
 
     @staticmethod
-    def run(hazard_layers, exposure_layers):
+    def run(layers):
         """Risk plugin for tsunami building damage
         """
 
-        coordinates, inundation = hazard_layers
-        coordinates, buildings = exposure_layers
+        # Extract data
+        # FIXME (Ole): This will be replaced by a helper function
+        #              to separate hazard from exposure using keywords
+        H = layers[0]  # Ground shaking
+        E = layers[1]  # Building locations
 
+        # Interpolate hazard level to building locations
+        H = H.interpolate(E)
+
+        # Extract relevant numerical data
+        coordinates = E.get_geometry()
+        inundation = H.get_data()
+        buildings = E.get_data()
+
+        # Calculate
         N = len(buildings)
-
         impact = []
         for i in range(N):
 
@@ -135,4 +146,12 @@ class TsunamiBuildingLossFunction(FunctionProvider):
                            'CONTENTS_LOSS_AUD': contents_loss,
                            'DEPTH': depth})
 
-        return impact
+
+        # FIXME (Ole): Need helper to generate new layer using
+        #              correct spatial reference
+        #              (i.e. sensibly wrap the following lines)
+        projection = E.get_projection()
+
+        V = Vector(coordinates, projection, impact,
+                   name='Estimated tsunami impact')
+        return V

@@ -99,14 +99,14 @@ class Test_calculations(unittest.TestCase):
             #except AssertionError, e:
             #    expected_error = 'Layer must have the format "workspace:name"'
             #    msg = ('Exception was raised but error message was: %s\n'
-            #           'I expected error message: %s...' % (e, expected_error))
+            #           'I expected error message: %s...' % (e,
+            #                                                expected_error))
             #    assert str(e).startswith(expected_error), msg
             #else:
             #    msg = ('Assertion error should have been raised for layer '
             #           'name %s which is not preceded by workspace'
             #           % layer_name)
             #    raise Exception(msg)
-
 
             # Check handling of invalid workspace name
             #try:

@@ -6,6 +6,7 @@ import numpy
 from osgeo import gdal
 from projection import Projection
 from utilities import driver_map
+from impact.engine.interpolation import interpolate_raster_vector
 
 
 class Raster:
@@ -148,6 +149,30 @@ class Raster:
 
         # Write data
         fid.GetRasterBand(1).WriteArray(A)
+
+    def interpolate(self, X, name=None):
+        """Interpolate values of this raster layer to other layer
+
+        Input
+            X: Layer object defining target
+            name: Optional name of interpolated layer
+
+        Output
+            Y: Layer object with values of this raster layer interpolated to
+               geometry of input layer X
+        """
+
+        if X.is_raster:
+            if self.get_geotransform() != X.get_geotransform():
+                # Need interpolation between grids
+                msg = 'Intergrid interpolation not yet implemented'
+                raise Exception(msg)
+            else:
+                # Rasters are aligned, no need to interpolate
+                return self
+        else:
+            # Interpolate this raster layer to geometry of X
+            return interpolate_raster_vector(self, X, name)
 
     def get_data(self, nan=False):
         """Get raster data as numeric array

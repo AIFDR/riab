@@ -71,3 +71,61 @@ class Interpolator:
             return numpy.nan
 
         return self.F(lat, lon)
+
+
+def interpolate_raster_vector(R, V, name=None):
+    """Interpolate from raster layer to point data
+
+    Input
+        R: Raster data set (coverage)
+        V: Vector data set (points)
+        name: Name for new attribute.
+              If None (default) the name of R is used
+
+    Output
+        I: Vector data set; points located as V with values interpolated from R
+
+    """
+
+    from impact.storage.vector import Vector
+
+    # FIXME: We probably need to rename this to interpolate_raster_vector
+    #        and have another called interpolate_raster_raster and so on.
+
+    # FIXME: I think this interpolation can do grids as well if the
+    #        interpolator is called with x and y being 1D arrays (axes)
+
+    # Input checks
+    assert R.is_raster
+    assert V.is_vector
+
+    # Get raster data and corresponding x and y axes
+
+    # FIXME (Ole): Replace NODATA with 0 until we can handle proper NaNs
+    A = R.get_data(nan=0.0)
+    longitudes, latitudes = R.get_geometry()
+    assert len(longitudes) == A.shape[1]
+    assert len(latitudes) == A.shape[0]
+
+    # Create interpolator
+    f = raster_spline(longitudes, latitudes, A)
+
+    # Get vector geometry
+    coordinates = V.get_geometry()
+
+    # Interpolate and create new attribute
+    N = len(V)
+    attributes = []
+    if name is None:
+        name = R.get_name()
+
+    # FIXME (Ole): Profiling may suggest that his loop should be written in C
+    for i in range(N):
+        xi = coordinates[i, 0]   # Longitude
+        eta = coordinates[i, 1]  # Latitude
+
+        # Use layer name from raster for new attribute
+        value = float(f(xi, eta))
+        attributes.append({name: value})
+
+    return Vector(coordinates, V.get_projection(), attributes)

@@ -1,5 +1,6 @@
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
+from impact.storage.vector import Vector
 
 
 class EarthquakeSchoolDamageFunction(FunctionProvider):
@@ -10,17 +11,26 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
     """
 
     @staticmethod
-    def run(hazard_data, exposure_data):
+    def run(layers):
         """Risk plugin for earthquake school damage
         """
 
-        # FIXME (Ole): Currently vector data comes as a 2-tuple with
-        # coordinates and associated attributes.
-        coordinates, shaking = hazard_data
-        coordinates, schools = exposure_data
+        # Extract data
+        # FIXME (Ole): This will be replaced by a helper function
+        #              to separate hazard from exposure using keywords
+        H = layers[0]  # Ground shaking
+        E = layers[1]  # Building locations
 
+        # Interpolate hazard level to building locations
+        H = H.interpolate(E)
+
+        # Extract relevant numerical data
+        coordinates = E.get_geometry()
+        shaking = H.get_data()
+
+        # Calculate building damage
         school_damage = []
-        for i in range(len(schools)):
+        for i in range(len(shaking)):
             x = float(shaking[i].values()[0])
             if x < 6.0:
                 value = 0.0
@@ -33,4 +43,12 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
 
             school_damage.append({'Percent_damage': value, 'MMI': x})
 
-        return school_damage
+
+        # FIXME (Ole): Need helper to generate new layer using
+        #              correct spatial reference
+        #              (i.e. sensibly wrap the following lines)
+        projection = E.get_projection()
+
+        V = Vector(coordinates, projection, school_damage,
+                   name='Estimated pct damage')
+        return V
