@@ -4,7 +4,7 @@ import sys
 import os
 
 from impact.engine.core import calculate_impact
-from impact.engine.core import raster_spline
+from impact.engine.interpolation import raster_spline
 from impact.storage.io import read_layer
 from impact import plugins
 from impact.storage.utilities import unique_filename

@@ -7,6 +7,8 @@ ordering of dimensions between raster files and numpy arrays.
 import numpy
 from scipy.interpolate import RectBivariateSpline, interp1d
 
+from impact.storage.vector import Vector
+
 
 def raster_spline(longitudes, latitudes, values):
     """Create spline for bivariate interpolation
@@ -86,11 +88,6 @@ def interpolate_raster_vector(R, V, name=None):
         I: Vector data set; points located as V with values interpolated from R
 
     """
-
-    from impact.storage.vector import Vector
-
-    # FIXME: We probably need to rename this to interpolate_raster_vector
-    #        and have another called interpolate_raster_raster and so on.
 
     # FIXME: I think this interpolation can do grids as well if the
     #        interpolator is called with x and y being 1D arrays (axes)

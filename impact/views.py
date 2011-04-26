@@ -23,10 +23,7 @@ All API calls start with:
         (Will return an errors object).
 """
 
-
-import urlparse
 import inspect
-import numpy
 import datetime
 
 from django.utils import simplejson as json

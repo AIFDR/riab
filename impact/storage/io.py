@@ -5,19 +5,12 @@
 """
 
 import os
-import urllib
 import urllib2
-import httplib2
 import time
 import contextlib
-import datetime
-from xml.etree.ElementTree import parse
-from StringIO import StringIO
 import tempfile
 from zipfile import ZipFile
-from owslib.wfs import WebFeatureService
-from owslib.wcs import WebCoverageService
-from django.conf import settings
+
 from vector import Vector
 from raster import Raster
 from impact.storage.utilities import get_layers_metadata

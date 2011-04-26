@@ -7,17 +7,9 @@ import os
 import io
 import numpy
 
-from impact.storage.raster import Raster
-from impact.storage.vector import Vector
 from impact.storage.projection import Projection
-from impact.storage.io import read_layer
-from impact.storage.io import write_point_data
-from impact.storage.io import write_coverage
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import DEFAULT_PROJECTION
-from impact.engine.interpolation import raster_spline
-
-from impact.storage.utilities import unique_filename
 
 
 def calculate_impact(layers, impact_function,
@@ -56,12 +48,6 @@ def calculate_impact(layers, impact_function,
 
     This function delegates work to internal functions depending on types
     of hazard and exposure data.
-
-    FIXME: Need to decide whether to use multiple files, multiple bands
-           or both. Same with vector data.
-    FIXME: Do we want a bounding box at this level. I think not.
-
-    FIXME: Need to deal with values like -9999 for nodata here.
     """
 
     # Input checks
@@ -76,7 +62,7 @@ def calculate_impact(layers, impact_function,
     # FIXME (Ole): When issue #21 has been fully implemented, this
     #              return value should be a list of layers.
 
-    if F.__class__ == Raster:
+    if F.is_raster:
         extension = '.tif'
         # use default style for raster
     else:
