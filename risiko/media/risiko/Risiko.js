@@ -1161,7 +1161,7 @@ function calculate()
 		    }
 		    ],
 
-		buttons: [{text:'Memulai lagi', //'Reset',
+		buttons: [{text:'Mulai lagi', //'Reset',
 			   handler:reset_view}
 		         ,{
 				text: 'Menghitung',//'TR:Calculate',
