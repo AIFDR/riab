@@ -329,6 +329,46 @@ class Vector:
                 e[1],  # East
                 e[3]]  # North
 
+    def get_topN(self, attribute, N=10):
+        """Get top N features
+
+        Input
+            attribute: The name of attribute where values are sought
+            N: How many
+
+        Output
+            layer: New vector layer with selected features
+        """
+
+        # FIXME (Ole): Maybe generalise this to arbitrary expressions
+
+        # Input checks
+        msg = 'N must be a positive number. I got %i' % N
+        assert N > 0, msg
+
+        msg = 'Specified attribute was empty'
+        assert len(attribute) > 0, msg
+
+        msg = ('Requested attribute "%s" does not exist in vector layer '
+               ' with attributes: %s' % (attribute,
+                                         self.attributes[0].keys()))
+        assert attribute in self.attributes[0], msg
+
+        # Create list of values for specified attribute
+        values = [x[attribute] for x in self.attributes]
+
+        # Sort and select using Schwarzian transform
+        A = zip(values, self.attributes, self.geometry)
+        A.sort()
+
+        # Pick top N and unpack
+        _, attributes, coordinates = zip(*A[-N:])
+
+        # Create new Vector instance and return
+        return Vector(data=coordinates, attributes=attributes,
+                      projection=self.get_projection())
+
+
     @property
     def is_raster(self):
         return False

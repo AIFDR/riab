@@ -157,6 +157,51 @@ class Test_IO(unittest.TestCase):
                     assert len(field_names) == len(attributes[i].keys())
                     assert field_names == attributes[i].keys()
 
+
+    def test_analysis_of_vector_data_top_N(self):
+        """Analysis of vector data - get top N of an attribute
+        """
+
+        for vectorname in ['lembang_schools.shp',
+                           'tsunami_exposure_BB.shp']:
+
+            filename = '%s/%s' % (TESTDATA, vectorname)
+            layer = read_layer(filename)
+            coords = layer.get_geometry()
+            attributes = layer.get_data()
+
+            # Check exceptions
+            try:
+                L = layer.get_topN(attribute='FLOOR_AREA', N=0)
+            except AssertionError:
+                pass
+            else:
+                msg = 'Exception should have been raised for N == 0'
+                raise Exception(msg)
+
+            # Check results
+            for N in [5, 10, 11, 17]:
+                if vectorname == 'lembang_schools.shp':
+                    L = layer.get_topN(attribute='FLOOR_AREA', N=N)
+                    assert len(L) == N
+                    assert L.get_projection() == layer.get_projection()
+                    #print [a['FLOOR_AREA'] for a in L.attributes]
+                elif vectorname == 'tsunami_exposure_BB.shp':
+                    L = layer.get_topN(attribute='STR_VALUE', N=N)
+                    assert len(L) == N
+                    assert L.get_projection() == layer.get_projection()
+                    val = [a['STR_VALUE'] for a in L.attributes]
+
+                    ref = [a['STR_VALUE'] for a in attributes]
+                    ref.sort()
+
+                    assert numpy.allclose(val, ref[-N:],
+                                          atol=1.0e-12, rtol=1.0e-12)
+                else:
+                    raise Exception
+
+
+
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays
         """
