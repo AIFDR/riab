@@ -20,6 +20,7 @@ internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_test_data')
 
+
 def lembang_damage_function(x):
     if x < 6.0:
         value = 0.0

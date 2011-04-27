@@ -368,7 +368,6 @@ class Vector:
         return Vector(data=coordinates, attributes=attributes,
                       projection=self.get_projection())
 
-
     def interpolate(self, X, name=None):
         """Interpolate values of this vector layer to other layer
 
@@ -383,7 +382,6 @@ class Vector:
 
         msg = 'Interpolation from vector layers not yet implemented'
         raise Exception(msg)
-
 
     @property
     def is_raster(self):

@@ -157,7 +157,6 @@ class Test_IO(unittest.TestCase):
                     assert len(field_names) == len(attributes[i].keys())
                     assert field_names == attributes[i].keys()
 
-
     def test_analysis_of_vector_data_top_N(self):
         """Analysis of vector data - get top N of an attribute
         """
@@ -199,8 +198,6 @@ class Test_IO(unittest.TestCase):
                                           atol=1.0e-12, rtol=1.0e-12)
                 else:
                     raise Exception
-
-
 
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays

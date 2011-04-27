@@ -5,7 +5,6 @@ TESTDATA = os.path.join(os.environ['RIAB_HOME'],
                                    'riab_data', 'risiko_test_data')
 
 
-
 def _same_API(X, Y, exclude=[]):
     """Check that public methods of X also exist in Y
     """
@@ -29,7 +28,11 @@ def _same_API(X, Y, exclude=[]):
 
 
 def same_API(X, Y, exclude=[]):
-    """Check that public methods of X and Y are the same
+    """Check that public methods of X and Y are the same.
+
+    Input
+        X, Y: Python objects
+        exclude: List of names to exclude from comparison
     """
 
     _same_API(X, Y, exclude=exclude)

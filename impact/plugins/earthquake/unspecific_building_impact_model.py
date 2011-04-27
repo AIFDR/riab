@@ -43,7 +43,6 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
 
             school_damage.append({'Percent_damage': value, 'MMI': x})
 
-
         # FIXME (Ole): Need helper to generate new layer using
         #              correct spatial reference
         #              (i.e. sensibly wrap the following lines)

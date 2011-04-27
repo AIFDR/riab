@@ -146,7 +146,6 @@ class TsunamiBuildingLossFunction(FunctionProvider):
                            'CONTENTS_LOSS_AUD': contents_loss,
                            'DEPTH': depth})
 
-
         # FIXME (Ole): Need helper to generate new layer using
         #              correct spatial reference
         #              (i.e. sensibly wrap the following lines)
