@@ -1,24 +1,38 @@
 import os
+import types
 
 TESTDATA = os.path.join(os.environ['RIAB_HOME'],
                                    'riab_data', 'risiko_test_data')
 
 
-def same_API(X, Y):
-    """Check that attributes and methods of X and Y are the same
+
+def _same_API(X, Y, exclude=[]):
+    """Check that public methods of X also exist in Y
     """
 
-    # Check that X and Y have the same methods
-    for method in dir(X):
-        if method not in dir(Y):
-            msg = 'Method %s of %s was not found in %s' % (method, X, Y)
-            raise Exception(msg)
+    for name in dir(X):
 
-    for method in dir(Y):
-        if method not in dir(X):
-            msg = 'Method %s of %s was not found in %s' % (method, Y, X)
-            raise Exception(msg)
+        # Skip internal symbols
+        if name.startswith('_'):
+            continue
 
-    # Check that X and Y have the same attributes
-    print X.__dict__
-    print Y.__dict__
+        # Skip explicitly excluded methods
+        if name in exclude:
+            continue
+
+        # Check membership of methods
+        attr = getattr(X, name)
+        if isinstance(attr, types.MethodType):
+            if name not in dir(Y):
+                msg = 'Method %s of %s was not found in %s' % (name, X, Y)
+                raise Exception(msg)
+
+
+def same_API(X, Y, exclude=[]):
+    """Check that public methods of X and Y are the same
+    """
+
+    _same_API(X, Y, exclude=exclude)
+    _same_API(Y, X, exclude=exclude)
+
+    return True

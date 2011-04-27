@@ -527,14 +527,18 @@ class Test_IO(unittest.TestCase):
             bbox = get_bounding_box(os.path.join(TESTDATA, filename))
             assert numpy.allclose(bbox, ref_bbox[filename])
 
-    def Xtest_layer_API(self):
-        """Vector and Raster instances have the same API
+    def test_layer_API(self):
+        """Vector and Raster instances have a similar API
         """
+
+        # Exceptions
+        exclude = ['get_topN', 'get_bins', 'get_extrema',
+                   'get_geotransform', 'get_nodata_value']
 
         V = Vector()  # Empty vector instance
         R = Raster()  # Empty raster instance
 
-        assert same_API(V, R)
+        assert same_API(V, R, exclude=exclude)
 
         for layername in ['lembang_schools.shp',
                           'Lembang_Earthquake_Scenario.asc']:
@@ -542,8 +546,8 @@ class Test_IO(unittest.TestCase):
             filename = '%s/%s' % (TESTDATA, layername)
             L = read_layer(filename)
 
-            assert same_API(L, V)
-            assert same_API(L, R)
+            assert same_API(L, V, exclude=exclude)
+            assert same_API(L, R, exclude=exclude)
 
 
 if __name__ == '__main__':
