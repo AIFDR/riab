@@ -42,7 +42,7 @@ class Test_calculations(unittest.TestCase):
         """
 
         # Upload a raster and a vector data set
-        for filename in ['lembang_mmi_hazmap.tif', 'lembang_schools.shp']:
+        for filename in ['lembang_mmi_hazmap.asc', 'lembang_schools.shp']:
             basename, ext = os.path.splitext(filename)
 
             filename = os.path.join(TEST_DATA, filename)
@@ -126,7 +126,7 @@ class Test_calculations(unittest.TestCase):
 
         # Test for a range of hazard layers
 
-        for mmi_filename in ['lembang_mmi_hazmap.tif']:
+        for mmi_filename in ['lembang_mmi_hazmap.asc']:
                              #'Lembang_Earthquake_Scenario.asc']:
             # Upload input data
 

@@ -175,7 +175,7 @@ class Test_utilities(unittest.TestCase):
     def test_tiff(self):
         """Uploading a good tiff
         """
-        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
+        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
         uploaded = file_upload(thefile)
         check_layer(uploaded)
 
@@ -245,7 +245,7 @@ class Test_utilities(unittest.TestCase):
     def test_single_file_batch(self):
         """Test single file using batch upload function
         """
-        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
+        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
         uploaded_files = upload(thefile)
         i = 0
         for uploaded in uploaded_files:
@@ -260,7 +260,7 @@ class Test_utilities(unittest.TestCase):
         """
         from geonode.maps.utils import cleanup
 
-        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.tif')
+        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
         uploaded = file_upload(thefile)
         check_layer(uploaded)
 

@@ -443,7 +443,6 @@ class Vector:
                       projection=self.get_projection(),
                       geometry=geometry)
 
-
     def interpolate(self, X, name=None):
         """Interpolate values of this vector layer to other layer
 
