@@ -331,11 +331,16 @@ class Vector:
                 e[1],  # East
                 e[3]]  # North
 
-    def get_extrema(self, attribute):
+    def get_extrema(self, attribute=None):
         """Get min and max values from specified attribute
 
         Return min, max
         """
+
+        if attribute is None:
+            msg = ('Valid attribute name must be specified in get_extrema '
+                   'for vector layers. I got None.')
+            raise RuntimeError(msg)
 
         attributes = self.get_data()
 

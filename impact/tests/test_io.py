@@ -380,7 +380,7 @@ class Test_IO(unittest.TestCase):
             assert nodata == Amin, msg
 
     def test_vector_extrema(self):
-        """Vector extrema are correct.
+        """Vector extremum calculation works
         """
 
         for layername in ['lembang_schools.shp',
@@ -413,6 +413,15 @@ class Test_IO(unittest.TestCase):
                 else:
                     msg = ('Non existing attribute name should have '
                            'raised AssertionError')
+                    raise Exception(msg)
+
+                try:
+                    L.get_extrema()
+                except RuntimeError:
+                    pass
+                else:
+                    msg = ('Missing attribute name should have '
+                           'raised RuntimeError')
                     raise Exception(msg)
 
     def test_raster_extrema(self):
