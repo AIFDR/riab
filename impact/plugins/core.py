@@ -110,6 +110,7 @@ def requirements_collect(func):
       :param requires <valid pythhon expression>
     The layer keywords are put into the local name space
     each requires should be on a new line
+    a '/' at the end of a line will be a continuation
 
     returns the strings for the python exec
 
@@ -120,12 +121,27 @@ def requirements_collect(func):
     if hasattr(func, '__doc__') and func.__doc__:
         docstr = func.__doc__
 
-        requireCmd = ':param requires'
-        requireslines = [line.strip()[len(requireCmd) + 1:]
-                         for line in docstr.split('\n')
-                            if line.strip().startswith(requireCmd)]
+        require_cmd = ':param requires'
 
-    return requireslines
+        lines=docstr.split('\n')
+        requires_lines = []
+
+        join_line = False
+
+        for cnt, line in enumerate(lines):
+            doc_line = line.strip()
+            if len(doc_line)==0: continue
+
+            if join_line and not doc_line.startswith(require_cmd):
+                 #last line had continuation char
+                 requires_lines[-1] = requires_lines[-1][:-1] + doc_line
+
+            elif doc_line.startswith(require_cmd):
+                requires_lines.append(doc_line[len(require_cmd) + 1:])
+
+            join_line = doc_line[-1] == '/'
+
+    return requires_lines
 
 
 def requirement_check(params, require_str, verbose=False):

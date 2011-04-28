@@ -12,8 +12,12 @@ from impact.plugins.utilities import Damage_curve
 class TephraImpactFunction(FunctionProvider):
     """Risk plugin for tephra damage (FIXME: Origin?)
 
-    :param requires category=="hazard" and subcategory.startswith("tephra") and layerType=="raster"
-    :param requires category=="exposure" and subcategory.startswith("building") and layerType=="feature"
+    :param requires category=="hazard" and \
+                    subcategory.startswith("tephra") and \
+                    layerType=="raster"
+    :param requires category=="exposure" and \
+                    subcategory.startswith("building") and \
+                    layerType=="feature"
     """
 
     @staticmethod
