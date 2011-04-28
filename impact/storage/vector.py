@@ -10,7 +10,8 @@ from utilities import driver_map, type_map
 
 class Vector:
 
-    def __init__(self, geometry=None, projection=None, attributes=None, name=''):
+    def __init__(self, attributes=None, projection=None, geometry=None,
+                 name=''):
         """Initialise object with either geometry or filename
 
         Input
