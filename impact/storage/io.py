@@ -77,7 +77,9 @@ def write_point_data(coordinates, projection, attributes, filename):
     * http://invisibleroads.com/tutorials/gdal-shapefile-points-save.html
     """
 
-    V = Vector(coordinates, projection, attributes)
+    V = Vector(attributes=attributes,
+               projection=projection,
+               geometry=coordinates)
     V.write_to_file(filename)
 
 # FIXME (Ole): Why is the resolution hard coded here?

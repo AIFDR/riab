@@ -48,6 +48,8 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
         #              (i.e. sensibly wrap the following lines)
         projection = E.get_projection()
 
-        V = Vector(coordinates, projection, school_damage,
+        V = Vector(attributes=school_damage,
+                   projection=E.get_projection(),
+                   geometry=coordinates,
                    name='Estimated pct damage')
         return V

@@ -13,7 +13,8 @@ class Raster:
     """Internal representation of raster (coverage) data
     """
 
-    def __init__(self, data=None, projection=None, geotransform=None, name=''):
+    def __init__(self, data=None, projection=None, geotransform=None,
+                 name='Raster layer'):
         """Initialise object with either data or filename
 
         Input
@@ -33,12 +34,11 @@ class Raster:
 
         if data is None:
             # Instantiate empty object
-            self.name = 'Empty raster layer'
+            self.name = name
             self.data = None
             self.projection = None
             self.coordinates = None
             self.filename = None
-
             return
 
         if isinstance(data, basestring):

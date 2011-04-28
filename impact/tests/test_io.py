@@ -39,10 +39,10 @@ class Test_IO(unittest.TestCase):
         """
 
         v = Vector(None)
-        assert v.get_name().startswith('Empty vector')
+        assert v.get_name().startswith('Vector')
 
         r = Raster(None)
-        assert r.get_name().startswith('Empty raster')
+        assert r.get_name().startswith('Raster')
 
     def test_reading_and_writing_of_vector_data(self):
         """Vector data can be read and written correctly
@@ -225,6 +225,15 @@ class Test_IO(unittest.TestCase):
         assert V_new == V_ref
         assert not V_new != V_ref
 
+        # Write this new object, read it again and check
+        tmp_filename = unique_filename(suffix='.shp')
+        V_new.write_to_file(tmp_filename)
+
+        V_tmp = read_layer(tmp_filename)
+        assert V_tmp == V_ref
+        assert not V_tmp != V_ref
+
+
 
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays
@@ -290,7 +299,6 @@ class Test_IO(unittest.TestCase):
 
         # Write back to new (tif) file
         out_filename = unique_filename(suffix='.tif')
-        out_filename = 'small_test_raster.tif'
         R1.write_to_file(out_filename)
 
         # Read again and check consistency

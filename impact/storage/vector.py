@@ -11,7 +11,7 @@ from utilities import driver_map, type_map
 class Vector:
 
     def __init__(self, attributes=None, projection=None, geometry=None,
-                 name=''):
+                 name='Vector layer'):
         """Initialise object with either geometry or filename
 
         Input
@@ -27,17 +27,17 @@ class Vector:
                   Only used if geometry is provide as a numeric array,
         """
 
-        if geometry is None:
+        if attributes is None and projection is None and geometry is None:
             # Instantiate empty object
-            self.name = 'Empty vector layer'
+            self.name = name
             self.projection = None
             self.geometry = None
             self.filename = None
-
+            self.attributes = None
             return
 
-        if isinstance(geometry, basestring):
-            self.read_from_file(geometry)
+        if isinstance(attributes, basestring):
+            self.read_from_file(attributes)
         else:
             # Assume that geometry is provided as an array
             # with extra keyword arguments supplying metadata
@@ -347,7 +347,7 @@ class Vector:
         if hasattr(self, 'attributes'):
             return self.attributes
         else:
-            msg = 'Vector data instance does not have attributes'
+            msg = 'Vector data instance does not have any attributes'
             raise Exception(msg)
 
     def get_geometry(self):
