@@ -29,8 +29,8 @@ class Vector:
         if data is None:
             # Instantiate empty object
             self.name = 'Empty vector layer'
+            self.data = None
             self.projection = None
-            self.attributes = {}
             self.geometry = None
             self.filename = None
 
@@ -49,6 +49,56 @@ class Vector:
 
             self.projection = Projection(projection)
             self.attributes = attributes
+
+    def __len__(self):
+        return self.geometry.shape[0]
+
+    def __eq__(self, other, rtol=1.0e-5, atol=1.0e-8):
+        """Override '==' to allow comparison with other vector objecs
+
+        Input
+           other: Vector instance to compare to
+           rtol, atol: Relative and absolute tolerance.
+                       See numpy.allclose for details
+        """
+
+        # Check type
+        if not isinstance(other, Vector):
+            msg = ('Vector instance cannot be compared to %s'
+                   ' as its type is %s ' % (str(other), type(other)))
+            raise TypeError(msg)
+
+        # Check projection
+        if self.projection != other.projection:
+            return False
+
+        # Check geometry
+        if not numpy.allclose(self.get_geometry(),
+                              other.get_geometry(),
+                              rtol=rtol, atol=atol):
+            return False
+
+        # Check data
+        # FIXME (Ole): Rewrite when issue #65 is done
+        # FIXME: Also check that keys match exactly.
+        x = self.get_data()
+        y = other.get_data()
+        for i, a in enumerate(x):
+            for key in a:
+                if a[key] != y[i][key]:
+                    # Not equal, try numerical comparison
+
+                    if not numpy.allclose(a[key], y[i][key],
+                                          rtol=rtol, atol=atol):
+                        return False
+
+        # Vector layers are identical up to the specified tolerance
+        return True
+
+    def __ne__(self, other):
+        """Override '!=' to allow comparison with other projection objecs
+        """
+        return not self == other
 
     def get_name(self):
         return self.name
@@ -281,9 +331,6 @@ class Vector:
                 raise Exception(msg)
 
             feature.Destroy()
-
-    def __len__(self):
-        return self.geometry.shape[0]
 
     def get_data(self, nan=False):
         """Get vector data as list of attributes

@@ -34,8 +34,8 @@ class Raster:
         if data is None:
             # Instantiate empty object
             self.name = 'Empty raster layer'
+            self.data = None
             self.projection = None
-            self.attributes = {}
             self.coordinates = None
             self.filename = None
 
@@ -61,7 +61,44 @@ class Raster:
             self.number_of_bands = 1
 
     def __len__(self):
-        return len(self.data.flat)
+        return len(self.get_data().flat)
+
+    def __eq__(self, other, rtol=1.0e-5, atol=1.0e-8):
+        """Override '==' to allow comparison with other raster objecs
+
+        Input
+           other: Raster instance to compare to
+           rtol, atol: Relative and absolute tolerance.
+                       See numpy.allclose for details
+        """
+
+        # Check type
+        if not isinstance(other, Raster):
+            msg = ('Raster instance cannot be compared to %s'
+                   ' as its type is %s ' % (str(other), type(other)))
+            raise TypeError(msg)
+
+        # Check projection
+        if self.projection != other.projection:
+            return False
+
+        # Check geotransform
+        if self.get_geotransform() != other.get_geotransform():
+            return False
+
+        # Check data
+        if not numpy.allclose(self.get_data(),
+                              other.get_data(),
+                              rtol=rtol, atol=atol):
+            return False
+
+        # Raster layers are identical up to the specified tolerance
+        return True
+
+    def __ne__(self, other):
+        """Override '!=' to allow comparison with other projection objecs
+        """
+        return not self == other
 
     def get_name(self):
         return self.name

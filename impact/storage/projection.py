@@ -87,3 +87,9 @@ class Projection:
             raise TypeError(msg)
 
         return self.spatial_reference.IsSame(other.spatial_reference)
+
+    def __ne__(self, other):
+        """Override '!=' to allow comparison with other projection objecs
+        """
+
+        return not self == other

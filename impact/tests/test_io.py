@@ -34,7 +34,7 @@ class Test_IO(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_instantiation_of_empty_layer(self):
+    def test_instantiation_of_empty_layers(self):
         """Vector and Raster objects can be instantiated with None
         """
 
@@ -199,6 +199,31 @@ class Test_IO(unittest.TestCase):
                 else:
                     raise Exception
 
+
+    def test_vector_class(self):
+        """Consistency of vector class for point data
+        """
+
+        # Read data file
+        layername = 'lembang_schools.shp'
+        filename = '%s/%s' % (TESTDATA, layername)
+        V = read_layer(filename)
+
+        # Make a smaller dataset
+        V_ref = V.get_topN('FLOOR_AREA', 5)
+
+        geometry = V_ref.get_geometry()
+        data = V_ref.get_data()
+        projection = V_ref.get_projection()
+
+        # Create new object from test data
+        V_new = Vector(data=geometry, attributes=data, projection=projection)
+
+        # Check
+        assert V_new == V_ref
+        assert not V_new != V_ref
+
+
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays
         """
@@ -352,6 +377,11 @@ class Test_IO(unittest.TestCase):
             p2 = R2.get_projection(proj4=True)
             msg = 'Projections were different: %s != %s' % (p1, p2)
             assert p1 == p1, msg
+
+            # Use overridden == and != to verify
+            assert R1 == R2
+            assert not R1 != R2
+
 
     def test_nodata_value(self):
         """NODATA value is correctly recorded in GDAL
