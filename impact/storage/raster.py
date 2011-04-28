@@ -292,9 +292,6 @@ class Raster:
         Return min, max
         """
 
-        # FIXME(Ole): Allow option to ignore or include NODATA value from
-        # extremum calculation
-
         A = self.get_data(nan=True)
         min = numpy.nanmin(A.flat[:])
         max = numpy.nanmax(A.flat[:])

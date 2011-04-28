@@ -379,8 +379,44 @@ class Test_IO(unittest.TestCase):
                    'value %i but it was %s' % (filename, Amin, nodata))
             assert nodata == Amin, msg
 
-    def test_raster_extrema_with_NAN(self):
-        """Raster extrema including NAN's are correct.
+    def test_vector_extrema(self):
+        """Vector extrema are correct.
+        """
+
+        for layername in ['lembang_schools.shp',
+                          'tsunami_exposure_BB.shp']:
+
+            filename = '%s/%s' % (TESTDATA, layername)
+            L = read_layer(filename)
+
+            if layername == 'tsunami_exposure_BB.shp':
+                attributes = L.get_data()
+
+                for name in ['STR_VALUE', 'CONT_VALUE']:
+                    minimum, maximum = L.get_extrema(name)
+                    assert minimum <= maximum
+
+                    x = [a[name] for a in attributes]
+                    assert numpy.allclose([min(x), max(x)],
+                                          [minimum, maximum],
+                                          rtol=1.0e-12, atol=1.0e-12)
+
+            elif layername == 'lembang_schools.shp':
+                minimum, maximum = L.get_extrema('FLOOR_AREA')
+                assert minimum == maximum  # All identical
+                assert maximum == 250
+
+                try:
+                    L.get_extrema('NONEXISTING_ATTRIBUTE_NAME_8462')
+                except AssertionError:
+                    pass
+                else:
+                    msg = ('Non existing attribute name should have '
+                           'raised AssertionError')
+                    raise Exception(msg)
+
+    def test_raster_extrema(self):
+        """Raster extrema (including NAN's) are correct.
         """
 
         for coveragename in ['Earthquake_Ground_Shaking_clip.tif',
@@ -529,7 +565,7 @@ class Test_IO(unittest.TestCase):
         """
 
         # Exceptions
-        exclude = ['get_topN', 'get_bins', 'get_extrema',
+        exclude = ['get_topN', 'get_bins',
                    'get_geotransform', 'get_nodata_value']
 
         V = Vector()  # Empty vector instance

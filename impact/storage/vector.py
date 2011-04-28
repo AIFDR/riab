@@ -85,9 +85,11 @@ class Vector:
         # Assume that file contains all data in one layer
         msg = 'Only one vector layer currently allowed'
         if fid.GetLayerCount() > 1:
-            print >> sys.err, ('WARNING: Number of layers in %s are %i. '
+            msg = ('WARNING: Number of layers in %s are %i. '
                    'Only the first layer will currently be '
                    'used.' % (filename, fid.GetLayerCount()))
+            raise Exception(msg)
+
         layer = fid.GetLayerByIndex(0)
 
         # Get spatial extent
@@ -328,6 +330,22 @@ class Vector:
                 e[2],  # South
                 e[1],  # East
                 e[3]]  # North
+
+    def get_extrema(self, attribute):
+        """Get min and max values from specified attribute
+
+        Return min, max
+        """
+
+        attributes = self.get_data()
+
+        msg = ('Specified attribute %s does not exist in vector layer %s. '
+               'Available attributes are: '
+               '%s' % (attribute, self.name, attributes[0].keys()))
+        assert attribute in attributes[0], msg
+
+        x = [a[attribute] for a in attributes]
+        return min(x), max(x)
 
     def get_topN(self, attribute, N=10):
         """Get top N features
