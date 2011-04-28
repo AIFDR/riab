@@ -123,18 +123,18 @@ def requirements_collect(func):
 
         require_cmd = ':param requires'
 
-        lines=docstr.split('\n')
+        lines = docstr.split('\n')
         requires_lines = []
 
         join_line = False
 
         for cnt, line in enumerate(lines):
             doc_line = line.strip()
-            if len(doc_line)==0: continue
+            if len(doc_line) == 0:
+                continue
 
             if join_line and not doc_line.startswith(require_cmd):
-                 #last line had continuation char
-                 requires_lines[-1] = requires_lines[-1][:-1] + doc_line
+                requires_lines[-1] = requires_lines[-1][:-1] + doc_line
 
             elif doc_line.startswith(require_cmd):
                 requires_lines.append(doc_line[len(require_cmd) + 1:])
