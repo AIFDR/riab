@@ -217,7 +217,9 @@ class Test_IO(unittest.TestCase):
         projection = V_ref.get_projection()
 
         # Create new object from test data
-        V_new = Vector(data=geometry, attributes=data, projection=projection)
+        V_new = Vector(geometry=geometry,
+                       attributes=data,
+                       projection=projection)
 
         # Check
         assert V_new == V_ref

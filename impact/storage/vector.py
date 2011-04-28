@@ -10,39 +10,38 @@ from utilities import driver_map, type_map
 
 class Vector:
 
-    def __init__(self, data=None, projection=None, attributes=None, name=''):
-        """Initialise object with either data or filename
+    def __init__(self, geometry=None, projection=None, attributes=None, name=''):
+        """Initialise object with either geometry or filename
 
         Input
-            data: Either a filename of a vector file format known to GDAL
+            geometry: Either a filename of a vector file format known to GDAL
                   Or an Nx2 array of point coordinates
                   None is also allowed.
             projection: Geospatial reference in WKT format.
-                        Only used if data is provide as a numeric array,
+                        Only used if geometry is provide as a numeric array,
             attributes: List of dictionaries of fields associated with
                         point coordinates.
                         None is allowed.
             name: Optional name for layer.
-                  Only used if data is provide as a numeric array,
+                  Only used if geometry is provide as a numeric array,
         """
 
-        if data is None:
+        if geometry is None:
             # Instantiate empty object
             self.name = 'Empty vector layer'
-            self.data = None
             self.projection = None
             self.geometry = None
             self.filename = None
 
             return
 
-        if isinstance(data, basestring):
-            self.read_from_file(data)
+        if isinstance(geometry, basestring):
+            self.read_from_file(geometry)
         else:
-            # Assume that data is provided as an array
+            # Assume that geometry is provided as an array
             # with extra keyword arguments supplying metadata
 
-            self.geometry = numpy.array(data, dtype='d', copy=False)
+            self.geometry = numpy.array(geometry, dtype='d', copy=False)
 
             self.filename = None
             self.name = name
@@ -435,7 +434,7 @@ class Vector:
         _, attributes, coordinates = zip(*A[-N:])
 
         # Create new Vector instance and return
-        return Vector(data=coordinates, attributes=attributes,
+        return Vector(geometry=coordinates, attributes=attributes,
                       projection=self.get_projection())
 
     def interpolate(self, X, name=None):
