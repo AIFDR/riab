@@ -118,7 +118,7 @@ class Test_IO(unittest.TestCase):
             # FIXME (Ole): I would like to use gml here, but OGR does not
             #              store the spatial reference!
             out_filename = unique_filename(suffix='.shp')
-            write_point_data(coords, wkt, attributes, out_filename)
+            write_point_data(attributes, wkt, coords, out_filename)
 
             # Read again and check
             layer = read_layer(out_filename)
@@ -189,7 +189,7 @@ class Test_IO(unittest.TestCase):
                     L = layer.get_topN(attribute='STR_VALUE', N=N)
                     assert len(L) == N
                     assert L.get_projection() == layer.get_projection()
-                    val = [a['STR_VALUE'] for a in L.attributes]
+                    val = [a['STR_VALUE'] for a in L.data]
 
                     ref = [a['STR_VALUE'] for a in attributes]
                     ref.sort()
@@ -217,9 +217,7 @@ class Test_IO(unittest.TestCase):
         projection = V_ref.get_projection()
 
         # Create new object from test data
-        V_new = Vector(geometry=geometry,
-                       attributes=data,
-                       projection=projection)
+        V_new = Vector(data=data, projection=projection, geometry=geometry)
 
         # Check
         assert V_new == V_ref

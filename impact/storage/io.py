@@ -52,18 +52,17 @@ def write_coverage(A, projection, geotransform, filename):
     R.write_to_file(filename)
 
 
-def write_point_data(coordinates, projection, attributes, filename):
-    """Write coordinates and any associated attributes to vector file
+def write_point_data(data, projection, geometry, filename):
+    """Write point data and any associated attributes to vector file
 
     Input:
-        coordinates: Nx2 Numpy array with longitudes, latitudes
-                     N is the number of points (features).
+        data: List of N dictionaries each with M fields where
+              M is the number of attributes.
+              A value of None is acceptable.
         projection: WKT projection information
-        attributes: List of N dictionaries each with M fields where
-                    M is the number of attributes.
-                    A value of None is acceptable.
+        geometry: Nx2 Numpy array with longitudes, latitudes
+                  N is the number of points (features).
         filename: Output filename
-
 
     Note: The only format implemented is GML and SHP so the extension
     must be either .gml or .shp
@@ -77,9 +76,9 @@ def write_point_data(coordinates, projection, attributes, filename):
     * http://invisibleroads.com/tutorials/gdal-shapefile-points-save.html
     """
 
-    V = Vector(attributes=attributes,
+    V = Vector(data=data,
                projection=projection,
-               geometry=coordinates)
+               geometry=geometry)
     V.write_to_file(filename)
 
 # FIXME (Ole): Why is the resolution hard coded here?

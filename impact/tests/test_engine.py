@@ -504,8 +504,10 @@ class Test_Engine(unittest.TestCase):
                 coordinates.append((xi, eta))
 
         vector_filename = unique_filename(suffix='.shp')
-        write_point_data(coordinates, projection, None,
-                         vector_filename)
+        write_point_data(data=None,
+                         projection=projection,
+                         geometry=coordinates,
+                         filename=vector_filename)
 
         # Read both datasets back in
         R = read_layer(raster_filename)

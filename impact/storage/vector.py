@@ -10,12 +10,12 @@ from utilities import driver_map, type_map
 
 class Vector:
 
-    def __init__(self, attributes=None, projection=None, geometry=None,
+    def __init__(self, data=None, projection=None, geometry=None,
                  name='Vector layer'):
         """Initialise object with either geometry or filename
 
         Input
-            attributes: Can be either
+            data: Can be either
                 * a filename of a vector file format known to GDAL
                 * List of dictionaries of fields associated with
                   point coordinates
@@ -27,17 +27,17 @@ class Vector:
                   Only used if geometry is provide as a numeric array,
         """
 
-        if attributes is None and projection is None and geometry is None:
+        if data is None and projection is None and geometry is None:
             # Instantiate empty object
             self.name = name
             self.projection = None
             self.geometry = None
             self.filename = None
-            self.attributes = None
+            self.data = None
             return
 
-        if isinstance(attributes, basestring):
-            self.read_from_file(attributes)
+        if isinstance(data, basestring):
+            self.read_from_file(data)
         else:
             # Assume that geometry is provided as an array
             # with extra keyword arguments supplying metadata
@@ -50,10 +50,9 @@ class Vector:
             assert projection is not None, msg
             self.projection = Projection(projection)
 
-            self.attributes = attributes
-            self.filename = None
+            self.data = data
             self.name = name
-
+            self.filename = None
 
     def __len__(self):
         return self.geometry.shape[0]
@@ -158,8 +157,8 @@ class Vector:
         N = layer.GetFeatureCount()
 
         # Extract coordinates and attributes for all features
-        coordinates = []
-        attributes = []
+        geometry = []
+        data = []
         for i in range(N):
             feature = layer.GetFeature(i)
             if feature is None:
@@ -170,7 +169,7 @@ class Vector:
             G = feature.GetGeometryRef()
             if G is not None and G.GetGeometryType() == ogr.wkbPoint:
                 # Longitude, Latitude
-                coordinates.append((G.GetX(), G.GetY()))
+                geometry.append((G.GetX(), G.GetY()))
             else:
                 msg = ('Only point geometries are supported. '
                        'Geometry in filename %s '
@@ -186,10 +185,10 @@ class Vector:
                 fields[name] = feature.GetField(j)
                 #print 'Field (name: value) = (%s: %s)' % (name, fields[name])
 
-            attributes.append(fields)
+            data.append(fields)
 
-        self.geometry = numpy.array(coordinates, dtype='d', copy=False)
-        self.attributes = attributes
+        self.geometry = numpy.array(geometry, dtype='d', copy=False)
+        self.data = data
         self.filename = filename
 
     def write_to_file(self, filename):
@@ -215,7 +214,7 @@ class Vector:
 
         # Get vector data
         coordinates = self.get_geometry()
-        attributes = self.get_data()
+        data = self.get_data()
 
         # Input checks
         N = coordinates.shape[0]
@@ -224,12 +223,12 @@ class Vector:
                'I got %i for the second dimension' % coordinates.shape[1])
         assert coordinates.shape[1] == 2, msg
 
-        if attributes is not None:
-            msg = ('Input parameter "attributes" must either be None or have '
+        if data is not None:
+            msg = ('Input parameter "data" must either be None or have '
                    'the same number of entries "coordinates". '
                    'I got %i entries '
-                   'but %i coordinates.' % (len(attributes), N))
-            assert len(attributes) == N, msg
+                   'but %i coordinates.' % (len(data), N))
+            assert len(data) == N, msg
 
         # Derive layername from filename (excluding preceding dirs)
         # and check file format
@@ -267,25 +266,25 @@ class Vector:
 
         # Define attributes if any
         store_attributes = False
-        if attributes is not None:
-            if len(attributes) > 0:
+        if data is not None:
+            if len(data) > 0:
                 try:
-                    fields = attributes[0].keys()
+                    fields = data[0].keys()
                 except:
                     msg = ('Input parameter "attributes" was specified '
                            'but it does not contain dictionaries with '
                            'field information as expected. The first'
-                           'element is %s' % attributes[0])
+                           'element is %s' % data[0])
                     raise Exception(msg)
                 else:
                     # Establish OGR types for each element
                     ogrtypes = {}
                     for name in fields:
-                        py_type = type(attributes[0][name])
+                        py_type = type(data[0][name])
                         ogrtypes[name] = type_map[py_type]
 
             else:
-                msg = ('Input parameter "attributes" was specified '
+                msg = ('Input parameter "data" was specified '
                        'but appears to be empty')
                 raise Exception(msg)
 
@@ -328,7 +327,7 @@ class Vector:
             # Attributes
             if store_attributes:
                 for name in fields:
-                    feature.SetField(name, attributes[i][name])
+                    feature.SetField(name, data[i][name])
 
             # Save this feature
             if lyr.CreateFeature(feature) != 0:
@@ -349,8 +348,8 @@ class Vector:
         (If keyword nan is True, nodata values will be replaced with NaN)
         """
 
-        if hasattr(self, 'attributes'):
-            return self.attributes
+        if hasattr(self, 'data'):
+            return self.data
         else:
             msg = 'Vector data instance does not have any attributes'
             raise Exception(msg)
@@ -394,14 +393,14 @@ class Vector:
                    'for vector layers. I got None.')
             raise RuntimeError(msg)
 
-        attributes = self.get_data()
+        data = self.get_data()
 
         msg = ('Specified attribute %s does not exist in vector layer %s. '
                'Available attributes are: '
-               '%s' % (attribute, self.name, attributes[0].keys()))
-        assert attribute in attributes[0], msg
+               '%s' % (attribute, self.name, data[0].keys()))
+        assert attribute in data[0], msg
 
-        x = [a[attribute] for a in attributes]
+        x = [a[attribute] for a in data]
         return min(x), max(x)
 
     def get_topN(self, attribute, N=10):
@@ -425,23 +424,25 @@ class Vector:
         assert len(attribute) > 0, msg
 
         msg = ('Requested attribute "%s" does not exist in vector layer '
-               ' with attributes: %s' % (attribute,
-                                         self.attributes[0].keys()))
-        assert attribute in self.attributes[0], msg
+               ' with data: %s' % (attribute,
+                                         self.data[0].keys()))
+        assert attribute in self.data[0], msg
 
         # Create list of values for specified attribute
-        values = [x[attribute] for x in self.attributes]
+        values = [x[attribute] for x in self.data]
 
         # Sort and select using Schwarzian transform
-        A = zip(values, self.attributes, self.geometry)
+        A = zip(values, self.data, self.geometry)
         A.sort()
 
         # Pick top N and unpack
-        _, attributes, coordinates = zip(*A[-N:])
+        _, data, geometry = zip(*A[-N:])
 
         # Create new Vector instance and return
-        return Vector(geometry=coordinates, attributes=attributes,
-                      projection=self.get_projection())
+        return Vector(data=data,
+                      projection=self.get_projection(),
+                      geometry=geometry)
+
 
     def interpolate(self, X, name=None):
         """Interpolate values of this vector layer to other layer

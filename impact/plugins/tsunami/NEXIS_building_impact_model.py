@@ -149,7 +149,7 @@ class TsunamiBuildingLossFunction(FunctionProvider):
         # FIXME (Ole): Need helper to generate new layer using
         #              correct spatial reference
         #              (i.e. sensibly wrap the following lines)
-        V = Vector(attributes=impact, projection=E.get_projection(),
+        V = Vector(data=impact, projection=E.get_projection(),
                    geometry=coordinates,
                    name='Estimated tsunami impact')
         return V

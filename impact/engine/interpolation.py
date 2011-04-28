@@ -125,5 +125,5 @@ def interpolate_raster_vector(R, V, name=None):
         value = float(f(xi, eta))
         attributes.append({name: value})
 
-    return Vector(attributes=attributes, projection=V.get_projection(),
+    return Vector(data=attributes, projection=V.get_projection(),
                   geometry=coordinates)

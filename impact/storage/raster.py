@@ -20,7 +20,7 @@ class Raster:
         Input
             data: Can be either
                 * a filename of a raster file format known to GDAL
-                * an MxN array of raster data.
+                * an MxN array of raster data
                 * None
             projection: Geospatial reference in WKT format.
                         Only used if data is provide as a numeric array,
