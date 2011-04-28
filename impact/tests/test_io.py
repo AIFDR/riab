@@ -199,7 +199,6 @@ class Test_IO(unittest.TestCase):
                 else:
                     raise Exception
 
-
     def test_vector_class(self):
         """Consistency of vector class for point data
         """
@@ -230,8 +229,6 @@ class Test_IO(unittest.TestCase):
         V_tmp = read_layer(tmp_filename)
         assert V_tmp == V_ref
         assert not V_tmp != V_ref
-
-
 
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays
@@ -389,7 +386,6 @@ class Test_IO(unittest.TestCase):
             # Use overridden == and != to verify
             assert R1 == R2
             assert not R1 != R2
-
 
     def test_nodata_value(self):
         """NODATA value is correctly recorded in GDAL
