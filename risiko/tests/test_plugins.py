@@ -101,7 +101,6 @@ class Test_plugins(unittest.TestCase):
 
         msg = 'Should > 1 layer in test geoserver'
         assert(len(layers) > 0), msg
-        print str(layers)
 
         annotated_plugins = [{'name': name,
                               'doc': f.__doc__,
