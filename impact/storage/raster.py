@@ -18,9 +18,10 @@ class Raster:
         """Initialise object with either data or filename
 
         Input
-            data: Either a filename of a raster file format known to GDAL
-                  Or an MxN array of raster data.
-                  None is also allowed.
+            data: Can be either
+                * a filename of a raster file format known to GDAL
+                * an MxN array of raster data.
+                * None
             projection: Geospatial reference in WKT format.
                         Only used if data is provide as a numeric array,
             geotransform: GDAL geotransform (6-tuple).

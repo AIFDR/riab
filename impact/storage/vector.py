@@ -15,14 +15,14 @@ class Vector:
         """Initialise object with either geometry or filename
 
         Input
-            geometry: Either a filename of a vector file format known to GDAL
-                  Or an Nx2 array of point coordinates
-                  None is also allowed.
+            attributes: Can be either
+                * a filename of a vector file format known to GDAL
+                * List of dictionaries of fields associated with
+                  point coordinates
+                * None
             projection: Geospatial reference in WKT format.
                         Only used if geometry is provide as a numeric array,
-            attributes: List of dictionaries of fields associated with
-                        point coordinates.
-                        None is allowed.
+            geometry: An Nx2 array of point coordinates
             name: Optional name for layer.
                   Only used if geometry is provide as a numeric array,
         """
@@ -42,13 +42,18 @@ class Vector:
             # Assume that geometry is provided as an array
             # with extra keyword arguments supplying metadata
 
+            msg = 'Geometry must be specified'
+            assert geometry is not None, msg
             self.geometry = numpy.array(geometry, dtype='d', copy=False)
 
+            msg = 'Projection must be specified'
+            assert projection is not None, msg
+            self.projection = Projection(projection)
+
+            self.attributes = attributes
             self.filename = None
             self.name = name
 
-            self.projection = Projection(projection)
-            self.attributes = attributes
 
     def __len__(self):
         return self.geometry.shape[0]
