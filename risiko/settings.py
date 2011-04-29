@@ -3,6 +3,7 @@ from urllib import urlencode
 import os
 import geonode
 
+# FIXME (Ole): What's this all about?
 _ = lambda x: x
 
 DEBUG = True

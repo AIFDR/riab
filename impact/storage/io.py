@@ -18,7 +18,7 @@ from impact.storage.utilities import get_layers_metadata
 
 def read_layer(filename):
     """Read spatial layer from file.
-    This can be either coverage or vector data.
+    This can be either raster or vector data.
     """
 
     _, ext = os.path.splitext(filename)
@@ -32,11 +32,11 @@ def read_layer(filename):
         raise Exception(msg)
 
 
-def write_coverage(A, projection, geotransform, filename):
+def write_raster_data(data, projection, geotransform, filename):
     """Write array to raster file with specified metadata and one data layer
 
     Input:
-        A: Numpy array containing coverage data
+        data: Numpy array containing grid data
         projection: WKT projection information
         geotransform: 6 digit vector
                       (top left x, w-e pixel resolution, rotation,
@@ -44,11 +44,10 @@ def write_coverage(A, projection, geotransform, filename):
                        See e.g. http://www.gdal.org/gdal_tutorial.html
         filename: Output filename
 
-
     Note: The only format implemented is GTiff and the extension must be .tif
     """
 
-    R = Raster(A, projection, geotransform)
+    R = Raster(data, projection, geotransform)
     R.write_to_file(filename)
 
 
@@ -76,9 +75,7 @@ def write_point_data(data, projection, geometry, filename):
     * http://invisibleroads.com/tutorials/gdal-shapefile-points-save.html
     """
 
-    V = Vector(data=data,
-               projection=projection,
-               geometry=geometry)
+    V = Vector(data, projection, geometry)
     V.write_to_file(filename)
 
 # FIXME (Ole): Why is the resolution hard coded here?

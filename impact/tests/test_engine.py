@@ -9,7 +9,7 @@ from impact.storage.io import read_layer
 
 from impact.storage.utilities import unique_filename
 from impact.storage.io import write_point_data
-from impact.storage.io import write_coverage
+from impact.storage.io import write_raster_data
 from impact.plugins import get_plugins
 
 from impact.tests.utilities import TESTDATA
@@ -492,10 +492,10 @@ class Test_Engine(unittest.TestCase):
                       'UNIT["Degree",0.0174532925199433]]')
 
         raster_filename = unique_filename(suffix='.tif')
-        write_coverage(A,
-                       projection,
-                       geotransform,
-                       raster_filename)
+        write_raster_data(A,
+                          projection,
+                          geotransform,
+                          raster_filename)
 
         # Write test interpolation point to a vector file
         coordinates = []
@@ -513,7 +513,7 @@ class Test_Engine(unittest.TestCase):
         R = read_layer(raster_filename)
         V = read_layer(vector_filename)
 
-        # Then test that axes and coveraged returned by R are correct
+        # Then test that axes and data returned by R are correct
         x, y = R.get_geometry()
         msg = 'X axes was %s, should have been %s' % (longitudes, x)
         assert numpy.allclose(longitudes, x), msg

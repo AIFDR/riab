@@ -10,7 +10,7 @@ from impact.engine.interpolation import interpolate_raster_vector
 
 
 class Raster:
-    """Internal representation of raster (coverage) data
+    """Internal representation of raster data
     """
 
     def __init__(self, data=None, projection=None, geotransform=None,
@@ -128,10 +128,10 @@ class Raster:
                 raise Exception(msg)
 
         # Always use basename without leading directories as name
-        coveragename = os.path.split(basename)[-1]
+        rastername = os.path.split(basename)[-1]
 
         self.filename = filename
-        self.name = coveragename
+        self.name = rastername
 
         self.projection = Projection(self.fid.GetProjection())
         self.geotransform = self.fid.GetGeoTransform()

@@ -17,51 +17,39 @@ def calculate_impact(layers, impact_function,
     """Calculate impact levels as a function of list of input layers
 
     Input
-
         FIXME (Ole): For the moment we take only a list with two
-        elements containing one hazard level one xposure level
+        elements containing one hazard level one exposure level
 
-        FIXME: This is has been reverted back to single names, so the doc
-        string below is not current.
+        layers: List of Raster and Vector layer objects to be used for analysis
 
-        impact_function: Function of the form f(H, E) where H and E are
-                         dictionaries of aligned numpy arrays named the same
-                         way as the input layers
+        impact_function: Function of the form f(layers)
         comment:
 
     Output
         filename of resulting impact layer (GML). Comment is embedded as
         metadata. Filename is generated from input data and date.
 
-
-    # FIXME (Ole): Redo doc string to reflect ticket #21
     Note
-        The admissible file types are tif and asc/prj for coverages and
-        gml (or shp?) for vector data
+        The admissible file types are tif and asc/prj for raster and
+        gml or shp for vector data
 
     Assumptions
-        1. Input layer files are either geotiff (for raster data) or
-           gml (for vector data)
-        2. All layers are in WGS84 geographic coordinates
-        3. Layers are named (either as dictionaries or using the internal
-           naming structure of geotiff and gml)
-
-    This function delegates work to internal functions depending on types
-    of hazard and exposure data.
+        1. All layers are in WGS84 geographic coordinates
+        2. Layers are equipped with metadata such as names and categories
     """
 
     # Input checks
     check_data_integrity(layers)
 
     # Pass input layers to plugin
+
+    # FIXME (Ole): When issue #21 has been fully implemented, this
+    #              return value should be a list of layers.
     F = impact_function.run(layers)
 
     # Write result and return filename
     # FIXME (Ole): Maybe this filename should be defined in the plugin
     #              Oh Yes it should.
-    # FIXME (Ole): When issue #21 has been fully implemented, this
-    #              return value should be a list of layers.
-
     if F.is_raster:
         extension = '.tif'
         # use default style for raster
@@ -70,12 +58,14 @@ def calculate_impact(layers, impact_function,
         # use default style for vector
 
     output_filename = unique_filename(suffix=extension)
+    F.write_to_file(output_filename)
 
+    # Generate style as defined by the impact_function
     style = impact_function.generate_style(F)
     f = open(output_filename.replace(extension, '.sld'), 'w')
     f.write(style)
     f.close()
-    F.write_to_file(output_filename)
+
     return output_filename
 
 

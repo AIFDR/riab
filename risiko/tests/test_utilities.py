@@ -301,6 +301,6 @@ if __name__ == '__main__':
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
         _logger.setLevel(logging.WARNING)
 
-    suite = unittest.makeSuite(Test_utilities, 'test')
+    suite = unittest.makeSuite(Test_utilities, 'test_single')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

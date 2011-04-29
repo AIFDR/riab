@@ -8,7 +8,7 @@ from impact.storage.vector import Vector
 from impact.storage.projection import Projection
 from impact.storage.io import read_layer
 from impact.storage.io import write_point_data
-from impact.storage.io import write_coverage
+from impact.storage.io import write_raster_data
 from impact.storage.utilities import unique_filename
 from impact.storage.io import get_bounding_box
 from impact.tests.utilities import same_API
@@ -25,7 +25,7 @@ def linear_function(x, y):
 
 
 class Test_IO(unittest.TestCase):
-    """Tests for reading and writing of raster (coverage) and vector data
+    """Tests for reading and writing of raster and vector data
     """
 
     def setUp(self):
@@ -329,13 +329,13 @@ class Test_IO(unittest.TestCase):
         """Rasters can be read and written correctly
         """
 
-        for coveragename in ['Earthquake_Ground_Shaking_clip.tif',
+        for rastername in ['Earthquake_Ground_Shaking_clip.tif',
                              'Population_2010_clip.tif',
                              'shakemap_padang_20090930.asc',
                              'population_padang_1.asc',
                              'population_padang_2.asc']:
 
-            filename = '%s/%s' % (TESTDATA, coveragename)
+            filename = '%s/%s' % (TESTDATA, rastername)
             R1 = read_layer(filename)
 
             # Check consistency of raster
@@ -349,10 +349,10 @@ class Test_IO(unittest.TestCase):
 
             # Write back to new (tif) file
             out_filename = unique_filename(suffix='.tif')
-            write_coverage(A1,
-                           R1.get_projection(),
-                           R1.get_geotransform(),
-                           out_filename)
+            write_raster_data(A1,
+                              R1.get_projection(),
+                              R1.get_geotransform(),
+                              out_filename)
 
             # Read again and check consistency
             R2 = read_layer(out_filename)
@@ -462,13 +462,13 @@ class Test_IO(unittest.TestCase):
         """Raster extrema (including NAN's) are correct.
         """
 
-        for coveragename in ['Earthquake_Ground_Shaking_clip.tif',
+        for rastername in ['Earthquake_Ground_Shaking_clip.tif',
                              'Population_2010_clip.tif',
                              'shakemap_padang_20090930.asc',
                              'population_padang_1.asc',
                              'population_padang_2.asc']:
 
-            filename = '%s/%s' % (TESTDATA, coveragename)
+            filename = '%s/%s' % (TESTDATA, rastername)
             R = read_layer(filename)
 
             # Check consistency of raster
@@ -492,7 +492,7 @@ class Test_IO(unittest.TestCase):
 
             # Check that nodata can be replaced by 0.0
             C = R.get_data(nan=0.0)
-            msg = '-9999 should have been replaced by 0.0 in %s' % coveragename
+            msg = '-9999 should have been replaced by 0.0 in %s' % rastername
             assert min(C.flat[:]) != -9999, msg
 
     def test_bins(self):
