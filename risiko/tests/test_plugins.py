@@ -107,10 +107,8 @@ class Test_plugins(unittest.TestCase):
                               'layers': compatible_layers(f, layers)}
                              for name, f in plugin_list.items()]
 
-        for v in annotated_plugins:
-            msg = 'layers for %s are empty' % v['name']
-            assert(len(v['layers']) > 0), msg
-#        print str(annotated_plugins)
+        msg = 'no compatible layers returned'
+        assert(len(annotated_plugins) > 0), msg
 
     def test_django_plugins(self):
         """Django plugin functions can be retrieved correctly

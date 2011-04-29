@@ -7,8 +7,12 @@ class EarthquakeFatalityFunction(FunctionProvider):
 
     :author Allen
     :rating 1
-    :param requires category=="hazard" and subcategory.startswith("earthquake") and layerType=="raster"
-    :param requires category=="exposure" and subcategory.startswith("population") and layerType=="raster"
+    :param requires category=="hazard" and \
+                    subcategory.startswith("earthquake") and \
+                    layerType=="raster"
+    :param requires category=="exposure" and \
+                    subcategory.startswith("population") and \
+                    layerType=="raster"
     """
 
     @staticmethod
