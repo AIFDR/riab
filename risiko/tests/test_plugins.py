@@ -42,7 +42,7 @@ class Test_plugins(unittest.TestCase):
     """
 
     def test_get_plugins(self):
-        """Getting the plugins
+        """Plugins can be collected
         """
 
         plugin_list = get_plugins()
@@ -62,7 +62,7 @@ class Test_plugins(unittest.TestCase):
                                          req_str) in [True, False]), msg
 
     def test_requirements_check(self):
-        """Plugin requirements"""
+        """Plugins are correctly filtered based on requirements"""
 
         plugin_list = get_plugins('BasicFunction')
         assert(len(plugin_list) == 1)
@@ -130,14 +130,14 @@ class Test_plugins(unittest.TestCase):
         #assert 'run_date' in data.keys()
         #assert 'layer' in data.keys()
 
-    def test_plugin_calculations(self):
+    def Xtest_plugin_calculations(self):
         """Test the calculations"""
         pass
 
 
 if __name__ == '__main__':
     import logging
-    os.environ["DJANGO_SETTINGS_MODULE"] = "risiko.settings"
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
 
     # Set up logging
     for _module in ['geonode.maps.utils']:

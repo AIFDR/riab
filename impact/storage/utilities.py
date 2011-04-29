@@ -10,13 +10,13 @@ from tempfile import mkstemp
 DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
 
 # Map between extensions and ORG drivers
-driver_map = {'.shp': 'ESRI Shapefile',
+DRIVER_MAP = {'.shp': 'ESRI Shapefile',
               '.gml': 'GML',
               '.tif': 'GTiff'}
 
 # Map between Python types and OGR field types
 # FIXME (Ole): I can't find a double precision type for OGR
-type_map = {type(''): ogr.OFTString,
+TYPE_MAP = {type(''): ogr.OFTString,
             type(0): ogr.OFTInteger,
             type(0.0): ogr.OFTReal,
             type(numpy.array([0.0])[0]): ogr.OFTReal,  # numpy.float64
@@ -24,13 +24,15 @@ type_map = {type(''): ogr.OFTString,
 
 
 # Miscellaneous auxiliary functions
-def unique_filename(suffix=None):
+def unique_filename(**kwargs):
     """Create new filename guarenteed not to exist previoously
 
     Use mkstemp to create the file, then remove it and return the name
+
+    See http://docs.python.org/library/tempfile.html for details.
     """
 
-    _, filename = mkstemp(suffix=suffix)
+    _, filename = mkstemp(**kwargs)
 
     try:
         os.remove(filename)
@@ -171,7 +173,7 @@ class WFSCapabilitiesReader(object):
         """Initialize"""
         self.version = version
         self._infoset = None
-        self.xml = ""
+        self.xml = ''
 
     def capabilities_url(self, service_url, feature):
         """Return a capabilities url
@@ -227,6 +229,6 @@ class WFSCapabilitiesReader(object):
         string should be an XML capabilities document
         """
         if not isinstance(st, str):
-            raise ValueError(
-                "String must be of type string, not %s" % type(st))
+            raise ValueError('String must be of type string, '
+                             'not %s' % type(st))
         return etree.fromstring(st)

@@ -7,7 +7,7 @@ $RIAB_HOME/tomcat/bin/catalina.sh start
 echo; echo ">>> Starting Django server with GeoNode"
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
 echo; echo ">>> Running pylint to check code quality. See pylint.output for details"
-cd $RIAB_HOME/riab/;pylint risiko impact > pylint.output 2> pylint.err
+cd $RIAB_HOME/riab/;pylint --disable=C0103 risiko impact > pylint.output 2> pylint.err
 echo; echo ">>> Reporting FIXME's and TODO's in source code"
 cd $RIAB_HOME/riab/;grep -n -R --exclude *.pyc --exclude *.log --exclude *.log.* FIXME risiko impact
 cd $RIAB_HOME/riab/;grep -n -R --exclude *.pyc --exclude *.log --exclude *.log.* TODO risiko impact

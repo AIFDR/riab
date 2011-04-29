@@ -5,7 +5,7 @@ import os
 import numpy
 from osgeo import ogr
 from projection import Projection
-from utilities import driver_map, type_map
+from utilities import DRIVER_MAP, TYPE_MAP
 
 
 class Vector:
@@ -204,7 +204,7 @@ class Vector:
         msg = ('Invalid file type for file %s - only extension '
                'shp or gml allowed.' % filename)
         assert extension in ['.shp', '.gml'], msg
-        format = driver_map[extension]
+        format = DRIVER_MAP[extension]
 
         # FIXME (Ole): Tempory flagging of GML issue
         if extension == '.gml':
@@ -238,7 +238,7 @@ class Vector:
         msg = ('Invalid file type for file %s. Only extensions '
                'shp or gml allowed.' % filename)
         assert extension == '.shp' or extension == '.gml', msg
-        format = driver_map[extension]
+        format = DRIVER_MAP[extension]
 
         # Clear any previous file of this name (ogr does not overwrite)
         try:
@@ -281,7 +281,7 @@ class Vector:
                     ogrtypes = {}
                     for name in fields:
                         py_type = type(data[0][name])
-                        ogrtypes[name] = type_map[py_type]
+                        ogrtypes[name] = TYPE_MAP[py_type]
 
             else:
                 msg = ('Input parameter "data" was specified '

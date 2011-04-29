@@ -5,7 +5,7 @@ import os
 import numpy
 from osgeo import gdal
 from projection import Projection
-from utilities import driver_map
+from utilities import DRIVER_MAP
 from impact.engine.interpolation import interpolate_raster_vector
 
 
@@ -165,7 +165,7 @@ class Raster:
         msg = ('Invalid file type for file %s. Only extension '
                'tif allowed.' % filename)
         assert extension == '.tif', msg
-        format = driver_map[extension]
+        format = DRIVER_MAP[extension]
 
         # Get raster data
         A = self.get_data()
