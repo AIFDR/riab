@@ -78,10 +78,9 @@ class TsunamiBuildingLossFunction(FunctionProvider):
         # Extract relevant numerical data
         coordinates = E.get_geometry()
         inundation = H.get_data()
-        buildings = E.get_data()
 
         # Calculate
-        N = len(buildings)
+        N = len(H)
         impact = []
         for i in range(N):
 
@@ -89,11 +88,14 @@ class TsunamiBuildingLossFunction(FunctionProvider):
             # Extract parameters
             #-------------------
             depth = float(inundation[i].values()[0])
-            shore_distance = float(buildings[i]['SHORE_DIST'])
-            wall_type = str(buildings[i]['WALL_TYPE'])
-            number_of_people_in_building = int(buildings[i]['NEXIS_PEOP'])
-            contents_value = float(buildings[i]['CONT_VALUE'])
-            structure_value = float(buildings[i]['STR_VALUE'])
+            shore_distance = E.get_data('SHORE_DIST', i)
+
+            # FIXME: Get rid of the type casting when
+            #        issue #66 is done
+            number_of_people_in_building = int(E.get_data('NEXIS_PEOP', i))
+            wall_type = E.get_data('WALL_TYPE', i)
+            contents_value = E.get_data('CONT_VALUE', i)
+            structure_value = E.get_data('STR_VALUE', i)
 
             #------------------------
             # Compute people affected

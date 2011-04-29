@@ -77,7 +77,7 @@ class Test_IO(unittest.TestCase):
             attributes = layer.get_data()
 
             # Check basic data integrity
-            N = len(attributes)
+            N = len(layer)
             assert coords.shape[0] == N
             assert coords.shape[1] == 2
             assert len(layer) == N
@@ -126,7 +126,7 @@ class Test_IO(unittest.TestCase):
             attributes = layer.get_data()
 
             # Check basic data integrity
-            N = len(attributes)
+            N = len(layer)
             assert coords.shape[0] == N
             assert coords.shape[1] == 2
 
@@ -156,6 +156,10 @@ class Test_IO(unittest.TestCase):
                 else:
                     assert len(field_names) == len(attributes[i].keys())
                     assert field_names == attributes[i].keys()
+
+            # Test individual extraction
+            lon = layer.get_data(attribute='LONGITUDE')
+            assert numpy.allclose(lon, coords[:, 0])
 
     def test_analysis_of_vector_data_top_N(self):
         """Analysis of vector data - get top N of an attribute

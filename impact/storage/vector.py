@@ -36,6 +36,7 @@ class Vector:
             self.geometry = None
             self.filename = None
             self.data = None
+            self.extent = None
             return
 
         if isinstance(data, basestring):
@@ -55,6 +56,11 @@ class Vector:
             self.data = data
             self.name = name
             self.filename = None
+
+            # FIXME: Need to establish extent here
+
+    def __str__(self):
+        return self.name
 
     def __len__(self):
         return self.geometry.shape[0]
@@ -87,6 +93,7 @@ class Vector:
         # Check data
         # FIXME (Ole): Rewrite when issue #65 is done
         # FIXME: Also check that keys match exactly.
+        #        Use the new get_data(attribute)!!!
         x = self.get_data()
         y = other.get_data()
         for i, a in enumerate(x):
@@ -184,11 +191,19 @@ class Vector:
             fields = {}
             for j in range(number_of_fields):
                 name = feature.GetFieldDefnRef(j).GetName()
+
+                # FIXME (Ole): Ascertain the type of each field?
+                #              We need to cast each appropriately?
+                #              This is issue #66
+                feature_type = feature.GetFieldDefnRef(j).GetType()
+                #print 'Field', name, type
+
                 fields[name] = feature.GetField(j)
-                #print 'Field (name: value) = (%s: %s)' % (name, fields[name])
 
             data.append(fields)
 
+        # FIXME: When we get to more general geometries, we
+        #        should probably just stay with a list of features.
         self.geometry = numpy.array(geometry, dtype='d', copy=False)
         self.data = data
         self.filename = filename
@@ -317,16 +332,41 @@ class Vector:
 
             feature.Destroy()
 
-    def get_data(self):
-        """Get vector data as list of attributes
+    def get_data(self, attribute=None, index=None):
+        """Get vector attributes
 
-        Output is a list of same length as that returned by get_geometry().
-        Each entry is a dictionary of attributes for one feature.
+        Data is returned as a list where each entry is a dictionary of
+        attributes for one feature. Entries in get_geometry() and
+        get_data() are related as 1-to-1
 
-        Entries in get_geometry() and get_data() are related as 1-to-1
+        If optional argument attribute is specified and a valid name,
+        then the list of values for that attribute is returned.
+
+        If optional argument index is specified on the that value will
+        be returned.
         """
         if hasattr(self, 'data'):
-            return self.data
+            if attribute is None:
+                return self.data
+            else:
+                msg = ('Specified attribute %s does not exist in '
+                       'vector layer %s. Valid names are %s'
+                       '' % (attribute, self, self.data[0].keys()))
+                assert attribute in self.data[0], msg
+
+                if index is None:
+                    return [x[attribute] for x in self.data]
+                else:
+                    msg = ('Specified index must be either None or '
+                           'an integer. I got %s' % index)
+                    assert type(index) == type(0)
+
+                    msg = ('Specified index must lie within the bounds '
+                           'of vector layer %s which is [%i, %i]'
+                           '' % (self, 0, len(self)-1))
+                    assert 0 <= index < len(self)
+
+                    return self.data[index][attribute]
         else:
             msg = 'Vector data instance does not have any attributes'
             raise Exception(msg)
@@ -366,20 +406,12 @@ class Vector:
 
         Return min, max
         """
-
         if attribute is None:
             msg = ('Valid attribute name must be specified in get_extrema '
                    'for vector layers. I got None.')
             raise RuntimeError(msg)
 
-        data = self.get_data()
-
-        msg = ('Specified attribute %s does not exist in vector layer %s. '
-               'Available attributes are: '
-               '%s' % (attribute, self.name, data[0].keys()))
-        assert attribute in data[0], msg
-
-        x = [a[attribute] for a in data]
+        x = self.get_data(attribute)
         return min(x), max(x)
 
     def get_topN(self, attribute, N=10):
@@ -396,19 +428,18 @@ class Vector:
         # FIXME (Ole): Maybe generalise this to arbitrary expressions
 
         # Input checks
+        msg = ('Specfied attribute must be a string. '
+               'I got %s' % (type(attribute)))
+        assert isinstance(attribute, basestring), msg
+
+        msg = 'Specified attribute was empty'
+        assert attribute != '', msg
+
         msg = 'N must be a positive number. I got %i' % N
         assert N > 0, msg
 
-        msg = 'Specified attribute was empty'
-        assert len(attribute) > 0, msg
-
-        msg = ('Requested attribute "%s" does not exist in vector layer '
-               ' with data: %s' % (attribute,
-                                         self.data[0].keys()))
-        assert attribute in self.data[0], msg
-
         # Create list of values for specified attribute
-        values = [x[attribute] for x in self.data]
+        values = self.get_data(attribute)
 
         # Sort and select using Schwarzian transform
         A = zip(values, self.data, self.geometry)

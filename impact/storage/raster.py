@@ -61,6 +61,9 @@ class Raster:
 
             self.number_of_bands = 1
 
+    def __str__(self):
+        return self.name
+
     def __len__(self):
         return len(self.get_data().flat)
 
