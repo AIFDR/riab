@@ -2,7 +2,6 @@
 """
 
 import os
-import sys
 import numpy
 from osgeo import gdal
 from impact.storage.projection import Projection
@@ -147,7 +146,7 @@ class Raster:
                    'Only the first band will currently be '
                    'used.' % (filename, self.number_of_bands))
             # FIXME(Ole): Let us use python warnings here
-            print >> sys.stderr, msg
+            raise Exception(msg)
 
         # Get first band.
         band = self.band = fid.GetRasterBand(1)
