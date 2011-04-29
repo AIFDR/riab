@@ -233,10 +233,10 @@ class Test_IO(unittest.TestCase):
         # Check that equality raises exception when type is wrong
         try:
             V_tmp == Raster()
-        except:
+        except TypeError:
             pass
         else:
-            msg = 'Should have raised type error'
+            msg = 'Should have raised TypeError'
             raise Exception(msg)
 
     def test_rasters_and_arrays(self):
@@ -343,9 +343,8 @@ class Test_IO(unittest.TestCase):
         except TypeError:
             pass
         else:
-            msg = 'Should have raised type error'
+            msg = 'Should have raised TypeError'
             raise Exception(msg)
-
 
     def test_reading_and_writing_of_real_rasters(self):
         """Rasters can be read and written correctly
@@ -412,12 +411,25 @@ class Test_IO(unittest.TestCase):
             # Check that equality raises exception when type is wrong
             try:
                 R1 == Vector()
-            except:
+            except TypeError:
                 pass
             else:
-                msg = 'Should have raised type error'
+                msg = 'Should have raised TypeError'
                 raise Exception(msg)
 
+    def test_no_projection(self):
+        """Raster layers with no projection causes Exception to be raised
+        """
+
+        rastername = 'grid_without_projection.asc'
+        filename = '%s/%s' % (TESTDATA, rastername)
+        try:
+            read_layer(filename)
+        except RuntimeError:
+            pass
+        else:
+            msg = 'Should have raised RuntimeError'
+            raise Exception(msg)
 
     def test_nodata_value(self):
         """NODATA value is correctly recorded in GDAL

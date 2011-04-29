@@ -92,7 +92,7 @@ class Test_HTTP(unittest.TestCase):
         assert layer.default_style.name == name, msg
 
     def test_calculate_school_damage(self):
-        """Test earthquake school damage calculation via the HTTP Rest API
+        """Earthquake school damage calculation works via the HTTP REST API
         """
         c = Client()
 

@@ -28,7 +28,7 @@ def read_layer(filename):
         return Vector(filename)
     else:
         msg = ('Could not read %s. '
-               'Extension %s has not been implemented' % (filename, ext))
+               'Extension "%s" has not been implemented' % (filename, ext))
         raise Exception(msg)
 
 

@@ -125,7 +125,7 @@ class Raster:
             except IOError:
                 msg = ('Projection file not found for %s. You must supply '
                        'a projection file with extension .prj' % filename)
-                raise Exception(msg)
+                raise RuntimeError(msg)
 
         # Always use basename without leading directories as name
         rastername = os.path.split(basename)[-1]
