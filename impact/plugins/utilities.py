@@ -6,6 +6,8 @@ from scipy.interpolate import interp1d
 
 
 class Damage_curve:
+    """Class for implementation of damage curves based on point data
+    """
 
     def __init__(self, data):
 

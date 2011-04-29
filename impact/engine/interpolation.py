@@ -5,8 +5,7 @@ ordering of dimensions between raster files and numpy arrays.
 """
 
 import numpy
-from scipy.interpolate import RectBivariateSpline, interp1d
-
+from scipy.interpolate import RectBivariateSpline
 from impact.storage.vector import Vector
 
 

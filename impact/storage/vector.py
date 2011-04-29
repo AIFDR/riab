@@ -4,11 +4,13 @@
 import os
 import numpy
 from osgeo import ogr
-from projection import Projection
-from utilities import DRIVER_MAP, TYPE_MAP
+from impact.storage.projection import Projection
+from impact.storage.utilities import DRIVER_MAP, TYPE_MAP
 
 
 class Vector:
+    """Class for abstraction of vector data
+    """
 
     def __init__(self, data=None, projection=None, geometry=None,
                  name='Vector layer'):
@@ -198,13 +200,15 @@ class Vector:
             filename: filename with extension .shp or .gml
         """
 
-        # Check file format
-        _, extension = os.path.splitext(filename)
+        # Derive layername from filename (excluding preceding dirs)
+        x = os.path.split(filename)[-1]
+        layername, extension = os.path.splitext(x)
 
-        msg = ('Invalid file type for file %s - only extension '
+        # Check file format
+        msg = ('Invalid file type for file %s. Only extensions '
                'shp or gml allowed.' % filename)
-        assert extension in ['.shp', '.gml'], msg
-        format = DRIVER_MAP[extension]
+        assert extension == '.shp' or extension == '.gml', msg
+        driver = DRIVER_MAP[extension]
 
         # FIXME (Ole): Tempory flagging of GML issue
         if extension == '.gml':
@@ -213,32 +217,9 @@ class Vector:
             raise Exception(msg)
 
         # Get vector data
-        coordinates = self.get_geometry()
+        geometry = self.get_geometry()
         data = self.get_data()
-
-        # Input checks
-        N = coordinates.shape[0]
-
-        msg = ('Input parameter "coordinates" must be of dimension Nx2. '
-               'I got %i for the second dimension' % coordinates.shape[1])
-        assert coordinates.shape[1] == 2, msg
-
-        if data is not None:
-            msg = ('Input parameter "data" must either be None or have '
-                   'the same number of entries "coordinates". '
-                   'I got %i entries '
-                   'but %i coordinates.' % (len(data), N))
-            assert len(data) == N, msg
-
-        # Derive layername from filename (excluding preceding dirs)
-        # and check file format
-        x = os.path.split(filename)[-1]
-        layername, extension = os.path.splitext(x)
-
-        msg = ('Invalid file type for file %s. Only extensions '
-               'shp or gml allowed.' % filename)
-        assert extension == '.shp' or extension == '.gml', msg
-        format = DRIVER_MAP[extension]
+        N = len(geometry)
 
         # Clear any previous file of this name (ogr does not overwrite)
         try:
@@ -247,9 +228,9 @@ class Vector:
             pass
 
         # Create new file with one layer
-        drv = ogr.GetDriverByName(format)
+        drv = ogr.GetDriverByName(driver)
         if drv is None:
-            msg = 'OGR driver %s not available' % format
+            msg = 'OGR driver %s not available' % driver
             raise Exception(msg)
 
         ds = drv.CreateDataSource(filename)
@@ -305,13 +286,13 @@ class Vector:
                     msg = 'Could not create field %s' % name
                     raise Exception(msg)
 
-        # Store data
+        # Store point data
         for i in range(N):
             # FIXME (Ole): Need to assign entire vector if at all possible
 
             # Coordinates
-            x = float(coordinates[i, 0])
-            y = float(coordinates[i, 1])
+            x = float(geometry[i, 0])
+            y = float(geometry[i, 1])
 
             pt = ogr.Geometry(ogr.wkbPoint)
             pt.SetPoint_2D(0, x, y)
@@ -336,18 +317,14 @@ class Vector:
 
             feature.Destroy()
 
-    def get_data(self, nan=False):
+    def get_data(self):
         """Get vector data as list of attributes
 
         Output is a list of same length as that returned by get_geometry().
         Each entry is a dictionary of attributes for one feature.
 
         Entries in get_geometry() and get_data() are related as 1-to-1
-
-        # FIXME: Not yet considered here
-        (If keyword nan is True, nodata values will be replaced with NaN)
         """
-
         if hasattr(self, 'data'):
             return self.data
         else:
@@ -369,6 +346,8 @@ class Vector:
         return self.geometry
 
     def get_projection(self, proj4=False):
+        """Return projection of this layer as a string
+        """
         return self.projection.get_projection(proj4)
 
     def get_bounding_box(self):

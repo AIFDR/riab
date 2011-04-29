@@ -3,8 +3,6 @@
 Provides the function calculate_impact()
 """
 
-import os
-import io
 import numpy
 
 from impact.storage.projection import Projection

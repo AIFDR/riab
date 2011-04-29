@@ -1,5 +1,4 @@
 # Django settings for GeoNode project.
-from urllib import urlencode
 import os
 import geonode
 

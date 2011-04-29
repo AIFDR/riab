@@ -11,8 +11,8 @@ import contextlib
 import tempfile
 from zipfile import ZipFile
 
-from vector import Vector
-from raster import Raster
+from impact.storage.vector import Vector
+from impact.storage.raster import Raster
 from impact.storage.utilities import get_layers_metadata
 
 
@@ -90,10 +90,9 @@ WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'
 
 
-def get_bounding_box(filename, verbose=False):
+def get_bounding_box(filename):
     """Get bounding box for specified raster or vector file
     """
-
     layer = read_layer(filename)
     return layer.get_bounding_box()
 

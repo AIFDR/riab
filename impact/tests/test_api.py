@@ -1,4 +1,5 @@
 import unittest
+import os
 from django.test.client import Client
 from django.utils import simplejson as json
 
@@ -8,9 +9,6 @@ from django.utils import simplejson as json
 
 from geonode.maps.utils import check_geonode_is_up
 from geonode.maps.models import Layer
-from geonode.maps.utils import upload, file_upload, GeoNodeException
-
-import os
 
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],

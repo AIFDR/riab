@@ -2,10 +2,11 @@
 """
 
 import os
+import sys
 import numpy
 from osgeo import gdal
-from projection import Projection
-from utilities import DRIVER_MAP
+from impact.storage.projection import Projection
+from impact.storage.utilities import DRIVER_MAP
 from impact.engine.interpolation import interpolate_raster_vector
 
 
@@ -142,9 +143,11 @@ class Raster:
         # Assume that file contains all data in one band
         msg = 'Only one raster band currently allowed'
         if self.number_of_bands > 1:
-                print >> sys.err, ('WARNING: Number of bands in %s are %i. '
+            msg = ('WARNING: Number of bands in %s are %i. '
                    'Only the first band will currently be '
                    'used.' % (filename, self.number_of_bands))
+            # FIXME(Ole): Let us use python warnings here
+            print >> sys.stderr, msg
 
         # Get first band.
         band = self.band = fid.GetRasterBand(1)
@@ -251,7 +254,7 @@ class Raster:
         return A
 
     def get_projection(self, proj4=False):
-        """Return projection of this layer.
+        """Return projection of this layer as a string.
         """
         return self.projection.get_projection(proj4)
 
@@ -302,7 +305,6 @@ class Raster:
 
         # Coordinates of upper right corner
         lon_ur = lon_ul + nx * dx
-        lat_ur = lat_ul
 
         # Define pixel centers along each directions
         dy2 = dy / 2

@@ -1,6 +1,4 @@
 import unittest
-from django.test.client import Client
-from django.utils import simplejson as json
 from impact import plugins
 
 DEFAULT_PLUGINS = ('Earthquake Fatality Function',)

@@ -5,6 +5,10 @@ import os
 import numpy
 from osgeo import ogr, gdal
 from tempfile import mkstemp
+import cgi
+from urllib import urlencode
+from urllib2 import urlopen
+from owslib.etree import etree
 
 # The projection string depends on the gdal version
 DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
@@ -55,7 +59,7 @@ def is_server_reachable(url):
     """
     try:
         urlopen(url)
-    except Exception, e:
+    except Exception:
         return False
     else:
         return True
@@ -152,19 +156,6 @@ def get_layers_metadata(url, version, feature=None):
 ##### Taken from
 ##### http://tra.gispython.org/lab/browser/OWSLib...
 ##### /trunk/owslib/feature/wfs200.py#L402
-
-import cgi
-from cStringIO import StringIO
-from urllib import urlencode
-from urllib2 import urlopen
-
-from owslib.wfs import WebFeatureService
-from owslib.ows import ServiceIdentification, ServiceProvider
-from owslib.ows import OperationsMetadata
-from owslib.etree import etree
-from owslib.util import nspath, testXMLValue
-
-
 class WFSCapabilitiesReader(object):
     """Read and parse capabilities document into a lxml.etree infoset
     """
