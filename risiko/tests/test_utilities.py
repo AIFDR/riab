@@ -281,7 +281,7 @@ class Test_utilities(unittest.TestCase):
         # Manually delete the layer object with SQL
         from django.db import connection, transaction
         cursor = connection.cursor()
-        cursor.execute('DELETE FROM maps_layer WHERE id= %d' % pk)
+        cursor.execute('DELETE FROM maps_layer WHERE id = %d' % pk)
         transaction.commit_unless_managed()
 
         # After this, the records should not live in GeoServer or Geonetwork
@@ -292,7 +292,7 @@ class Test_utilities(unittest.TestCase):
 if __name__ == '__main__':
     import logging
 
-    os.environ["DJANGO_SETTINGS_MODULE"] = "risiko.settings"
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
 
     # Set up logging
     for _module in ['geonode.maps.utils']:
@@ -301,6 +301,6 @@ if __name__ == '__main__':
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
         _logger.setLevel(logging.WARNING)
 
-    suite = unittest.makeSuite(Test_utilities, 'test_single')
+    suite = unittest.makeSuite(Test_utilities, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

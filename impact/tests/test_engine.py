@@ -380,17 +380,19 @@ class Test_Engine(unittest.TestCase):
         coordinates = impact_vector.get_geometry()
         attributes = impact_vector.get_data()
 
-    def XXtest_package_metadata(self):
+    def test_package_metadata(self):
         """Test that riab package loads
         """
 
-        riab_server.VERSION
-        riab_server.__version__
-        riab_server.__author__
-        riab_server.__contact__
-        riab_server.__homepage__
-        riab_server.__docformat__
-        assert riab_server.__license__ == 'GPL'
+        import impact
+
+        impact.VERSION
+        impact.__version__
+        impact.__author__
+        impact.__contact__
+        impact.__homepage__
+        impact.__docformat__
+        assert impact.__license__ == 'GPL'
 
     def test_interpolation_wrapper(self):
         """Interpolation library works for linear function

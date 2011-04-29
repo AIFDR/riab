@@ -294,7 +294,7 @@ class Vector:
 
                 fd = ogr.FieldDefn(name, ogrtypes[name])
 
-                # FIXME (Ole): Trying to address issue #1
+                # FIXME (Ole): Trying to address issue #16
                 #              But it doesn't work and
                 #              somehow changes the values of MMI in test
                 #width = max(128, len(name))

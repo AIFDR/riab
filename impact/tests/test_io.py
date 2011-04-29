@@ -230,6 +230,15 @@ class Test_IO(unittest.TestCase):
         assert V_tmp == V_ref
         assert not V_tmp != V_ref
 
+        # Check that equality raises exception when type is wrong
+        try:
+            V_tmp == Raster()
+        except:
+            pass
+        else:
+            msg = 'Should have raised type error'
+            raise Exception(msg)
+
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays
         """
@@ -325,6 +334,19 @@ class Test_IO(unittest.TestCase):
         msg = 'Projections were different: %s != %s' % (p1, p2)
         assert p1 == p1, msg
 
+        # Exercise projection __eq__ method
+        assert R1.projection == R2.projection
+
+        # Check that equality raises exception when type is wrong
+        try:
+            R1.projection == 234
+        except TypeError:
+            pass
+        else:
+            msg = 'Should have raised type error'
+            raise Exception(msg)
+
+
     def test_reading_and_writing_of_real_rasters(self):
         """Rasters can be read and written correctly
         """
@@ -386,6 +408,16 @@ class Test_IO(unittest.TestCase):
             # Use overridden == and != to verify
             assert R1 == R2
             assert not R1 != R2
+
+            # Check that equality raises exception when type is wrong
+            try:
+                R1 == Vector()
+            except:
+                pass
+            else:
+                msg = 'Should have raised type error'
+                raise Exception(msg)
+
 
     def test_nodata_value(self):
         """NODATA value is correctly recorded in GDAL
