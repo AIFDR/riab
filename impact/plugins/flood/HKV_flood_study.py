@@ -35,7 +35,7 @@ class FloodImpactFunction(FunctionProvider):
 
         # Calculate impact
         # Select population exposed to depths > 0.1m
-        I = numpy.where(H > 0.1, P, 0)
+        I = numpy.where(H > 0.1, P, 0)/100000*2500
 
         # Return
 

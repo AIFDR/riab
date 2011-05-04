@@ -101,6 +101,98 @@ class Test_Engine(unittest.TestCase):
         assert numpy.alltrue(C <= xmax)
         assert numpy.alltrue(C >= 0)
 
+
+    def test_jakarta_flood_study(self):
+        """HKV Jakarta flood study calculated correctly using aligned rasters
+        """
+
+        # FIXME (Ole): Redo with population as shapefile later
+
+        # Name file names for hazard level, exposure and expected fatalities
+
+        population = 'Population_Jakarta_geographic.asc'
+        plugin_name = 'Flood Impact Function'
+
+        # Expected values from HKV in million people
+        expected_values = [2.49, 1.54]
+
+        i = 0
+        for filename in ['Flood_Current_Depth_Jakarta_geographic.asc',
+                         'Flood_Design_Depth_Jakarta_geographic.asc']:
+
+            # FIXME (Ole): Skip second test for the moment
+            if i == 1: continue
+
+            hazard_filename = '%s/%s/%s' % (DEMODATA, 'hazard', filename)
+            exposure_filename = '%s/%s/%s' % (DEMODATA, 'exposure',
+                                              population)
+
+            # Calculate impact using API
+            H = read_layer(hazard_filename)
+            E = read_layer(exposure_filename)
+
+            plugin_list = get_plugins(plugin_name)
+            assert len(plugin_list) == 1
+            assert plugin_list[0].keys()[0] == plugin_name
+
+            # FIXME: Avoid this hacky way to get the impact function
+            _, IF = plugin_list[0].items()[0]
+
+            # Call calculation engine
+            impact_filename = calculate_impact(layers=[H, E],
+                                               impact_function=IF)
+
+            # Do calculation manually and check result
+            hazard_raster = read_layer(hazard_filename)
+            H = hazard_raster.get_data(nan=0)
+
+            exposure_raster = read_layer(exposure_filename)
+            P = exposure_raster.get_data(nan=0)
+
+            # Calculate impact manually
+            I = numpy.where(H > 0.1, P, 0)/100000*2500
+
+            # Verify correctness against results from HKV
+
+            res = sum(I.flat)/1000000
+            ref = expected_values[i]
+
+            msg = 'Got result %f but expected %f' % (res, ref)
+            assert numpy.allclose(res, ref, rtol=1.0e-2), msg
+
+
+            # Verify correctness of result
+            calculated_raster = read_layer(impact_filename)
+            C = calculated_raster.get_data(nan=0)
+
+            # Compare shape and extrema
+            msg = ('Shape of calculated raster differs from reference raster: '
+                   'C=%s, I=%s' % (C.shape, I.shape))
+            assert numpy.allclose(C.shape, I.shape, rtol=1e-12, atol=1e-12), msg
+
+            msg = ('Minimum of calculated raster differs from reference '
+                   'raster: '
+                   'C=%s, I=%s' % (numpy.min(C), numpy.min(I)))
+            assert numpy.allclose(numpy.min(C), numpy.min(I),
+                                  rtol=1e-12, atol=1e-12), msg
+            msg = ('Maximum of calculated raster differs from reference '
+                   'raster: '
+                   'C=%s, I=%s' % (numpy.max(C), numpy.max(I)))
+            assert numpy.allclose(numpy.max(C), numpy.max(I),
+                                  rtol=1e-12, atol=1e-12), msg
+
+            # Compare every single value numerically
+            msg = 'Array values of written raster array were not as expected'
+            assert numpy.allclose(C, I, rtol=1e-12, atol=1e-12), msg
+
+            # Check that extrema are in range
+            xmin, xmax = calculated_raster.get_extrema()
+            assert numpy.alltrue(C >= xmin)
+            assert numpy.alltrue(C <= xmax)
+            assert numpy.alltrue(C >= 0)
+
+            i += 1
+
     def test_earthquake_damage_schools(self):
         """Lembang building damage from ground shaking works
 
@@ -397,7 +489,7 @@ class Test_Engine(unittest.TestCase):
         coordinates = impact_vector.get_geometry()
         attributes = impact_vector.get_data()
 
-        # FIXME: Remove this tolerance when interpolation is better
+        # FIXME: Remove this tolerance when interpolation is better (issue #19)
         tol = 1.0e-8
 
         # Test that results are as expected
