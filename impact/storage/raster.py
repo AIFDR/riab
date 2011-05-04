@@ -198,7 +198,8 @@ class Raster:
 
         Input
             X: Layer object defining target
-            name: Optional name of interpolated layer
+            name: Optional name of interpolated layer.
+                  If name is None, the name of self is used.
 
         Output
             Y: Layer object with values of this raster layer interpolated to

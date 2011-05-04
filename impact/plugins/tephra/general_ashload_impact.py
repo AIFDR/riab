@@ -27,21 +27,16 @@ class TephraImpactFunction(FunctionProvider):
         E = layers[1]  # Building locations
 
         # Interpolate hazard level to building locations
-        H = H.interpolate(E)
-
-        # Extract relevant numerical data
-        coordinates = E.get_geometry()
-        ashload = H.get_data()
+        H = H.interpolate(E, 'load')
 
         # Calculate building damage
-        N = len(ashload)
         result = []
-        for i in range(N):
+        for i in range(len(E)):
 
             #-------------------
             # Extract parameters
             #-------------------
-            load = float(ashload[i].values()[0])
+            load = H.get_data('load', i)
 
             #------------------------
             # Compute damage level
@@ -66,6 +61,6 @@ class TephraImpactFunction(FunctionProvider):
 
         V = Vector(data=result,
                    projection=E.get_projection(),
-                   geometry=coordinates,
+                   geometry=E.get_geometry(),
                    name='Estimated ashload damage')
         return V

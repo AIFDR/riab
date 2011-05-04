@@ -60,11 +60,6 @@ def get_plugins(name=None):
        Or all of them if no name is passed.
     """
 
-    for p  in FunctionProvider.plugins:
-        print p
-
-
-
     plugins_dict = dict([(pretty_function_name(p), p)
                          for p in FunctionProvider.plugins])
 

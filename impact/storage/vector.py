@@ -343,7 +343,7 @@ class Vector:
         then the list of values for that attribute is returned.
 
         If optional argument index is specified on the that value will
-        be returned.
+        be returned. Any value of index is ignored if attribute is None.
         """
         if hasattr(self, 'data'):
             if attribute is None:
@@ -355,8 +355,10 @@ class Vector:
                 assert attribute in self.data[0], msg
 
                 if index is None:
+                    # Return all values for specified attribute
                     return [x[attribute] for x in self.data]
                 else:
+                    # Return value for specified attribute and index
                     msg = ('Specified index must be either None or '
                            'an integer. I got %s' % index)
                     assert type(index) == type(0)

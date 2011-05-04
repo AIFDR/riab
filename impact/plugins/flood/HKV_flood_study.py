@@ -1,3 +1,5 @@
+import numpy
+
 from impact.plugins.core import FunctionProvider
 from impact.storage.raster import Raster
 
@@ -32,8 +34,8 @@ class FloodImpactFunction(FunctionProvider):
         P = layers[1].get_data(nan=0)
 
         # Calculate impact
-        # FIXME: Just a placeholder for the moment
-        F = P * H
+        # Select population exposed to depths > 0.1m
+        I = numpy.where(H > 0.1, P, 0)
 
         # Return
 
@@ -43,6 +45,6 @@ class FloodImpactFunction(FunctionProvider):
         projection = layers[0].get_projection()
         geotransform = layers[0].get_geotransform()
 
-        R = Raster(F, projection, geotransform,
-                   name='Estimated fatalities')
+        R = Raster(I, projection, geotransform,
+                   name='People affected')
         return R

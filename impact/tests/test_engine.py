@@ -13,7 +13,7 @@ from impact.storage.io import write_raster_data
 from impact.plugins import get_plugins
 
 from impact.tests.utilities import TESTDATA
-
+from impact.tests.utilities import DEMODATA
 
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
@@ -48,7 +48,11 @@ class Test_Engine(unittest.TestCase):
         # Calculate impact using API
         H = read_layer(hazard_filename)
         E = read_layer(exposure_filename)
-        plugin_list = get_plugins('Earthquake Fatality Function')
+
+        plugin_name = 'Earthquake Fatality Function'
+        plugin_list = get_plugins(plugin_name)
+        assert len(plugin_list) == 1
+        assert plugin_list[0].keys()[0] == plugin_name
 
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
@@ -118,6 +122,9 @@ class Test_Engine(unittest.TestCase):
 
             plugin_name = 'Earthquake School Damage Function'
             plugin_list = get_plugins(plugin_name)
+            assert len(plugin_list) == 1
+            assert plugin_list[0].keys()[0] == plugin_name
+
             # FIXME: Avoid this hacky way to get the impact function
             _, IF = plugin_list[0].items()[0]
 
@@ -251,7 +258,12 @@ class Test_Engine(unittest.TestCase):
         H = read_layer(hazard_filename)
         E = read_layer(exposure_filename)
 
-        plugin_list = get_plugins('Tsunami Building Loss Function')
+        plugin_name = 'Tsunami Building Loss Function'
+        plugin_list = get_plugins(plugin_name)
+        assert len(plugin_list) == 1
+        assert plugin_list[0].keys()[0] == plugin_name
+
+
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
 
@@ -343,23 +355,28 @@ class Test_Engine(unittest.TestCase):
             if depth > 0 and contents_damage > 0:
                 assert contents_damage != structural_damage
 
-    def Xtest_tephra_load_impact(self):
+    def test_tephra_load_impact(self):
         """Hypothetical tephra load scenario can be computed
 
         This test also exercises reprojection of UTM data
         """
 
         # File names for hazard level and exposure
-        hazard_filename = '%s/%s' % (TESTDATA,
-                                     'hypothetical_tephra_load.asc')
+
+        # FIXME - when we know how to reproject, replace hazard
+        # file with UTM version (i.e. without _geographic).
+        hazard_filename = '%s/%s/%s' % (DEMODATA, 'hazard',
+                                        'Ashload_Gede_VEI4_geographic.asc')
         exposure_filename = '%s/lembang_schools.shp' % TESTDATA
 
         # Calculate impact using API
         H = read_layer(hazard_filename)
         E = read_layer(exposure_filename)
 
-        plugin_name = 'Earthquake School Damage Function'
+        plugin_name = 'Tephra Impact Function'
         plugin_list = get_plugins(plugin_name)
+        assert len(plugin_list) == 1
+        assert plugin_list[0].keys()[0] == plugin_name
 
         # FIXME: Avoid this hacky way to get the impact function
         _, IF = plugin_list[0].items()[0]
@@ -369,7 +386,7 @@ class Test_Engine(unittest.TestCase):
         # Read input data
         hazard_raster = read_layer(hazard_filename)
         A = hazard_raster.get_data()
-        mmi_min, mmi_max = hazard_raster.get_extrema()
+        load_min, load_max = hazard_raster.get_extrema()
 
         exposure_vector = read_layer(exposure_filename)
         coordinates = exposure_vector.get_geometry()
@@ -379,6 +396,35 @@ class Test_Engine(unittest.TestCase):
         impact_vector = read_layer(impact_filename)
         coordinates = impact_vector.get_geometry()
         attributes = impact_vector.get_data()
+
+        # FIXME: Remove this tolerance when interpolation is better
+        tol = 1.0e-8
+
+        # Test that results are as expected
+        # FIXME: Change test when we decide what values should actually be
+        #        calculated :-) :-) :-)
+        for a in attributes:
+            load = a['Ashload']
+            impact = a['Percent_da']
+
+            # Test interpolation
+            msg = 'Load %.15f was outside bounds [%f, %f]' % (load,
+                                                           load_min,
+                                                           load_max)
+            if not numpy.isnan(load):
+                assert load_min - tol <= load <= load_max, msg
+
+            # Test calcalated values
+            if 0.01 <= load < 90.0:
+                assert impact == 25
+            elif 90.0 <= load < 150.0:
+                assert impact == 50
+            elif 150.0 <= load < 300.0:
+                assert impact == 75
+            elif load >= 300.0:
+                assert impact == 100
+            else:
+                assert impact == 0
 
     def test_package_metadata(self):
         """Test that riab package loads
