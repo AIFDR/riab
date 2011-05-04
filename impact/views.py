@@ -135,7 +135,7 @@ def functions(request):
     plugin_list = get_plugins()
 
     if 'geoservers' in request.GET:
-        #FIXME for the moment assume version 1.0.0
+        # FIXME for the moment assume version 1.0.0
         geolist = request.GET['geoservers'].split(',')
         geoservers = [{'url':geoserver, 'version':'1.0.0'}
                            for geoserver in geolist]

@@ -66,7 +66,7 @@ def is_server_reachable(url):
 
 
 def get_layers_metadata(url, version, feature=None):
-    """Return the metadata for each layers as an dict formed from the keywords
+    """Return the metadata for each layer as an dict formed from the keywords
 
     Assumes the format for the keywords is "identifier:value"
 
@@ -209,7 +209,7 @@ class WFSCapabilitiesReader(object):
             raise
         else:
             response = u.read()
-            #FIXME: Make sure it is not an html page with an error message.
+            # FIXME: Make sure it is not an html page with an error message.
             self.xml = response
             return etree.fromstring(self.xml)
 

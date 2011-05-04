@@ -31,12 +31,11 @@ class FunctionProvider:
 
     Plugins implementing this reference should provide the following method:
 
-    run(hazard_layers, exposure_layers)
+    run(layers)
 
     ===============  =========================
-    hazard_layers    A list of hazard layers
-    exposure_layers  A list of exposure layers
-    return_value     A numpy array
+    layers           A list of layers
+    result           A list of layers
     ===============  =========================
     """
     __metaclass__ = PluginMount
@@ -60,6 +59,11 @@ def get_plugins(name=None):
 
        Or all of them if no name is passed.
     """
+
+    for p  in FunctionProvider.plugins:
+        print p
+
+
 
     plugins_dict = dict([(pretty_function_name(p), p)
                          for p in FunctionProvider.plugins])

@@ -1,13 +1,8 @@
-
-import numpy
-import scipy
-
-from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
+from impact.storage.vector import Vector
 
-from impact.engine.utilities import MAXFLOAT
-from impact.plugins.utilities import Damage_curve
-
+# FIXME: Need style for this and allow the name to
+# be different from Percen_da
 
 class TephraImpactFunction(FunctionProvider):
     """Risk plugin for tephra damage (FIXME: Origin?)
@@ -21,37 +16,56 @@ class TephraImpactFunction(FunctionProvider):
     """
 
     @staticmethod
-    def run(hazard_layers, exposure_layers):
+    def run(layers):
         """Risk plugin for tephra impact
         """
 
-        coordinates, attributes = hazard_layers
-        coordinates, _ = exposure_layers
+        # Extract data
+        # FIXME (Ole): This will be replaced by a helper function
+        #              to separate hazard from exposure using keywords
+        H = layers[0]  # Ash load
+        E = layers[1]  # Building locations
 
-        N = len(attributes)
+        # Interpolate hazard level to building locations
+        H = H.interpolate(E)
 
+        # Extract relevant numerical data
+        coordinates = E.get_geometry()
+        ashload = H.get_data()
+
+        # Calculate building damage
+        N = len(ashload)
         result = []
         for i in range(N):
 
             #-------------------
             # Extract parameters
             #-------------------
-            load = float(attributes[i].values()[0])
+            load = float(ashload[i].values()[0])
 
             #------------------------
             # Compute damage level
             #------------------------
             if 0.01 <= load < 90.0:
-                impact = 1
+                impact = 25
             elif 90.0 <= load < 150.0:
-                impact = 2
+                impact = 50
             elif 150.0 <= load < 300.0:
-                impact = 3
+                impact = 75
             elif load >= 300.0:
-                impact = 4
+                impact = 100
             else:
                 impact = 0
 
-            result.append({'Impact': impact})
+            result.append({'Percent_damage': impact, 'Ashload': load})
 
-        return result
+        # FIXME (Ole): Need helper to generate new layer using
+        #              correct spatial reference
+        #              (i.e. sensibly wrap the following lines)
+        projection = E.get_projection()
+
+        V = Vector(data=result,
+                   projection=E.get_projection(),
+                   geometry=coordinates,
+                   name='Estimated ashload damage')
+        return V

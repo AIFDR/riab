@@ -3,7 +3,10 @@ from impact import plugins
 
 DEFAULT_PLUGINS = ('Earthquake Fatality Function',)
 
-
+# FIXME (Ole): Need more tests here: E.g.
+#              Check that specific plugins are retrieved
+#              What happens if plugin can be found
+#              etc
 class Test_Functions(unittest.TestCase):
 
     def test_get_plugins(self):
