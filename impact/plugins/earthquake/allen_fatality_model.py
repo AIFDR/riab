@@ -26,23 +26,20 @@ class EarthquakeFatalityFunction(FunctionProvider):
               P: Raster layer of population data on the same grid as H
         """
 
+        # Identify input layers
+        intensity = layers[0]
+        population = layers[1]
+
         # Extract data
-        # FIXME (Ole): This will be replaced by a helper function
-        #              to separate hazard from exposure using keywords
-        H = layers[0].get_data(nan=0)
-        P = layers[1].get_data(nan=0)
+        H = intensity.get_data(nan=0)
+        P = population.get_data(nan=0)
 
         # Calculate impact
         F = 10 ** (a * H - b) * P
 
-        # Return
-
-        # FIXME (Ole): Need helper to generate new layer using
-        #              correct spatial reference
-        #              (i.e. sensibly wrap the following lines)
-        projection = layers[0].get_projection()
-        geotransform = layers[0].get_geotransform()
-
-        R = Raster(F, projection, geotransform,
+        # Create new layer and return
+        R = Raster(F,
+                   projection=population.get_projection(),
+                   geotransform=population.get_geotransform(),
                    name='Estimated fatalities')
         return R
