@@ -9,7 +9,17 @@ where filename can be either a single file or a directory of files
 """
 
 import sys
-from riab.risiko.utilities import file_upload
+from geonode.maps.models import Layer
+from geonode.maps.utils import upload, file_upload
+
+def check_layer(uploaded):
+    """Verify if an object is a valid Layer.
+    """
+
+    msg = ('Was expecting layer object, got %s' % (type(uploaded)))
+    assert type(uploaded) is Layer, msg
+    msg = ('The layer does not have a valid name: %s' % uploaded.name)
+    assert len(uploaded.name) > 0, msg
 
 
 def usage():
