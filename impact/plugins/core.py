@@ -184,9 +184,19 @@ def requirement_check(params, require_str, verbose=False):
 
 def requirements_met(func, params, verbose=False):
     """Checks to see if the plugin can run based on the requirements
-       specified in the doc string"""
+       specified in the doc string
+       Return
+       False if not met,
+       or An integer with the line of the requirements that is met
+       or -1 if no requirements
+       or None on an error
+       """
 
     requirements = requirements_collect(func)
+    if len(requirements) == 0:
+        #no requirement met
+        return -1
+
     if requirements:
         try:
             is_met = [requirement_check(params, requires)
@@ -195,6 +205,7 @@ def requirements_met(func, params, verbose=False):
             # TODO (Ted): Need log this
             msg = 'Syntax error in plugin %s: %s' % (func.__name__, e)
             print msg
+            return None
 
         if True in is_met:
             return is_met.index(True)
@@ -210,14 +221,23 @@ def compatible_layers(func, layers_data):
 
     layers = []
     requirement_satisfied = set()
+    num_requirements = len(requirements_collect(func))
 
     for layer_data in layers_data:
         is_met = requirements_met(func, layer_data[1])
         if type(is_met) == types.IntType:
             layers.append(layer_data[0])
             requirement_satisfied.add(is_met)
+     #   if layer_data[0]=='Population_2010':
+     #       print "-----------------------"
+     #       print func
+     #       print requirements_collect(func)
+     #       print layer_data
+     #       print is_met
 
-    if len(requirements_collect(func)) == len(requirement_satisfied):
+    #print layers
+    #print len(requirements_collect(func)), len(requirement_satisfied)
+    if num_requirements == 0 or num_requirements == len(requirement_satisfied):
         return layers
     else:
         return []

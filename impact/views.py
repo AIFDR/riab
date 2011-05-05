@@ -223,8 +223,12 @@ def layers(request):
             out = {'name': layer[0],
                    'server_url': geoserver['url']}
             metadata = layer[1]
+            name_category = out['name'].split(':')
             if 'category' in metadata.keys():
                 category = metadata['category']
+            elif len(name_category) == 2:
+            #if there is no metadata then try using format category:name
+                category = name_category[0]
             else:
                 category = None
 

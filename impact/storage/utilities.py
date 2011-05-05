@@ -135,6 +135,14 @@ def get_layers_metadata(url, version, feature=None):
         abstract = f.findall(NAMESPACE + abstractstr)
 
         keywords['title'] = title[0].text
+
+        ### Hack to allow layers where there is no metadata stored
+        ### Category is prepended to the name in the form category:layer_name
+
+        split_category = keywords['title'].split(':')
+        if len(split_category) == 2:
+            keywords['category'] = split_category[0]
+
         layer_name = name[0].text
 
         if feature == False:
