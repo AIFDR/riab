@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+"""Upload data to local Risiko GeoServer
+
+Usage:
+
+risiko-upload filename
+
+where filename can be either a single file or a directory of files
+"""
+
+import sys
+from riab.risiko.utilities import file_upload
+
+
+def usage():
+    print 'risiko-upload filename'
+
+if __name__ == '__main__':
+
+    if len(sys.argv) != 2:
+        usage()
+    else:
+        thefile = sys.argv[1]
+        uploaded = file_upload(thefile)
+        check_layer(uploaded)
