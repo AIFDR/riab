@@ -27,17 +27,17 @@ class FloodImpactFunction(FunctionProvider):
               P: Raster layer of population data on the same grid as H
         """
 
-        # Extract data
-        # FIXME (Ole): This will be replaced by a helper function
-        #              to separate hazard from exposure using keywords
-        H = layers[0].get_data(nan=0)
-        P = layers[1].get_data(nan=0)
+        # Identify hazard and exposure layers
+        inundation = layers[0]  # Flood inundation [m]
+        population = layers[1]  # Population density [people/100000 m^2]
 
-        # Calculate impact
-        # Select population exposed to depths > 0.1m
-        I = numpy.where(H > 0.1, P, 0)/100000*2500
+        # Extract data as numeric arrays
+        D = inundation.get_data(nan=0.0)  # Depth
+        P = population.get_data(nan=0.0)  # Population density
 
-        # Return
+        # Calculate impact as population exposed to depths > 0.1 m
+        pixel_area = 2500
+        I = numpy.where(D > 0.1, P, 0) / 100000 * pixel_area
 
         # FIXME (Ole): Need helper to generate new layer using
         #              correct spatial reference
@@ -45,6 +45,7 @@ class FloodImpactFunction(FunctionProvider):
         projection = layers[0].get_projection()
         geotransform = layers[0].get_geotransform()
 
+        # Create raster object and return
         R = Raster(I, projection, geotransform,
                    name='People affected')
         return R

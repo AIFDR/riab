@@ -148,7 +148,8 @@ class Test_Engine(unittest.TestCase):
             P = exposure_raster.get_data(nan=0)
 
             # Calculate impact manually
-            I = numpy.where(H > 0.1, P, 0)/100000*2500
+            pixel_area = 2500
+            I = numpy.where(H > 0.1, P, 0)/100000*pixel_area
 
             # Verify correctness against results from HKV
 

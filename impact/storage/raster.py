@@ -65,6 +65,8 @@ class Raster:
         return self.name
 
     def __len__(self):
+        """Size of data set defined as total number of grid points
+        """
         return len(self.get_data().flat)
 
     def __eq__(self, other, rtol=1.0e-5, atol=1.0e-8):
