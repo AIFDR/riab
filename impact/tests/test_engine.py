@@ -15,6 +15,7 @@ from impact.plugins import get_plugins
 from impact.tests.utilities import TESTDATA
 from impact.tests.utilities import DEMODATA
 
+
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
     """
@@ -100,7 +101,6 @@ class Test_Engine(unittest.TestCase):
         assert numpy.alltrue(C <= xmax)
         assert numpy.alltrue(C >= 0)
 
-
     def test_jakarta_flood_study(self):
         """HKV Jakarta flood study calculated correctly using aligned rasters
         """
@@ -112,21 +112,22 @@ class Test_Engine(unittest.TestCase):
         population = 'Population_Jakarta_geographic.asc'
         plugin_name = 'Flood Impact Function'
 
-        # Expected values from HKV in million people
-        expected_values = [2.485442, 1.54]
+        # Expected values from HKV
+        expected_values = [2485442, 1540000]
 
         i = 0
         for filename in ['Flood_Current_Depth_Jakarta_geographic.asc',
                          'Flood_Design_Depth_Jakarta_geographic.asc']:
 
             # FIXME (Ole): Skip second test for the moment
-            if i == 1: continue
+            if i == 1:
+                continue
 
             hazard_filename = '%s/%s/%s' % (DEMODATA, 'hazard', filename)
             exposure_filename = '%s/%s/%s' % (DEMODATA, 'exposure',
                                               population)
 
-            # Calculate impact using API
+            # Get layers using API
             H = read_layer(hazard_filename)
             E = read_layer(exposure_filename)
 
@@ -136,7 +137,7 @@ class Test_Engine(unittest.TestCase):
 
             IF = plugin_list[0][plugin_name]
 
-            # Call calculation engine
+            # Call impact calculation engine
             impact_filename = calculate_impact(layers=[H, E],
                                                impact_function=IF)
 
@@ -149,16 +150,15 @@ class Test_Engine(unittest.TestCase):
 
             # Calculate impact manually
             pixel_area = 2500
-            I = numpy.where(H > 0.1, P, 0)/100000*pixel_area
+            I = numpy.where(H > 0.1, P, 0) / 100000 * pixel_area
 
             # Verify correctness against results from HKV
 
-            res = sum(I.flat)/1000000
+            res = sum(I.flat)
             ref = expected_values[i]
 
             msg = 'Got result %f but expected %f' % (res, ref)
             assert numpy.allclose(res, ref, rtol=1.0e-2), msg
-
 
             # Verify correctness of result
             calculated_raster = read_layer(impact_filename)
@@ -167,7 +167,8 @@ class Test_Engine(unittest.TestCase):
             # Compare shape and extrema
             msg = ('Shape of calculated raster differs from reference raster: '
                    'C=%s, I=%s' % (C.shape, I.shape))
-            assert numpy.allclose(C.shape, I.shape, rtol=1e-12, atol=1e-12), msg
+            assert numpy.allclose(C.shape, I.shape,
+                                  rtol=1e-12, atol=1e-12), msg
 
             msg = ('Minimum of calculated raster differs from reference '
                    'raster: '

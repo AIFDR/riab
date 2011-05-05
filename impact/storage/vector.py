@@ -378,7 +378,7 @@ class Vector:
 
                     msg = ('Specified index must lie within the bounds '
                            'of vector layer %s which is [%i, %i]'
-                           '' % (self, 0, len(self)-1))
+                           '' % (self, 0, len(self) - 1))
                     assert 0 <= index < len(self)
 
                     return self.data[index][attribute]

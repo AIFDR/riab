@@ -3,6 +3,7 @@ import numpy
 from impact.plugins.core import FunctionProvider
 from impact.storage.raster import Raster
 
+
 # FIXME (Ole): This one works, but needs styling
 class FloodImpactFunction(FunctionProvider):
     """Risk plugin for flood impact
