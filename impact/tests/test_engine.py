@@ -54,8 +54,7 @@ class Test_Engine(unittest.TestCase):
         assert len(plugin_list) == 1
         assert plugin_list[0].keys()[0] == plugin_name
 
-        # FIXME: Avoid this hacky way to get the impact function
-        _, IF = plugin_list[0].items()[0]
+        IF = plugin_list[0][plugin_name]
 
         # Call calculation engine
         impact_filename = calculate_impact(layers=[H, E],
@@ -114,7 +113,7 @@ class Test_Engine(unittest.TestCase):
         plugin_name = 'Flood Impact Function'
 
         # Expected values from HKV in million people
-        expected_values = [2.49, 1.54]
+        expected_values = [2.485442, 1.54]
 
         i = 0
         for filename in ['Flood_Current_Depth_Jakarta_geographic.asc',
@@ -135,8 +134,7 @@ class Test_Engine(unittest.TestCase):
             assert len(plugin_list) == 1
             assert plugin_list[0].keys()[0] == plugin_name
 
-            # FIXME: Avoid this hacky way to get the impact function
-            _, IF = plugin_list[0].items()[0]
+            IF = plugin_list[0][plugin_name]
 
             # Call calculation engine
             impact_filename = calculate_impact(layers=[H, E],
@@ -217,8 +215,7 @@ class Test_Engine(unittest.TestCase):
             assert len(plugin_list) == 1
             assert plugin_list[0].keys()[0] == plugin_name
 
-            # FIXME: Avoid this hacky way to get the impact function
-            _, IF = plugin_list[0].items()[0]
+            IF = plugin_list[0][plugin_name]
 
             impact_filename = calculate_impact(layers=[H, E],
                                                impact_function=IF)
@@ -355,10 +352,7 @@ class Test_Engine(unittest.TestCase):
         assert len(plugin_list) == 1
         assert plugin_list[0].keys()[0] == plugin_name
 
-
-        # FIXME: Avoid this hacky way to get the impact function
-        _, IF = plugin_list[0].items()[0]
-
+        IF = plugin_list[0][plugin_name]
         impact_filename = calculate_impact(layers=[H, E],
                                            impact_function=IF)
 
@@ -470,8 +464,7 @@ class Test_Engine(unittest.TestCase):
         assert len(plugin_list) == 1
         assert plugin_list[0].keys()[0] == plugin_name
 
-        # FIXME: Avoid this hacky way to get the impact function
-        _, IF = plugin_list[0].items()[0]
+        IF = plugin_list[0][plugin_name]
         impact_filename = calculate_impact(layers=[H, E],
                                            impact_function=IF)
 
