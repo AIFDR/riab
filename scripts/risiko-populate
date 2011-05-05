@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+"""Upload test data to GeoServer
+
+# Data is assumed to reside in subdirectories of ./data named by their workspace.
+# The standard workspace names are
+# - hazard
+# - exposure
+# - boundaries
+# - impact
+# - sources
+"""
+
+import sys
+import os
+import string
+
+from geonode.maps.utils import upload, file_upload, GeoNodeException
+from impact.tests.utilities import DEMODATA
+
+if __name__ == '__main__':
+    print 'Uploading all files from %s to Risiko' % DEMODATA
+
+    uploaded = upload(DEMODATA)
+    for item in uploaded:
+        print 'Uploading %s' % item['name']
