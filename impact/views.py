@@ -208,6 +208,7 @@ def layers(request):
     user = get_valid_user(request.user)
     geoservers = get_servers(user)
 
+
     if 'category' in request.REQUEST:
         requested_category = request.REQUEST['category']
     else:
@@ -223,11 +224,13 @@ def layers(request):
             out = {'name': layer[0],
                    'server_url': geoserver['url']}
             metadata = layer[1]
-            name_category = out['name'].split(':')
+            name_category = out['name'].split('_')
             if 'category' in metadata.keys():
                 category = metadata['category']
-            elif len(name_category) == 2:
-            #if there is no metadata then try using format category:name
+            elif len(name_category) > 1:
+                # FIXME: This is a temporary measure until we get the keywords:
+                # https://github.com/AIFDR/riab/issues/46
+                # If there is no metadata then try using format category_name
                 category = name_category[0]
             else:
                 category = None

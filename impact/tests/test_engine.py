@@ -37,8 +37,8 @@ def lembang_damage_function(x):
 
 class Test_Engine(unittest.TestCase):
 
-    def test_earthquake_fatality_estimation(self):
-        """Fatalities from ground shaking can be computed correctly
+    def test_earthquake_fatality_estimation_allen(self):
+        """Fatalities from ground shaking can be computed correctly 1
            using aligned rasters
         """
 
@@ -100,6 +100,70 @@ class Test_Engine(unittest.TestCase):
         assert numpy.alltrue(C >= xmin)
         assert numpy.alltrue(C <= xmax)
         assert numpy.alltrue(C >= 0)
+
+    def test_earthquake_fatality_estimation_ghasemi(self):
+        """Fatalities from ground shaking can be computed correctly 2
+           using the Hadi Ghasemi function.
+        """
+
+        # Name file names for hazard level, exposure and expected fatalities
+        hazard_filename = '%s/Earthquake_Ground_Shaking_clip.tif' % TESTDATA
+        exposure_filename = '%s/Population_2010_clip.tif' % TESTDATA
+
+        # Calculate impact using API
+        H = read_layer(hazard_filename)
+        E = read_layer(exposure_filename)
+
+        plugin_name = 'Empirical Fatality Function'
+        plugin_list = get_plugins(plugin_name)
+        assert len(plugin_list) == 1
+        assert plugin_list[0].keys()[0] == plugin_name
+
+        IF = plugin_list[0][plugin_name]
+
+        # Call calculation engine
+        impact_filename = calculate_impact(layers=[H, E],
+                                           impact_function=IF)
+
+        # Do calculation manually and check result
+        hazard_raster = read_layer(hazard_filename)
+        H = hazard_raster.get_data(nan=0)
+
+        exposure_raster = read_layer(exposure_filename)
+        E = exposure_raster.get_data(nan=0)
+
+        # Verify correctness of result
+        calculated_raster = read_layer(impact_filename)
+        C = calculated_raster.get_data(nan=0)
+
+        # Calculate impact manually
+        # FIXME (Ole): Jono will do this
+        return
+
+        # Compare shape and extrema
+        msg = ('Shape of calculated raster differs from reference raster: '
+               'C=%s, F=%s' % (C.shape, F.shape))
+        assert numpy.allclose(C.shape, F.shape, rtol=1e-12, atol=1e-12), msg
+
+        msg = ('Minimum of calculated raster differs from reference raster: '
+               'C=%s, F=%s' % (numpy.min(C), numpy.min(F)))
+        assert numpy.allclose(numpy.min(C), numpy.min(F),
+                              rtol=1e-12, atol=1e-12), msg
+        msg = ('Maximum of calculated raster differs from reference raster: '
+               'C=%s, F=%s' % (numpy.max(C), numpy.max(F)))
+        assert numpy.allclose(numpy.max(C), numpy.max(F),
+                              rtol=1e-12, atol=1e-12), msg
+
+        # Compare every single value numerically
+        msg = 'Array values of written raster array were not as expected'
+        assert numpy.allclose(C, F, rtol=1e-12, atol=1e-12), msg
+
+        # Check that extrema are in range
+        xmin, xmax = calculated_raster.get_extrema()
+        assert numpy.alltrue(C >= xmin)
+        assert numpy.alltrue(C <= xmax)
+        assert numpy.alltrue(C >= 0)
+
 
     def test_jakarta_flood_study(self):
         """HKV Jakarta flood study calculated correctly using aligned rasters

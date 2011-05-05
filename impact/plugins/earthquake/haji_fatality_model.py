@@ -1,13 +1,19 @@
 from impact.plugins.core import FunctionProvider
 from impact.storage.raster import Raster
 
+import scipy
+import scipy.stats
+import numpy
 
 class EmpiricalFatalityFunction(FunctionProvider):
     """Risk plugin for earthquake damage based on empirical results
 
-    :author Haji
+    :author Hadi Ghasemi
     :rating 2
-    :param requires layerType=="raster"
+    :param requires category=="hazard" and \
+                    layerType=="raster"
+    :param requires category=="exposure" and \
+                    layerType=="raster"
     """
 
     @staticmethod
@@ -34,7 +40,7 @@ class EmpiricalFatalityFunction(FunctionProvider):
         # Convert array to be standard floats expected by cdf
         arrayout = numpy.array([[float(value) for value in row]
                                for row in logHazard])
-        F = scipy.stats.norm.cdf(arrayout * E)
+        F = scipy.stats.norm.cdf(arrayout * P)
 
         # Create new layer and return
         R = Raster(F,
