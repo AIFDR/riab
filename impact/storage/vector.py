@@ -63,6 +63,10 @@ class Vector:
         return self.name
 
     def __len__(self):
+        """Size of vector layer defined as number of features
+        """
+
+        # FIXME - change to len(self.geometry)
         return self.geometry.shape[0]
 
     def __eq__(self, other, rtol=1.0e-5, atol=1.0e-8):
@@ -90,16 +94,25 @@ class Vector:
                               rtol=rtol, atol=atol):
             return False
 
-        # Check data
-        # FIXME (Ole): Rewrite when issue #65 is done
-        # FIXME: Also check that keys match exactly.
-        #        Use the new get_data(attribute)!!!
+        # Check keys
         x = self.get_data()
         y = other.get_data()
+
+        for key in x[0]:
+            for i in range(len(y)):
+                if key not in y[i]:
+                    return False
+
+        for key in y[0]:
+            for i in range(len(x)):
+                if key not in x[i]:
+                    return False
+
+        # Check data
         for i, a in enumerate(x):
             for key in a:
                 if a[key] != y[i][key]:
-                    # Not equal, try numerical comparison
+                    # Not equal, try numerical comparison with tolerances
 
                     if not numpy.allclose(a[key], y[i][key],
                                           rtol=rtol, atol=atol):
@@ -365,7 +378,7 @@ class Vector:
 
                     msg = ('Specified index must lie within the bounds '
                            'of vector layer %s which is [%i, %i]'
-                           '' % (self, 0, len(self)-1))
+                           '' % (self, 0, len(self) - 1))
                     assert 0 <= index < len(self)
 
                     return self.data[index][attribute]

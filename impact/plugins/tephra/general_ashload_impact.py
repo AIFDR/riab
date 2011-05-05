@@ -4,6 +4,7 @@ from impact.storage.vector import Vector
 # FIXME: Need style for this and allow the name to
 # be different from Percen_da
 
+
 class TephraImpactFunction(FunctionProvider):
     """Risk plugin for tephra damage (FIXME: Origin?)
 
