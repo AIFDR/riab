@@ -138,7 +138,8 @@ def get_layers_metadata(url, version, feature=None):
 
         ### Hack to allow layers where there is no metadata stored
         ### Category is prepended to the name in the form category_layer_name
-        # FIXME: Remove when we get keywords: https://github.com/AIFDR/riab/issues/46
+        # FIXME: Remove when we get keywords:
+        # https://github.com/AIFDR/riab/issues/46
         split_category = keywords['title'].split('_')
         if len(split_category) > 1:
             keywords['category'] = split_category[0]

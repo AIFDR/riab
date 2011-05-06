@@ -4,9 +4,11 @@
 import os
 import sys
 
+
 def usage():
     print 'Usage:'
     print '%s shakefilename.grd' % sys.argv[0]
+
 
 if __name__ == '__main__':
 
@@ -56,7 +58,6 @@ if __name__ == '__main__':
         print s
         os.system(s)
 
-
         # Establish standard style for shakemaps
         print 'Writing style file'
         fid = open(sldfile, 'w')
@@ -79,8 +80,8 @@ if __name__ == '__main__':
           </sld:GrayChannel>
         </sld:ChannelSelection>
         <sld:ColorMap>
-       	<ColorMapEntry color="#ffffff" quantity="-9999.0" opacity="0"/>
-	<!--<ColorMapEntry color="#CCCCFF" quantity="0.0"/>-->
+        <ColorMapEntry color="#ffffff" quantity="-9999.0" opacity="0"/>
+        <!--<ColorMapEntry color="#CCCCFF" quantity="0.0"/>-->
         <ColorMapEntry color="#ebeef7" quantity="1.0" opacity="0"/>
         <ColorMapEntry color="#bdccff" quantity="2.0"/>
         <ColorMapEntry color="#a7effe" quantity="3.0"/>
@@ -94,7 +95,7 @@ if __name__ == '__main__':
         <ColorMapEntry color="#FF0000" quantity="8"/>
         <ColorMapEntry color="#7A0000" quantity="10"/>
 
-	<!--Higher-->
+        <!--Higher-->
         </sld:ColorMap>
       </sld:RasterSymbolizer>
     </sld:Rule>

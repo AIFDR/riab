@@ -5,6 +5,7 @@ import scipy
 import scipy.stats
 import numpy
 
+
 class EmpiricalFatalityFunction(FunctionProvider):
     """Risk plugin for earthquake damage based on empirical results
 
@@ -48,4 +49,3 @@ class EmpiricalFatalityFunction(FunctionProvider):
                    geotransform=population.get_geotransform(),
                    name='Estimated fatalities')
         return R
-

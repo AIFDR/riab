@@ -33,7 +33,7 @@ def production():
     sudo('chmod +x /etc/init.d/tomcat6')
     sudo('ln -sf /etc/init.d/tomcat6 /etc/rc1.d/K99tomcat')
     sudo('ln -sf /etc/init.d/tomcat6 /etc/rc2.d/S99tomcat')
-    clean() # Just in case we are installing on top of an existing server
+    clean()  # Just in case we are installing on top of an existing server
     start()
 
 def manual():
@@ -122,8 +122,8 @@ def trash():
         stop()
         run('source riab_env/bin/activate; risiko-clean')
     except:
-         # there is no problem if nothing was running
-         pass
+        # There is no problem if nothing was running
+        pass
     sudo('rm -f /etc/init.d/tomcat*')
     run('rm -f .bash_aliases')
     # Delete home directory
@@ -131,7 +131,6 @@ def trash():
     run('rm -f /etc/apachei2/sites-available/risiko')
     sudo('rm -f /etc/rc1.d/K99tomcat')
     sudo('rm -f /etc/rc2.d/S99tomcat')
-
 
 
 def local_sources_mirror(country):

@@ -17,15 +17,24 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         usage()
     else:
+        # Here is where we'll get the latest zip file
+        # from geospasial.bnpb.go.id since is works
+        # from within BNPB.
+
         zipfile = sys.argv[1]
+
+        print '------------------------'
+        print zipfile
 
         localname = os.path.split(zipfile)[-1]
         basename, ext = os.path.splitext(localname)
+
         msg = 'Input file %s should have extension .zip' % zipfile
         assert ext == '.zip', msg
 
         # Strip timestamp form names like 20110505155015.out
         timestamp, _ = os.path.splitext(basename)
+
 
         # Unzip
         print 'Unzipping file %s' % zipfile
@@ -38,6 +47,10 @@ if __name__ == '__main__':
         asc_filename = '%s.asc' % basefilename
         tif_filename = '%s.tif' % basefilename
         sld_filename = '%s.sld' % basefilename
+
+        print basefilename
+        print grd_filename
+        print asc_filename
 
         s = ('cp usr/local/smap/data/%s/output/mi.grd %s'
              % (timestamp, grd_filename))
@@ -52,7 +65,7 @@ if __name__ == '__main__':
 
         basemap = '%s/riab_data/risiko_demo_data/backgrounds/Basemap_300dpi.tif' % d
         s = 'qgis %s %s &' % (basemap, asc_filename)
-        #run(s)
+        run(s)
 
         # Upload to Risiko
         s = 'cp %s hazard_%s' % (tif_filename, tif_filename)
@@ -71,4 +84,3 @@ if __name__ == '__main__':
         print 'Then'
         print '  risiko-activate'
         print '  %s/riab/scripts/risiko-upload hazard_%s' % (d, tif_filename)
-

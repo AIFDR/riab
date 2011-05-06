@@ -1,7 +1,7 @@
 import os
 
-DEBUG=False
-#DEBUG=True
+DEBUG = False
+#DEBUG = True
 
 SERVER_IP="http://demo.riskinabox.org"
 

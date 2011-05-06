@@ -208,7 +208,6 @@ def layers(request):
     user = get_valid_user(request.user)
     geoservers = get_servers(user)
 
-
     if 'category' in request.REQUEST:
         requested_category = request.REQUEST['category']
     else:
