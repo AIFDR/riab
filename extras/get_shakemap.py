@@ -29,12 +29,14 @@ if __name__ == '__main__':
 
         # Unzip
         print 'Unzipping file %s' % zipfile
-        s = 'unzip -f %s' % zipfile
+        s = 'unzip -o %s' % zipfile
         run(s)
 
         print 'Getting MMI data'
-        grd_filename = 'shakemap_%s.grd' % timestamp
-        asc_filename = 'shakemap_%s.asc' % timestamp
+        basefilename = 'shakemap_%s' % timestamp
+        grd_filename = '%s.grd' % basefilename
+        asc_filename = '%s.asc' % basefilename
+        tif_filename = '%s.tif' % basefilename
         s = ('cp usr/local/smap/data/%s/output/mi.grd %s'
              % (timestamp, grd_filename))
         run(s)
@@ -53,6 +55,7 @@ if __name__ == '__main__':
         # Upload to Risiko
         s = 'cp %s hazard_%s' % (asc_filename, asc_filename)
         run(s)
+        s = 'cp %s hazard_%s' % (asc_filename, asc_filename)
 
         #s = 'risiko_activate'
         #run(s)
@@ -62,5 +65,5 @@ if __name__ == '__main__':
         print '  risiko-start'
         print 'Then'
         print '  risiko-activate'
-        print ''
+        print '  risiko-upload hazard_%s' % asc_filename
 
