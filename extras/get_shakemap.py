@@ -37,6 +37,8 @@ if __name__ == '__main__':
         grd_filename = '%s.grd' % basefilename
         asc_filename = '%s.asc' % basefilename
         tif_filename = '%s.tif' % basefilename
+        sld_filename = '%s.sld' % basefilename
+
         s = ('cp usr/local/smap/data/%s/output/mi.grd %s'
              % (timestamp, grd_filename))
         run(s)
@@ -50,20 +52,23 @@ if __name__ == '__main__':
 
         basemap = '%s/riab_data/risiko_demo_data/backgrounds/Basemap_300dpi.tif' % d
         s = 'qgis %s %s &' % (basemap, asc_filename)
-        run(s)
+        #run(s)
 
         # Upload to Risiko
-        s = 'cp %s hazard_%s' % (asc_filename, asc_filename)
+        s = 'cp %s hazard_%s' % (tif_filename, tif_filename)
         run(s)
-        s = 'cp %s hazard_%s' % (asc_filename, asc_filename)
+        s = 'cp %s hazard_%s' % (sld_filename, sld_filename)
+        run(s)
 
-        #s = 'risiko_activate'
-        #run(s)
+
+        # Does not work yet
+        s = '. %s/riab_env/bin/activate' % d
+        run(s)
 
         print 'To upload this to Risiko, do in a separate terminal'
         print '  risiko-activate'
         print '  risiko-start'
         print 'Then'
         print '  risiko-activate'
-        print '  risiko-upload hazard_%s' % asc_filename
+        print '  %s/riab/scripts/risiko-upload hazard_%s' % (d, tif_filename)
 
