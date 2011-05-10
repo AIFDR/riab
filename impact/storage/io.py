@@ -104,8 +104,24 @@ def get_metadata(server_url, layer_name):
     themetadata = get_layers_metadata(server_url, version='1.0.0')
 
     stuff = [x[1] for x in themetadata if x[0] == layer_name]
+
+    # FIXME: This is Ted's hack to get keywords from name until
+    # a proper keyword's upload has been written
+    # FIXME (Ole): Don't like returning None when that is not
+    # checked by the callee. Could we do an exception Ted?
+    #
+    # See issue #75 for more details.
+
     if len(stuff) == 0:
-        if ':' in layer_name:
+        if '_' in layer_name:
+            # In case we didn't have keywords
+            name = layer_name.split('_')[1]
+            stuff = [x[1] for x in themetadata if x[0] == name]
+
+            if len(stuff) == 0:
+                return None
+        elif ':' in layer_name:
+            # In case we do have keywords
             name = layer_name.split(':')[1]
             stuff = [x[1] for x in themetadata if x[0] == name]
 
@@ -113,6 +129,7 @@ def get_metadata(server_url, layer_name):
                 return None
         else:
             return None
+
 
     assert len(stuff) > 0
     layer_metadata = stuff[0]
@@ -183,6 +200,7 @@ def download(server_url, layer_name, bbox):
     # Create REST request and download file
     template = None
     layer_metadata = get_metadata(server_url, layer_name)
+    print 'Got metadata:', layer_metadata, server_url, layer_name
     data_type = layer_metadata['layerType']
     if data_type == 'feature':
         template = WFS_TEMPLATE

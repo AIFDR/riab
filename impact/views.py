@@ -63,6 +63,27 @@ def calculate(request, save_output=dummy_save):
         bbox = data['bbox']
         keywords = data['keywords']
 
+    # FIXME (Ole): I don't believe this is able to handle multiple servers
+    #              When I tried to upload a hazard layer to the internal
+    #              server (localhost:8001) and use an exposure layer
+    #              from www.aifdr.org, we ran into the crash mentioned in
+    #              issue #75
+    #
+    #              Further debugging in get_metadata revealed that
+    #
+    # For the Hazard layer metadata was correctly retrieved:
+    # stuff == [{'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]
+    # layer_name = hazard_shakemap_20110505155015
+    # themetadata == [['hazard_shakemap_20110505155015', {'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]]
+    # server_url == http://localhost:8001/geoserver-geonode-dev/ows
+    #
+    # Whereas for the Exposure layer it wasn't
+    # stuff == []
+    # layer_name == exposure:AIBEP_schools
+    # themetadata == [['hazard_shakemap_20110505155015', {'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]]
+    # server_url == http://localhost:8001/geoserver-geonode-dev/ows
+
+
     # Get a valid user
     theuser = get_valid_user(request.user)
 
