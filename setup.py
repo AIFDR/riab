@@ -22,7 +22,7 @@ class osx_install_data(install_data):
         self.set_undefined_options('install', ('install_lib', 'install_dir'))
         install_data.finalize_options(self)
 
-if sys.platform == "darwin":
+if sys.platform == 'darwin':
     cmdclasses = {'install_data': osx_install_data}
 else:
     cmdclasses = {'install_data': install_data}
@@ -77,7 +77,10 @@ if len(sys.argv) > 1 and sys.argv[1] == 'bdist_wininst':
 distmeta = __import__('risiko')
 
 class RunTests(Command):
-    description = "Run the django test suite from the testproj dir."
+    """Overall test runner for the project
+    """
+
+    description = 'Run the django test suite from the testproj dir.'
 
     user_options = []
 
@@ -89,16 +92,16 @@ class RunTests(Command):
 
     def run(self):
         this_dir = os.getcwd()
-        testproj_dir = os.path.join(this_dir, "risiko")
+        testproj_dir = os.path.join(this_dir, 'risiko')
         os.chdir(testproj_dir)
         sys.path.append(testproj_dir)
         from django.core.management import execute_manager
-        os.environ["DJANGO_SETTINGS_MODULE"] = os.environ.get(
-                        "DJANGO_SETTINGS_MODULE", "settings")
-        settings_file = os.environ["DJANGO_SETTINGS_MODULE"]
+        os.environ['DJANGO_SETTINGS_MODULE'] = os.environ.get(
+            'DJANGO_SETTINGS_MODULE', 'settings')
+        settings_file = os.environ['DJANGO_SETTINGS_MODULE']
         settings_mod = __import__(settings_file, {}, {}, [''])
         execute_manager(settings_mod, argv=[
-            __file__, "test"])
+            __file__, 'test'])
         os.chdir(this_dir)
 
 
@@ -139,7 +142,7 @@ setup(
 
         # for improving source code quality
         'pylint', 'pep8'],
-    cmdclass = {"test": RunTests},
+    cmdclass = {'test': RunTests},
     scripts = ['scripts/risiko-clean',
                'scripts/risiko-stop',
                'scripts/risiko-start',
@@ -147,7 +150,7 @@ setup(
                'scripts/risiko-upload',
               ],
     classifiers = [
-        'Development Status :: 1 - Planning',
+        'Development Status :: 2 - Pre-Alpha',
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
