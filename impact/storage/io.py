@@ -113,15 +113,7 @@ def get_metadata(server_url, layer_name):
     # See issue #75 for more details.
 
     if len(stuff) == 0:
-        if '_' in layer_name:
-            # In case we didn't have keywords
-            name = layer_name.split('_')[1]
-            stuff = [x[1] for x in themetadata if x[0] == name]
-
-            if len(stuff) == 0:
-                return None
-        elif ':' in layer_name:
-            # In case we do have keywords
+        if ':' in layer_name:
             name = layer_name.split(':')[1]
             stuff = [x[1] for x in themetadata if x[0] == name]
 
@@ -200,7 +192,7 @@ def download(server_url, layer_name, bbox):
     # Create REST request and download file
     template = None
     layer_metadata = get_metadata(server_url, layer_name)
-    print 'Got metadata:', layer_metadata, server_url, layer_name
+
     data_type = layer_metadata['layerType']
     if data_type == 'feature':
         template = WFS_TEMPLATE
