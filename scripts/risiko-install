@@ -4,7 +4,7 @@ echo "---------------------------------------------------------"
 echo "Installing Risiko and all its dependencies"
 echo "This will take a little while depending on"
 echo "the internet speed."
-echo 
+echo
 echo "In any case, now is great time to go get a cup of coffee!"
 echo "---------------------------------------------------------"
 
@@ -66,7 +66,7 @@ then
     echo "You already have RIAB_HOME in your ~/.bash_aliases"
 else
     echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases
-    echo 'alias risiko-activate="source $RIAB_HOME/riab_env/bin/activate;cd $RIAB_HOME;echo  Risk In a Box virtual environment activated. Available commands are:; echo;echo risiko-test risiko-start risiko-stop risiko-clean;echo"' >> ~/.bash_aliases
+    echo 'alias risiko-activate="source $RIAB_HOME/riab_env/bin/activate;cd $RIAB_HOME;echo  Risk In a Box virtual environment activated. Available commands are:; echo;echo risiko-test risiko-start risiko-stop risiko-clean risiko-upload;echo"' >> ~/.bash_aliases
     echo "Adding RIAB_HOME, RIAB_DATA and risikon to your ~/.bash_aliases"
 fi
 
@@ -132,7 +132,7 @@ echo "Congratulations, you have installed Risk in a Box"
 echo
 echo "We have added a shortcut called 'risiko-activate' to your ~/.bash_aliases file to activate Risk In a Box"
 echo "~/.bash_aliases is sourced every time you open a new terminal. For now just do:"
-echo 
+echo
 echo "source ~/.bash_aliases"
 echo "risiko-activate"
 echo

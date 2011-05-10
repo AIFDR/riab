@@ -144,6 +144,7 @@ setup(
                'scripts/risiko-stop',
                'scripts/risiko-start',
                'scripts/risiko-test',
+               'scripts/risiko-upload',
               ],
     classifiers = [
         'Development Status :: 1 - Planning',
