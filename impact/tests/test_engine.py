@@ -183,6 +183,8 @@ class Test_Engine(unittest.TestCase):
                          'Flood_Design_Depth_Jakarta_geographic.asc']:
 
             # FIXME (Ole): Skip second test for the moment
+            #              This should work once Design depth
+            #              is gridded as floating point numbers.
             if i == 1:
                 continue
 
@@ -213,7 +215,7 @@ class Test_Engine(unittest.TestCase):
 
             # Calculate impact manually
             pixel_area = 2500
-            I = numpy.where(H > 0.1, P, 0) / 100000 * pixel_area
+            I = numpy.where(H > 0.1, P, 0) / 100000.0 * pixel_area
 
             # Verify correctness against results from HKV
 

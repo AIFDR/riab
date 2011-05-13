@@ -38,7 +38,7 @@ class FloodImpactFunction(FunctionProvider):
 
         # Calculate impact as population exposed to depths > 0.1 m
         pixel_area = 2500
-        I = numpy.where(D > 0.1, P, 0) / 100000 * pixel_area
+        I = numpy.where(D > 0.1, P, 0) / 100000.0 * pixel_area
 
         # FIXME (Ole): Need helper to generate new layer using
         #              correct spatial reference
