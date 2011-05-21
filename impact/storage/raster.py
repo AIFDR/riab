@@ -113,6 +113,9 @@ class Raster:
     def get_name(self):
         return self.name
 
+    def get_caption(self):
+        return self.caption
+
     def read_from_file(self, filename):
 
         # Open data file for reading

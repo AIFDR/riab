@@ -28,6 +28,9 @@ class FloodImpactFunction(FunctionProvider):
               P: Raster layer of population data on the same grid as H
         """
 
+        threshold = 0.1 # Depth above which people are considered to be affected [m]
+        pixel_area = 2500 # FIXME (Ole): Get this from dataset
+
         # Identify hazard and exposure layers
         inundation = layers[0]  # Flood inundation [m]
         population = layers[1]  # Population density [people/100000 m^2]
@@ -36,17 +39,19 @@ class FloodImpactFunction(FunctionProvider):
         D = inundation.get_data(nan=0.0)  # Depth
         P = population.get_data(nan=0.0)  # Population density
 
-        # Calculate impact as population exposed to depths > 0.1 m
-        pixel_area = 2500
-        I = numpy.where(D > 0.1, P, 0) / 100000.0 * pixel_area
+        # Calculate impact as population exposed to depths > threshold
+        I = numpy.where(D > threshold, P, 0) / 100000.0 * pixel_area
 
-        # FIXME (Ole): Need helper to generate new layer using
-        #              correct spatial reference
-        #              (i.e. sensibly wrap the following lines)
-        projection = layers[0].get_projection()
-        geotransform = layers[0].get_geotransform()
+        # Generate text with result for this study
+        total_number_of_people_affected = sum(I.flat)
+        caption = ('Number of people affected by flood levels greater than %i cm: '
+                   '%.2f million' % (threshold * 100, 
+                                     total_number_of_people_affected/1000000))
 
         # Create raster object and return
-        R = Raster(I, projection, geotransform,
-                   name='People affected')
+        R = Raster(I, 
+                   projection=inundation.get_projection(), 
+                   geotransform=inundation.get_geotransform(),
+                   name='People affected',
+                   caption=caption)
         return R
