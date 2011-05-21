@@ -182,12 +182,6 @@ class Test_Engine(unittest.TestCase):
         for filename in ['Flood_Current_Depth_Jakarta_geographic.asc',
                          'Flood_Design_Depth_Jakarta_geographic.asc']:
 
-            # FIXME (Ole): Skip second test for the moment
-            #              This should work once Design depth
-            #              is gridded as floating point numbers.
-            if i == 1:
-                continue
-
             hazard_filename = '%s/%s/%s' % (DEMODATA, 'hazard', filename)
             exposure_filename = '%s/%s/%s' % (DEMODATA, 'exposure',
                                               population)
@@ -218,9 +212,9 @@ class Test_Engine(unittest.TestCase):
             I = numpy.where(H > 0.1, P, 0) / 100000.0 * pixel_area
 
             # Verify correctness against results from HKV
-
             res = sum(I.flat)
             ref = expected_values[i]
+            #print filename, 'Result=%f' % res, ' Expected=%f' % ref
 
             msg = 'Got result %f but expected %f' % (res, ref)
             assert numpy.allclose(res, ref, rtol=1.0e-2), msg
