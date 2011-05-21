@@ -27,7 +27,7 @@ class Vector:
             geometry: An Nx2 array of point coordinates
             name: Optional name for layer.
                   Only used if geometry is provide as a numeric array
-            caption: Optional text field that describes the layer. This field 
+            caption: Optional text field that describes the layer. This field
                      can for example be used to display text about the layer
                      in a web application.
         """

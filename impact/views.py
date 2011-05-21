@@ -83,7 +83,6 @@ def calculate(request, save_output=dummy_save):
     # themetadata == [['hazard_shakemap_20110505155015', {'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]]
     # server_url == http://localhost:8001/geoserver-geonode-dev/ows
 
-
     # Get a valid user
     theuser = get_valid_user(request.user)
 

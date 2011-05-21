@@ -122,7 +122,6 @@ def get_metadata(server_url, layer_name):
         else:
             return None
 
-
     assert len(stuff) > 0
     layer_metadata = stuff[0]
     assert layer_metadata is not None

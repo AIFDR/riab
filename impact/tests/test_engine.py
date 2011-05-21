@@ -224,7 +224,8 @@ class Test_Engine(unittest.TestCase):
             C = calculated_raster.get_data(nan=0)
 
             # Check caption (FIXME (Ole): Do this when issue #77 has been done)
-            #assert calculated_raster.get_caption().startswith('Number') # ...and more tests here
+            #assert calculated_raster.get_caption().startswith('Number')
+            # ...and more tests here
 
             # Compare shape and extrema
             msg = ('Shape of calculated raster differs from reference raster: '
