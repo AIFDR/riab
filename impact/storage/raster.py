@@ -14,7 +14,7 @@ class Raster:
     """
 
     def __init__(self, data=None, projection=None, geotransform=None,
-                 name='Raster layer'):
+                 name='Raster layer', caption=''):
         """Initialise object with either data or filename
 
         Input
@@ -31,8 +31,12 @@ class Raster:
                           Only used if data is provide as a numeric array,
             name: Optional name for layer.
                   Only used if data is provide as a numeric array,
+            caption: Optional text field that describes the layer. This field 
+                     can for example be used to display text about the layer
+                     in a web application.
         """
 
+        self.caption = caption
         if data is None:
             # Instantiate empty object
             self.name = name

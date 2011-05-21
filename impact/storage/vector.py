@@ -13,7 +13,7 @@ class Vector:
     """
 
     def __init__(self, data=None, projection=None, geometry=None,
-                 name='Vector layer'):
+                 name='Vector layer', caption=''):
         """Initialise object with either geometry or filename
 
         Input
@@ -26,9 +26,13 @@ class Vector:
                         Only used if geometry is provide as a numeric array,
             geometry: An Nx2 array of point coordinates
             name: Optional name for layer.
-                  Only used if geometry is provide as a numeric array,
+                  Only used if geometry is provide as a numeric array
+            caption: Optional text field that describes the layer. This field 
+                     can for example be used to display text about the layer
+                     in a web application.
         """
 
+        self.caption = caption
         if data is None and projection is None and geometry is None:
             # Instantiate empty object
             self.name = name
