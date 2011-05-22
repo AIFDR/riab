@@ -29,46 +29,12 @@ import datetime
 from django.utils import simplejson as json
 from django.http import HttpResponse
 from django.conf import settings
-from django.contrib.auth.models import User
-from geonode.maps.utils import get_default_user
 
 from impact.storage.io import dummy_save, download, get_layers_metadata
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
-
-
-def create_risiko_superuser():
-    """Create default superuser for risiko
-    """
-
-    username = 'admin'
-    userpass = 'risiko'
-    user, _ = User.objects.get_or_create(username=username,
-                                         defaults={'password': userpass,
-                                                   'is_superuser': True})
-    return user
-
-
-def get_guaranteed_valid_user(user=None):
-    """Get specified user.
-
-    If it is anonymous create and return default superuser.
-    Note, this would not be safe in a public web service, but
-    is OK for locally running Risiko applications.
-    """
-
-    if user is None:
-        theuser = get_default_user()
-    elif isinstance(user, basestring):
-        theuser = User.objects.get(username=user)
-    elif user.is_anonymous():
-        theuser = create_risiko_superuser()
-    else:
-        theuser = request.user
-
-    return theuser
-
+from impact.auth import get_guaranteed_valid_user
 
 def calculate(request, save_output=dummy_save):
     start = datetime.datetime.now()
@@ -143,6 +109,7 @@ def calculate(request, save_output=dummy_save):
                                        impact_function=impact_function)
 
     # Upload result to internal GeoServer
+    print 'Uploading', impact_filename, 'as', theuser
     result = save_output(filename=impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
