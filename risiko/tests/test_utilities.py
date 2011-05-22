@@ -158,7 +158,7 @@ class Test_utilities(unittest.TestCase):
         """Uploading a good shapefile
         """
         thefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
-        uploaded = save_to_geonode(thefile, user=self.user, return_url=False)
+        uploaded = save_to_geonode(thefile, user=self.user)
         check_layer(uploaded)
 
     def test_bad_shapefile(self):
@@ -183,14 +183,14 @@ class Test_utilities(unittest.TestCase):
         #              and not an ascii file :-)
         #              This means placing one there!
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        uploaded = save_to_geonode(thefile, user=self.user, return_url=False)
+        uploaded = save_to_geonode(thefile, user=self.user)
         check_layer(uploaded)
 
     def test_asc(self):
         """Uploading a good .asc
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
-        uploaded = save_to_geonode(thefile, user=self.user, return_url=False)
+        uploaded = save_to_geonode(thefile, user=self.user)
         check_layer(uploaded)
 
     def test_repeated_upload(self):
@@ -198,13 +198,13 @@ class Test_utilities(unittest.TestCase):
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
         uploaded1 = save_to_geonode(thefile, overwrite=True,
-                                    user=self.user, return_url=False)
+                                    user=self.user)
         check_layer(uploaded1)
         uploaded2 = save_to_geonode(thefile, overwrite=True,
-                                    user=self.user, return_url=False)
+                                    user=self.user)
         check_layer(uploaded2)
         uploaded3 = save_to_geonode(thefile, overwrite=False,
-                                    user=self.user, return_url=False)
+                                    user=self.user)
         check_layer(uploaded3)
         msg = ('Expected %s but got %s' % (uploaded1.name, uploaded2.name))
         assert uploaded1.name == uploaded2.name, msg
@@ -271,7 +271,7 @@ class Test_utilities(unittest.TestCase):
         from geonode.maps.utils import cleanup
 
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        uploaded = save_to_geonode(thefile, user=self.user, return_url=False)
+        uploaded = save_to_geonode(thefile, user=self.user)
         check_layer(uploaded)
 
         name = uploaded.name

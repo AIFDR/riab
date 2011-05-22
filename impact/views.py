@@ -124,7 +124,7 @@ def calculate(request, save_output=dummy_save):
     # let's make it a json string ourselves
     output['run_date'] = 'new Date("%s")' % calculation.run_date
 
-    # FIXME:This should not be needed in and ideal world
+    # FIXME:This should not be needed in an ideal world
     ows_server_url = settings.GEOSERVER_BASE_URL + 'ows',
     output['ows_server_url'] = ows_server_url
 

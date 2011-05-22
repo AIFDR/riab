@@ -1,6 +1,7 @@
 from geonode.maps.utils import file_upload
 import os
 
+
 def run(cmd, stdout=None, stderr=None):
     """Run command with stdout and stderr optionally redirected
 
@@ -39,7 +40,7 @@ def run(cmd, stdout=None, stderr=None):
 
 
 def save_to_geonode(filename, user=None, title='Risiko layer',
-                    overwrite=False, return_url=False):
+                    overwrite=False):
     """Save a single layer file to local Risiko GeoNode
 
     Input
@@ -48,13 +49,8 @@ def save_to_geonode(filename, user=None, title='Risiko layer',
         title: String describing the layer
         overwrite: Boolean variable controlling whether existing layers
                    can be overwritten by this operation. Default is False
-        return_url: Boolean variable controlling the return value:
-                    If return_url is True (the default), the function
-                    returns an URL to the newly uploaded layer. If it is
-                    False, a Django layer object is returned.
-
     Output
-        layer object or URL to layer
+        layer object
     """
 
     # Extract names and extension
@@ -69,8 +65,9 @@ def save_to_geonode(filename, user=None, title='Risiko layer',
         upload_filename = layername + '.tif'
         msg = ('You have asked to upload the ASCII file "%s" and to do so I '
                'must first convert it to the TIF format. However, there is '
-               'already a file named "%s" so you have to remove that first and '
-               'try again. Sorry about that.' % (filename, upload_filename))
+               'already a file named "%s" so you have to remove that first '
+               'and try again. Sorry about that.' % (filename,
+                                                     upload_filename))
         assert not os.path.exists(upload_filename), msg
 
         # Convert ASCII file to GeoTIFF
@@ -96,7 +93,4 @@ def save_to_geonode(filename, user=None, title='Risiko layer',
         os.remove(upload_filename + '.aux.xml')
 
     # Return layer object
-    if return_url is True:
-        return layer.get_absolute_url()
-    else:
-        return layer
+    return layer

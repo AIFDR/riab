@@ -52,8 +52,7 @@ class Test_calculations(unittest.TestCase):
             basename, ext = os.path.splitext(filename)
 
             filename = os.path.join(TEST_DATA, filename)
-            layer = save_to_geonode(filename, user=self.user,
-                                    return_url=False)
+            layer = save_to_geonode(filename, user=self.user)
 
             # Name checking
             layer_name = layer.name
@@ -138,13 +137,11 @@ class Test_calculations(unittest.TestCase):
             # Upload input data
 
             hazardfile = os.path.join(TEST_DATA, mmi_filename)
-            hazard_layer = save_to_geonode(hazardfile, user=self.user,
-                                           return_url=False)
+            hazard_layer = save_to_geonode(hazardfile, user=self.user)
             hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
 
             exposurefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
-            exposure_layer = save_to_geonode(exposurefile, user=self.user,
-                                             return_url=False)
+            exposure_layer = save_to_geonode(exposurefile, user=self.user)
             exposure_name = '%s:%s' % (exposure_layer.workspace,
                                        exposure_layer.name)
 
