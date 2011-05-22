@@ -39,7 +39,7 @@ def run(cmd, stdout=None, stderr=None):
 
 
 def save_to_geonode(filename, user=None, title='Risiko layer',
-                    overwrite=False, return_url=True):
+                    overwrite=False, return_url=False):
     """Save a single layer file to local Risiko GeoNode
 
     Input

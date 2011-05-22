@@ -114,7 +114,7 @@ def calculate(request, save_output=dummy_save):
                          title='output_%s' % start.isoformat(),
                          user=theuser)
 
-    calculation.layer = result
+    calculation.layer = result.get_absolute_url()
     calculation.success = True
     calculation.save()
 
