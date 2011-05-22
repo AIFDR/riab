@@ -29,7 +29,7 @@ import datetime
 from django.utils import simplejson as json
 from django.http import HttpResponse
 from django.conf import settings
-
+from django.contrib.auth.models import User
 from geonode.maps.utils import get_valid_user
 
 from impact.storage.io import dummy_save, download, get_layers_metadata
@@ -83,8 +83,14 @@ def calculate(request, save_output=dummy_save):
     # themetadata == [['hazard_shakemap_20110505155015', {'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]]
     # server_url == http://localhost:8001/geoserver-geonode-dev/ows
 
-    # Get a valid user
-    theuser = get_valid_user(request.user)
+
+    if request.user.is_anonymous():
+        theuser,_ = User.objects.get_or_create(username='admin', 
+                                               defaults={'password': 'admin', 
+                                                         'is_superuser': True}
+                                              )
+    else:
+        theuser = request.user
 
     plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
