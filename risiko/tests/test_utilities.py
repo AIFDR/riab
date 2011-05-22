@@ -197,7 +197,8 @@ class Test_utilities(unittest.TestCase):
         """Upload the same file more than once
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
-        uploaded1 = save_to_geonode(thefile, user=self.user, return_url=False)
+        uploaded1 = save_to_geonode(thefile, overwrite=True,
+                                    user=self.user, return_url=False)
         check_layer(uploaded1)
         uploaded2 = save_to_geonode(thefile, overwrite=True,
                                     user=self.user, return_url=False)
