@@ -8,7 +8,8 @@ from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
 
-from geonode.maps.utils import upload, file_upload, GeoNodeException
+from impact.auth import create_risiko_superuser
+from risiko.utilities import save_to_geonode
 
 from impact.views import calculate
 from impact.storage.io import download
@@ -37,6 +38,11 @@ class Test_calculations(unittest.TestCase):
     """Tests of Risiko calculations
     """
 
+    def setUp(self):
+        """Create valid superuser
+        """
+        self.user = create_risiko_superuser()
+
     def test_io(self):
         """Data can be uploaded and downloaded from internal GeoServer
         """
@@ -46,7 +52,8 @@ class Test_calculations(unittest.TestCase):
             basename, ext = os.path.splitext(filename)
 
             filename = os.path.join(TEST_DATA, filename)
-            layer = file_upload(filename)
+            layer = save_to_geonode(filename, user=self.user,
+                                    return_url=False)
 
             # Name checking
             layer_name = layer.name
@@ -131,11 +138,13 @@ class Test_calculations(unittest.TestCase):
             # Upload input data
 
             hazardfile = os.path.join(TEST_DATA, mmi_filename)
-            hazard_layer = file_upload(hazardfile)
+            hazard_layer = save_to_geonode(hazardfile, user=self.user,
+                                           return_url=False)
             hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
 
             exposurefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
-            exposure_layer = file_upload(exposurefile)
+            exposure_layer = save_to_geonode(exposurefile, user=self.user,
+                                             return_url=False)
             exposure_name = '%s:%s' % (exposure_layer.workspace,
                                        exposure_layer.name)
 

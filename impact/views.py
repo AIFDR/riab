@@ -36,6 +36,7 @@ from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
 from impact.auth import get_guaranteed_valid_user
 
+
 def calculate(request, save_output=dummy_save):
     start = datetime.datetime.now()
 
@@ -109,7 +110,6 @@ def calculate(request, save_output=dummy_save):
                                        impact_function=impact_function)
 
     # Upload result to internal GeoServer
-    print 'Uploading', impact_filename, 'as', theuser
     result = save_output(filename=impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
