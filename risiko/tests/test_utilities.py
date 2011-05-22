@@ -1,4 +1,4 @@
-from geonode.maps.utils import upload, file_upload, GeoNodeException
+from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata
 from django.conf import settings
@@ -6,6 +6,7 @@ import os
 import unittest
 import urllib2
 from impact.auth import create_risiko_superuser
+from risiko.utilities import save_to_geonode
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_test_data')
@@ -146,7 +147,7 @@ class Test_utilities(unittest.TestCase):
         sampletxt = os.path.join(TEST_DATA,
                                  'lembang_schools_percentage_loss.dbf')
         try:
-            file_upload(sampletxt, user=self.user)
+            save_to_geonode(sampletxt, user=self.user)
         except GeoNodeException, e:
             pass
         else:
@@ -157,7 +158,7 @@ class Test_utilities(unittest.TestCase):
         """Uploading a good shapefile
         """
         thefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
-        uploaded = file_upload(thefile, user=self.user)
+        uploaded = save_to_geonode(thefile, user=self.user, return_url=False)
         check_layer(uploaded)
 
     def test_bad_shapefile(self):
@@ -167,7 +168,7 @@ class Test_utilities(unittest.TestCase):
         thefile = os.path.join(TEST_DATA,
                                'lembang_schools_percentage_loss.shp')
         try:
-            uploaded = file_upload(thefile, user=self.user)
+            uploaded = save_to_geonode(thefile, user=self.user)
         except GeoNodeException, e:
             pass
         except Exception, e:
@@ -178,26 +179,31 @@ class Test_utilities(unittest.TestCase):
     def test_tiff(self):
         """Uploading a good tiff
         """
+        # FIXME (Ole): Use tif file present in the original test data set
+        #              and not an ascii file :-)
+        #              This means placing one there!
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        uploaded = file_upload(thefile, user=self.user)
+        uploaded = save_to_geonode(thefile, user=self.user, return_url=False)
         check_layer(uploaded)
 
     def test_asc(self):
         """Uploading a good .asc
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
-        uploaded = file_upload(thefile, user=self.user)
+        uploaded = save_to_geonode(thefile, user=self.user, return_url=False)
         check_layer(uploaded)
 
     def test_repeated_upload(self):
         """Upload the same file more than once
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
-        uploaded1 = file_upload(thefile, user=self.user)
+        uploaded1 = save_to_geonode(thefile, user=self.user, return_url=False)
         check_layer(uploaded1)
-        uploaded2 = file_upload(thefile, overwrite=True, user=self.user)
+        uploaded2 = save_to_geonode(thefile, overwrite=True,
+                                    user=self.user, return_url=False)
         check_layer(uploaded2)
-        uploaded3 = file_upload(thefile, overwrite=False, user=self.user)
+        uploaded3 = save_to_geonode(thefile, overwrite=False,
+                                    user=self.user, return_url=False)
         check_layer(uploaded3)
         msg = ('Expected %s but got %s' % (uploaded1.name, uploaded2.name))
         assert uploaded1.name == uploaded2.name, msg
@@ -224,7 +230,7 @@ class Test_utilities(unittest.TestCase):
         """
         sampletxt = os.path.join(TEST_DATA, 'smoothoperator.shp')
         try:
-            file_upload(sampletxt, user=self.user)
+            save_to_geonode(sampletxt, user=self.user)
         except GeoNodeException, e:
             pass
         else:
@@ -264,7 +270,7 @@ class Test_utilities(unittest.TestCase):
         from geonode.maps.utils import cleanup
 
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        uploaded = file_upload(thefile, user=self.user)
+        uploaded = save_to_geonode(thefile, user=self.user, return_url=False)
         check_layer(uploaded)
 
         name = uploaded.name
