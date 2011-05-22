@@ -21,6 +21,7 @@ from django.utils import simplejson as json
 
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
+
 # FIXME (Ole): Change H, E to layers.
 class BasicFunction(FunctionProvider):
     """Risk plugin for testing
