@@ -30,12 +30,44 @@ from django.utils import simplejson as json
 from django.http import HttpResponse
 from django.conf import settings
 from django.contrib.auth.models import User
-from geonode.maps.utils import get_valid_user
+from geonode.maps.utils import get_default_user
 
 from impact.storage.io import dummy_save, download, get_layers_metadata
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
+
+
+def create_risiko_superuser():
+    """Create default superuser for risiko
+    """
+
+    username = 'admin'
+    userpass = 'risiko'
+    user, _ = User.objects.get_or_create(username=username,
+                                         defaults={'password': userpass,
+                                                   'is_superuser': True})
+    return user
+
+
+def get_guaranteed_valid_user(user=None):
+    """Get specified user.
+
+    If it is anonymous create and return default superuser.
+    Note, this would not be safe in a public web service, but
+    is OK for locally running Risiko applications.
+    """
+
+    if user is None:
+        theuser = get_default_user()
+    elif isinstance(user, basestring):
+        theuser = User.objects.get(username=user)
+    elif user.is_anonymous():
+        theuser = create_risiko_superuser()
+    else:
+        theuser = request.user
+
+    return theuser
 
 
 def calculate(request, save_output=dummy_save):
@@ -83,14 +115,7 @@ def calculate(request, save_output=dummy_save):
     # themetadata == [['hazard_shakemap_20110505155015', {'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]]
     # server_url == http://localhost:8001/geoserver-geonode-dev/ows
 
-
-    if request.user.is_anonymous():
-        theuser,_ = User.objects.get_or_create(username='admin', 
-                                               defaults={'password': 'admin', 
-                                                         'is_superuser': True}
-                                              )
-    else:
-        theuser = request.user
+    theuser = get_guaranteed_valid_user(request.user)
 
     plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
@@ -120,7 +145,7 @@ def calculate(request, save_output=dummy_save):
     # Upload result to internal GeoServer
     result = save_output(filename=impact_filename,
                          title='output_%s' % start.isoformat(),
-                         user=request.user)
+                         user=theuser)
 
     calculation.layer = result
     calculation.success = True
@@ -164,7 +189,7 @@ def functions(request):
         # FIXME for the moment assume version 1.0.0
         geolist = request.GET['geoservers'].split(',')
         geoservers = [{'url': geoserver, 'version': '1.0.0'}
-                           for geoserver in geolist]
+                      for geoserver in geolist]
     else:
         geoservers = get_servers(request.user)
 
@@ -195,7 +220,7 @@ def get_servers(user):
     """ Gets the list of servers for a given user
     """
 
-    theuser = get_valid_user(user)
+    theuser = get_guaranteed_valid_user(user)
     try:
         workspace = Workspace.objects.get(user=theuser)
     except Workspace.DoesNotExist:
@@ -231,8 +256,8 @@ def layers(request):
         If a parameter called 'category' is passed, it will be
         used to filter the list.
     """
-    user = get_valid_user(request.user)
-    geoservers = get_servers(user)
+
+    geoservers = get_servers(request.user)
 
     if 'category' in request.REQUEST:
         requested_category = request.REQUEST['category']
