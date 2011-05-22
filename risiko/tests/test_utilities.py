@@ -5,6 +5,7 @@ from django.conf import settings
 import os
 import unittest
 import urllib2
+from impact.auth import create_risiko_superuser
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_test_data')
@@ -57,7 +58,9 @@ class Test_utilities(unittest.TestCase):
     """
 
     def setUp(self):
-        pass
+        """Create valid superuser
+        """
+        self.user = create_risiko_superuser()
 
     def tearDown(self):
         pass
@@ -79,7 +82,7 @@ class Test_utilities(unittest.TestCase):
                     expected_layers.append(os.path.join(datadir, filename))
                 else:
                     not_expected_layers.append(os.path.join(datadir, filename))
-        uploaded = upload(datadir)
+        uploaded = upload(datadir, user=self.user)
 
         for item in uploaded:
             errors = 'errors' in item
@@ -143,7 +146,7 @@ class Test_utilities(unittest.TestCase):
         sampletxt = os.path.join(TEST_DATA,
                                  'lembang_schools_percentage_loss.dbf')
         try:
-            file_upload(sampletxt)
+            file_upload(sampletxt, user=self.user)
         except GeoNodeException, e:
             pass
         else:
@@ -154,7 +157,7 @@ class Test_utilities(unittest.TestCase):
         """Uploading a good shapefile
         """
         thefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
-        uploaded = file_upload(thefile)
+        uploaded = file_upload(thefile, user=self.user)
         check_layer(uploaded)
 
     def test_bad_shapefile(self):
@@ -164,7 +167,7 @@ class Test_utilities(unittest.TestCase):
         thefile = os.path.join(TEST_DATA,
                                'lembang_schools_percentage_loss.shp')
         try:
-            uploaded = file_upload(thefile)
+            uploaded = file_upload(thefile, user=self.user)
         except GeoNodeException, e:
             pass
         except Exception, e:
@@ -176,25 +179,25 @@ class Test_utilities(unittest.TestCase):
         """Uploading a good tiff
         """
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        uploaded = file_upload(thefile)
+        uploaded = file_upload(thefile, user=self.user)
         check_layer(uploaded)
 
     def test_asc(self):
         """Uploading a good .asc
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
-        uploaded = file_upload(thefile)
+        uploaded = file_upload(thefile, user=self.user)
         check_layer(uploaded)
 
     def test_repeated_upload(self):
         """Upload the same file more than once
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
-        uploaded1 = file_upload(thefile)
+        uploaded1 = file_upload(thefile, user=self.user)
         check_layer(uploaded1)
-        uploaded2 = file_upload(thefile, overwrite=True)
+        uploaded2 = file_upload(thefile, overwrite=True, user=self.user)
         check_layer(uploaded2)
-        uploaded3 = file_upload(thefile, overwrite=False)
+        uploaded3 = file_upload(thefile, overwrite=False, user=self.user)
         check_layer(uploaded3)
         msg = ('Expected %s but got %s' % (uploaded1.name, uploaded2.name))
         assert uploaded1.name == uploaded2.name, msg
@@ -221,7 +224,7 @@ class Test_utilities(unittest.TestCase):
         """
         sampletxt = os.path.join(TEST_DATA, 'smoothoperator.shp')
         try:
-            file_upload(sampletxt)
+            file_upload(sampletxt, user=self.user)
         except GeoNodeException, e:
             pass
         else:
@@ -233,7 +236,7 @@ class Test_utilities(unittest.TestCase):
         """
         sampletxt = os.path.join(TEST_DATA, 'smoothoperator')
         try:
-            uploaded_files = upload(sampletxt)
+            uploaded_files = upload(sampletxt, user=self.user)
             for uploaded in uploaded_files:
                 print uploaded
         except GeoNodeException, e:
@@ -246,7 +249,7 @@ class Test_utilities(unittest.TestCase):
         """Test single file using batch upload function
         """
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        uploaded_files = upload(thefile)
+        uploaded_files = upload(thefile, user=self.user)
         i = 0
         for uploaded in uploaded_files:
             layer = Layer.objects.get(name=uploaded['name'])
@@ -261,7 +264,7 @@ class Test_utilities(unittest.TestCase):
         from geonode.maps.utils import cleanup
 
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        uploaded = file_upload(thefile)
+        uploaded = file_upload(thefile, user=self.user)
         check_layer(uploaded)
 
         name = uploaded.name
