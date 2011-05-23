@@ -176,7 +176,7 @@ class Test_Engine(unittest.TestCase):
         plugin_name = 'Flood Impact Function'
 
         # Expected values from HKV
-        expected_values = [2485442, 1540000]
+        expected_values = [2485442, 1537920]
 
         i = 0
         for filename in ['Flood_Current_Depth_Jakarta_geographic.asc',
@@ -215,6 +215,7 @@ class Test_Engine(unittest.TestCase):
             res = sum(I.flat)
             ref = expected_values[i]
             #print filename, 'Result=%f' % res, ' Expected=%f' % ref
+            #print 'Pct relative error=%f' % (abs(res-ref)*100./ref)
 
             msg = 'Got result %f but expected %f' % (res, ref)
             assert numpy.allclose(res, ref, rtol=1.0e-2), msg
