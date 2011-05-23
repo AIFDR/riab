@@ -1,6 +1,10 @@
 from geonode.maps.utils import file_upload
+import logging
+
 import os
 
+class RisikoException(Exception):
+    pass
 
 def run(cmd, stdout=None, stderr=None):
     """Run command with stdout and stderr optionally redirected
@@ -39,8 +43,8 @@ def run(cmd, stdout=None, stderr=None):
         os.remove(stderr)
 
 
-def save_to_geonode(filename, user=None, title='Risiko layer',
-                    overwrite=False):
+def save_file_to_geonode(filename, user=None, title='Risiko layer',
+                         overwrite=False):
     """Save a single layer file to local Risiko GeoNode
 
     Input
@@ -87,9 +91,85 @@ def save_to_geonode(filename, user=None, title='Risiko layer',
                         overwrite=overwrite)
 
     # Clean up
+    # FIXME (Ole): Need a try-except-finally to clean up incase upload failed.
     if extension == '.asc':
         os.remove(upload_filename)
         os.remove(upload_filename + '.aux.xml')
 
     # Return layer object
     return layer
+
+
+def save_directory_to_geonode(directory, user=None, overwrite=True):
+    """Upload a directory of spatial data files to GeoNode
+
+    Input
+        directory: Valid root directory for layer files
+        user: Django User object
+        overwrite: Boolean variable controlling whether existing layers
+                   can be overwritten by this operation. Default is False
+    Output
+        list of layer objects
+    """
+
+    msg = ('Argument %s to save_directory_to_geonode is not a valid directory.'
+           % directory)
+    assert os.path.isdir(directory), msg
+
+    layers = []
+    for root, dirs, files in os.walk(directory):
+        for short_filename in files:
+            basename, extension = os.path.splitext(short_filename)
+            filename = os.path.join(root, short_filename)
+            try:
+                layer = save_to_geonode(filename,
+                                        user=user,
+                                        overwrite=overwrite)
+
+            except RisikoException, e:
+                msg = ('Filename "%s" could not be uploaded. '
+                       'Error was: %s' % (filename, str(e)))
+                #logger.info(msg)
+                print msg
+            else:
+                layers.append(layer)
+
+    # Return layers that successfully uploaded
+    return layers
+
+def save_to_geonode(incoming, user=None, title=None, overwrite=False):
+    """Save a files to local Risiko GeoNode
+
+    Input
+        incoming: Either layer file or directory
+        user: Django User object
+        title: If specified, it will be applied to all files. If None
+               filenames will be used to infer titles.
+        overwrite: Boolean variable controlling whether existing layers
+                   can be overwritten by this operation. Default is False
+
+    Output
+        layer object or list of layer objects
+    """
+
+    msg = ('First argument to save_to_geonode must be a string. '
+           'I got %s' % incoming)
+    assert isinstance(incoming, basestring), msg
+
+    if os.path.isdir(incoming):
+        # Upload all valid layer files in this dir recursively
+
+        save_directory_to_geonode(incoming, title=title, user=user,
+                                  overwrite=overwrite)
+    elif os.path.isfile(incoming):
+        # Upload single file (using its name as title)
+        basename, ext = os.path.splitext(incoming)
+
+        if title is None:
+            title = os.path.split(basename)[-1]
+        layer = save_file_to_geonode(incoming, title=title, user=user,
+                                     overwrite=overwrite)
+        return layer
+    else:
+        msg = 'Argument %s was neither a file or a directory' % incoming
+        raise RisikoException(msg)

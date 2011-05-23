@@ -6,7 +6,7 @@ import os
 import unittest
 import urllib2
 from impact.auth import create_risiko_superuser
-from risiko.utilities import save_to_geonode
+from risiko.utilities import save_to_geonode, RisikoException
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_test_data')
@@ -158,7 +158,7 @@ class Test_utilities(unittest.TestCase):
         """Uploading a good shapefile
         """
         thefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
-        uploaded = save_to_geonode(thefile, user=self.user)
+        uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
         check_layer(uploaded)
 
     def test_bad_shapefile(self):
@@ -169,12 +169,12 @@ class Test_utilities(unittest.TestCase):
                                'lembang_schools_percentage_loss.shp')
         try:
             uploaded = save_to_geonode(thefile, user=self.user)
-        except GeoNodeException, e:
+        except RisikoException, e:
             pass
         except Exception, e:
             msg = ('Was expecting a %s, got %s instead.' %
-                   (GeoNodeException, type(e)))
-            assert e is GeoNodeException, msg
+                   (RisikoException, type(e)))
+            assert e is RisikoException, msg
 
     def test_tiff(self):
         """Uploading a good tiff
@@ -224,43 +224,37 @@ class Test_utilities(unittest.TestCase):
             assert False, msg
 
     def test_non_existing_file(self):
-        """Verify a GeoNodeException is returned for not existing file
+        """Verify a RisikoException is returned for not existing file
         """
         sampletxt = os.path.join(TEST_DATA, 'smoothoperator.shp')
         try:
             save_to_geonode(sampletxt, user=self.user)
-        except GeoNodeException, e:
+        except RisikoException, e:
             pass
         else:
             msg = ('Expected an exception for non existing file')
             assert False, msg
 
     def test_non_existing_dir(self):
-        """Verify a GeoNodeException is returned for not existing dir
+        """Verify a RisikoException is returned for not existing dir
         """
         sampletxt = os.path.join(TEST_DATA, 'smoothoperator')
         try:
-            uploaded_files = upload(sampletxt, user=self.user)
-            for uploaded in uploaded_files:
+            uploaded_layers = save_to_geonode(sampletxt, user=self.user)
+            for uploaded in uploaded_layers:
                 print uploaded
-        except GeoNodeException, e:
+        except RisikoException, e:
             pass
         else:
             msg = ('Expected an exception for non existing dir')
             assert False, msg
 
-    def Xtest_single_file_batch(self):
-        """Test single file using batch upload function
+    def test_another_asc(self):
+        """Test single file upload of real ASCII file
         """
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        uploaded_files = upload(thefile, user=self.user)
-        i = 0
-        for uploaded in uploaded_files:
-            layer = Layer.objects.get(name=uploaded['name'])
-            check_layer(layer)
-            i += 1
-        msg = ('Only one file was expected and got %d' % i)
-        assert i == 1, msg
+        layer = save_to_geonode(thefile, user=self.user)
+        check_layer(layer)
 
     def test_cleanup(self):
         """Test the cleanup functions in the utils module
@@ -306,7 +300,7 @@ if __name__ == '__main__':
         _logger = logging.getLogger(_module)
         _logger.addHandler(logging.StreamHandler())
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-        _logger.setLevel(logging.WARNING)
+        _logger.setLevel(logging.ERROR)
 
     suite = unittest.makeSuite(Test_utilities, 'test')
     runner = unittest.TextTestRunner(verbosity=2)

@@ -121,7 +121,7 @@ def calculate(request, save_output=dummy_save):
 
     # Upload result to internal GeoServer
     logger.info('- Uploading impact layer %s' % impact_filename)
-    result = save_output(filename=impact_filename,
+    result = save_output(impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
     logger.info('- Result available at %s.' % result.get_absolute_url())

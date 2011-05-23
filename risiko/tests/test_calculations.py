@@ -233,7 +233,7 @@ if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
 
     # Set up logging
-    for _module in ['geonode.maps.utils']:
+    for _module in ['geonode.maps.utils', 'risiko']:
         _logger = logging.getLogger(_module)
         _logger.addHandler(logging.StreamHandler())
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.

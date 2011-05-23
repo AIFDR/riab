@@ -290,7 +290,7 @@ for _module in ['geonode.maps.views', 'geonode.maps.gs_helpers',
     # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
     # The earlier a level appears in this list,
     # the more output it will produce in the log file.
-    _logger.setLevel(logging.WARNING)
+    _logger.setLevel(logging.ERROR)
 
 # Risiko logging providing high level info
 _logger = logging.getLogger('risiko')
