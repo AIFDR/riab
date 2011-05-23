@@ -63,6 +63,7 @@ def save_to_geonode(filename, user=None, title='Risiko layer',
 
         # Create temporary tif file for upload and check that the road is clear
         upload_filename = layername + '.tif'
+        #upload_filename = pathname + '.tif' # FIXME: I think this is better
         msg = ('You have asked to upload the ASCII file "%s" and to do so I '
                'must first convert it to the TIF format. However, there is '
                'already a file named "%s" so you have to remove that first '
@@ -77,6 +78,8 @@ def save_to_geonode(filename, user=None, title='Risiko layer',
         run(cmd,
             stdout='convert_%s.stdout' % layername,
             stderr='convert_%s.stderr' % layername)
+            #stdout='%s_asc2tif_conversion.stdout' % pathname,
+            #stderr='%s_asc2tif_conversion.stderr' % pathname)
     else:
         # The specified file is the one to upload
         upload_filename = filename

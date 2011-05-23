@@ -52,7 +52,7 @@ class Test_plugins(unittest.TestCase):
         # Check that every plugin has a requires line
         for plugin in plugin_list.values():
             requirements = requirements_collect(plugin)
-            msg = 'Should be more than 1 plugin'
+            msg = 'There were no requirements in plugin %s' % plugin
             assert(len(requirements) > 0), msg
 
             for req_str in requirements:
@@ -84,14 +84,15 @@ class Test_plugins(unittest.TestCase):
         except AssertionError:
             pass
         else:
-            assert False, 'Search should fail'
+            msg = 'Search should fail'
+            raise Exception(msg)
 
     def test_plugin_compatability(self):
         """Performance of the default plugins using internal GeoServer
         """
 
         plugin_list = get_plugins()
-        assert(len(plugin_list) > 0)
+        assert len(plugin_list) > 0
 
         geoserver = {'url': settings.GEOSERVER_BASE_URL + 'ows',
                      'name': 'Local Geoserver',
@@ -100,16 +101,16 @@ class Test_plugins(unittest.TestCase):
         layers = get_layers_metadata(geoserver['url'],
                                      geoserver['version'])
 
-        msg = 'Should > 1 layer in test geoserver'
-        assert(len(layers) > 0), msg
+        msg = 'There were no layers in test geoserver'
+        assert len(layers) > 0, msg
 
         annotated_plugins = [{'name': name,
                               'doc': f.__doc__,
                               'layers': compatible_layers(f, layers)}
                              for name, f in plugin_list.items()]
 
-        msg = 'no compatible layers returned'
-        assert(len(annotated_plugins) > 0), msg
+        msg = 'No compatible layers returned'
+        assert len(annotated_plugins) > 0, msg
 
     def test_django_plugins(self):
         """Django plugin functions can be retrieved correctly
