@@ -1,3 +1,3 @@
 from impact.plugins.earthquake import allen_fatality_model
-from impact.plugins.earthquake import haji_fatality_model
+#from impact.plugins.earthquake import haji_fatality_model
 from impact.plugins.earthquake import unspecific_building_impact_model

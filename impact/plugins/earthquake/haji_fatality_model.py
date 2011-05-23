@@ -11,10 +11,15 @@ class EmpiricalFatalityFunction(FunctionProvider):
 
     :author Hadi Ghasemi
     :rating 2
-    :param requires category=="hazard" and \
-                    layerType=="raster"
-    :param requires category=="exposure" and \
-                    layerType=="raster"
+
+    FIXME (Ole): Temporarily disabled this function until it has been tested.
+    To bring back, go to __init__.py and import again.
+    However, it should be possible to
+    1: Disable impact functions by manipulating the keyword requiremens
+    2: Not have to import the functions explicitly in __init__.py
+
+
+
     """
 
     @staticmethod
