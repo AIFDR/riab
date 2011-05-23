@@ -283,14 +283,19 @@ SERVE_MEDIA = DEBUG
 GEONODE_CLIENT_LOCATION = '/media/geonode/'
 
 import logging
-for _module in ['geonode.maps.views', 'geonode.maps.gs_helpers']:
+for _module in ['geonode.maps.views', 'geonode.maps.gs_helpers',
+                'geonode.maps.utils']:
     _logger = logging.getLogger(_module)
     _logger.addHandler(logging.StreamHandler())
     # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
     # The earlier a level appears in this list,
     # the more output it will produce in the log file.
-    _logger.setLevel(logging.DEBUG)
+    _logger.setLevel(logging.WARNING)
 
+# Risiko logging providing high level info
+_logger = logging.getLogger('risiko')
+_logger.addHandler(logging.StreamHandler())
+_logger.setLevel(logging.INFO)
 
 try:
     from local_settings import *
