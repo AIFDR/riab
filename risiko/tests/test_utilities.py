@@ -179,10 +179,7 @@ class Test_utilities(unittest.TestCase):
     def test_tiff(self):
         """Uploading a good tiff
         """
-        # FIXME (Ole): Use tif file present in the original test data set
-        #              and not an ascii file :-)
-        #              This means placing one there!
-        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
+        thefile = os.path.join(TEST_DATA, 'Population_2010_clip.tif')
         uploaded = save_to_geonode(thefile, user=self.user)
         check_layer(uploaded)
 
