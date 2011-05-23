@@ -249,7 +249,7 @@ class Test_utilities(unittest.TestCase):
             msg = ('Expected an exception for non existing dir')
             assert False, msg
 
-    def test_single_file_batch(self):
+    def Xtest_single_file_batch(self):
         """Test single file using batch upload function
         """
         thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
