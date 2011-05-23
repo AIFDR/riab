@@ -298,6 +298,21 @@ class Test_utilities(unittest.TestCase):
 
         #FIXME: Verify the record does not exist in GS or GN
 
+    def test_keywords(self):
+        """Check that keywords are read from the .keywords file
+        """
+        thefile = os.path.join(TEST_DATA, 'Lembang_Earthquake_Scenario.tif')
+        uploaded = save_to_geonode(thefile, user=self.user)
+        msg='No keywords found in layer %s' % uploaded.name
+        keywords = uploaded.keyword_list()
+        assert len(keywords)>0, msg 
+        #FIXME: Read the .keywords file manually and
+        # compare the values to what is stored.
+        keyword0 = 'category:hazard'
+        msg = 'Expected keyword "%s" but got "%s"' % (keyword0, keywords)
+        assert keywords[0] == keyword0, msg
+        print keywords
+
 if __name__ == '__main__':
     import logging
 
@@ -310,6 +325,6 @@ if __name__ == '__main__':
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
         _logger.setLevel(logging.ERROR)
 
-    suite = unittest.makeSuite(Test_utilities, 'test')
+    suite = unittest.makeSuite(Test_utilities, 'test_keywords')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
