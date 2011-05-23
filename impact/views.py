@@ -44,17 +44,9 @@ def calculate(request, save_output=dummy_save):
     start = datetime.datetime.now()
 
     if request.method == 'GET':
-        # FIXME: Hardwired.
-        # this will not be supported in the final version,
-        # it is here just for testing with default values
-        AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
-        impact_function_name = 'Earthquake Fatality Function'
-        bbox = '99.36,-2.199,102.237,0.00'
-        hazard_server = AIFDR_SERVER
-        hazard_layer = 'hazard:Earthquake_Ground_Shaking'
-        exposure_server = AIFDR_SERVER
-        exposure_layer = 'exposure:Population_2010'
-        keywords = 'earthquake, jakarta'
+        # FIXME: Add a basic form here to be able to generate the POST request.
+        return HttpResponse('This should be accessed by robots, not humans.'
+                            'In other words using HTTP POST instead of GET.')
     elif request.method == 'POST':
         data = request.POST
         impact_function_name = data['impact_function']
@@ -65,25 +57,6 @@ def calculate(request, save_output=dummy_save):
         bbox = data['bbox']
         keywords = data['keywords']
 
-    # FIXME (Ole): I don't believe this is able to handle multiple servers
-    #              When I tried to upload a hazard layer to the internal
-    #              server (localhost:8001) and use an exposure layer
-    #              from www.aifdr.org, we ran into the crash mentioned in
-    #              issue #75
-    #
-    #              Further debugging in get_metadata revealed that
-    #
-    # For the Hazard layer metadata was correctly retrieved:
-    # stuff == [{'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]
-    # layer_name = hazard_shakemap_20110505155015
-    # themetadata == [['hazard_shakemap_20110505155015', {'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]]
-    # server_url == http://localhost:8001/geoserver-geonode-dev/ows
-    #
-    # Whereas for the Exposure layer it wasn't
-    # stuff == []
-    # layer_name == exposure:AIBEP_schools
-    # themetadata == [['hazard_shakemap_20110505155015', {'category': 'hazard', 'layerType': 'raster', 'title': 'hazard_shakemap_20110505155015'}]]
-    # server_url == http://localhost:8001/geoserver-geonode-dev/ows
 
     theuser = get_guaranteed_valid_user(request.user)
 
