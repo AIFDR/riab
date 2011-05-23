@@ -13,13 +13,8 @@ class EmpiricalFatalityFunction(FunctionProvider):
     :rating 2
 
     FIXME (Ole): Temporarily disabled this function until it has been tested.
-    To bring back, go to __init__.py and import again.
-    However, it should be possible to
-    1: Disable impact functions by manipulating the keyword requiremens
-    2: Not have to import the functions explicitly in __init__.py
-
-
-
+    :param requires category=='doesnotexist'
+    :param requires title=='neverwas'
     """
 
     @staticmethod
