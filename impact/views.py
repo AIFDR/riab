@@ -1,4 +1,3 @@
-from __future__ import division
 """
 Risk in a Box HTTP API
 
@@ -22,6 +21,7 @@ All API calls start with:
     409 Unsuccessful POST, PUT, or DELETE
         (Will return an errors object).
 """
+from __future__ import division
 
 import inspect
 import datetime
@@ -35,6 +35,9 @@ from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
 from impact.auth import get_guaranteed_valid_user
+
+import logging
+logger = logging.getLogger('risiko')
 
 
 def calculate(request, save_output=dummy_save):
@@ -101,18 +104,27 @@ def calculate(request, save_output=dummy_save):
                               success=False)
     calculation.save()
 
+    logger.info('Performing requested calculation')
     # Download selected layer objects
+    logger.info('- Downloading hazard layer %s from %s' % (hazard_layer,
+                                                           hazard_server))
     H = download(hazard_server, hazard_layer, bbox)
+    logger.info('- Downloading exposure layer %s from %s' % (exposure_layer,
+                                                             exposure_server))
     E = download(exposure_server, exposure_layer, bbox)
 
-    # Call plugin
+    # Calculate result using specified impact function
+    logger.info('- Calculating impact using %s' % impact_function)
+
     impact_filename = calculate_impact(layers=[H, E],
                                        impact_function=impact_function)
 
     # Upload result to internal GeoServer
+    logger.info('- Uploading impact layer %s' % impact_filename)
     result = save_output(filename=impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
+    logger.info('- Result available at %s.' % result.get_absolute_url())
 
     calculation.layer = result.get_absolute_url()
     calculation.success = True
