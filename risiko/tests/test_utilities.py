@@ -66,8 +66,7 @@ class Test_utilities(unittest.TestCase):
     def tearDown(self):
         pass
 
-    # FIXME (Ole): Remove this test once it has been moved to GeoNode
-    def Xtest_layer_upload(self):
+    def test_layer_upload(self):
         """Test that layers can be uploaded to running GeoNode/GeoServer
         """
         layers = {}
@@ -83,12 +82,13 @@ class Test_utilities(unittest.TestCase):
                     expected_layers.append(os.path.join(datadir, filename))
                 else:
                     not_expected_layers.append(os.path.join(datadir, filename))
-        uploaded = upload(datadir, user=self.user)
+        # Upload
+        uploaded = save_to_geonode(datadir, user=self.user, overwrite=True)
 
         for item in uploaded:
             errors = 'errors' in item
             if errors:
-                # should this file have been uploaded?
+                # Should this file have been uploaded?
                 if item['file'] in not_expected_layers:
                     continue
                 msg = 'Could not upload %s. ' % item['file']
@@ -302,6 +302,6 @@ if __name__ == '__main__':
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
         _logger.setLevel(logging.ERROR)
 
-    suite = unittest.makeSuite(Test_utilities, 'test')
+    suite = unittest.makeSuite(Test_utilities, 'test_layer_up')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

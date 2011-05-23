@@ -1,7 +1,9 @@
-from geonode.maps.utils import file_upload
-import logging
-
+from geonode.maps.utils import file_upload, GeoNodeException
 import os
+
+import logging
+logger = logging.getLogger('risiko')
+
 
 class RisikoException(Exception):
     pass
@@ -85,22 +87,25 @@ def save_file_to_geonode(filename, user=None, title='Risiko layer',
         upload_filename = filename
 
     # Upload
-    layer = file_upload(upload_filename,
-                        user=user,
-                        title=title,
-                        overwrite=overwrite)
+    try:
+        layer = file_upload(upload_filename,
+                            user=user,
+                            title=title,
+                            overwrite=overwrite)
+    except GeoNodeException, e:
+        # Layer did not upload, re-raise exception
+        raise RisikoException(e)
+    else:
+        # Return layer object
+        return layer
+    finally:
+        # Clean up in either case
+        if extension == '.asc':
+            os.remove(upload_filename)
+            os.remove(upload_filename + '.aux.xml')
 
-    # Clean up
-    # FIXME (Ole): Need a try-except-finally to clean up incase upload failed.
-    if extension == '.asc':
-        os.remove(upload_filename)
-        os.remove(upload_filename + '.aux.xml')
 
-    # Return layer object
-    return layer
-
-
-def save_directory_to_geonode(directory, user=None, overwrite=True):
+def save_directory_to_geonode(directory, user=None, title=None, overwrite=True):
     """Upload a directory of spatial data files to GeoNode
 
     Input
@@ -121,18 +126,25 @@ def save_directory_to_geonode(directory, user=None, overwrite=True):
         for short_filename in files:
             basename, extension = os.path.splitext(short_filename)
             filename = os.path.join(root, short_filename)
-            try:
-                layer = save_to_geonode(filename,
-                                        user=user,
-                                        overwrite=overwrite)
 
-            except RisikoException, e:
-                msg = ('Filename "%s" could not be uploaded. '
-                       'Error was: %s' % (filename, str(e)))
-                #logger.info(msg)
-                print msg
+            # Attempt upload only if extension is recognised
+            if extension in ['.tif', '.asc', '.shp', '.zip']:
+                try:
+                    layer = save_to_geonode(filename,
+                                            user=user,
+                                            title=title,
+                                            overwrite=overwrite)
+
+                except RisikoException, e:
+                    msg = ('Filename "%s" could not be uploaded. '
+                           'Error was: %s' % (filename, str(e)))
+                    logger.info(msg)
+                else:
+                    layers.append(layer)
             else:
-                layers.append(layer)
+                msg = ('Did not attempt to upload filename "%s" '
+                       'as it is an unrecognised type ' % filename)
+                logger.info(msg)
 
     # Return layers that successfully uploaded
     return layers
@@ -167,6 +179,7 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=False):
 
         if title is None:
             title = os.path.split(basename)[-1]
+
         layer = save_file_to_geonode(incoming, title=title, user=user,
                                      overwrite=overwrite)
         return layer
