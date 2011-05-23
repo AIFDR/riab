@@ -46,14 +46,15 @@ def run(cmd, stdout=None, stderr=None):
         os.remove(stderr)
 
 
-def save_file_to_geonode(filename, user=None, title='Risiko layer',
+def save_file_to_geonode(filename, user=None, title=None,
                          overwrite=False):
     """Save a single layer file to local Risiko GeoNode
 
     Input
         filename: Layer filename of type as defined in LAYER_TYPES
         user: Django User object
-        title: String describing the layer
+        title: String describing the layer.
+               If None or '' the filename will be used.
         overwrite: Boolean variable controlling whether existing layers
                    can be overwritten by this operation. Default is False
     Output
@@ -98,6 +99,10 @@ def save_file_to_geonode(filename, user=None, title='Risiko layer',
     else:
         # The specified file is the one to upload
         upload_filename = filename
+
+    # User file name to derive title if not specified
+    if title is None or title == '':
+        title = os.path.split(basename)[-1]
 
     # Attempt to upload the layer
     try:
@@ -168,7 +173,7 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=False):
     Input
         incoming: Either layer file or directory
         user: Django User object
-        title: If specified, it will be applied to all files. If None
+        title: If specified, it will be applied to all files. If None or ''
                filenames will be used to infer titles.
         overwrite: Boolean variable controlling whether existing layers
                    can be overwritten by this operation. Default is False
@@ -190,9 +195,6 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=False):
     elif os.path.isfile(incoming):
         # Upload single file (using its name as title)
         basename, ext = os.path.splitext(incoming)
-
-        if title is None:
-            title = os.path.split(basename)[-1]
 
         layer = save_file_to_geonode(incoming, title=title, user=user,
                                      overwrite=overwrite)

@@ -66,7 +66,7 @@ then
     echo "You already have RIAB_HOME in your ~/.bash_aliases"
 else
     echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases
-    echo 'alias risiko-activate="source $RIAB_HOME/riab_env/bin/activate;cd $RIAB_HOME;echo  Risk In a Box virtual environment activated. Available commands are:; echo;echo risiko-test risiko-start risiko-stop risiko-clean risiko-upload;echo"' >> ~/.bash_aliases
+    echo 'alias risiko-activate="source $RIAB_HOME/riab_env/bin/activate;echo Risk In a Box virtual environment activated. Available commands are:; echo;echo risiko-test risiko-start risiko-stop risiko-clean risiko-upload risiko-populate;echo"' >> ~/.bash_aliases
     echo "Adding RIAB_HOME, RIAB_DATA and risiko-<commands> to your ~/.bash_aliases"
 fi
 
