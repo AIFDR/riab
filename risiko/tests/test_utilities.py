@@ -1,6 +1,6 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
-from impact.storage.utilities import get_layers_metadata
+from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
 from django.conf import settings
 import os
 import unittest
@@ -67,51 +67,41 @@ class Test_utilities(unittest.TestCase):
         pass
 
     def test_layer_upload(self):
-        """Test that layers can be uploaded to running GeoNode/GeoServer
+        """Layers can be uploaded to local GeoNode
         """
-        layers = {}
+
         expected_layers = []
         not_expected_layers = []
         datadir = TEST_DATA
-        BAD_LAYERS = ['lembang_schools_percentage_loss.shp']
+        BAD_LAYERS = ['grid_without_projection.asc']
 
-        for filename in os.listdir(datadir):
-            basename, extension = os.path.splitext(filename)
-            if extension.lower() in ['.asc', '.tif', '.shp', '.zip']:
-                if filename not in BAD_LAYERS:
-                    expected_layers.append(os.path.join(datadir, filename))
-                else:
-                    not_expected_layers.append(os.path.join(datadir, filename))
+        for root, dirs, files in os.walk(datadir):
+            for filename in files:
+                basename, extension = os.path.splitext(filename)
+
+                if extension.lower() in LAYER_TYPES:
+
+                    # FIXME(Ole): GeoNode converts names to lower case
+                    name = unicode(basename.lower())
+                    if filename not in BAD_LAYERS:
+                        expected_layers.append(name)
+                    else:
+                        not_expected_layers.append(name)
+
         # Upload
-        uploaded = save_to_geonode(datadir, user=self.user, overwrite=True)
+        layers = save_to_geonode(datadir, user=self.user, overwrite=True)
 
-        for item in uploaded:
-            errors = 'errors' in item
-            if errors:
-                # Should this file have been uploaded?
-                if item['file'] in not_expected_layers:
-                    continue
-                msg = 'Could not upload %s. ' % item['file']
-                assert errors is False, msg + 'Error was: %s' % item['errors']
-                msg = ('Upload should have returned either "name" or '
-                  '"errors" for file %s.' % item['file'])
-            else:
-                assert 'name' in item, msg
-                layers[item['file']] = item['name']
+        # Check integrity
+        layer_names = [l.name for l in layers]
 
-        msg = ('There were %s compatible layers in the directory,'
-               ' but only %s were sucessfully uploaded' %
-               (len(expected_layers), len(layers)))
-        assert len(layers) == len(expected_layers), msg
+        for layer in layers:
+            msg = 'Layer %s was uploaded but not expected' % layer.name
+            assert layer.name in expected_layers, msg
 
-        uploaded_layers = [layer for layer in layers.items()]
-
-        for layer in expected_layers:
-            msg = ('The following file should have been uploaded'
-                   'but was not: %s. ' % layer)
-            assert layer in layers, msg
-
-            layer_name = layers[layer]
+        for layer_name in expected_layers:
+            msg = ('The following layer should have been uploaded '
+                   'but was not: %s' % layer_name)
+            assert layer_name in layer_names, msg
 
             # Check the layer is in the Django database
             Layer.objects.get(name=layer_name)
@@ -134,35 +124,37 @@ class Test_utilities(unittest.TestCase):
                 raise GeoNodeException(msg)
 
         server_url = settings.GEOSERVER_BASE_URL + 'ows?'
+
         # Verify that the GeoServer GetCapabilities record is accesible:
         metadata = get_layers_metadata(server_url, '1.0.0')
         msg = ('The metadata list should not be empty in server %s'
                 % server_url)
         assert len(metadata) > 0, msg
-        # Check the keywords are recognized too
+
+        # FIXME(Ole): Check the keywords are recognized too
 
     def test_extension_not_implemented(self):
-        """Verify a GeoNodeException is returned for not compatible extensions
+        """RisikoException is returned for not compatible extensions
         """
         sampletxt = os.path.join(TEST_DATA,
                                  'lembang_schools_percentage_loss.dbf')
         try:
             save_to_geonode(sampletxt, user=self.user)
-        except GeoNodeException, e:
+        except RisikoException, e:
             pass
         else:
             msg = ('Expected an exception for invalid .dbf type')
-            assert False, msg
+            raise Exception(msg)
 
     def test_shapefile(self):
-        """Uploading a good shapefile
+        """Shapefile can be uploaded
         """
         thefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
         check_layer(uploaded)
 
-    def test_bad_shapefile(self):
-        """Verifying GeoNode complains about a shapefile without .prj
+    def test_shapefile_without_prj(self):
+        """Shapefile with without prj file is rejected
         """
 
         thefile = os.path.join(TEST_DATA,
@@ -176,22 +168,45 @@ class Test_utilities(unittest.TestCase):
                    (RisikoException, type(e)))
             assert e is RisikoException, msg
 
+    def test_asciifile_without_prj(self):
+        """ASCII file with without prj file is rejected
+        """
+
+        thefile = os.path.join(TEST_DATA,
+                               'grid_without_projection.asc')
+
+        try:
+            uploaded = save_to_geonode(thefile, user=self.user)
+        except RisikoException, e:
+            pass
+        except Exception, e:
+            msg = ('Was expecting a %s, got %s instead.' %
+                   (RisikoException, type(e)))
+            assert e is RisikoException, msg
+
     def test_tiff(self):
-        """Uploading a good tiff
+        """GeoTIF file can be uploaded
         """
         thefile = os.path.join(TEST_DATA, 'Population_2010_clip.tif')
         uploaded = save_to_geonode(thefile, user=self.user)
         check_layer(uploaded)
 
     def test_asc(self):
-        """Uploading a good .asc
+        """ASCII file can be uploaded
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
-        uploaded = save_to_geonode(thefile, user=self.user)
+        uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
         check_layer(uploaded)
 
+    def test_another_asc(self):
+        """Real world ASCII file can be uploaded
+        """
+        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
+        layer = save_to_geonode(thefile, user=self.user)
+        check_layer(layer)
+
     def test_repeated_upload(self):
-        """Upload the same file more than once
+        """The same file can be uploaded more than once
         """
         thefile = os.path.join(TEST_DATA, 'test_grid.asc')
         uploaded1 = save_to_geonode(thefile, overwrite=True,
@@ -210,7 +225,7 @@ class Test_utilities(unittest.TestCase):
         assert uploaded1.name != uploaded3.name, msg
 
     def test_layer_name_validation(self):
-        """Test get_valid_layer_name utility function in corner cases
+        """Exception is raised when get_valid_layer_name is given a time object
         """
         from geonode.maps.utils import get_valid_layer_name
         import datetime
@@ -224,7 +239,7 @@ class Test_utilities(unittest.TestCase):
             assert False, msg
 
     def test_non_existing_file(self):
-        """Verify a RisikoException is returned for not existing file
+        """RisikoException is returned for non existing file
         """
         sampletxt = os.path.join(TEST_DATA, 'smoothoperator.shp')
         try:
@@ -236,7 +251,7 @@ class Test_utilities(unittest.TestCase):
             assert False, msg
 
     def test_non_existing_dir(self):
-        """Verify a RisikoException is returned for not existing dir
+        """RisikoException is returned for non existing dir
         """
         sampletxt = os.path.join(TEST_DATA, 'smoothoperator')
         try:
@@ -249,15 +264,8 @@ class Test_utilities(unittest.TestCase):
             msg = ('Expected an exception for non existing dir')
             assert False, msg
 
-    def test_another_asc(self):
-        """Test single file upload of real ASCII file
-        """
-        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
-        layer = save_to_geonode(thefile, user=self.user)
-        check_layer(layer)
-
     def test_cleanup(self):
-        """Test the cleanup functions in the utils module
+        """Cleanup functions in the utils module work
         """
         from geonode.maps.utils import cleanup
 
@@ -296,12 +304,12 @@ if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
 
     # Set up logging
-    for _module in ['geonode.maps.utils']:
+    for _module in ['geonode.maps.utils', 'risiko']:
         _logger = logging.getLogger(_module)
         _logger.addHandler(logging.StreamHandler())
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
         _logger.setLevel(logging.ERROR)
 
-    suite = unittest.makeSuite(Test_utilities, 'test_layer_up')
+    suite = unittest.makeSuite(Test_utilities, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

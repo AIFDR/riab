@@ -13,6 +13,10 @@ from owslib.etree import etree
 # The projection string depends on the gdal version
 DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
 
+# Spatial layer file extensions that are recognised in Risiko
+# FIXME: Perhaps add '.gml', '.zip', ...
+LAYER_TYPES = ['.shp', '.asc', '.tif', '.tiff', '.geotif', '.geotiff']
+
 # Map between extensions and ORG drivers
 DRIVER_MAP = {'.shp': 'ESRI Shapefile',
               '.gml': 'GML',

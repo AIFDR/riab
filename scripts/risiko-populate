@@ -14,12 +14,15 @@ import sys
 import os
 import string
 
-from geonode.maps.utils import upload, file_upload, GeoNodeException
 from impact.tests.utilities import DEMODATA
+from risiko.utilities import save_to_geonode, RisikoException
+from impact.auth import create_risiko_superuser
 
 if __name__ == '__main__':
     print 'Uploading all files from %s to Risiko' % DEMODATA
 
-    uploaded = upload(DEMODATA)
-    for item in uploaded:
-        print 'Uploading %s' % item['name']
+    user = create_risiko_superuser()
+    layers = save_to_geonode(DEMODATA, user=user, overwrite=True)#, verbose=True)
+    print 'Layers uploaded:'
+    for layer in layers:
+        print '    %s' % layer

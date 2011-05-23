@@ -9,8 +9,8 @@ where filename can be either a single file or a directory of files
 """
 
 import sys
-from geonode.maps.models import Layer
-from geonode.maps.utils import upload, file_upload
+from risiko.utilities import save_to_geonode, RisikoException
+from impact.auth import create_risiko_superuser
 
 def check_layer(uploaded):
     """Verify if an object is a valid Layer.
@@ -31,5 +31,8 @@ if __name__ == '__main__':
         usage()
     else:
         thefile = sys.argv[1]
-        uploaded = file_upload(thefile)
+
+        # FIXME (Ole): Expose overwrite to command line
+        user = create_risiko_superuser()
+        uploaded = save_to_geonode(thefile, user=user, overwrite=False)
         check_layer(uploaded)
