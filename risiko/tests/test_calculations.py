@@ -15,6 +15,7 @@ from impact.views import calculate
 from impact.storage.io import download
 from impact.storage.io import get_bounding_box
 from impact.storage.io import read_layer
+from impact.storage.io import get_metadata
 
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
@@ -255,19 +256,16 @@ class Test_calculations(unittest.TestCase):
             # - This depends on what you can get from geonode
 
             # Get geotransform from GeoNode
-            gn_geotransform = get_geotransform(layer)
+            layer_name = layer.name
+            server_url = layer.get_absolute_url()
+            metadata = get_metadata(server_url, layer_name)
+
+            gn_geotransform = metadata['geo_transform']
 
             msg = ('Geotransform obtained from GeoNode for layer %s '
                    'was not correct. I got %s but expected %s'
                    '' % (name, gn_geotransform, ref_geotransform))
             assert numpy.allclose(ref_geotransform, gn_geotransform), msg
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
     import logging
