@@ -112,8 +112,9 @@ def get_layers_metadata(url, version, feature=None):
         keywordstr = 'Keywords'
         keywords_base = {'layerType': 'feature'}
 
-    if feature == None:
-        layers = get_layers_metadata(url, version, feature=False)  # raster
+    if feature is None:
+        # Layer must be a raster - try again
+        layers = get_layers_metadata(url, version, feature=False)
         layers.extend(get_layers_metadata(url, version, feature=True))
         return layers
 

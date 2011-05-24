@@ -255,7 +255,7 @@ class Test_calculations(unittest.TestCase):
             # - This depends on what you can get from geonode
 
             # Get geotransform from GeoNode
-            gn_geotransform = get_geotransform_from_geonode(layer)
+            gn_geotransform = get_geotransform(layer)
 
             msg = ('Geotransform obtained from GeoNode for layer %s '
                    'was not correct. I got %s but expected %s'
