@@ -227,6 +227,48 @@ class Test_calculations(unittest.TestCase):
             # Make only a few points were 0
             assert count > len(attributes) - 4
 
+    def test_geotransform_from_geonode(self):
+        """Geotransforms of GeoNode layers can be correctly determined
+        """
+
+        for filename in ['lembang_mmi_hazmap.asc',
+                         'test_grid.asc',
+                         'shakemap_padang_20090930.asc',
+                         'Population_2010_clip.tif']:
+
+            # Upload file to GeoNode
+            f = os.path.join(TEST_DATA, filename)
+            layer = save_to_geonode(f, user=self.user)
+            name = '%s:%s' % (layer.workspace, layer.name)
+
+            # Read raster file and obtain reference resolution
+            R = read_layer(f)
+            ref_geotransform = R.get_geotransform()
+
+            # ARIEL: geotransform is a vector of six numbers:
+            #
+            #          (top left x, w-e pixel resolution, rotation,
+            #           top left y, rotation, n-s pixel resolution).
+            #
+            # We should (at least) use elements 0, 1, 3, 5
+            # to uniquely determine if rasters are aligned
+            # - This depends on what you can get from geonode
+
+            # Get geotransform from GeoNode
+            gn_geotransform = get_geotransform_from_geonode(layer)
+
+            msg = ('Geotransform obtained from GeoNode for layer %s '
+                   'was not correct. I got %s but expected %s'
+                   '' % (name, gn_geotransform, ref_geotransform))
+            assert numpy.allclose(ref_geotransform, gn_geotransform), msg
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     import logging
 
@@ -241,6 +283,6 @@ if __name__ == '__main__':
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
         _logger.setLevel(logging.WARNING)
 
-    suite = unittest.makeSuite(Test_calculations, 'test')
+    suite = unittest.makeSuite(Test_calculations, 'test_geotrans')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
