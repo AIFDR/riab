@@ -304,20 +304,20 @@ class Test_utilities(unittest.TestCase):
         thefile = os.path.join(TEST_DATA, 'Lembang_Earthquake_Scenario.asc')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
 
-
-        print uploaded.keyword_list()
-        print uploaded.keywords
-
         keywords = uploaded.keywords
         msg = 'No keywords found in layer %s' % uploaded.name
         assert len(keywords) > 0, msg
 
-        # FIXME: Read the .keywords file manually and
-        # compare the values to what is stored.
-        keyword0 = 'category:hazard'
-        msg = 'Expected keyword "%s" but got "%s"' % (keyword0, keywords)
-        assert keywords[0] == keyword0, msg
-        print keywords
+        keywords_file = thefile.replace('.asc', '.keywords')
+        f = open(keywords_file, 'r')
+        keywords_list = []
+        for line in f.readlines():
+            keywords_list.append(line.strip())
+        f.close()
+
+        for keyword in keywords_list:
+            msg = 'Could not find keyword "%s" in %s' % (keyword, keywords_list)
+            assert keyword in keywords_list, msg
 
 if __name__ == '__main__':
     import logging
