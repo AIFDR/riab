@@ -108,13 +108,14 @@ def save_file_to_geonode(filename, user=None, title=None,
     # and create a keywords list from there.
     # It is assumed that the keywords are separated
     # by new lines.
-    keywords = []
-    keywords_file = basename + '.keywords'
-    if os.path.exists(keywords_file):
-        f = open(keywords_file, 'r')
+    keyword_list = []
+    keyword_file = basename + '.keywords'
+    if os.path.exists(keyword_file):
+        f = open(keyword_file, 'r')
         for line in f.readlines():
-            keywords.append(line.strip())
+            keyword_list.append(line.strip())
         f.close()
+    keywords = ' '.join(keyword_list)
 
     # Attempt to upload the layer
     try:
@@ -122,7 +123,7 @@ def save_file_to_geonode(filename, user=None, title=None,
         layer = file_upload(upload_filename,
                             user=user,
                             title=title,
-                            keywords=' '.join(keywords),
+                            keywords=keywords,
                             overwrite=overwrite)
     except GeoNodeException, e:
         # Layer did not upload. Convert GeoNodeException to RisikoException

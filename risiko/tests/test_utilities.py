@@ -301,12 +301,18 @@ class Test_utilities(unittest.TestCase):
     def test_keywords(self):
         """Check that keywords are read from the .keywords file
         """
-        thefile = os.path.join(TEST_DATA, 'Lembang_Earthquake_Scenario.tif')
-        uploaded = save_to_geonode(thefile, user=self.user)
-        msg='No keywords found in layer %s' % uploaded.name
-        keywords = uploaded.keyword_list()
-        assert len(keywords)>0, msg 
-        #FIXME: Read the .keywords file manually and
+        thefile = os.path.join(TEST_DATA, 'Lembang_Earthquake_Scenario.asc')
+        uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
+
+
+        print uploaded.keyword_list()
+        print uploaded.keywords
+
+        keywords = uploaded.keywords
+        msg = 'No keywords found in layer %s' % uploaded.name
+        assert len(keywords) > 0, msg
+
+        # FIXME: Read the .keywords file manually and
         # compare the values to what is stored.
         keyword0 = 'category:hazard'
         msg = 'Expected keyword "%s" but got "%s"' % (keyword0, keywords)
