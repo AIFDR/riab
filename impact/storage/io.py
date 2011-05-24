@@ -82,7 +82,7 @@ def write_point_data(data, projection, geometry, filename):
 WCS_TEMPLATE = '%s?version=1.0.0' + \
                       '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
                       'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
-                      '&resx=0.030741064&resy=0.030741064'
+                      '&resx=0.005&resy=0.005'
 
 # FIXME (Ole): Why is maxFeatures hard coded?
 WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
