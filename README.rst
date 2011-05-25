@@ -35,7 +35,7 @@ Development installation
 
 This is for those who either want to try out the software and/or modify it. For installing Risiko as a public web server please see instructions for production installation. 
 
-To install a RISIKO development environment, cd to your favorite development area and run the following::
+To install a RISIKO development environment, start a terminal window, cd to your favorite development area and run the following::
 
  wget https://github.com/AIFDR/riab/raw/master/scripts/risiko-install --no-check-certificate
  bash risiko-install
