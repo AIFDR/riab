@@ -72,3 +72,21 @@ You can update an existing production system to the latest revision with the com
 
 
 The production deployment procedure is scripted in the file fabfile.py and the fabric framework is documented at http://docs.fabfile.org
+
+
+===========
+LIMITATIONS
+===========
+
+Risiko is a very new project. The current code development started in earnest in March 2011 and there is still much to be done.
+However, we work on the philosophy that stakeholders should have access to the development and source code from the very beginning and invite comments, suggestions and contributions.
+ 
+
+As such, Risiko currently has some major limitations, including
+
+ * Risiko does not yet run with data loaded locally. Rather it points to a GeoServer with demo data at www.aifdr.org:8080/geoserver
+ * Hazard layers must be provided as raster data
+ * Exposure data must be either raster data or point vector data
+ * All data must be provided in WGS84 geographic coordinates
+ * Neither AIFDR nor GFDRR take any responsibility for the correctness of outputs from Risiko or decisions derived as a consequence
+
