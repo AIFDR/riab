@@ -98,33 +98,37 @@ def get_bounding_box(filename):
 
 
 def get_metadata(server_url, layer_name):
-    """Uses OWS services to determine if the data is raster or vector
+    """Uses OWS services to get the metadata for a given layer
     """
-
+    #FIXME: Make sure server_url is an actual url
     themetadata = get_layers_metadata(server_url, version='1.0.0')
 
-    stuff = [x[1] for x in themetadata if x[0] == layer_name]
-
-    # FIXME: This is Ted's hack to get keywords from name until
-    # a proper keyword's upload has been written
-    # FIXME (Ole): Don't like returning None when that is not
-    # checked by the callee. Could we do an exception Ted?
-    #
-    # See issue #75 for more details.
-
-    if len(stuff) == 0:
-        if ':' in layer_name:
-            name = layer_name.split(':')[1]
-            stuff = [x[1] for x in themetadata if x[0] == name]
-
-            if len(stuff) == 0:
-                return None
+    layer_metadata = None
+    for x in themetadata:
+        # This is taking care of differences between wcs and wfs layers
+        # wfs has a preceding workspace but wcs does not.
+        if ':' in x[0]:
+            x_layer_name = x[0].split(':')[1]
         else:
-            return None
+            x_layer_name = x[0]
 
-    assert len(stuff) > 0
-    layer_metadata = stuff[0]
-    assert layer_metadata is not None
+        if ':' in layer_name:
+            plain_layer_name = layer_name.split(':')[1]
+        else:
+            plain_layer_name = layer_name
+
+        if x_layer_name == layer_name:
+            # We expect only one element in this list, if there is more
+            # than one, we will use the first one.
+            layer_metadata = x[1]
+            break
+
+    msg = 'There is no metadata in server %s for layer %s' % (server_url, layer_name)
+    assert layer_metadata is not None, msg
+
+    # FIXME: We need a geotransform attribute in get_metadata
+    # Let's add it here for the time being
+
     return layer_metadata
 
 
@@ -173,26 +177,11 @@ def download(server_url, layer_name, bbox):
                'format [west, south, east, north]. I got %s' % bbox)
         raise Exception(msg)
 
-    # In GeoNode/GeoServer it is OK to pass a raster name without workspace
-    # whereas vector layers must have one.
-    # Here we enforce the requirement to always provide workspace
-    msg = ('Layer must have the format "workspace:name". I got "%s".'
-           % layer_name)
-    # FIXME (Ole): I have disabled this test because raster layer
-    # names come from GeoServer without preceding workspace.
-    # This has been raised in issue #39
-    #assert layer_name.find(':') > -1 and len(layer_name.split(':')) == 2, msg
-
-    # FIXME(Ole): Throw meaningful exception when invalid workspace and
-    #             layer names are encountered.
-    #             Currently something bad is downloaded in those cases.
-    #             See uncommented test for this in test_calculation
-
     # Create REST request and download file
     template = None
     layer_metadata = get_metadata(server_url, layer_name)
 
-    data_type = layer_metadata['layerType']
+    data_type = layer_metadata['layer_type']
     if data_type == 'feature':
         template = WFS_TEMPLATE
         suffix = '.zip'
