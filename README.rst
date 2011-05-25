@@ -19,9 +19,11 @@ INSTALLATION
 These are the instructions for installation of Risiko in development mode (for changing the software) and production mode (for deploying on a server).
 
 
------------
-Assumptions
------------
+-------------------
+System Requirements
+-------------------
+
+ - A standard PC with at least 4GB of RAM.
  - The operating system is a recent version of Ubuntu Linux. Risiko has been tested on versions 10.04 and 10.10 (32 and 64 bit).
  - The platform is using the default /etc/sources.list as it comes in a fresh Ubuntu installation. You may want to change this to a local mirror if the internet connection is slow (see e.g. https://help.ubuntu.com/community/Repositories/CommandLine) for details.
 
