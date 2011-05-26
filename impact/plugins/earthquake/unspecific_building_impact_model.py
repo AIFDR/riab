@@ -7,10 +7,10 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
     """Risk plugin for earthquake damage to schools
 
     :param requires category=="hazard" and \
-                    layerType=="raster"
+                    layer_type=="raster"
     :param requires category=="exposure" and \
                     subcategory.startswith("buildings") and \
-                    layerType=="feature"
+                    layer_type=="feature"
     """
 
     @staticmethod

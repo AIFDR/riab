@@ -10,10 +10,10 @@ class TephraImpactFunction(FunctionProvider):
 
     :param requires category=="hazard" and \
                     subcategory.startswith("tephra") and \
-                    layerType=="raster"
+                    layer_type=="raster"
     :param requires category=="exposure" and \
                     subcategory.startswith("building") and \
-                    layerType=="feature"
+                    layer_type=="feature"
     """
 
     @staticmethod

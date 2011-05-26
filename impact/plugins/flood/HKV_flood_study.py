@@ -12,10 +12,10 @@ class FloodImpactFunction(FunctionProvider):
     :rating 1
     :param requires category=="hazard" and \
                     subcategory.startswith("flood") and \
-                    layerType=="raster"
+                    layer_type=="raster"
     :param requires category=="exposure" and \
                     subcategory.startswith("population") and \
-                    layerType=="raster"
+                    layer_type=="raster"
     """
 
     @staticmethod

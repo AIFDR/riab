@@ -208,7 +208,7 @@ class MetadataReader(object):
             layer_name = name[0].text
             metadata['title'] = title[0].text
 
-            if self.layer_type == 'wcs':
+            if self.service_type == 'wcs':
                 kwds = kwds[0].findall(self.NAMESPACE + 'keyword')
 
             if kwds is not None:

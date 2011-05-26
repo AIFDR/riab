@@ -82,7 +82,11 @@ def save_file_to_geonode(filename, user=None, title=None,
     if os.path.exists(keyword_file):
         f = open(keyword_file, 'r')
         for line in f.readlines():
-            keyword_list.append(line.strip())
+            # Strip any spaces after or before the colons if present
+            raw_keyword = line.strip()
+            if ':' in raw_keyword:
+                keyword = ':'.join([x.strip() for x in raw_keyword.split(':')])
+            keyword_list.append(keyword)
         f.close()
 
     # Take care of file types

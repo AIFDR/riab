@@ -9,10 +9,10 @@ class EarthquakeFatalityFunction(FunctionProvider):
     :rating 1
     :param requires category=="hazard" and \
                 subcategory.startswith("earthquake") and \
-                layerType=="raster"
+                layer_type=="raster"
     :param requires title=='Population_2010' and \
                 subcategory.startswith("population") and \
-                layerType=="raster"
+                layer_type=="raster"
     """
 
     @staticmethod
