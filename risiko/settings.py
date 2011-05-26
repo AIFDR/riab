@@ -282,20 +282,23 @@ SERVE_MEDIA = DEBUG
 
 GEONODE_CLIENT_LOCATION = '/media/geonode/'
 
+# Logging debug information to a file.
 import logging
-for _module in ['geonode.maps.views', 'geonode.maps.gs_helpers',
-                'geonode.maps.utils']:
-    _logger = logging.getLogger(_module)
-    _logger.addHandler(logging.StreamHandler())
-    # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-    # The earlier a level appears in this list,
-    # the more output it will produce in the log file.
-    _logger.setLevel(logging.ERROR)
 
-# Risiko logging providing high level info
-_logger = logging.getLogger('risiko')
-_logger.addHandler(logging.StreamHandler())
-_logger.setLevel(logging.INFO)
+for _module in ['risiko', 'geonode']:
+
+    # Risiko logging providing high level info
+    # to $RIAB_HOME/logs/risiko.log or PROJECT_ROOT/risiko.log
+    if 'RIAB_HOME' in os.environ:
+        log_file = os.path.join(os.environ['RIAB_HOME'],
+                                'logs', 'risiko.log')
+    else:
+        log_file = os.path.join(PROJECT_ROOT, 'risiko.log')
+
+    _logger = logging.getLogger(_module)
+    _logger.addHandler(logging.FileHandler(log_file))
+    _logger.setLevel(logging.INFO)
+
 
 try:
     from local_settings import *

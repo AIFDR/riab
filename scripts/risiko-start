@@ -1,4 +1,5 @@
 $RIAB_HOME/tomcat/bin/catalina.sh start
 django-admin.py syncdb --noinput
+tail -n 0 -f $RIAB_HOME/logs/risiko.log &
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini
 $RIAB_HOME/tomcat/bin/catalina.sh stop

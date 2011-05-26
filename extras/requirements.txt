@@ -4,7 +4,7 @@ django-avatar==2.0a1
 django-extensions==0.6
 django-nose==0.1.2
 django-profiles==0.2
-django-registration==0.7
+https://bitbucket.org/ubernostrum/django-registration/get/tip.zip
 django-rosetta==0.6.0
 django-staticfiles==1.0
 dj.paste==1.9
