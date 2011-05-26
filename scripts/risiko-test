@@ -1,6 +1,7 @@
 #!/bin/bash
 if [ $# -eq 0 ];then
     args="risiko impact"
+    EXTRA_INFO="yes"
 else
     args=$@
 fi
@@ -8,22 +9,31 @@ fi
 export NOSE_WITH_COVERAGE=True
 echo; echo ">>> Cleaning up environment, deleting data from the development server"
 risiko-clean
+
 echo; echo ">>> Starting tomcat server with GeoServer and GeoNetwork"
 $RIAB_HOME/tomcat/bin/catalina.sh start
 echo; echo ">>> Starting Django server with GeoNode"
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
-echo; echo ">>> Running pylint to check code quality. See pylint.output for details"
-cd $RIAB_HOME/riab/;pylint --disable=C0103 risiko impact > pylint.output 2> pylint.err
-echo; echo ">>> Reporting FIXME's and TODO's in source code"
-cd $RIAB_HOME/riab/;grep -n -R --exclude *.pyc --exclude *.log --exclude *.log.* FIXME risiko impact
-cd $RIAB_HOME/riab/;grep -n -R --exclude *.pyc --exclude *.log --exclude *.log.* TODO risiko impact
-echo; echo ">>> Reporting PEP8 non compliances"
-cd $RIAB_HOME/riab/;pep8 --repeat --ignore=E203 risiko impact
-echo; echo  ">>> Total number of lines: "
-echo -n "   In impact: "
-find $RIAB_HOME/riab/impact -name '*.py' -print0 | xargs -0 cat | wc -l
-echo -n "   In risiko: "
-find $RIAB_HOME/riab/risiko -name '*.py' -print0 | xargs -0 cat | wc -l
+
+if [ -z "$EXTRA_INFO" ]; then
+    echo; echo ">>> Skipping pylint and pep8 check because we are not running the full suite"
+    # give Geoserver a little room to boot properly
+    sleep 15
+else
+    echo; echo ">>> Running pylint to check code quality. See pylint.output for details"
+    cd $RIAB_HOME/riab/;pylint --disable=C0103 risiko impact > pylint.output 2> pylint.err
+    echo; echo ">>> Reporting FIXME's and TODO's in source code"
+    cd $RIAB_HOME/riab/;grep -n -R --exclude *.pyc --exclude *.log --exclude *.log.* FIXME risiko impact
+    cd $RIAB_HOME/riab/;grep -n -R --exclude *.pyc --exclude *.log --exclude *.log.* TODO risiko impact
+    echo; echo ">>> Reporting PEP8 non compliances"
+    cd $RIAB_HOME/riab/;pep8 --repeat --ignore=E203 risiko impact
+    echo; echo  ">>> Total number of lines: "
+    echo -n "   In impact: "
+    find $RIAB_HOME/riab/impact -name '*.py' -print0 | xargs -0 cat | wc -l
+    echo -n "   In risiko: "
+    find $RIAB_HOME/riab/risiko -name '*.py' -print0 | xargs -0 cat | wc -l
+fi
+
 echo;echo ">>> Running unit tests"
 cd $RIAB_HOME/riab/risiko; ./manage.py test $args  --verbosity=0
 echo;echo ">>> Stopping all servers"
