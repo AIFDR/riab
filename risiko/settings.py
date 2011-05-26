@@ -58,7 +58,7 @@ NOSE_ARGS = [
 #      '--cover-tests',
       '--detailed-errors',
 #      '--with-xunit',
-#      '--with-color',
+      '--with-color',
 #      '--with-pdb',
       ]
 
