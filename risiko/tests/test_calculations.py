@@ -8,7 +8,7 @@ from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
 
-from impact.auth import create_risiko_superuser
+from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode
 
 from impact.views import calculate
@@ -45,7 +45,7 @@ class Test_calculations(unittest.TestCase):
     def setUp(self):
         """Create valid superuser
         """
-        self.user = create_risiko_superuser()
+        self.user = get_valid_user()
 
     def test_io(self):
         """Data can be uploaded and downloaded from internal GeoServer
@@ -260,14 +260,18 @@ class Test_calculations(unittest.TestCase):
             # Get geotransform from GeoNode
             layer_name = layer.name
             metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
-"""
-            gn_geotransform = metadata['geo_transform']
 
+            geotransform_name = 'geotransform'
+            msg = ('Could not find attribute "%s" in metadata. Values are: %s' %
+                    (geotransform_name, metadata.keys()))
+            assert geotransform_name in metadata, msg
+
+            gn_geotransform = metadata['geo_transform']
             msg = ('Geotransform obtained from GeoNode for layer %s '
                    'was not correct. I got %s but expected %s'
                    '' % (name, gn_geotransform, ref_geotransform))
             assert numpy.allclose(ref_geotransform, gn_geotransform), msg
-"""
+
 
 if __name__ == '__main__':
     import logging

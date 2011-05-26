@@ -5,7 +5,7 @@ from django.conf import settings
 import os
 import unittest
 import urllib2
-from impact.auth import create_risiko_superuser
+from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode, RisikoException
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
@@ -61,7 +61,7 @@ class Test_utilities(unittest.TestCase):
     def setUp(self):
         """Create valid superuser
         """
-        self.user = create_risiko_superuser()
+        self.user = get_valid_user()
 
     def tearDown(self):
         pass

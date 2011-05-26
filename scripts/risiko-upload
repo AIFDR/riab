@@ -11,6 +11,7 @@ where filename can be either a single file or a directory of files
 import sys
 from risiko.utilities import save_to_geonode, RisikoException
 from impact.auth import create_risiko_superuser
+from geonode.maps.models import Layer
 
 def check_layer(uploaded):
     """Verify if an object is a valid Layer.

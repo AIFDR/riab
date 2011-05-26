@@ -46,7 +46,7 @@ SITE_ID = 1
 # some problematic 3rd party apps
 TEST_RUNNER = 'risiko.tests.runner.RisikoTestRunner'
 NOSE_ARGS = [
-#      '--failed',
+      '--failed',
 #      '--stop',
       '--verbosity=2',
       '--cover-erase',
