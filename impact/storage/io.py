@@ -117,7 +117,7 @@ def get_metadata(server_url, layer_name):
         else:
             plain_layer_name = layer_name
 
-        if x_layer_name == layer_name:
+        if x_layer_name == plain_layer_name:
             # We expect only one element in this list, if there is more
             # than one, we will use the first one.
             layer_metadata = x[1]

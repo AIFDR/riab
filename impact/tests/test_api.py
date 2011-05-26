@@ -2,6 +2,7 @@ import unittest
 import os
 from django.test.client import Client
 from django.utils import simplejson as json
+from django.conf import settings
 
 # FIXME (Ole): Not sure it is good to rely on GeoNode inside
 #              the impact module. It might be better to move
@@ -10,12 +11,14 @@ from django.utils import simplejson as json
 from geonode.maps.utils import check_geonode_is_up
 from geonode.maps.models import Layer
 
+# Use the local GeoServer url inside GeoNode
+# The ows bit at the end if VERY important because
+# that is the endpoint of the OGC services.
+INTERNAL_SERVER_URL = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
 TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_test_data')
 
-# FIXME (Ole): Need to use local server when we have one
-AIFDR_SERVER = 'http://www.aifdr.org:8080/geoserver/ows'
 
 
 class Test_HTTP(unittest.TestCase):
@@ -58,10 +61,10 @@ class Test_HTTP(unittest.TestCase):
 
         c = Client()
         rv = c.post('/api/v1/calculate/', dict(
-                   hazard_server=AIFDR_SERVER,
-                   hazard='hazard:Earthquake_Ground_Shaking',
-                   exposure='exposure:Population_2010',
-                   exposure_server=AIFDR_SERVER,
+                   hazard_server=INTERNAL_SERVER_URL,
+                   hazard='geonode:earthquake_ground_shaking',
+                   exposure='geonode:population_2010_clip',
+                   exposure_server=INTERNAL_SERVER_URL,
                    bbox='99.36,-2.199,102.237,0.00',
                    impact_function='Earthquake Fatality Function',
                    impact_level=10,
@@ -95,10 +98,10 @@ class Test_HTTP(unittest.TestCase):
         c = Client()
 
         rv = c.post('/api/v1/calculate/', data=dict(
-                   hazard_server=AIFDR_SERVER,
-                   hazard='hazard:lembang_mmi_hazmap',
-                   exposure_server=AIFDR_SERVER,
-                   exposure='exposure:lembang_schools',
+                   hazard_server=INTERNAL_SERVER_URL,
+                   hazard='geonode:lembang_mmi_hazmap',
+                   exposure_server=INTERNAL_SERVER_URL,
+                   exposure='geonode:lembang_schools',
                    bbox='105.592,-7.809,110.159,-5.647',
                    impact_function='Earthquake School Damage Function',
                    impact_level=10,
