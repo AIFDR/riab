@@ -149,6 +149,7 @@ def requirement_check(params, require_str, verbose=False):
     and evaluate to True or False"""
 
     execstr = 'def check():\n'
+
     for key in params.keys():
         if key == '':
             if params[''] != '':
@@ -182,62 +183,39 @@ def requirement_check(params, require_str, verbose=False):
     return False
 
 
-def requirements_met(func, params, verbose=False):
-    """Checks to see if the plugin can run based on the requirements
-       specified in the doc string
-       Return
-       False if not met,
-       or An integer with the line of the requirements that is met
-       or -1 if no requirements
-       or None on an error
-       """
+def requirements_met(requirements, params, verbose=False):
+    """Checks the plugin can run with a given layer.
 
-    requirements = requirements_collect(func)
+       Based on the requirements specified in the doc string.
+
+       Returns:
+           True:  if there are no requirements or they are all met.
+           False: if it has requirements and none of them are met. 
+    """
     if len(requirements) == 0:
-        #no requirement met
-        return -1
+        #If the function has no requirements, then they are all met.
+        return True
 
-    if requirements:
-        try:
-            is_met = [requirement_check(params, requires)
-                      for requires in requirements]
-        except SyntaxError, e:
-            # TODO (Ted): Need log this
-            msg = 'Syntax error in plugin %s: %s' % (func.__name__, e)
-            print msg
-            return None
+    for requires in requirements:
+        if requirement_check(params, requires):
+            return True
 
-        if True in is_met:
-            return is_met.index(True)
-        else:
-            return False
-    else:
-        return None
+    # If none of the conditions above is met, return False.
+    return False
 
 
 def compatible_layers(func, layers_data):
-    """ Return all the layers that match the plugin requirements or
-    returns [] if all requirements are not met"""
+    """Fetches all the layers that match the plugin requirements.
 
+       Returns:
+
+           Array of compatible layers, can be an empty list.
+    """
     layers = []
-    requirement_satisfied = set()
-    num_requirements = len(requirements_collect(func))
+    requirements = requirements_collect(func)
 
-    for layer_data in layers_data:
-        is_met = requirements_met(func, layer_data[1])
-        if type(is_met) == types.IntType:
-            layers.append(layer_data[0])
-            requirement_satisfied.add(is_met)
-     #   if layer_data[0]=='Population_2010':
-     #       print "-----------------------"
-     #       print func
-     #       print requirements_collect(func)
-     #       print layer_data
-     #       print is_met
+    for layer_name, layer_params in layers_data:
+        if requirements_met(requirements, layer_params):
+            layers.append(layer_name)
 
-    #print layers
-    #print len(requirements_collect(func)), len(requirement_satisfied)
-    if num_requirements == 0 or num_requirements == len(requirement_satisfied):
-        return layers
-    else:
-        return []
+    return layers

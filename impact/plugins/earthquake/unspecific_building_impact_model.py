@@ -9,7 +9,7 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
     :param requires category=="hazard" and \
                     layer_type=="raster"
     :param requires category=="exposure" and \
-                    subcategory.startswith("buildings") and \
+                    subcategory.startswith("building") and \
                     layer_type=="feature"
     """
 

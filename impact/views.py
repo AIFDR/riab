@@ -154,14 +154,18 @@ def functions(request):
             get_layers_metadata(geoserver['url'],
                                 geoserver['version']))
 
+ 
     # For each plugin return all layers that meet the requirements
     # an empty layer is returned where the plugin cannot run
-    annotated_plugins = [
-        {
+    annotated_plugins = []
+    for name, f in plugin_list.items():
+        layers =  compatible_layers(f, layers_metadata)
+
+        annotated_plugins.append({
          'name': name,
          'doc': f.__doc__,
-         'layers': compatible_layers(f, layers_metadata)}
-        for name, f in plugin_list.items()]
+         'layers': layers,
+        })
 
     output = {'functions': annotated_plugins}
     jsondata = json.dumps(output)

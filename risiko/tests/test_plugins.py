@@ -14,12 +14,17 @@ from impact.plugins.core import compatible_layers
 from impact.storage.utilities import get_layers_metadata
 
 from impact.models import Calculation, Workspace
+from risiko.utilities import save_to_geonode
 
 from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
 
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
+DEMO_DATA = os.path.join(os.environ['RIAB_HOME'],
+                         'riab_data', 'risiko_demo_data')
+
+
 
 
 # FIXME (Ole): Change H, E to layers.
@@ -116,27 +121,53 @@ class Test_plugins(unittest.TestCase):
         """Django plugin functions can be retrieved correctly
         """
 
-        # This is to get rid of Deprecation Warning in
-        # low level Django module
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            c = Client()
-            rv = c.post('/api/v1/functions/', data={})
+        c = Client()
+        rv = c.post('/api/v1/functions/', data={})
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         data = json.loads(rv.content)
-        #assert 'hazard_layer' in data.keys()
-        #assert 'exposure_layer' in data.keys()
-        #assert 'run_duration' in data.keys()
-        #assert 'run_date' in data.keys()
-        #assert 'layer' in data.keys()
 
-    # FIXME (Ole): Need to add this
-    def Xtest_plugin_calculations(self):
-        """Test the calculations"""
-        pass
 
+    def test_plugin_selection(self):
+        """Verify the plugins can recognize compatible layers.
+        """
+        # Upload a raster and a vector data set
+        hazard_filename = os.path.join(DEMO_DATA, 'hazard', 'Lembang_Earthquake_Scenario.asc')
+        hazard_layer = save_to_geonode(hazard_filename)
+
+        exposure_filename = os.path.join(DEMO_DATA, 'exposure', 'AIBEP_schools.shp')
+        exposure_layer = save_to_geonode(exposure_filename)
+
+        
+        c = Client()
+        rv = c.post('/api/v1/functions/', data={})
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+
+        assert 'functions' in data
+
+        functions = data['functions']
+
+        #FIXME (Ariel): This test should implement an alternative function to
+        # parse the requirements, but for now it will just take the buildings
+        # damage one.
+        for function in functions:
+            if function['name'] == 'Earthquake School Damage Function':
+                layers = function['layers']
+                
+                msg_tmpl = 'Expected layer %s in list of compatible layers: %s'
+
+                #FIXME: We have to compare by name or typename depending on whether it
+                # is a raster or a vector. That is sad :'(
+                hazard_msg = msg_tmpl % (hazard_layer.name, layers)
+                assert hazard_layer.name in layers, hazard_msg 
+
+                exposure_msg = msg_tmpl % (exposure_layer.typename, layers)
+                assert exposure_layer.typename in layers, exposure_msg 
+            
 
 if __name__ == '__main__':
     import logging

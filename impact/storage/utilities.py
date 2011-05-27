@@ -206,6 +206,8 @@ class MetadataReader(object):
             abstract = f.findall(self.NAMESPACE + self.abstractstr)
 
             layer_name = name[0].text
+            workspace_name = 'geonode'
+            
             metadata['title'] = title[0].text
 
             if self.service_type == 'wcs':
