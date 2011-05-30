@@ -101,13 +101,15 @@ def save_file_to_geonode(filename, user=None, title=None,
         # FIXME (Ole): for some reason, these files tend to hang around
         # - especially after interrupts so we'll go for temporary filenames
         # for the time being.
-        upload_filename = unique_filename(suffix='.tif')
+        prefix=os.path.split(basename)[-1]
+        upload_filename = unique_filename(prefix=prefix, suffix='.tif')
         upload_basename, extension = os.path.splitext(upload_filename)
 
-        # Copy metadata files to unique filename
+        # Copy any metadata files to unique filename
         for ext in ['.sld', '.keywords']:
-            cmd = 'cp %s%s %s%s' % (basename, ext, upload_basename, ext)
-            run(cmd)
+            if os.path.exists(basename+ext):
+                cmd = 'cp %s%s %s%s' % (basename, ext, upload_basename, ext)
+                run(cmd)
 
         #msg = ('You have asked to upload the ASCII file "%s" and to do so I '
         #       'must first convert it to the TIF format. However, there is '
