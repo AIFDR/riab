@@ -1,5 +1,5 @@
 from geonode.maps.utils import file_upload, GeoNodeException
-from impact.storage.utilities import LAYER_TYPES
+from impact.storage.utilities import LAYER_TYPES, unique_filename
 import os
 
 import logging
@@ -42,8 +42,10 @@ def run(cmd, stdout=None, stderr=None):
         raise Exception(msg)
     else:
         # Clean up
-        os.remove(stdout)
-        os.remove(stderr)
+        if stdout is not None:
+            os.remove(stdout)
+        if stderr is not None:
+            os.remove(stderr)
 
 
 def save_file_to_geonode(filename, user=None, title=None,
@@ -95,13 +97,24 @@ def save_file_to_geonode(filename, user=None, title=None,
         # ESRI and convert it to Geotiff before uploading.
 
         # Create temporary tif file for upload and check that the road is clear
-        upload_filename = basename + '.tif'
-        msg = ('You have asked to upload the ASCII file "%s" and to do so I '
-               'must first convert it to the TIF format. However, there is '
-               'already a file named "%s" so you have to remove that first '
-               'and try again. Sorry about that.' % (filename,
-                                                     upload_filename))
-        assert not os.path.exists(upload_filename), msg
+
+        # FIXME (Ole): for some reason, these files tend to hang around
+        # - especially after interrupts so we'll go for temporary filenames
+        # for the time being.
+        upload_filename = unique_filename(suffix='.tif')
+        upload_basename, extension = os.path.splitext(upload_filename)
+
+        # Copy metadata files to unique filename
+        for ext in ['.sld', '.keywords']:
+            cmd = 'cp %s%s %s%s' % (basename, ext, upload_basename, ext)
+            run(cmd)
+
+        #msg = ('You have asked to upload the ASCII file "%s" and to do so I '
+        #       'must first convert it to the TIF format. However, there is '
+        #       'already a file named "%s" so you have to remove that first '
+        #       'and try again. Sorry about that.' % (filename,
+        #                                             upload_filename))
+        #assert not os.path.exists(upload_filename), msg
 
         # Check that projection file exists
         prjname = basename + '.prj'

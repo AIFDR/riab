@@ -22,5 +22,5 @@ if __name__ == '__main__':
         thefile = sys.argv[1]
 
         # FIXME (Ole): Expose overwrite to command line
-        uploaded = save_to_geonode(thefile, overwrite=False)
-        #FIXME: Verify the layer (or layers) was (were) uploaded correctly
+        uploaded = save_to_geonode(thefile, overwrite=True)
+
