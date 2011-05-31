@@ -51,6 +51,7 @@ function checkup() {
 echo ">>> Cloning the repositories"
 # Get riab source code
 checkup GeoNode/geonode.git geonode
+cd geonode;git checkout synth; cd ..
 checkup AIFDR/riab.git riab
 
 echo ">>> Creating the virtual environment"
@@ -76,10 +77,15 @@ source riab_env/bin/activate
 
 echo ">>> Downloading tomcat bundle"
 # Install GeoNode and it's pre-requisites
-mkdir temp; cd temp
-wget -c https://s3.amazonaws.com/geonodeariel/tomcat-redist.tar.gz
-tar xzf tomcat-redist.tar.gz
-mv apache-tomcat-6.0.32 ../tomcat
+mkdir temp
+cd temp
+wget -c https://s3.amazonaws.com/geonodeariel/tomcat.zip
+wget -c https://s3.amazonaws.com/geonodeariel/geoserver-geonode-dev.war
+wget -c https://s3.amazonaws.com/geonodeariel/geonetwork.war
+cd ..
+unzip temp/tomcat.zip
+cp temp/geoserver-geonode-dev.war tomcat/webapps/
+cp temp/geonetwork tomcat/webapps/
 
 echo ">>> Downloading riab-libs.pybundle and installing riab dependencies"
 wget -c https://s3.amazonaws.com/geonodeariel/riab-libs.pybundle
