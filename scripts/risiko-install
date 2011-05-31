@@ -50,7 +50,7 @@ function checkup() {
 
 echo ">>> Cloning the repositories"
 # Get riab source code
-checkup GeoNode/geonode.git geonode
+checkup ingenieroariel/geonode.git geonode
 cd geonode;git checkout synth; cd ..
 checkup AIFDR/riab.git riab
 
