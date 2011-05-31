@@ -312,14 +312,13 @@ class Test_calculations(unittest.TestCase):
             # Upload file to GeoNode
             f = os.path.join(TEST_DATA, filename)
             layer = save_to_geonode(f, user=self.user)
-            name = '%s:%s' % (layer.workspace, layer.name)
 
             # Read raster file and obtain reference resolution
             R = read_layer(f)
             ref_geotransform = R.get_geotransform()
 
             # Get geotransform from GeoNode
-            layer_name = layer.name
+            layer_name = layer.typename
             metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
 
             geotransform_name = 'geotransform'
@@ -330,7 +329,7 @@ class Test_calculations(unittest.TestCase):
             gn_geotransform = metadata[geotransform_name]
             msg = ('Geotransform obtained from GeoNode for layer %s '
                    'was not correct. I got %s but expected %s'
-                   '' % (name, gn_geotransform, ref_geotransform))
+                   '' % (layer_name, gn_geotransform, ref_geotransform))
             assert numpy.allclose(ref_geotransform, gn_geotransform), msg
 
 

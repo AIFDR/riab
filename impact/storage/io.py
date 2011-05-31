@@ -15,6 +15,7 @@ from impact.storage.vector import Vector
 from impact.storage.raster import Raster
 from impact.storage.utilities import get_layers_metadata
 
+from owslib.wcs import WebCoverageService
 
 def read_layer(filename):
     """Read spatial layer from file.
@@ -131,7 +132,24 @@ def get_geotransform(server_url, layer_name):
             to uniquely determine if rasters are aligned
 
     """
-    return (105.29857, 0.0112, 0.0, -5.5652330000000001, 0.0, -0.0112)
+    wcs = WebCoverageService(server_url, version='1.0.0')
+
+    if layer_name in wcs.contents:
+        layer = wcs.contents[layer_name]
+        grid = layer.grid
+        top_left_x = float(layer.grid.origin[0])
+        we_pixel_res = float(layer.grid.offsetvectors[0][0])
+        x_rotation =  float(layer.grid.offsetvectors[0][1])
+        top_left_y = float(layer.grid.origin[1])
+        y_rotation = float(layer.grid.offsetvectors[1][0])
+        ns_pixel_res = float(layer.grid.offsetvectors[1][1])
+        return (top_left_x, we_pixel_res, x_rotation,
+                top_left_y, y_rotation, ns_pixel_res)
+    else:
+        msg = ('Could not find layer "%s" in the WCS server "%s".'
+               'Available layers were: %s' % (layer_name, server_url,
+               wcs.contents.keys()))
+        raise Exception(msg)
 
 
 def get_metadata(server_url, layer_name):
@@ -139,28 +157,15 @@ def get_metadata(server_url, layer_name):
     """
     #FIXME: Make sure server_url is an actual url
     themetadata = get_layers_metadata(server_url, version='1.0.0')
-
     layer_metadata = None
     for x in themetadata:
-        # This is taking care of differences between wcs and wfs layers
-        # wfs has a preceding workspace but wcs does not.
-        if ':' in x[0]:
-            x_layer_name = x[0].split(':')[1]
-        else:
-            x_layer_name = x[0]
-
-        if ':' in layer_name:
-            plain_layer_name = layer_name.split(':')[1]
-        else:
-            plain_layer_name = layer_name
-
-        if x_layer_name == plain_layer_name:
+        if x[0] == layer_name:
             # We expect only one element in this list, if there is more
             # than one, we will use the first one.
             layer_metadata = x[1]
             break
     
-    msg = 'There is no metadata in server %s for layer %s' % (server_url, layer_name)
+    msg = 'There is no metadata in server %s for layer %s.' % (server_url, layer_name)
     assert layer_metadata is not None, msg
 
     # FIXME: We need a geotransform attribute in get_metadata
