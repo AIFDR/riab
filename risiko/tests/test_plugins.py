@@ -160,25 +160,15 @@ class Test_plugins(unittest.TestCase):
                 
                 msg_tmpl = 'Expected layer %s in list of compatible layers: %s'
 
-                #FIXME: We have to compare by name or typename depending on whether it
-                # is a raster or a vector. That is sad :'(
-                hazard_msg = msg_tmpl % (hazard_layer.name, layers)
-                assert hazard_layer.name in layers, hazard_msg 
+                hazard_msg = msg_tmpl % (hazard_layer.typename, layers)
+                assert hazard_layer.typename in layers, hazard_msg 
 
                 exposure_msg = msg_tmpl % (exposure_layer.typename, layers)
                 assert exposure_layer.typename in layers, exposure_msg 
             
 
 if __name__ == '__main__':
-    import logging
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
-
-    # Set up logging
-    for _module in ['geonode.maps.utils']:
-        _logger = logging.getLogger(_module)
-        _logger.addHandler(logging.StreamHandler())
-        # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-        _logger.setLevel(logging.CRITICAL)
 
     suite = unittest.makeSuite(Test_plugins, 'test')
     runner = unittest.TextTestRunner(verbosity=2)

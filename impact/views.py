@@ -35,6 +35,8 @@ from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
 
+from geonode.maps.utils import get_valid_user
+
 import logging
 logger = logging.getLogger('risiko')
 
@@ -56,9 +58,11 @@ def calculate(request, save_output=dummy_save):
         bbox = data['bbox']
         keywords = data['keywords']
 
-
-    theuser = get_guaranteed_valid_user(request.user)
-
+    if request.user.is_anonymous():
+        theuser = get_valid_user()
+    else:
+        theuser = request.user
+ 
     plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
     impact_function_source = inspect.getsource(impact_function)
@@ -174,8 +178,10 @@ def functions(request):
 def get_servers(user):
     """ Gets the list of servers for a given user
     """
-
-    theuser = get_guaranteed_valid_user(user)
+    if user.is_anonymous():
+        theuser = get_valid_user()
+    else:
+        theuser = user
     try:
         workspace = Workspace.objects.get(user=theuser)
     except Workspace.DoesNotExist:

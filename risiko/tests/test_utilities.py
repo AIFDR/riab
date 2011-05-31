@@ -327,17 +327,7 @@ class Test_utilities(unittest.TestCase):
             assert keyword in keywords_list, msg
 
 if __name__ == '__main__':
-    import logging
-
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
-
-    # Set up logging
-    for _module in ['geonode.maps.utils', 'risiko']:
-        _logger = logging.getLogger(_module)
-        _logger.addHandler(logging.StreamHandler())
-        # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-        _logger.setLevel(logging.ERROR)
-
     suite = unittest.makeSuite(Test_utilities, 'test_keywords')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

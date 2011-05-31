@@ -285,20 +285,16 @@ GEONODE_CLIENT_LOCATION = '/media/geonode/'
 # Logging debug information to a file.
 import logging
 
-for _module in ['risiko', 'geonode']:
+# Risiko logging providing high level info
+# to $RIAB_HOME/logs/risiko.log or PROJECT_ROOT/risiko.log
+if 'RIAB_HOME' in os.environ:
+    log_file = os.path.join(os.environ['RIAB_HOME'],
+                            'logs', 'risiko.log')
+else:
+    log_file = os.path.join(PROJECT_ROOT, 'risiko.log')
 
-    # Risiko logging providing high level info
-    # to $RIAB_HOME/logs/risiko.log or PROJECT_ROOT/risiko.log
-    if 'RIAB_HOME' in os.environ:
-        log_file = os.path.join(os.environ['RIAB_HOME'],
-                                'logs', 'risiko.log')
-    else:
-        log_file = os.path.join(PROJECT_ROOT, 'risiko.log')
 
-    _logger = logging.getLogger(_module)
-    _logger.addHandler(logging.FileHandler(log_file))
-    _logger.setLevel(logging.INFO)
-
+logging.basicConfig(level=logging.INFO, filename=log_file) 
 
 try:
     from local_settings import *

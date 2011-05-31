@@ -119,15 +119,6 @@ class Test_HTTP(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    import logging
-
-    # Set up logging
-    for _module in ['geonode.maps.utils', 'risiko']:
-        _logger = logging.getLogger(_module)
-        _logger.addHandler(logging.StreamHandler())
-        # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-        _logger.setLevel(logging.CRITICAL)
-
     suite = unittest.makeSuite(Test_HTTP, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

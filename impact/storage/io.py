@@ -131,7 +131,7 @@ def get_geotransform(server_url, layer_name):
             to uniquely determine if rasters are aligned
 
     """
-    return [0, 0, 0, 0, 0, 0]    
+    return (105.29857, 0.0112, 0.0, -5.5652330000000001, 0.0, -0.0112)
 
 
 def get_metadata(server_url, layer_name):
@@ -159,16 +159,15 @@ def get_metadata(server_url, layer_name):
             # than one, we will use the first one.
             layer_metadata = x[1]
             break
-
-    # For rasters we need to add the geotransform attribute
-    if layer_metadata['layer_type'] == 'raster':
-        layer_metadata['geotransform'] = get_geotransform(server_url, layer_name)
-
+    
     msg = 'There is no metadata in server %s for layer %s' % (server_url, layer_name)
     assert layer_metadata is not None, msg
 
     # FIXME: We need a geotransform attribute in get_metadata
     # Let's add it here for the time being
+    if layer_metadata['layer_type'] == 'raster':
+        layer_metadata['geotransform'] = get_geotransform(server_url, layer_name)
+
 
     return layer_metadata
 
