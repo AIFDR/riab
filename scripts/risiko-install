@@ -89,7 +89,7 @@ cd ..
 echo ">>> Installing riab dependencies"
 unzip temp/tomcat.zip
 cp temp/geoserver-geonode-dev.war tomcat/webapps/
-cp temp/geonetwork tomcat/webapps/
+cp temp/geonetwork.war tomcat/webapps/
 pip install temp/riab-libs.pybundle
 
 echo ">>> Installing GeoNode and Riab in dev mode"

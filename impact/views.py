@@ -34,7 +34,6 @@ from impact.storage.io import dummy_save, download, get_layers_metadata
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
-from impact.auth import get_guaranteed_valid_user
 
 import logging
 logger = logging.getLogger('risiko')
