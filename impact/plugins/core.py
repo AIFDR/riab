@@ -190,10 +190,10 @@ def requirements_met(requirements, params, verbose=False):
 
        Returns:
            True:  if there are no requirements or they are all met.
-           False: if it has requirements and none of them are met. 
+           False: if it has requirements and none of them are met.
     """
     if len(requirements) == 0:
-        #If the function has no requirements, then they are all met.
+        # If the function has no requirements, then they are all met.
         return True
 
     for requires in requirements:
