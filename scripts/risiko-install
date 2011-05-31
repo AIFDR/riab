@@ -132,7 +132,7 @@ else
     cd ..
 fi
 
-mkdir -f logs
+mkdir -p logs
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
