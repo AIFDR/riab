@@ -82,14 +82,14 @@ cd temp
 wget -c https://s3.amazonaws.com/geonodeariel/tomcat.zip
 wget -c https://s3.amazonaws.com/geonodeariel/geoserver-geonode-dev.war
 wget -c https://s3.amazonaws.com/geonodeariel/geonetwork.war
+wget -c https://s3.amazonaws.com/geonodeariel/riab-libs.pybundle
+wget -c https://s3.amazonaws.com/geonodeariel/geonode-client.zip
 cd ..
+
+echo ">>> Installing riab dependencies"
 unzip temp/tomcat.zip
 cp temp/geoserver-geonode-dev.war tomcat/webapps/
 cp temp/geonetwork tomcat/webapps/
-
-echo ">>> Downloading riab-libs.pybundle and installing riab dependencies"
-wget -c https://s3.amazonaws.com/geonodeariel/riab-libs.pybundle
-cd ..
 pip install temp/riab-libs.pybundle
 
 echo ">>> Installing GeoNode and Riab in dev mode"
