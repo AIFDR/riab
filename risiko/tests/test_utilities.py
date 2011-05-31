@@ -1,6 +1,7 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
+from impact.storage.io import download
 from django.conf import settings
 import os
 import unittest
@@ -21,6 +22,12 @@ def check_layer(uploaded):
     msg = ('The layer does not have a valid name: %s' % uploaded.name)
     assert len(uploaded.name) > 0, msg
 
+    # Check that layer can be downloaded
+    #print dir(uploaded)
+    #print 'name', uploaded.name
+    #print 'url', uploaded.get_absolute_url()
+    #print 'bbox', uploaded.geographic_bounding_box
+    #download(server_url, layer_name, bbox)
 
 def get_web_page(url, username=None, password=None):
     """Get url page possible with username and password.
