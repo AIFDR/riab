@@ -82,7 +82,7 @@ def write_point_data(data, projection, geometry, filename):
 WCS_TEMPLATE = '%s?version=1.0.0' + \
                       '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
                       'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
-                      '&resx=0.005&resy=0.005'
+                      '&resx=0.008333333333000&resy=0.008333333333000'
 
 # FIXME (Ole): Why is maxFeatures hard coded?
 WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
@@ -92,9 +92,28 @@ WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
 
 def get_bounding_box(filename):
     """Get bounding box for specified raster or vector file
+
+    Input:
+        filename
+
+    Output:
+        bounding box as python list [West, South, East, North]
     """
+
     layer = read_layer(filename)
     return layer.get_bounding_box()
+
+def get_bounding_box_string(filename):
+    """Get bounding box for specified raster or vector file
+
+    Input:
+        filename
+
+    Output:
+        bounding box as python string 'West, South, East, North'
+    """
+
+    return ','.join([str(x) for x in get_bounding_box(filename)])
 
 
 def get_metadata(server_url, layer_name):
@@ -162,6 +181,9 @@ def download(server_url, layer_name, bbox):
        Layer type can be either 'vector' or 'raster'
     """
 
+    # FIXME (Ole): Pass in resolution here
+
+
     # Input checks
     assert isinstance(server_url, basestring)
 
@@ -171,6 +193,8 @@ def download(server_url, layer_name, bbox):
         assert len(bbox) == 4
         bbox_string = '%f,%f,%f,%f' % tuple(bbox)
     elif isinstance(bbox, basestring):
+        # FIXME (Ole): Remove spaces if any as
+        # geoserver doesn't like formats like 'a, b, c, d'
         bbox_string = bbox
     else:
         msg = ('Bounding box must be a string or a list of coordinates with '

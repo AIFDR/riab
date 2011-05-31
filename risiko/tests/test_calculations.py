@@ -14,6 +14,7 @@ from risiko.utilities import save_to_geonode
 from impact.views import calculate
 from impact.storage.io import download
 from impact.storage.io import get_bounding_box
+from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
 
@@ -81,7 +82,7 @@ class Test_calculations(unittest.TestCase):
 
             bbox_string = str(layer.geographic_bounding_box[i:j])
             A = numpy.array([[float(x[0]), float(x[1])] for x in
-                                 (p.split() for p in bbox_string.split(','))])
+                             (p.split() for p in bbox_string.split(','))])
             south = min(A[:, 1])
             north = max(A[:, 1])
             west = min(A[:, 0])
@@ -100,6 +101,10 @@ class Test_calculations(unittest.TestCase):
                                         layer_name,
                                         bbox)
             assert os.path.exists(downloaded_layer.filename)
+
+            # FIXME (Ole): I wan't to check that the resolution is as expected
+            #              in case of raster layers.
+
 
             # FIXME (Ole): Bring this test back when issue:39 has been resolved
             # Check that exception is raised when using name without workspace
@@ -149,6 +154,10 @@ class Test_calculations(unittest.TestCase):
                                        exposure_layer.name)
 
             # Call calculation routine
+
+            # FIXME (Ole): The system freaks out if there are spaces in
+            #              bbox string. Please let us catch that and deal
+            #              nicely with it - also do this in download()
             bbox = '105.592,-7.809,110.159,-5.647'
 
             #print
@@ -230,6 +239,67 @@ class Test_calculations(unittest.TestCase):
             # Make only a few points were 0
             assert count > len(attributes) - 4
 
+
+    def XXtest_shakemap_population_exposure(self):
+        """Population exposed to groundshaking matches USGS numbers
+        """
+
+        hazardfile = os.path.join(TEST_DATA, 'shakemap_sumatra_20110129.tif')
+        hazard_layer = save_to_geonode(hazardfile, overwrite=True,
+                                       user=self.user)
+        hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
+
+        exposurefile = os.path.join(TEST_DATA, 'population_indonesia_2008.tif')
+        exposure_layer = save_to_geonode(exposurefile, overwrite=True,
+                                         user=self.user)
+        exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                   exposure_layer.name)
+
+
+        #with warnings.catch_warnings():
+        #    warnings.simplefilter('ignore')
+
+        c = Client()
+        rv = c.post('/api/v1/calculate/', data=dict(
+                hazard_server=INTERNAL_SERVER_URL,
+                hazard=hazard_name,
+                exposure_server=INTERNAL_SERVER_URL,
+                exposure=exposure_name,
+                bbox=get_bounding_box_string(hazardfile),
+                impact_function='USGSFatalityFunction',
+                impact_level=10,
+                keywords='test,shakemap,usgs',
+                ))
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+        assert 'hazard_layer' in data.keys()
+        assert 'exposure_layer' in data.keys()
+        assert 'run_duration' in data.keys()
+        assert 'run_date' in data.keys()
+        assert 'layer' in data.keys()
+
+        # Download result and check
+        layer_name = data['layer'].split('/')[-1]
+
+        result_layer = download(INTERNAL_SERVER_URL,
+                                layer_name,
+                                get_bounding_box(hazardfile))
+        assert os.path.exists(result_layer.filename)
+
+        # Read hazard data for reference
+        hazard_raster = read_layer(hazardfile)
+        H = hazard_raster.get_data()
+        mmi_min, mmi_max = hazard_raster.get_extrema()
+
+        # Read calculated result
+        impact_raster = read_layer(result_layer.filename)
+        I = impact_raster.get_data()
+
+        # FIXME (Ole): Not finished
+
+
     def test_geotransform_from_geonode(self):
         """Geotransforms of GeoNode layers can be correctly determined
         """
@@ -287,6 +357,6 @@ if __name__ == '__main__':
         # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
         _logger.setLevel(logging.WARNING)
 
-    suite = unittest.makeSuite(Test_calculations, 'test_geotrans')
+    suite = unittest.makeSuite(Test_calculations, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
