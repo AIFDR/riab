@@ -318,15 +318,6 @@ class Test_calculations(unittest.TestCase):
             R = read_layer(f)
             ref_geotransform = R.get_geotransform()
 
-            # ARIEL: geotransform is a vector of six numbers:
-            #
-            #          (top left x, w-e pixel resolution, rotation,
-            #           top left y, rotation, n-s pixel resolution).
-            #
-            # We should (at least) use elements 0, 1, 3, 5
-            # to uniquely determine if rasters are aligned
-            # - This depends on what you can get from geonode
-
             # Get geotransform from GeoNode
             layer_name = layer.name
             metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
@@ -336,7 +327,7 @@ class Test_calculations(unittest.TestCase):
                     (geotransform_name, metadata.keys()))
             assert geotransform_name in metadata, msg
 
-            gn_geotransform = metadata['geo_transform']
+            gn_geotransform = metadata[geotransform_name]
             msg = ('Geotransform obtained from GeoNode for layer %s '
                    'was not correct. I got %s but expected %s'
                    '' % (name, gn_geotransform, ref_geotransform))

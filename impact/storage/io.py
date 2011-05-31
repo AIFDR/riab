@@ -116,6 +116,24 @@ def get_bounding_box_string(filename):
     return ','.join([str(x) for x in get_bounding_box(filename)])
 
 
+def get_geotransform(server_url, layer_name):
+    """Constructs the geotransform based on the WCS service.
+
+       Should only be called be rasters / WCS layers.
+
+       Returns:
+            geotransform is a vector of six numbers:
+           
+             (top left x, w-e pixel resolution, rotation,
+              top left y, rotation, n-s pixel resolution).
+            
+            We should (at least) use elements 0, 1, 3, 5
+            to uniquely determine if rasters are aligned
+
+    """
+    return [0, 0, 0, 0, 0, 0]    
+
+
 def get_metadata(server_url, layer_name):
     """Uses OWS services to get the metadata for a given layer
     """
@@ -141,6 +159,10 @@ def get_metadata(server_url, layer_name):
             # than one, we will use the first one.
             layer_metadata = x[1]
             break
+
+    # For rasters we need to add the geotransform attribute
+    if layer_metadata['layer_type'] == 'raster':
+        layer_metadata['geotransform'] = get_geotransform(server_url, layer_name)
 
     msg = 'There is no metadata in server %s for layer %s' % (server_url, layer_name)
     assert layer_metadata is not None, msg
