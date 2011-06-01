@@ -57,6 +57,13 @@ class Test_calculations(unittest.TestCase):
             basename, ext = os.path.splitext(filename)
 
             filename = os.path.join(TEST_DATA, filename)
+
+            # FIXME (Ole): I set overwrite=True to make this pass.
+            # However, in general there is a problem with get_layers_metadata
+            # that if the layer has been uploaded more than once the code will
+            # look for a layer called geonode:lembang_mmi_hazardmap_1
+            # (the number 1 being appended) but the metadata record still
+            # uses the original name.
             layer = save_to_geonode(filename, user=self.user, overwrite=True)
 
             # Name checking
