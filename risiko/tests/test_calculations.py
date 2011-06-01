@@ -3,6 +3,7 @@ import os
 import sys
 import unittest
 import warnings
+import time
 
 from django.test.client import Client
 from django.conf import settings
@@ -317,8 +318,7 @@ class Test_calculations(unittest.TestCase):
 
         for filename in ['lembang_mmi_hazmap.asc',
                          'test_grid.asc',
-                         'shakemap_padang_20090930.asc',
-                         'Population_2010_clip.tif']:
+                         'shakemap_padang_20090930.asc']:
 
             # Upload file to GeoNode
             f = os.path.join(TEST_DATA, filename)
@@ -327,6 +327,10 @@ class Test_calculations(unittest.TestCase):
             # Read raster file and obtain reference resolution
             R = read_layer(f)
             ref_geotransform = R.get_geotransform()
+
+            # We need to give GeoServe time to update the WCS contents before querying it
+            # 1 second should be enough
+            time.sleep(1)
 
             # Get geotransform from GeoNode
             layer_name = layer.typename
@@ -342,6 +346,42 @@ class Test_calculations(unittest.TestCase):
                    'was not correct. I got %s but expected %s'
                    '' % (layer_name, gn_geotransform, ref_geotransform))
             assert numpy.allclose(ref_geotransform, gn_geotransform), msg
+
+
+
+    def test_geotransform_in_clipped_population_file(self):
+        """Geotransform of a clipped Population layer can be correctly determined
+        """
+
+        filename = 'Population_2010_clip.tif'
+
+        # Upload file to GeoNode
+        f = os.path.join(TEST_DATA, filename)
+        layer = save_to_geonode(f, user=self.user)
+
+        # Read raster file and obtain reference resolution
+        R = read_layer(f)
+        ref_geotransform = R.get_geotransform()
+
+        # We need to give GeoServe time to update the WCS contents before querying it
+        # 1 second should be enough
+        time.sleep(1)
+
+        # Get geotransform from GeoNode
+        layer_name = layer.typename
+        metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
+
+        geotransform_name = 'geotransform'
+        msg = ('Could not find attribute "%s" in metadata. Values are: %s' %
+                (geotransform_name, metadata.keys()))
+        assert geotransform_name in metadata, msg
+
+        gn_geotransform = metadata[geotransform_name]
+        msg = ('Geotransform obtained from GeoNode for layer %s '
+               'was not correct. I got %s but expected %s'
+               '' % (layer_name, gn_geotransform, ref_geotransform))
+        assert numpy.allclose(ref_geotransform, gn_geotransform), msg
+
 
 
 if __name__ == '__main__':

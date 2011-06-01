@@ -143,8 +143,15 @@ def get_geotransform(server_url, layer_name):
         top_left_y = float(layer.grid.origin[1])
         y_rotation = float(layer.grid.offsetvectors[1][0])
         ns_pixel_res = float(layer.grid.offsetvectors[1][1])
-        return (top_left_x, we_pixel_res, x_rotation,
-                top_left_y, y_rotation, ns_pixel_res)
+
+        # There is half a pixel_resolution difference between
+        # what WCS reports and what GDAL reports.
+        # A pixel CENTER vs pixel CORNER difference.
+        adjusted_top_left_x = top_left_x - we_pixel_res / 2
+        adjusted_top_left_y = top_left_y - ns_pixel_res / 2
+
+        return (adjusted_top_left_x , we_pixel_res, x_rotation,
+                adjusted_top_left_y, y_rotation, ns_pixel_res)
     else:
         msg = ('Could not find layer "%s" in the WCS server "%s".'
                'Available layers were: %s' % (layer_name, server_url,
