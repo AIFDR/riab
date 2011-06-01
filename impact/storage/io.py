@@ -154,16 +154,18 @@ def get_geotransform(server_url, layer_name):
 
 def get_metadata(server_url, layer_name):
     """Uses OWS services to get the metadata for a given layer
+
+    Input
+        server_url:
+        layer_name: must follow the convention workspace:name
     """
 
-    # FIXME: Make sure server_url is an actual url
+    # Get all metadata
     themetadata = get_layers_metadata(server_url, version='1.0.0')
-    layer_metadata = None
-    print
-    print 'Looking for', layer_name, server_url
-    for x in themetadata:
-        print x
 
+    # Look for specific layer
+    layer_metadata = None
+    for x in themetadata:
         if x[0] == layer_name:
             # We expect only one element in this list, if there is more
             # than one, we will use the first one.
@@ -218,9 +220,15 @@ def download(server_url, layer_name, bbox):
 
     # Input checks
     assert isinstance(server_url, basestring)
-    assert isinstance(layer_name, basestring)
+    try:
+        urllib2.urlopen(server_url)
+    except Exception, e:
+        msg = ('Argument server_url doesn\'t appear to be a valid URL'
+               'I got %s. Error message was: %s' % (server_url, str(e)))
+        raise Exception(msg)
 
-    msg = ('Layer name in download function must have the form'
+    assert isinstance(layer_name, basestring)
+    msg = ('Argument layer name must have the form'
            'workspace:name. I got %s' % layer_name)
     assert len(layer_name.split(':')) == 2, msg
 
