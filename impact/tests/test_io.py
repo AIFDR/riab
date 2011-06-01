@@ -351,14 +351,14 @@ class Test_IO(unittest.TestCase):
             raise Exception(msg)
 
     def test_reading_and_writing_of_real_rasters(self):
-        """Rasters can be read and written correctly
+        """Rasters can be read and written correctly in different formats
         """
 
         for rastername in ['Earthquake_Ground_Shaking_clip.tif',
-                             'Population_2010_clip.tif',
-                             'shakemap_padang_20090930.asc',
-                             'population_padang_1.asc',
-                             'population_padang_2.asc']:
+                           'Population_2010_clip.tif',
+                           'shakemap_padang_20090930.asc',
+                           'population_padang_1.asc',
+                           'population_padang_2.asc']:
 
             filename = '%s/%s' % (TESTDATA, rastername)
             R1 = read_layer(filename)
@@ -372,54 +372,56 @@ class Test_IO(unittest.TestCase):
             assert M == R1.rows, msg
             assert N == R1.columns, msg
 
-            # Write back to new (tif) file
-            out_filename = unique_filename(suffix='.tif')
-            write_raster_data(A1,
-                              R1.get_projection(),
-                              R1.get_geotransform(),
-                              out_filename)
+            # Write back to new file
+            for ext in ['.tif']: #, '.asc']:
+                out_filename = unique_filename(suffix=ext)
+                write_raster_data(A1,
+                                  R1.get_projection(),
+                                  R1.get_geotransform(),
+                                  out_filename)
 
-            # Read again and check consistency
-            R2 = read_layer(out_filename)
+                # Read again and check consistency
+                R2 = read_layer(out_filename)
 
-            msg = ('Dimensions of written raster array do not match those '
-                   'of input raster file\n')
-            msg += ('    Dimensions of input file '
-                    '%s:  (%s, %s)\n' % (R1.filename, M, N))
-            msg += ('    Dimensions of output file %s: '
-                    '(%s, %s)' % (R2.filename, R2.rows, R2.columns))
+                msg = ('Dimensions of written raster array do not match those '
+                       'of input raster file\n')
+                msg += ('    Dimensions of input file '
+                        '%s:  (%s, %s)\n' % (R1.filename, M, N))
+                msg += ('    Dimensions of output file %s: '
+                        '(%s, %s)' % (R2.filename, R2.rows, R2.columns))
 
-            assert M == R2.rows, msg
-            assert N == R2.columns, msg
+                assert M == R2.rows, msg
+                assert N == R2.columns, msg
 
-            A2 = R2.get_data()
+                A2 = R2.get_data()
 
-            assert numpy.allclose(numpy.min(A1), numpy.min(A2))
-            assert numpy.allclose(numpy.max(A1), numpy.max(A2))
+                assert numpy.allclose(numpy.min(A1), numpy.min(A2))
+                assert numpy.allclose(numpy.max(A1), numpy.max(A2))
 
-            msg = 'Array values of written raster array were not as expected'
-            assert numpy.allclose(A1, A2), msg
+                msg = ('Array values of written raster array were not as '
+                       'expected')
+                assert numpy.allclose(A1, A2), msg
 
-            msg = 'Geotransforms were different'
-            assert R1.get_geotransform() == R2.get_geotransform(), msg
+                msg = 'Geotransforms were different'
+                assert R1.get_geotransform() == R2.get_geotransform(), msg
 
-            p1 = R1.get_projection(proj4=True)
-            p2 = R2.get_projection(proj4=True)
-            msg = 'Projections were different: %s != %s' % (p1, p2)
-            assert p1 == p1, msg
+                p1 = R1.get_projection(proj4=True)
+                p2 = R2.get_projection(proj4=True)
+                msg = 'Projections were different: %s != %s' % (p1, p2)
+                assert p1 == p1, msg
 
-            # Use overridden == and != to verify
-            assert R1 == R2
-            assert not R1 != R2
+                # Use overridden == and != to verify
+                assert R1 == R2
+                assert not R1 != R2
 
-            # Check that equality raises exception when type is wrong
-            try:
-                R1 == Vector()
-            except TypeError:
-                pass
-            else:
-                msg = 'Should have raised TypeError'
-                raise Exception(msg)
+                # Check that equality raises exception when type is wrong
+                try:
+                    R1 == Vector()
+                except TypeError:
+                    pass
+                else:
+                    msg = 'Should have raised TypeError'
+                    raise Exception(msg)
 
     def test_no_projection(self):
         """Raster layers with no projection causes Exception to be raised
