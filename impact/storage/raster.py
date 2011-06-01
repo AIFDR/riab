@@ -178,7 +178,7 @@ class Raster:
 
         msg = ('Invalid file type for file %s. Only extension '
                'tif allowed.' % filename)
-        assert extension == '.tif', msg
+        assert extension in ['.tif', '.asc'], msg
         format = DRIVER_MAP[extension]
 
         # Get raster data
