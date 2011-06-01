@@ -124,10 +124,10 @@ def get_geotransform(server_url, layer_name):
 
        Returns:
             geotransform is a vector of six numbers:
-           
+
              (top left x, w-e pixel resolution, rotation,
               top left y, rotation, n-s pixel resolution).
-            
+
             We should (at least) use elements 0, 1, 3, 5
             to uniquely determine if rasters are aligned
 
@@ -155,24 +155,31 @@ def get_geotransform(server_url, layer_name):
 def get_metadata(server_url, layer_name):
     """Uses OWS services to get the metadata for a given layer
     """
-    #FIXME: Make sure server_url is an actual url
+
+    # FIXME: Make sure server_url is an actual url
     themetadata = get_layers_metadata(server_url, version='1.0.0')
     layer_metadata = None
+    print
+    print 'Looking for', layer_name, server_url
     for x in themetadata:
+        print x
+
         if x[0] == layer_name:
             # We expect only one element in this list, if there is more
             # than one, we will use the first one.
             layer_metadata = x[1]
             break
-    
-    msg = 'There is no metadata in server %s for layer %s.' % (server_url, layer_name)
+
+    msg = ('There is no metadata in server %s for layer '
+           '%s. Available metadata is %s' % (server_url, layer_name,
+                                             themetadata))
     assert layer_metadata is not None, msg
 
     # FIXME: We need a geotransform attribute in get_metadata
     # Let's add it here for the time being
     if layer_metadata['layer_type'] == 'raster':
-        layer_metadata['geotransform'] = get_geotransform(server_url, layer_name)
-
+        layer_metadata['geotransform'] = get_geotransform(server_url,
+                                                          layer_name)
 
     return layer_metadata
 
@@ -198,22 +205,24 @@ def download(server_url, layer_name, bbox):
 
        Input
            server_url: String such as 'http://www.aifdr.org:8080/geoserver/ows'
-           layer_name: String such as 'geonode:Earthquake_Ground_Shaking'
+           layer_name: Layer identifier of the form workspace:name,
+                       e.g 'geonode:Earthquake_Ground_Shaking'
            bbox: Bounding box for layer. This can either be a string or a list
                  with format [west, south, east, north], e.g.
                  '87.998242,-8.269822,117.046094,5.097895'
 
-
-       Layer type can be either 'vector' or 'raster'
+       Layer type must be either 'vector' or 'raster'
     """
 
     # FIXME (Ole): Pass in resolution here
 
-
     # Input checks
     assert isinstance(server_url, basestring)
-
     assert isinstance(layer_name, basestring)
+
+    msg = ('Layer name in download function must have the form'
+           'workspace:name. I got %s' % layer_name)
+    assert len(layer_name.split(':')) == 2, msg
 
     if isinstance(bbox, list):
         assert len(bbox) == 4

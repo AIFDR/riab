@@ -57,10 +57,14 @@ class Test_calculations(unittest.TestCase):
             basename, ext = os.path.splitext(filename)
 
             filename = os.path.join(TEST_DATA, filename)
-            layer = save_to_geonode(filename, user=self.user)
+            layer = save_to_geonode(filename, user=self.user, overwrite=True)
 
             # Name checking
             layer_name = layer.name
+
+            msg = 'Expected layername %s but got %s' % (basename, layer_name)
+            assert layer_name == basename, msg
+
             workspace = layer.workspace
 
             msg = 'Expected workspace to be "geonode". Got %s' % workspace
@@ -98,7 +102,7 @@ class Test_calculations(unittest.TestCase):
 
             # Download layer again using workspace:name
             downloaded_layer = download(INTERNAL_SERVER_URL,
-                                        layer_name,
+                                        '%s:%s' % (workspace, layer_name),
                                         bbox)
             assert os.path.exists(downloaded_layer.filename)
 

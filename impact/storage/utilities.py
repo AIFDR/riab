@@ -20,7 +20,8 @@ LAYER_TYPES = ['.shp', '.asc', '.tif', '.tiff', '.geotif', '.geotiff']
 # Map between extensions and ORG drivers
 DRIVER_MAP = {'.shp': 'ESRI Shapefile',
               '.gml': 'GML',
-              '.tif': 'GTiff'}
+              '.tif': 'GTiff',
+              '.asc': 'AAIGrid'}
 
 # Map between Python types and OGR field types
 # FIXME (Ole): I can't find a double precision type for OGR
@@ -83,7 +84,7 @@ def get_layers_metadata(url, version='1.0.0'):
     msg = ('Server %s is not reachable' % url)
     if not is_server_reachable(url):
         raise Exception(msg)
-   
+
     wcs_reader = MetadataReader(url, 'wcs', version)
     wfs_reader = MetadataReader(url, 'wfs', version)
     layers = []
@@ -94,7 +95,7 @@ def get_layers_metadata(url, version='1.0.0'):
 
 class MetadataReader(object):
     """Read and parse capabilities document into a lxml.etree infoset
-       
+
        Adapted from:
        http://trac.gispython.org/lab/browser/OWSLib/trunk/owslib/feature/wfs200.py#L402
     """
@@ -183,7 +184,7 @@ class MetadataReader(object):
 
 
     def get_metadata(self):
- 
+
         _capabilities = self.read()
 
         request_url = self.capabilities_url()
@@ -206,8 +207,8 @@ class MetadataReader(object):
             abstract = f.findall(self.NAMESPACE + self.abstractstr)
 
             layer_name = name[0].text
-            workspace_name = 'geonode'
-            
+            #workspace_name = 'geonode' # FIXME (Ole): This is not used
+
             metadata['title'] = title[0].text
 
             if self.service_type == 'wcs':
