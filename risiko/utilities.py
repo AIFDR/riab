@@ -1,5 +1,6 @@
 from geonode.maps.utils import file_upload, GeoNodeException
 from impact.storage.utilities import LAYER_TYPES, unique_filename
+from impact.storage.io import read_layer
 import os
 
 import logging
@@ -126,12 +127,8 @@ def save_file_to_geonode(filename, user=None, title=None,
             raise RisikoException(msg)
 
         # Convert ASCII file to GeoTIFF
-        cmd = ('gdal_translate -ot Float64 -of GTiff -co "PROFILE=GEOTIFF" '
-               '%s %s' % (filename, upload_filename))
-
-        run(cmd,
-            stdout='%s_asc2tif_conversion.stdout' % basename,
-            stderr='%s_asc2tif_conversion.stderr' % basename)
+        R = read_layer(filename)
+        R.write_to_file(upload_filename)
     else:
         # The specified file is the one to upload
         upload_filename = filename
