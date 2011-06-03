@@ -373,7 +373,7 @@ class Test_IO(unittest.TestCase):
             assert N == R1.columns, msg
 
             # Write back to new file
-            for ext in ['.tif']: #, '.asc']:
+            for ext in ['.tif']:  # Would like to also have , '.asc']:
                 out_filename = unique_filename(suffix=ext)
                 write_raster_data(A1,
                                   R1.get_projection(),

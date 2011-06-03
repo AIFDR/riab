@@ -62,7 +62,7 @@ def calculate(request, save_output=dummy_save):
         theuser = get_valid_user()
     else:
         theuser = request.user
- 
+
     plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
     impact_function_source = inspect.getsource(impact_function)
@@ -157,12 +157,11 @@ def functions(request):
             get_layers_metadata(geoserver['url'],
                                 geoserver['version']))
 
- 
-    # For each plugin return all layers that meet the requirements
+     # For each plugin return all layers that meet the requirements
     # an empty layer is returned where the plugin cannot run
     annotated_plugins = []
     for name, f in plugin_list.items():
-        layers =  compatible_layers(f, layers_metadata)
+        layers = compatible_layers(f, layers_metadata)
 
         annotated_plugins.append({
          'name': name,

@@ -25,8 +25,6 @@ DEMO_DATA = os.path.join(os.environ['RIAB_HOME'],
                          'riab_data', 'risiko_demo_data')
 
 
-
-
 # FIXME (Ole): Change H, E to layers.
 class BasicFunction(FunctionProvider):
     """Risk plugin for testing
@@ -128,18 +126,18 @@ class Test_plugins(unittest.TestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         data = json.loads(rv.content)
 
-
     def test_plugin_selection(self):
         """Verify the plugins can recognize compatible layers.
         """
         # Upload a raster and a vector data set
-        hazard_filename = os.path.join(DEMO_DATA, 'hazard', 'Lembang_Earthquake_Scenario.asc')
+        hazard_filename = os.path.join(DEMO_DATA, 'hazard',
+                                       'Lembang_Earthquake_Scenario.asc')
         hazard_layer = save_to_geonode(hazard_filename)
 
-        exposure_filename = os.path.join(DEMO_DATA, 'exposure', 'AIBEP_schools.shp')
+        exposure_filename = os.path.join(DEMO_DATA, 'exposure',
+                                         'AIBEP_schools.shp')
         exposure_layer = save_to_geonode(exposure_filename)
 
-        
         c = Client()
         rv = c.post('/api/v1/functions/', data={})
 
@@ -157,15 +155,14 @@ class Test_plugins(unittest.TestCase):
         for function in functions:
             if function['name'] == 'Earthquake School Damage Function':
                 layers = function['layers']
-                
+
                 msg_tmpl = 'Expected layer %s in list of compatible layers: %s'
 
                 hazard_msg = msg_tmpl % (hazard_layer.typename, layers)
-                assert hazard_layer.typename in layers, hazard_msg 
+                assert hazard_layer.typename in layers, hazard_msg
 
                 exposure_msg = msg_tmpl % (exposure_layer.typename, layers)
-                assert exposure_layer.typename in layers, exposure_msg 
-            
+                assert exposure_layer.typename in layers, exposure_msg
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

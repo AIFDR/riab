@@ -293,8 +293,7 @@ if 'RIAB_HOME' in os.environ:
 else:
     log_file = os.path.join(PROJECT_ROOT, 'risiko.log')
 
-
-logging.basicConfig(level=logging.INFO, filename=log_file) 
+logging.basicConfig(level=logging.INFO, filename=log_file)
 
 try:
     from local_settings import *

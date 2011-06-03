@@ -212,5 +212,4 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'riab', u'riab Documentation',
-     [u'AIFDR'], 1)
-]
+     [u'AIFDR'], 1)]

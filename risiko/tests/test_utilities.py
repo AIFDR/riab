@@ -29,6 +29,7 @@ def check_layer(uploaded):
     #print 'bbox', uploaded.geographic_bounding_box
     #download(server_url, layer_name, bbox)
 
+
 def get_web_page(url, username=None, password=None):
     """Get url page possible with username and password.
     """
@@ -323,7 +324,8 @@ class Test_utilities(unittest.TestCase):
         f.close()
 
         for keyword in keywords_list:
-            msg = 'Could not find keyword "%s" in %s' % (keyword, keywords_list)
+            msg = 'Could not find keyword "%s" in %s' % (keyword,
+                                                         keywords_list)
             assert keyword in keywords_list, msg
 
 if __name__ == '__main__':

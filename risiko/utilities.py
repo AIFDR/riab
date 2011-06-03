@@ -10,6 +10,7 @@ logger = logging.getLogger('risiko')
 class RisikoException(Exception):
     pass
 
+
 def run(cmd, stdout=None, stderr=None):
     """Run command with stdout and stderr optionally redirected
 
@@ -98,13 +99,13 @@ def save_file_to_geonode(filename, user=None, title=None,
         # ESRI and convert it to Geotiff before uploading.
 
         # Create temporary tif file for upload and check that the road is clear
-        prefix=os.path.split(basename)[-1]
+        prefix = os.path.split(basename)[-1]
         upload_filename = unique_filename(prefix=prefix, suffix='.tif')
         upload_basename, extension = os.path.splitext(upload_filename)
 
         # Copy any metadata files to unique filename
         for ext in ['.sld', '.keywords']:
-            if os.path.exists(basename+ext):
+            if os.path.exists(basename + ext):
                 cmd = 'cp %s%s %s%s' % (basename, ext, upload_basename, ext)
                 run(cmd)
 
@@ -146,7 +147,10 @@ def save_file_to_geonode(filename, user=None, title=None,
             os.remove(upload_filename + '.aux.xml')
 
 
-def save_directory_to_geonode(directory, user=None, title=None, overwrite=True):
+def save_directory_to_geonode(directory,
+                              user=None,
+                              title=None,
+                              overwrite=True):
     """Upload a directory of spatial data files to GeoNode
 
     Input
@@ -185,6 +189,7 @@ def save_directory_to_geonode(directory, user=None, title=None, overwrite=True):
 
     # Return layers that successfully uploaded
     return layers
+
 
 def save_to_geonode(incoming, user=None, title=None, overwrite=False):
     """Save a files to local Risiko GeoNode

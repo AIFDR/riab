@@ -117,7 +117,6 @@ class Test_calculations(unittest.TestCase):
             # FIXME (Ole): I wan't to check that the resolution is as expected
             #              in case of raster layers.
 
-
             # FIXME (Ole): Bring this test back when issue:39 has been resolved
             # Check that exception is raised when using name without workspace
             #try:
@@ -251,7 +250,6 @@ class Test_calculations(unittest.TestCase):
             # Make only a few points were 0
             assert count > len(attributes) - 4
 
-
     def XXtest_shakemap_population_exposure(self):
         """Population exposed to groundshaking matches USGS numbers
         """
@@ -267,10 +265,8 @@ class Test_calculations(unittest.TestCase):
         exposure_name = '%s:%s' % (exposure_layer.workspace,
                                    exposure_layer.name)
 
-
         #with warnings.catch_warnings():
         #    warnings.simplefilter('ignore')
-
         c = Client()
         rv = c.post('/api/v1/calculate/', data=dict(
                 hazard_server=INTERNAL_SERVER_URL,
@@ -310,7 +306,6 @@ class Test_calculations(unittest.TestCase):
         I = impact_raster.get_data()
 
         # FIXME (Ole): Not finished
-
 
     def test_geotransform_from_geonode(self):
         """Geotransforms of GeoNode layers can be correctly determined

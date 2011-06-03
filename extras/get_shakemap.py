@@ -4,9 +4,11 @@
 import os
 import sys
 
+
 def run(cmd):
     print cmd
     os.system(cmd)
+
 
 def usage():
     print 'Usage:'
@@ -72,7 +74,6 @@ if __name__ == '__main__':
         run(s)
         s = 'cp %s hazard_%s' % (sld_filename, sld_filename)
         run(s)
-
 
         # Does not work yet
         s = '. %s/riab_env/bin/activate' % d
