@@ -17,6 +17,7 @@ from impact.storage.utilities import get_layers_metadata
 
 from owslib.wcs import WebCoverageService
 
+
 def read_layer(filename):
     """Read spatial layer from file.
     This can be either raster or vector data.
@@ -104,6 +105,7 @@ def get_bounding_box(filename):
     layer = read_layer(filename)
     return layer.get_bounding_box()
 
+
 def get_bounding_box_string(filename):
     """Get bounding box for specified raster or vector file
 
@@ -139,7 +141,7 @@ def get_geotransform(server_url, layer_name):
         grid = layer.grid
         top_left_x = float(layer.grid.origin[0])
         we_pixel_res = float(layer.grid.offsetvectors[0][0])
-        x_rotation =  float(layer.grid.offsetvectors[0][1])
+        x_rotation = float(layer.grid.offsetvectors[0][1])
         top_left_y = float(layer.grid.origin[1])
         y_rotation = float(layer.grid.offsetvectors[1][0])
         ns_pixel_res = float(layer.grid.offsetvectors[1][1])
@@ -150,12 +152,12 @@ def get_geotransform(server_url, layer_name):
         adjusted_top_left_x = top_left_x - we_pixel_res / 2
         adjusted_top_left_y = top_left_y - ns_pixel_res / 2
 
-        return (adjusted_top_left_x , we_pixel_res, x_rotation,
+        return (adjusted_top_left_x, we_pixel_res, x_rotation,
                 adjusted_top_left_y, y_rotation, ns_pixel_res)
     else:
         msg = ('Could not find layer "%s" in the WCS server "%s".'
                'Available layers were: %s' % (layer_name, server_url,
-               wcs.contents.keys()))
+                                              wcs.contents.keys()))
         raise Exception(msg)
 
 
@@ -185,7 +187,6 @@ def get_metadata(server_url, layer_name):
             time.sleep(1)  # Wait a second and try again
         else:
             break  # Found it, let's move on
-
 
     msg = ('There is no metadata in server %s for layer '
            '%s. Available metadata is %s' % (server_url, layer_name,
