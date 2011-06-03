@@ -81,15 +81,22 @@ def save_file_to_geonode(filename, user=None, title=None,
     # and create a keywords list from there.
     # It is assumed that the keywords are separated
     # by new lines.
+    # Empty keyword lines are ignored (as this causes issues downstream)
     keyword_list = []
     keyword_file = basename + '.keywords'
     if os.path.exists(keyword_file):
         f = open(keyword_file, 'r')
         for line in f.readlines():
-            # Strip any spaces after or before the colons if present
+            # Ignore blank lines
             raw_keyword = line.strip()
+            if raw_keyword == '':
+                continue
+
+            # Strip any spaces after or before the colons if present
             if ':' in raw_keyword:
                 keyword = ':'.join([x.strip() for x in raw_keyword.split(':')])
+
+            # Store keyword
             keyword_list.append(keyword)
         f.close()
 
