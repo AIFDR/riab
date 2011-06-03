@@ -50,8 +50,8 @@ def unique_filename(**kwargs):
 
     return filename
 
-# GeoServer utility functions
 
+# GeoServer utility functions
 def is_server_reachable(url):
     """Make an http connection to url to see if it is accesible.
 
@@ -97,7 +97,8 @@ class MetadataReader(object):
     """Read and parse capabilities document into a lxml.etree infoset
 
        Adapted from:
-       http://trac.gispython.org/lab/browser/OWSLib/trunk/owslib/feature/wfs200.py#L402
+       http://trac.gispython.org/lab/browser/OWSLib/trunk/
+              owslib/feature/wfs200.py#L402
     """
 
     def __init__(self, server_url, service_type, version):
@@ -127,7 +128,8 @@ class MetadataReader(object):
             self.keywordstr = 'Keywords'
             self.layer_type = 'feature'
         else:
-            raise NotImplemented('Unknown service type: "%s"' % self.service_type)
+            msg = 'Unknown service type: "%s"' % self.service_type
+            raise NotImplemented(msg)
 
     def capabilities_url(self):
         """Return a capabilities url
@@ -182,22 +184,20 @@ class MetadataReader(object):
                              'not %s' % type(st))
         return etree.fromstring(st)
 
-
     def get_metadata(self):
 
         _capabilities = self.read()
-
         request_url = self.capabilities_url()
-
         serviceidentelem = _capabilities.find(self.NAMESPACE + 'Service')
-
-        featuretypelistelem = _capabilities.find(self.NAMESPACE + self.typelist)
+        featuretypelistelem = _capabilities.find(self.NAMESPACE +\
+                                                     self.typelist)
 
         msg = ('Could not find element "%s" in namespace %s on %s'
                % (self.typelist, self.NAMESPACE, self.url))
         assert featuretypelistelem is not None, msg
 
-        featuretypeelems = featuretypelistelem.findall(self.NAMESPACE + self.typeelms)
+        featuretypeelems = featuretypelistelem.findall(self.NAMESPACE +\
+                                                           self.typeelms)
         layers = []
         for f in featuretypeelems:
             metadata = {'layer_type': self.layer_type}
