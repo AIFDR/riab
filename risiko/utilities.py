@@ -98,10 +98,6 @@ def save_file_to_geonode(filename, user=None, title=None,
         # ESRI and convert it to Geotiff before uploading.
 
         # Create temporary tif file for upload and check that the road is clear
-
-        # FIXME (Ole): for some reason, these files tend to hang around
-        # - especially after interrupts so we'll go for temporary filenames
-        # for the time being.
         prefix=os.path.split(basename)[-1]
         upload_filename = unique_filename(prefix=prefix, suffix='.tif')
         upload_basename, extension = os.path.splitext(upload_filename)
@@ -111,13 +107,6 @@ def save_file_to_geonode(filename, user=None, title=None,
             if os.path.exists(basename+ext):
                 cmd = 'cp %s%s %s%s' % (basename, ext, upload_basename, ext)
                 run(cmd)
-
-        #msg = ('You have asked to upload the ASCII file "%s" and to do so I '
-        #       'must first convert it to the TIF format. However, there is '
-        #       'already a file named "%s" so you have to remove that first '
-        #       'and try again. Sorry about that.' % (filename,
-        #                                             upload_filename))
-        #assert not os.path.exists(upload_filename), msg
 
         # Check that projection file exists
         prjname = basename + '.prj'
