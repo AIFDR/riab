@@ -328,17 +328,13 @@ class Test_calculations(unittest.TestCase):
             R = read_layer(f)
             ref_geotransform = R.get_geotransform()
 
-            # We need to give GeoServe time to update the WCS contents before querying it
-            # 1 second should be enough
-            time.sleep(1)
-
             # Get geotransform from GeoNode
             layer_name = layer.typename
             metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
 
             geotransform_name = 'geotransform'
-            msg = ('Could not find attribute "%s" in metadata. Values are: %s' %
-                    (geotransform_name, metadata.keys()))
+            msg = ('Could not find attribute "%s" in metadata. '
+                   'Values are: %s' % (geotransform_name, metadata.keys()))
             assert geotransform_name in metadata, msg
 
             gn_geotransform = metadata[geotransform_name]
