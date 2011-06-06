@@ -77,6 +77,9 @@ cp temp/geoserver-geonode-dev.war tomcat/webapps/
 cp temp/geonetwork.war tomcat/webapps/
 pip install temp/riab-libs.pybundle
 
+pip install django==1.3
+pip install fabric
+
 echo ">>> Copying media files into geonode/maps static folder"
 pushd .
 mkdir -p geonode/src/GeoNodePy/geonode/maps/static
@@ -86,10 +89,6 @@ popd
 echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
 pip install -e riab
-pip install fabric
-
-
-pip install django==1.3
 
 echo ">>> Creating development database"
 django-admin.py syncdb --settings=risiko.settings --noinput
