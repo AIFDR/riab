@@ -90,9 +90,6 @@ echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
 pip install -e riab
 
-echo ">>> Creating development database"
-django-admin.py syncdb --settings=risiko.settings --noinput
-
 export RIAB_DATA=$RIAB_HOME/riab_data
 
 echo ">>> Get bundled test and demo data"
