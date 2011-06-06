@@ -282,10 +282,6 @@ ABSOLUTE_URL_OVERRIDES = {'auth.user': get_user_url}
 AUTH_PROFILE_MODULE = 'maps.Contact'
 REGISTRATION_OPEN = False
 
-SERVE_MEDIA = DEBUG
-
-GEONODE_CLIENT_LOCATION = '/media/geonode/'
-
 # Logging debug information to a file.
 import logging
 
