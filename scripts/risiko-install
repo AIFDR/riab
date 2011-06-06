@@ -88,6 +88,12 @@ pip install -e geonode/src/GeoNodePy
 pip install -e riab
 pip install fabric
 
+
+pip install -e django==1.3
+
+echo ">>> Creating development database"
+django-admin.py syncdb --settings=risiko.settings --noinput
+
 export RIAB_DATA=$RIAB_HOME/riab_data
 
 echo ">>> Get bundled test and demo data"
@@ -124,6 +130,7 @@ else
 fi
 
 mkdir -p logs
+
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"

@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
-from staticfiles.urls import staticfiles_urlpatterns
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from risiko.utilities import save_to_geonode
 from django.contrib import admin
 
@@ -51,8 +51,4 @@ urlpatterns = patterns('',
     (r'^api/v1/calculate', 'impact.views.calculate',
                                          {'save_output': save_to_geonode}),
     (r'^api/v1/', include('impact.urls')),
-    )
-
-# Extra static file endpoint for development use
-if settings.SERVE_MEDIA:
-    urlpatterns += staticfiles_urlpatterns()
+    ) + staticfiles_urlpatterns()
