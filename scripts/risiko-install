@@ -11,25 +11,7 @@ echo "---------------------------------------------------------"
 
 sudo apt-get -y update
 
-#export DEBIAN_FRONTEND=noninteractive
-# For Java 6 JDK
-#sudo add-apt-repository "deb http://archive.canonical.com/ lucid partner"
-# For GeoNode
-#sudo add-apt-repository "deb http://apt.opengeo.org/lucid lucid main"
-#sudo apt-get -y update
- # 'Accept' SunOracle Licensing
-#sudo echo "sun-java6-bin shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
-#sudo echo "sun-java6-jdk shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
-#sudo echo "sun-java6-jre shared/accepted-sun-dlj-v1-1 boolean true" | sudo debconf-set-selections
-#sudo echo "sun-java6-jre sun-java6-jre/stopthread boolean true" | sudo debconf-set-selections
-#sudo echo "sun-java6-jre sun-java6-jre/jcepolicy note" | sudo debconf-set-selections
-#sudo echo "sun-java6-bin shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
-#sudo echo "sun-java6-jdk shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
-#sudo echo "sun-java6-jre shared/present-sun-dlj-v1-1 note" | sudo debconf-set-selections
-# Recommended, and useful for Ubuntu 10.04
-#sudo apt-get install -y --force-yes sun-java6-jdk
-
-# Needed for auto installation in Ubuntu 10.10
+# It is better to install Oracle Java but that process is done manually so we go with openjdk.
 sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
 echo ">>> Installing Ubuntu packages"
@@ -53,6 +35,9 @@ echo ">>> Cloning the repositories"
 checkup ingenieroariel/geonode.git geonode
 cd geonode;git checkout synth; cd ..
 checkup AIFDR/riab.git riab
+
+
+
 
 echo ">>> Creating the virtual environment"
 if [ -d riab_env ]; then
@@ -91,6 +76,12 @@ unzip temp/tomcat.zip
 cp temp/geoserver-geonode-dev.war tomcat/webapps/
 cp temp/geonetwork.war tomcat/webapps/
 pip install temp/riab-libs.pybundle
+
+echo ">>> Copying media files into geonode/maps static folder"
+pushd .
+mkdir -p geonode/src/GeoNodePy/geonode/maps/static
+unzip temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode
+popd
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pip install -e geonode/src/GeoNodePy
