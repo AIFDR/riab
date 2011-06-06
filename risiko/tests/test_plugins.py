@@ -21,8 +21,8 @@ from django.conf import settings
 from django.utils import simplejson as json
 
 internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
-DEMO_DATA = os.path.join(os.environ['RIAB_HOME'],
-                         'riab_data', 'risiko_demo_data')
+TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
+                         'riab_data', 'risiko_test_data')
 
 
 # FIXME (Ole): Change H, E to layers.
@@ -130,12 +130,12 @@ class Test_plugins(unittest.TestCase):
         """Verify the plugins can recognize compatible layers.
         """
         # Upload a raster and a vector data set
-        hazard_filename = os.path.join(DEMO_DATA, 'hazard',
-                                       'Lembang_Earthquake_Scenario.asc')
+        hazard_filename = os.path.join(TEST_DATA,
+                                       'lembang_mmi_hazmap.asc')
         hazard_layer = save_to_geonode(hazard_filename)
 
-        exposure_filename = os.path.join(DEMO_DATA, 'exposure',
-                                         'AIBEP_schools.shp')
+        exposure_filename = os.path.join(TEST_DATA,
+                                         'lembang_schools.shp')
         exposure_layer = save_to_geonode(exposure_filename)
 
         c = Client()
