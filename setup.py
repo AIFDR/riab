@@ -128,7 +128,7 @@ setup(
         # 'numpy', 'scipy', 'gdal',
 
         # for the web api
-        'Django==1.2',
+        'Django==1.3',
 
         # for the storage
         'owslib',
