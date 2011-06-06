@@ -5,9 +5,6 @@ import types
 TESTDATA = os.path.join(os.environ['RIAB_HOME'],
                                    'riab_data', 'risiko_test_data')
 
-DEMODATA = os.path.join(os.environ['RIAB_HOME'],
-                                   'riab_data', 'risiko_demo_data')
-
 
 def _same_API(X, Y, exclude=None):
     """Check that public methods of X also exist in Y

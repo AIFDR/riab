@@ -13,7 +13,6 @@ from impact.storage.io import write_raster_data
 from impact.plugins import get_plugins
 
 from impact.tests.utilities import TESTDATA
-from impact.tests.utilities import DEMODATA
 
 
 def linear_function(x, y):
@@ -182,9 +181,8 @@ class Test_Engine(unittest.TestCase):
         for filename in ['Flood_Current_Depth_Jakarta_geographic.asc',
                          'Flood_Design_Depth_Jakarta_geographic.asc']:
 
-            hazard_filename = '%s/%s/%s' % (DEMODATA, 'hazard', filename)
-            exposure_filename = '%s/%s/%s' % (DEMODATA, 'exposure',
-                                              population)
+            hazard_filename = os.path.join(TESTDATA, filename)
+            exposure_filename = os.path.join(TESTDATA, population)
 
             # Get layers using API
             H = read_layer(hazard_filename)
@@ -517,9 +515,8 @@ class Test_Engine(unittest.TestCase):
 
         # FIXME - when we know how to reproject, replace hazard
         # file with UTM version (i.e. without _geographic).
-        hazard_filename = '%s/%s/%s' % (DEMODATA, 'hazard',
-                                        'Ashload_Gede_VEI4_geographic.asc')
-        exposure_filename = '%s/lembang_schools.shp' % TESTDATA
+        hazard_filename = os.path.join(TESTDATA, 'Ashload_Gede_VEI4_geographic.asc')
+        exposure_filename = os.path.join(TESTDATA, 'lembang_schools.shp')
 
         # Calculate impact using API
         H = read_layer(hazard_filename)
