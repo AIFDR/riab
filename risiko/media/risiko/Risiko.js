@@ -105,7 +105,6 @@ var Risiko = Ext.extend(gxp.Viewer, {
     connErrorText: GeoExplorer.prototype.connErrorText,
     connErrorDetailsText: GeoExplorer.prototype.connErrorDetailsText,
     heightLabel: GeoExplorer.prototype.heightLabel,
-    infoButtonText: GeoExplorer.prototype.infoButtonText,
     largeSizeLabel: GeoExplorer.prototype.largeSizeLabel,
     layerAdditionLabel: GeoExplorer.prototype.layerAdditionLabel,
     layerContainerText: GeoExplorer.prototype.layerContainerText,
@@ -1822,63 +1821,6 @@ function calculate()
         });
 
 
-        // create a get feature info control
-        var info = {controls: []};
-        var infoButton = new Ext.Button({
-		tooltip: this.infoButtonText,
-            iconCls: "icon-getfeatureinfo",
-            toggleGroup: toolGroup,
-            enableToggle: true,
-            allowDepress: false,
-            toggleHandler: function(button, pressed) {
-                for (var i = 0, len = info.controls.length; i < len; i++){
-                    if(pressed) {
-                        info.controls[i].activate();
-                    } else {
-                        info.controls[i].deactivate();
-                    }
-                }
-            }
-        });
-
-        var updateInfo = function() {
-            var queryableLayers = app.mapPanel.layers.queryBy(function(x){
-                return x.get("queryable");
-            });
-
-            var map = app.mapPanel.map;
-            var control;
-            for (var i = 0, len = info.controls.length; i < len; i++){
-                control = info.controls[i];
-                control.deactivate();  // TODO: remove when http://trac.openlayers.org/ticket/2130 is closed
-                control.destroy();
-            }
-
-            info.controls = [];
-            queryableLayers.each(function(x){
-                var control = new OpenLayers.Control.WMSGetFeatureInfo({
-                    url: x.getLayer().url,
-                    queryVisible: true,
-                    layers: [x.getLayer()],
-                    eventListeners: {
-                        getfeatureinfo: function(evt) {
-                            app.displayPopup(evt, x.get("title") || x.get("name"));
-                        },
-                        scope: app
-			}}
-                );
-                map.addControl(control);
-                info.controls.push(control);
-                if(infoButton.pressed) {
-                    control.activate();
-                }
-            }, app);
-        };
-
-        this.mapPanel.layers.on("update", updateInfo, this);
-        this.mapPanel.layers.on("add", updateInfo, this);
-        this.mapPanel.layers.on("remove", updateInfo, this);
-
         // create split button for measure controls
         var activeIndex = 0;
         var measureSplit = new Ext.SplitButton({
@@ -1979,7 +1921,6 @@ function calculate()
             }),
             window.printCapabilities ? printButton : "",
             "-",
-	    infoButton,
 	    measureSplit,
             "-",
             new Ext.Button({

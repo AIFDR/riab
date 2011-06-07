@@ -33,7 +33,7 @@ TIME_ZONE = 'America/Chicago'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'id'
+LANGUAGE_CODE = 'en'
 
 LANGUAGES = (
     ('id', _('Indonesian')),
@@ -255,9 +255,7 @@ INSTALLED_APPS = (
     'geonode.proxy',
     'impact',
     'django_nose',
-     # FIXME: Rosetta is only compatible with Django 1.3
-     # but GeoNode is not (yet)
-#    'rosetta',
+    'rosetta',
 )
 
 
