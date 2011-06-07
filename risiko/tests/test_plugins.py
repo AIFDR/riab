@@ -14,15 +14,13 @@ from impact.plugins.core import compatible_layers
 from impact.storage.utilities import get_layers_metadata
 
 from impact.models import Calculation, Workspace
+from impact.tests.utilities import TESTDATA
+
 from risiko.utilities import save_to_geonode
 
 from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
-
-internal_server = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
-TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
-                         'riab_data', 'risiko_test_data')
 
 
 # FIXME (Ole): Change H, E to layers.
@@ -130,11 +128,11 @@ class Test_plugins(unittest.TestCase):
         """Verify the plugins can recognize compatible layers.
         """
         # Upload a raster and a vector data set
-        hazard_filename = os.path.join(TEST_DATA,
+        hazard_filename = os.path.join(TESTDATA,
                                        'lembang_mmi_hazmap.asc')
         hazard_layer = save_to_geonode(hazard_filename)
 
-        exposure_filename = os.path.join(TEST_DATA,
+        exposure_filename = os.path.join(TESTDATA,
                                          'lembang_schools.shp')
         exposure_layer = save_to_geonode(exposure_filename)
 
