@@ -1,7 +1,6 @@
 {% extends "fullscreen.html" %}
 {% load i18n %}
-
-{% block title %} {% trans "Map Viewer" %} - {{ block.super }} {% endblock %}
+{% block title %} {% trans "Risiko Calculator" %} - {{ block.super }} {% endblock %}
 
 {% block head %}
 {% include "geonode/ext_header.html" %}
@@ -74,45 +73,66 @@ Ext.onReady(function() {
 
     app = new Risiko(config);
 
-    var permalinkTemplate = new Ext.Template("{protocol}//{host}/maps/{id}");
-    var permalink = function(id) {
-            return permalinkTemplate.apply({
-                protocol: window.location.protocol,
-                host: window.location.host,
-                id: id
-            }) 
-        };
-
-    var moreInfoTemplate = new Ext.Template(Ext.get("more-info-tpl").dom.innerHTML);
-    var mapInfoHtml = config.id ? moreInfoTemplate.apply({permalink : permalink(app.mapID)}) : "This map is currently unsaved";
-    Ext.DomHelper.overwrite(Ext.get("more-info"), mapInfoHtml)
-
-    var titleTemplate = new Ext.Template(Ext.get("title-tpl").dom.innerHTML);
-    Ext.DomHelper.overwrite(Ext.get("map-title-header"), titleTemplate.apply({title: "Calculation"}));
-
-    app.on("saved", function(id) {
-        //reset title header
-        Ext.DomHelper.overwrite(Ext.get("map-title-header"), titleTemplate.apply({title: "Calculation"}))
-
-        //reset more info link
-     Ext.DomHelper.overwrite(Ext.get("more-info"), moreInfoTemplate.apply({permalink : permalink(app.mapID)})) }, this);
 {% endautoescape %}
 });
 
 </script>
-
+<style>
+.langbar {
+     margin-right: 150px;
+     right: 0;
+     position: absolute;
+     padding-top: 5px;
+}
+</style>
 {% endblock %}
 
 {% block body %}
 <div id="header-wrapper">
   {{ block.super }}
-  <div id="topPanel">
-    <div id="more-info"></div>
-    <span id="map-title-header"></span>
-  </div>
+
+    {% get_current_language as LANGUAGE %}
+
+                                                                                                                         
+    <form class="langbar" id="target" action="/i18n/setlang/" method="post">
+      {% csrf_token %}
+       <div style="display: inline;">
+         <select id="langval" name="language" onchange="javascript:form.submit()">
+           {% for lang in LANGUAGES %}
+            <option value="{{ lang.0 }}"{% ifequal LANGUAGE_CODE lang.0 %} selected="selected"{% endifequal %}>{{ lang.1     }}</option>
+           {% endfor %}
+         </select>
+       </div>
+     </form>
+
+
+  <div id="crossbar">
+    <div class="wrap selfclear">
+      {% block nav %}
+    <ul id="sitenav" class="selfclear">
+        <li class="home"><a href="/">{% trans "Calculator" %}</a></li>
+        <li class="home"><a href="{% url geonode.views.index %}">{% trans "Index" %}</a></li>
+        <li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.browse_data %}">{% trans "Data" %}</a></li>
+        <li class=""><a class="" id="mapsLink" href="{% url geonode.maps.views.maps %}">{% trans "Maps" %}</a></li>
+    {% if user.is_authenticated %}
+        <li class=""><a class="" id="profileLink" href="{% url profiles_profile_detail user.username %}">{% trans "Profile" %}</a></li>
+    {% if user.is_staff %}
+        <li class=""><a class="" id="adminLink" href="/admin/">{% trans "Admin" %}</a></li>
+    {% endif %}
+
+    {% endif %}
+    </ul>
+      {% endblock %}
+    </div><!-- /.wrap -->
+  </div><!-- /#crossbar -->
+
 </div>
 <div id="templates">
-  <div id="more-info-tpl"><a class='link' href='{permalink}'>{% trans "View info" %}</a></div>
-  <div id="title-tpl"><a class='maplist' href='/maps/search'>{% trans "Maps" %}</a> / <strong>{title}</strong></div>
+  <div id="more-info-tpl">
+
+  </div>
+  <div id="title-tpl">
+    
+    </div>
 </div>
 {% endblock %}
