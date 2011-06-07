@@ -37,18 +37,6 @@ else
 fi
 
 
-function checkup() {
-  REPO="$1"
-  WORKING_DIR="$2"
-  if [ -d "${WORKING_DIR}" ];
-  then
-      echo "Updating ${WORKING_DIR} from upstream"
-      (cd "${WORKING_DIR}" && git pull)
-  else
-      git clone "git@github.com:${REPO}" "${WORKING_DIR}" || git clone "https://github.com/${REPO}" "${WORKING_DIR}"
-  fi
-}
-
 
 echo ">>> Downloading bundled pre-requisites"
 
@@ -92,6 +80,21 @@ pip install django==1.3
 pip install fabric
 pip install psycopg2
 
+
+function checkup() {
+  REPO="$1"
+  WORKING_DIR="$2"
+  if [ -d "${WORKING_DIR}" ];
+  then
+      echo "Updating ${WORKING_DIR} from upstream"
+      (cd "${WORKING_DIR}" && git pull)
+  else
+      git clone "git@github.com:${REPO}" "${WORKING_DIR}" || git clone "https://github.com/${REPO}" "${WORKING_DIR}"
+  fi
+}
+
+
+
 echo ">>> Cloning the repositories"
 # Get riab source code
 checkup ingenieroariel/geonode.git geonode
@@ -99,7 +102,10 @@ cd geonode;git checkout synth; cd ..
 checkup AIFDR/riab.git riab
 
 echo ">>> Installing GeoNode and Riab in dev mode"
-pip install -e geonode/src/GeoNodePy
+pushd .
+cd geonode/src
+pip install -e GeoNodePy
+popd
 pip install -e riab
 
 echo ""
