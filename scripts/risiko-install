@@ -62,25 +62,6 @@ wget -c "$RISIKO_DATASOURCE/geonode-client.zip"
 wget -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
 cd ..
 
-echo ">>> Activating virtual environment"
-source ~/.bash_aliases
-source riab_env/bin/activate
-
-echo ">>> Installing riab dependencies"
-unzip -o temp/tomcat.zip
-cp temp/geoserver-geonode-dev.war tomcat/webapps/
-cp temp/geonetwork.war tomcat/webapps/
-tar xvfz temp/risiko_test_data.tgz
-mkdir -p geonode/src/GeoNodePy/geonode/maps/static
-unzip -o temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode
-mkdir -p logs
-pip install temp/riab-libs.pybundle
-
-# FIXME: Need to add these to the bundle
-pip install django==1.3
-pip install fabric
-pip install psycopg2
-
 
 function checkup() {
   REPO="$1"
@@ -101,6 +82,27 @@ echo ">>> Cloning the repositories"
 checkup ingenieroariel/geonode.git geonode
 cd geonode;git checkout synth; cd ..
 checkup AIFDR/riab.git riab
+
+
+
+echo ">>> Activating virtual environment"
+source ~/.bash_aliases
+source riab_env/bin/activate
+
+echo ">>> Installing riab dependencies"
+unzip -o temp/tomcat.zip
+cp temp/geoserver-geonode-dev.war tomcat/webapps/
+cp temp/geonetwork.war tomcat/webapps/
+tar xvfz temp/risiko_test_data.tgz
+mkdir -p geonode/src/GeoNodePy/geonode/maps/static
+unzip -o temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode
+mkdir -p logs
+pip install temp/riab-libs.pybundle
+
+# FIXME: Need to add these to the bundle
+pip install django==1.3
+pip install fabric
+pip install psycopg2
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pushd .
