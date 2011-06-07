@@ -122,9 +122,6 @@ class Raster:
 
         # Check keywords
         if self.keywords != other.keywords:
-            print 'keywords'
-            print self.keywords
-            print other.keywords
             return False
 
         # Raster layers are identical up to the specified tolerance

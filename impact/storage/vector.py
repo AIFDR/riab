@@ -140,9 +140,6 @@ class Vector:
 
         # Check keywords
         if self.keywords != other.keywords:
-            print 'keywords'
-            print self.keywords
-            print other.keywords
             return False
 
         # Vector layers are identical up to the specified tolerance
