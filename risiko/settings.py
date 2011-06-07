@@ -2,9 +2,6 @@
 import os
 import geonode
 
-# FIXME (Ole): What's this all about?
-_ = lambda x: x
-
 DEBUG = True
 SITENAME = 'Risk In A Box'
 SITEURL = 'http://localhost:8000/'
@@ -36,8 +33,11 @@ TIME_ZONE = 'America/Chicago'
 LANGUAGE_CODE = 'en'
 
 LANGUAGES = (
-    ('id', _('Indonesian')),
-    ('en', _('English')),
+    ('id', 'Bahasa Indonesia'),
+    ('en', 'English'),
+    ('es', 'Espanol'),
+    ('fr', 'Francais'),
+    ('it', 'Italian'),
 )
 
 SITE_ID = 1
