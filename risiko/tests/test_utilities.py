@@ -8,9 +8,7 @@ import unittest
 import urllib2
 from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode, RisikoException
-
-TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
-                         'riab_data', 'risiko_test_data')
+from impact.tests.utilities import TESTDATA
 
 
 def check_layer(uploaded):
@@ -80,7 +78,7 @@ class Test_utilities(unittest.TestCase):
 
         expected_layers = []
         not_expected_layers = []
-        datadir = TEST_DATA
+        datadir = TESTDATA
         BAD_LAYERS = ['grid_without_projection.asc']
 
         for root, dirs, files in os.walk(datadir):
@@ -144,7 +142,7 @@ class Test_utilities(unittest.TestCase):
     def test_extension_not_implemented(self):
         """RisikoException is returned for not compatible extensions
         """
-        sampletxt = os.path.join(TEST_DATA,
+        sampletxt = os.path.join(TESTDATA,
                                  'lembang_schools_percentage_loss.dbf')
         try:
             save_to_geonode(sampletxt, user=self.user)
@@ -157,7 +155,7 @@ class Test_utilities(unittest.TestCase):
     def test_shapefile(self):
         """Shapefile can be uploaded
         """
-        thefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
+        thefile = os.path.join(TESTDATA, 'lembang_schools.shp')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
         check_layer(uploaded)
 
@@ -165,7 +163,7 @@ class Test_utilities(unittest.TestCase):
         """Shapefile with without prj file is rejected
         """
 
-        thefile = os.path.join(TEST_DATA,
+        thefile = os.path.join(TESTDATA,
                                'lembang_schools_percentage_loss.shp')
         try:
             uploaded = save_to_geonode(thefile, user=self.user)
@@ -180,7 +178,7 @@ class Test_utilities(unittest.TestCase):
         """ASCII file with without prj file is rejected
         """
 
-        thefile = os.path.join(TEST_DATA,
+        thefile = os.path.join(TESTDATA,
                                'grid_without_projection.asc')
 
         try:
@@ -195,28 +193,28 @@ class Test_utilities(unittest.TestCase):
     def test_tiff(self):
         """GeoTIF file can be uploaded
         """
-        thefile = os.path.join(TEST_DATA, 'Population_2010_clip.tif')
+        thefile = os.path.join(TESTDATA, 'Population_2010_clip.tif')
         uploaded = save_to_geonode(thefile, user=self.user)
         check_layer(uploaded)
 
     def test_asc(self):
         """ASCII file can be uploaded
         """
-        thefile = os.path.join(TEST_DATA, 'test_grid.asc')
+        thefile = os.path.join(TESTDATA, 'test_grid.asc')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
         check_layer(uploaded)
 
     def test_another_asc(self):
         """Real world ASCII file can be uploaded
         """
-        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
+        thefile = os.path.join(TESTDATA, 'lembang_mmi_hazmap.asc')
         layer = save_to_geonode(thefile, user=self.user)
         check_layer(layer)
 
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
         """
-        thefile = os.path.join(TEST_DATA, 'test_grid.asc')
+        thefile = os.path.join(TESTDATA, 'test_grid.asc')
         uploaded1 = save_to_geonode(thefile, overwrite=True,
                                     user=self.user)
         check_layer(uploaded1)
@@ -249,7 +247,7 @@ class Test_utilities(unittest.TestCase):
     def test_non_existing_file(self):
         """RisikoException is returned for non existing file
         """
-        sampletxt = os.path.join(TEST_DATA, 'smoothoperator.shp')
+        sampletxt = os.path.join(TESTDATA, 'smoothoperator.shp')
         try:
             save_to_geonode(sampletxt, user=self.user)
         except RisikoException, e:
@@ -261,7 +259,7 @@ class Test_utilities(unittest.TestCase):
     def test_non_existing_dir(self):
         """RisikoException is returned for non existing dir
         """
-        sampletxt = os.path.join(TEST_DATA, 'smoothoperator')
+        sampletxt = os.path.join(TESTDATA, 'smoothoperator')
         try:
             uploaded_layers = save_to_geonode(sampletxt, user=self.user)
             for uploaded in uploaded_layers:
@@ -277,7 +275,7 @@ class Test_utilities(unittest.TestCase):
         """
         from geonode.maps.utils import cleanup
 
-        thefile = os.path.join(TEST_DATA, 'lembang_mmi_hazmap.asc')
+        thefile = os.path.join(TESTDATA, 'lembang_mmi_hazmap.asc')
         uploaded = save_to_geonode(thefile, user=self.user)
         check_layer(uploaded)
 
@@ -309,7 +307,7 @@ class Test_utilities(unittest.TestCase):
     def test_keywords(self):
         """Check that keywords are read from the .keywords file
         """
-        thefile = os.path.join(TEST_DATA, 'Lembang_Earthquake_Scenario.asc')
+        thefile = os.path.join(TESTDATA, 'Lembang_Earthquake_Scenario.asc')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
 
         keywords = uploaded.keywords
