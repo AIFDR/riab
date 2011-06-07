@@ -1158,17 +1158,15 @@ function calculate()
                 flex: 2,
                 frame: false,
                 border: false,
-                html:"<table border=0 width=100% height=100%>"+
-			    "<tr><td><P>&nbsp;<P>&nbsp;</td></tr>"+
-            "<tr><td align='center' valign='bottom'>"+
-            "<img src='/media/theme/img/bnpb_logo.jpg' alt='BNPB' title='BNPB' width=120 style='padding-left: 40px;margin-top:20px'/><P>"+
-            "<img src='/media/theme/img/bppt_logo.jpg' alt='BPPT' title='BPPT' width=150 style='padding-left: 40px;margin-top:20px'/>" +
-            "</td></tr><tr><td align='center' valign='bottom'>"+
-            "Didukung oleh:<P>"+
-	    "<img src='/media/theme/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=100 style='padding-left:40px;margin-top:20px'/><P>" +
-            "<img src='/media/theme/img/aifdr.png' alt='AIFDR' title='AIFDR' width=100 style='padding-left:40px;padding-top:20px'/>" +
-	    "</td></tr></table>"+
-               "",
+                width: '100%',
+                html:"<div>"+
+                     "<p>"+
+                       "<img src='/static/theme/img/bnpb_logo.jpg' alt='BNPB' title='BNPB' width=120 style='padding-left: 10px; float: left' />"+
+                       "<img src='/static/theme/img/bppt_logo.jpg' alt='BPPT' title='BPPT' width=120 style='padding-right: 10px; padding-top: 20px;float: right' />" +
+                     "</p><p style='clear:both; padding: 10px 80px'>Didukung oleh:</p><p>"+
+	               "<img src='/static/theme/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=100 style='padding-left: 20px; float: left;' />" +
+                       "<img src='/static/theme/img/aifdr.png' alt='AIFDR' title='AIFDR' width=100 style='padding-right: 20px; float: right;' />" +
+                     "</p></div>",
                 xtype: "panel",
                 defaults:{hideBorders: true}
                }]
