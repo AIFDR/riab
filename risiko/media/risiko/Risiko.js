@@ -997,24 +997,11 @@ function received(result, request) {
     var keywords = data.keywords;
     var exposure = data.exposure_layer;
     var hazard = data.hazard_layer;
-    var base_url = layer_uri.split('/')[2]
+    var base_url = layer_uri.split('/')[2];
     var server_url = data.ows_server_url;
-    var result_name = layer_uri.split('/')[4].split(':')[1]
-    var result_label = exposure + ' X ' + hazard + '=' +result_name
-    lastImpactSelect=result_label
+    var result_name = layer_uri.split('/')[4].split(':')[1];
+    var result_label = exposure + ' X ' + hazard + '=' +result_name;
     layer=addLayer(server_url, result_label, result_name, 0.9);
-
-    var selectControl = new OpenLayers.Control.SelectFeature(layer);
-
-    app.mapPanel.map.addControl(selectControl);
-    layer.events.on({
-	featureselected: function(e)
-	{
-		createPopup(e.feature);
-	}
-    });
-    selectControl.activate();
-
 }
 
 function calculate()

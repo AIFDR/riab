@@ -185,7 +185,7 @@ class Test_calculations(unittest.TestCase):
                         exposure_server=INTERNAL_SERVER_URL,
                         exposure=exposure_name,
                         bbox=bbox,
-                        impact_function='Earthquake School Damage Function',
+                        impact_function='Earthquake Building Damage Function',
                         impact_level=10,
                         keywords='test,schools,lembang',
                         ))

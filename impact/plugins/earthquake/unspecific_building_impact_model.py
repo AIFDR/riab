@@ -3,10 +3,11 @@ from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
 
 
-class EarthquakeSchoolDamageFunction(FunctionProvider):
-    """Risk plugin for earthquake damage to schools
+class EarthquakeBuildingDamageFunction(FunctionProvider):
+    """Risk plugin for earthquake damage to buildings
 
     :param requires category=="hazard" and \
+                    subcategory.startswith("earthquake") and \
                     layer_type=="raster"
     :param requires category=="exposure" and \
                     subcategory.startswith("building") and \
@@ -32,7 +33,7 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
         shaking = H.get_data()
 
         # Calculate building damage
-        school_damage = []
+        building_damage = []
         for i in range(len(shaking)):
             x = float(shaking[i].values()[0])
             if x < 6.0:
@@ -44,14 +45,14 @@ class EarthquakeSchoolDamageFunction(FunctionProvider):
                          509.0 * x +
                          714.4)
 
-            school_damage.append({'Percent_damage': value, 'MMI': x})
+            building_damage.append({'Percent_damage': value, 'MMI': x})
 
         # FIXME (Ole): Need helper to generate new layer using
         #              correct spatial reference
         #              (i.e. sensibly wrap the following lines)
         projection = E.get_projection()
 
-        V = Vector(data=school_damage,
+        V = Vector(data=building_damage,
                    projection=E.get_projection(),
                    geometry=coordinates,
                    name='Estimated pct damage')

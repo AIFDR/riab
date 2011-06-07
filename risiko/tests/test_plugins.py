@@ -153,7 +153,7 @@ class Test_plugins(unittest.TestCase):
         # parse the requirements, but for now it will just take the buildings
         # damage one.
         for function in functions:
-            if function['name'] == 'Earthquake School Damage Function':
+            if function['name'] == 'Earthquake Building Damage Function':
                 layers = function['layers']
 
                 msg_tmpl = 'Expected layer %s in list of compatible layers: %s'

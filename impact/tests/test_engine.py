@@ -274,7 +274,7 @@ class Test_Engine(unittest.TestCase):
             H = read_layer(hazard_filename)
             E = read_layer(exposure_filename)
 
-            plugin_name = 'Earthquake School Damage Function'
+            plugin_name = 'Earthquake Building Damage Function'
             plugin_list = get_plugins(plugin_name)
             assert len(plugin_list) == 1
             assert plugin_list[0].keys()[0] == plugin_name
