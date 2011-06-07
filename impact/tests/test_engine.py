@@ -222,9 +222,8 @@ class Test_Engine(unittest.TestCase):
             calculated_raster = read_layer(impact_filename)
             C = calculated_raster.get_data(nan=0)
 
-            # Check caption (FIXME (Ole): Do this when issue #77 has been done)
-            #assert calculated_raster.get_caption().startswith('Number')
-            # ...and more tests here
+            # Check caption
+            assert calculated_raster.get_caption().startswith('Number of people')
 
             # Compare shape and extrema
             msg = ('Shape of calculated raster differs from reference raster: '

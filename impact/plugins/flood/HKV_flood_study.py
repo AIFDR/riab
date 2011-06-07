@@ -45,7 +45,7 @@ class FloodImpactFunction(FunctionProvider):
         # Generate text with result for this study
         number_of_people_affected = sum(I.flat)
         caption = ('Number of people affected by flood levels greater '
-                   'than %i cm: '
+                   'than %i cm = '
                    '%.2f million' % (threshold * 100,
                                      number_of_people_affected / 1000000))
 
@@ -54,5 +54,5 @@ class FloodImpactFunction(FunctionProvider):
                    projection=inundation.get_projection(),
                    geotransform=inundation.get_geotransform(),
                    name='People affected',
-                   caption=caption)
+                   keywords={'caption': caption})
         return R

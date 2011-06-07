@@ -300,7 +300,8 @@ class Test_IO(unittest.TestCase):
                       'UNIT["degree",0.0174532925199433],'
                       'AUTHORITY["EPSG","4326"]]')
         geotransform = (lon_ul, dlon, 0, lat_ul, 0, dlat)
-        R1 = Raster(A1, projection, geotransform)
+        R1 = Raster(A1, projection, geotransform,
+                    keywords={'testdata': None, 'size': 'small'})
 
         msg = ('Dimensions of raster array do not match those of '
                'raster object')
@@ -352,6 +353,12 @@ class Test_IO(unittest.TestCase):
             msg = 'Should have raised TypeError'
             raise Exception(msg)
 
+        # Check keywords
+        assert R1.keywords == R2.keywords
+
+        # Check override of ==
+        assert R1 == R2
+
     def test_reading_and_writing_of_real_rasters(self):
         """Rasters can be read and written correctly in different formats
         """
@@ -380,7 +387,8 @@ class Test_IO(unittest.TestCase):
                 write_raster_data(A1,
                                   R1.get_projection(),
                                   R1.get_geotransform(),
-                                  out_filename)
+                                  out_filename,
+                                  keywords=R1.keywords)
 
                 # Read again and check consistency
                 R2 = read_layer(out_filename)
@@ -411,6 +419,9 @@ class Test_IO(unittest.TestCase):
                 p2 = R2.get_projection(proj4=True)
                 msg = 'Projections were different: %s != %s' % (p1, p2)
                 assert p1 == p1, msg
+
+                msg = 'Keywords were different: %s != %s' % (R1.keywords, R2.keywords)
+                assert R1.keywords == R2.keywords, msg
 
                 # Use overridden == and != to verify
                 assert R1 == R2
@@ -695,6 +706,8 @@ class Test_IO(unittest.TestCase):
         x = read_keywords(kwd_filename)
         os.remove(kwd_filename)
 
+        assert isinstance(x, dict)
+
         # Check keyword names
         for key in x:
             msg = 'Read unexpected key %s' % key
@@ -727,6 +740,22 @@ class Test_IO(unittest.TestCase):
             msg = 'Should have raised assertion error for wrong extension'
             raise Exception(msg)
 
+
+    def test_empty_keywords_file(self):
+        """Empty keywords can be handled
+        """
+
+        kwd_filename = unique_filename(suffix='.keywords')
+        write_keywords({}, kwd_filename)
+
+        msg = 'Keywords file %s was not created' % kwd_filename
+        assert os.path.isfile(kwd_filename), msg
+
+        x = read_keywords(kwd_filename)
+        os.remove(kwd_filename)
+
+        assert isinstance(x, dict)
+        assert len(x) == 0
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')

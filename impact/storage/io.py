@@ -34,7 +34,7 @@ def read_layer(filename):
         raise Exception(msg)
 
 
-def write_raster_data(data, projection, geotransform, filename):
+def write_raster_data(data, projection, geotransform, filename, keywords=None):
     """Write array to raster file with specified metadata and one data layer
 
     Input:
@@ -45,15 +45,16 @@ def write_raster_data(data, projection, geotransform, filename):
                        top left y, rotation, n-s pixel resolution).
                        See e.g. http://www.gdal.org/gdal_tutorial.html
         filename: Output filename
+        keywords: Optional dictionary
 
     Note: The only format implemented is GTiff and the extension must be .tif
     """
 
-    R = Raster(data, projection, geotransform)
+    R = Raster(data, projection, geotransform, keywords=keywords)
     R.write_to_file(filename)
 
 
-def write_point_data(data, projection, geometry, filename):
+def write_point_data(data, projection, geometry, filename, keywords=None):
     """Write point data and any associated attributes to vector file
 
     Input:
@@ -64,6 +65,7 @@ def write_point_data(data, projection, geometry, filename):
         geometry: Nx2 Numpy array with longitudes, latitudes
                   N is the number of points (features).
         filename: Output filename
+        keywords: Optional dictionary
 
     Note: The only format implemented is GML and SHP so the extension
     must be either .gml or .shp
@@ -77,7 +79,7 @@ def write_point_data(data, projection, geometry, filename):
     * http://invisibleroads.com/tutorials/gdal-shapefile-points-save.html
     """
 
-    V = Vector(data, projection, geometry)
+    V = Vector(data, projection, geometry, keywords=keywords)
     V.write_to_file(filename)
 
 # FIXME (Ole): Why is the resolution hard coded here?

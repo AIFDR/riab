@@ -6,14 +6,15 @@ import numpy
 from osgeo import ogr
 from impact.storage.projection import Projection
 from impact.storage.utilities import DRIVER_MAP, TYPE_MAP
-
+from impact.storage.utilities import read_keywords
+from impact.storage.utilities import write_keywords
 
 class Vector:
     """Class for abstraction of vector data
     """
 
     def __init__(self, data=None, projection=None, geometry=None,
-                 name='Vector layer', caption=''):
+                 name='Vector layer', keywords=None):
         """Initialise object with either geometry or filename
 
         Input
@@ -27,12 +28,17 @@ class Vector:
             geometry: An Nx2 array of point coordinates
             name: Optional name for layer.
                   Only used if geometry is provide as a numeric array
-            caption: Optional text field that describes the layer. This field
-                     can for example be used to display text about the layer
-                     in a web application.
+            keywords: Optional dictionary with keywords that describe the layer.
+                      If the layer is stored, these keywords will be written into
+                      an associated file with extension .keywords.
+
+                      Keywords can for example be used to display text about the layer
+                      in a web application.
+
+        Note that if data is a filename, all other arguments are ignored as they will be
+        inferred from the file.
         """
 
-        self.caption = caption
         if data is None and projection is None and geometry is None:
             # Instantiate empty object
             self.name = name
@@ -41,13 +47,21 @@ class Vector:
             self.filename = None
             self.data = None
             self.extent = None
+            self.keywords = {}
             return
 
         if isinstance(data, basestring):
             self.read_from_file(data)
         else:
-            # Assume that geometry is provided as an array
+            # Assume that data is provided as an array
             # with extra keyword arguments supplying metadata
+            if keywords is None:
+                self.keywords = {}
+            else:
+                msg = ('Specified keywords must be either None or a dictionary. '
+                       'I got %s' % keywords)
+                assert isinstance(keywords, dict), msg
+                self.keywords = keywords
 
             msg = 'Geometry must be specified'
             assert geometry is not None, msg
@@ -122,6 +136,13 @@ class Vector:
                                           rtol=rtol, atol=atol):
                         return False
 
+        # Check keywords
+        if self.keywords != other.keywords:
+            print 'keywords'
+            print self.keywords
+            print other.keywords
+            return False
+
         # Vector layers are identical up to the specified tolerance
         return True
 
@@ -134,7 +155,12 @@ class Vector:
         return self.name
 
     def get_caption(self):
-        return self.caption
+        """Return 'caption' keyword if present. Otherwise ''.
+        """
+        if 'caption' in self.keywords:
+            return self.keywords['caption']
+        else:
+            return ''
 
     def read_from_file(self, filename):
         """ Read and unpack vector data.
@@ -158,7 +184,10 @@ class Vector:
         * http://www.packtpub.com/article/geospatial-data-python-geometry
         """
 
-        self.name, _ = os.path.splitext(filename)
+        basename, _ = os.path.splitext(filename)
+
+        # Always use basename without leading directories as name
+        self.name = os.path.split(basename)[-1]
 
         fid = ogr.Open(filename)
         if fid is None:
@@ -228,6 +257,9 @@ class Vector:
         self.data = data
         self.filename = filename
 
+        # Look for any keywords
+        self.keywords = read_keywords(basename + '.keywords')
+
     def write_to_file(self, filename):
         """Save vector data to file
 
@@ -235,11 +267,9 @@ class Vector:
             filename: filename with extension .shp or .gml
         """
 
-        # Derive layername from filename (excluding preceding dirs)
-        x = os.path.split(filename)[-1]
-        layername, extension = os.path.splitext(x)
-
         # Check file format
+        basename, extension = os.path.splitext(filename)
+
         msg = ('Invalid file type for file %s. Only extensions '
                'shp or gml allowed.' % filename)
         assert extension == '.shp' or extension == '.gml', msg
@@ -250,6 +280,9 @@ class Vector:
             msg = ('OGR GML driver does not store geospatial reference.'
                    'This format is disabled for the time being')
             raise Exception(msg)
+
+        # Derive layername from filename (excluding preceding dirs)
+        layername = os.path.split(basename)[-1]
 
         # Get vector data
         geometry = self.get_geometry()
@@ -351,6 +384,9 @@ class Vector:
                 raise Exception(msg)
 
             feature.Destroy()
+
+        # Write keywords if any
+        write_keywords(self.keywords, basename + '.keywords')
 
     def get_data(self, attribute=None, index=None):
         """Get vector attributes

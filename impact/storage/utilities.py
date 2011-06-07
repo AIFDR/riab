@@ -289,6 +289,9 @@ def read_keywords(filename):
            'Expected %s.keywords' % (filename, basename))
     assert ext == '.keywords', msg
 
+    if not os.path.isfile(filename):
+        return {}
+
     # Read
     keywords = {}
     fid = open(filename, 'r')

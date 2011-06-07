@@ -7,21 +7,22 @@ from osgeo import gdal
 from impact.storage.projection import Projection
 from impact.storage.utilities import DRIVER_MAP
 from impact.engine.interpolation import interpolate_raster_vector
-
+from impact.storage.utilities import read_keywords
+from impact.storage.utilities import write_keywords
 
 class Raster:
     """Internal representation of raster data
     """
 
     def __init__(self, data=None, projection=None, geotransform=None,
-                 name='Raster layer', caption=''):
+                 name='Raster layer', keywords=None):
         """Initialise object with either data or filename
 
         Input
             data: Can be either
                 * a filename of a raster file format known to GDAL
                 * an MxN array of raster data
-                * None
+                * None (FIXME (Ole): Remove this option)
             projection: Geospatial reference in WKT format.
                         Only used if data is provide as a numeric array,
             geotransform: GDAL geotransform (6-tuple).
@@ -31,12 +32,18 @@ class Raster:
                           Only used if data is provide as a numeric array,
             name: Optional name for layer.
                   Only used if data is provide as a numeric array,
-            caption: Optional text field that describes the layer. This field
-                     can for example be used to display text about the layer
-                     in a web application.
+            keywords: Optional dictionary with keywords that describe the layer.
+                      If the layer is stored, these keywords will be written into
+                      an associated file with extension .keywords.
+
+                      Keywords can for example be used to display text about the layer
+                      in a web application.
+
+        Note that if data is a filename, all other arguments are ignored as they will be
+        inferred from the file.
         """
 
-        self.caption = caption
+        # Input checks
         if data is None:
             # Instantiate empty object
             self.name = name
@@ -44,13 +51,22 @@ class Raster:
             self.projection = None
             self.coordinates = None
             self.filename = None
+            self.keywords = {}
             return
 
+        # Initialisation
         if isinstance(data, basestring):
             self.read_from_file(data)
         else:
             # Assume that data is provided as an array
             # with extra keyword arguments supplying metadata
+            if keywords is None:
+                self.keywords = {}
+            else:
+                msg = ('Specified keywords must be either None or a dictionary. '
+                       'I got %s' % keywords)
+                assert isinstance(keywords, dict), msg
+                self.keywords = keywords
 
             self.data = numpy.array(data, dtype='d', copy=False)
 
@@ -102,6 +118,13 @@ class Raster:
                               rtol=rtol, atol=atol):
             return False
 
+        # Check keywords
+        if self.keywords != other.keywords:
+            print 'keywords'
+            print self.keywords
+            print other.keywords
+            return False
+
         # Raster layers are identical up to the specified tolerance
         return True
 
@@ -114,7 +137,12 @@ class Raster:
         return self.name
 
     def get_caption(self):
-        return self.caption
+        """Return 'caption' keyword if present. Otherwise ''.
+        """
+        if 'caption' in self.keywords:
+            return self.keywords['caption']
+        else:
+            return ''
 
     def read_from_file(self, filename):
 
@@ -138,6 +166,9 @@ class Raster:
                 msg = ('Projection file not found for %s. You must supply '
                        'a projection file with extension .prj' % filename)
                 raise RuntimeError(msg)
+
+        # Look for any keywords
+        self.keywords = read_keywords(basename + '.keywords')
 
         # Always use basename without leading directories as name
         rastername = os.path.split(basename)[-1]
@@ -174,7 +205,7 @@ class Raster:
         """
 
         # Check file format
-        _, extension = os.path.splitext(filename)
+        basename, extension = os.path.splitext(filename)
 
         msg = ('Invalid file type for file %s. Only extension '
                'tif allowed.' % filename)
@@ -201,6 +232,9 @@ class Raster:
 
         # Write data
         fid.GetRasterBand(1).WriteArray(A)
+
+        # Write keywords if any
+        write_keywords(self.keywords, basename + '.keywords')
 
     def interpolate(self, X, name=None):
         """Interpolate values of this raster layer to other layer
