@@ -73,7 +73,7 @@ else
 fi
 
 # Install GeoNode and it's pre-requisites
-mkdir temp
+mkdir -p temp
 cd temp
 wget -c "$RISIKO_DATASOURCE/tomcat.zip"
 wget -c "$RISIKO_DATASOURCE/geoserver-geonode-dev.war"
@@ -83,7 +83,7 @@ wget -c "$RISIKO_DATASOURCE/geonode-client.zip"
 cd ..
 
 echo ">>> Installing riab dependencies"
-unzip temp/tomcat.zip
+unzip -o temp/tomcat.zip
 cp temp/geoserver-geonode-dev.war tomcat/webapps/
 cp temp/geonetwork.war tomcat/webapps/
 pip install temp/riab-libs.pybundle
@@ -97,7 +97,7 @@ pip install psycopg2
 echo ">>> Copying media files into geonode/maps static folder"
 pushd .
 mkdir -p geonode/src/GeoNodePy/geonode/maps/static
-unzip temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode
+unzip -o temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode
 popd
 
 echo ">>> Installing GeoNode and Riab in dev mode"
