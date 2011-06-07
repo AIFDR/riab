@@ -226,3 +226,91 @@ class MetadataReader(object):
 
             layers.append([layer_name, metadata])
         return layers
+
+
+def write_keywords(keywords, filename):
+    """Write keywords dictonary to file
+
+    Input
+        keywords: Dictionary of keyword, value pairs
+        filename: Name of keywords file. Extension expected to be .keywords
+
+    Keys must be strings
+    Values must be strings or None.
+
+    If value is None, only the key will be written. Otherwise key, value pairs
+    will be written as key: value
+
+    Trailing or preceding whitespace will be ignored.
+    """
+
+    # Input checks
+    basename, ext = os.path.splitext(filename)
+
+    msg = ('Unknown extension for file %s. '
+           'Expected %s.keywords' % (filename, basename))
+    assert ext == '.keywords', msg
+
+    # Write
+    fid = open(filename, 'w')
+    for key, val in keywords.items():
+
+        msg = ('Key in keywords dictionary must be a string. '
+               'I got %s with type %s' % (key, type(key)))
+        assert isinstance(key, basestring), msg
+
+        if val is None:
+            fid.write('%s\n' % key.strip())
+        else:
+            msg = ('Value in keywords dictionary must be a string or None. '
+                   'I got %s with type %s' % (val, type(val)))
+            assert isinstance(val, basestring), msg
+            fid.write('%s: %s\n' % (key.strip(), val.strip()))
+    fid.close()
+
+
+def read_keywords(filename):
+    """Read keywords dictonary from file
+
+    Input
+        filename: Name of keywords file. Extension expected to be .keywords
+                  The format of one line is expected to be either
+                  string: string
+                  or
+                  string
+    Output
+        keywords: Dictionary of keyword, value pairs
+    """
+
+    # Input checks
+    basename, ext = os.path.splitext(filename)
+
+    msg = ('Unknown extension for file %s. '
+           'Expected %s.keywords' % (filename, basename))
+    assert ext == '.keywords', msg
+
+    # Read
+    keywords = {}
+    fid = open(filename, 'r')
+    for line in fid.readlines():
+        text = line.strip()
+        if text == '':
+            continue
+
+        fields = text.split(':')
+
+        msg = ('Keyword must be either "string" or "string: string". '
+               'I got %s ' % text)
+        assert len(fields) in [1, 2], msg
+
+        key = fields[0].strip()
+
+        if len(fields) == 2:
+            val = fields[1].strip()
+        else:
+            val = None
+
+        keywords[key] = val
+    fid.close()
+
+    return keywords

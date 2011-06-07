@@ -10,6 +10,8 @@ from impact.storage.io import read_layer
 from impact.storage.io import write_point_data
 from impact.storage.io import write_raster_data
 from impact.storage.utilities import unique_filename
+from impact.storage.utilities import write_keywords
+from impact.storage.utilities import read_keywords
 from impact.storage.io import get_bounding_box
 from impact.tests.utilities import same_API
 from impact.storage.utilities import DEFAULT_PROJECTION
@@ -674,6 +676,56 @@ class Test_IO(unittest.TestCase):
 
             assert same_API(L, V, exclude=exclude)
             assert same_API(L, R, exclude=exclude)
+
+    def test_keywords_file(self):
+        """Keywords can be written and read
+        """
+
+        kwd_filename = unique_filename(suffix='.keywords')
+        keywords = {'caption': 'Describing the layer',
+                    'category': 'impact',
+                    'subcategory': 'flood',
+                    'layer': None,
+                    'with spaces': 'trailing_ws '}
+
+        write_keywords(keywords, kwd_filename)
+        msg = 'Keywords file %s was not created' % kwd_filename
+        assert os.path.isfile(kwd_filename), msg
+
+        x = read_keywords(kwd_filename)
+        os.remove(kwd_filename)
+
+        # Check keyword names
+        for key in x:
+            msg = 'Read unexpected key %s' % key
+            assert key in keywords, msg
+
+        for key in keywords:
+            msg = 'Expected key %s was not read from %s' % (key,
+                                                            kwd_filename)
+            assert key in x, msg
+
+        # Check keyword values
+        for key in keywords:
+            refval = keywords[key]
+            newval = x[key]
+
+            if refval is None:
+                assert newval is None
+            else:
+                msg = ('Expected value %s was not read from %s. '
+                       'I got %s' % (refval, kwd_filename, newval))
+                assert refval.strip() == newval, msg
+
+        # Check catching of wrong extension
+        kwd_filename = unique_filename(suffix='.xxxx')
+        try:
+            write_keywords(keywords, kwd_filename)
+        except:
+            pass
+        else:
+            msg = 'Should have raised assertion error for wrong extension'
+            raise Exception(msg)
 
 
 if __name__ == '__main__':
