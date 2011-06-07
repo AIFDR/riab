@@ -12,6 +12,7 @@ risiko-clean
 
 echo; echo ">>> Starting tomcat server with GeoServer and GeoNetwork"
 $RIAB_HOME/tomcat/bin/catalina.sh start
+mkdir -p logs
 echo; echo ">>> Starting Django server with GeoNode"
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
 
