@@ -757,6 +757,34 @@ class Test_IO(unittest.TestCase):
         assert isinstance(x, dict)
         assert len(x) == 0
 
+    def test_keywords_with_colon(self):
+        """Keywords and values with colons raise error messages
+        """
+
+        # Colon in key
+        kwd_filename = unique_filename(suffix='.keywords')
+        keywords = {'with_a_colon:in_it': 'value'}  # This one is illegal
+
+        try:
+            write_keywords(keywords, kwd_filename)
+        except AssertionError:
+            pass
+        else:
+            msg = 'Colon in keywords key %s was not caught' % keywords
+            raise Exception(msg)
+
+        # Colon in value
+        kwd_filename = unique_filename(suffix='.keywords')
+        keywords = {'with_a_colon': 'take: that!'}  # This one is illegal
+
+        try:
+            write_keywords(keywords, kwd_filename)
+        except AssertionError:
+            pass
+        else:
+            msg = 'Colon in keywords value %s was not caught' % keywords
+            raise Exception(msg)
+
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)

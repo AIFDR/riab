@@ -253,19 +253,32 @@ def write_keywords(keywords, filename):
 
     # Write
     fid = open(filename, 'w')
-    for key, val in keywords.items():
+    for k, v in keywords.items():
 
         msg = ('Key in keywords dictionary must be a string. '
-               'I got %s with type %s' % (key, type(key)))
-        assert isinstance(key, basestring), msg
+               'I got %s with type %s' % (k, type(k)))
+        assert isinstance(k, basestring), msg
 
-        if val is None:
-            fid.write('%s\n' % key.strip())
+        key = k.strip()
+
+        msg = ('Key in keywords dictionary must not contain the ":" '
+               'character. I got "%s"' % key)
+        assert ':' not in key, msg
+
+        if v is None:
+            fid.write('%s\n' % key)
         else:
+            val = v.strip()
+
             msg = ('Value in keywords dictionary must be a string or None. '
                    'I got %s with type %s' % (val, type(val)))
             assert isinstance(val, basestring), msg
-            fid.write('%s: %s\n' % (key.strip(), val.strip()))
+
+            msg = ('Value must not contain the ":" character. '
+                   'I got "%s"' % val)
+            assert ':' not in val, msg
+
+            fid.write('%s: %s\n' % (key, val))
     fid.close()
 
 
