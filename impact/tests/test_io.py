@@ -420,7 +420,8 @@ class Test_IO(unittest.TestCase):
                 msg = 'Projections were different: %s != %s' % (p1, p2)
                 assert p1 == p1, msg
 
-                msg = 'Keywords were different: %s != %s' % (R1.keywords, R2.keywords)
+                msg = 'Keywords were different: %s != %s' % (R1.keywords,
+                                                             R2.keywords)
                 assert R1.keywords == R2.keywords, msg
 
                 # Use overridden == and != to verify
@@ -739,7 +740,6 @@ class Test_IO(unittest.TestCase):
         else:
             msg = 'Should have raised assertion error for wrong extension'
             raise Exception(msg)
-
 
     def test_empty_keywords_file(self):
         """Empty keywords can be handled

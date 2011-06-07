@@ -9,6 +9,7 @@ from impact.storage.utilities import DRIVER_MAP, TYPE_MAP
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
 
+
 class Vector:
     """Class for abstraction of vector data
     """
@@ -28,15 +29,16 @@ class Vector:
             geometry: An Nx2 array of point coordinates
             name: Optional name for layer.
                   Only used if geometry is provide as a numeric array
-            keywords: Optional dictionary with keywords that describe the layer.
-                      If the layer is stored, these keywords will be written into
-                      an associated file with extension .keywords.
+            keywords: Optional dictionary with keywords that describe the
+                      layer. When the layer is stored, these keywords will
+                      be written into an associated file with extension
+                      .keywords.
 
-                      Keywords can for example be used to display text about the layer
-                      in a web application.
+                      Keywords can for example be used to display text
+                      about the layer in a web application.
 
-        Note that if data is a filename, all other arguments are ignored as they will be
-        inferred from the file.
+        Note that if data is a filename, all other arguments are ignored
+        as they will be inferred from the file.
         """
 
         if data is None and projection is None and geometry is None:
@@ -58,8 +60,8 @@ class Vector:
             if keywords is None:
                 self.keywords = {}
             else:
-                msg = ('Specified keywords must be either None or a dictionary. '
-                       'I got %s' % keywords)
+                msg = ('Specified keywords must be either None or a '
+                       'dictionary. I got %s' % keywords)
                 assert isinstance(keywords, dict), msg
                 self.keywords = keywords
 
