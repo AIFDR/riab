@@ -1,10 +1,13 @@
 import os
 import types
+from django.conf import settings
 
-# FIXME: Maybe throw these two together
-TESTDATA = os.path.join(os.environ['RIAB_HOME'],
-                                   'riab_data', 'risiko_test_data')
+TESTDATA = os.path.join(os.environ['RIAB_HOME'], 'risiko_test_data')
 
+# Use the local GeoServer url inside GeoNode
+# The ows bit at the end if VERY important because
+# that is the endpoint of the OGC services.
+INTERNAL_SERVER_URL = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
 def _same_API(X, Y, exclude=None):
     """Check that public methods of X also exist in Y

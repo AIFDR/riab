@@ -18,14 +18,7 @@ from impact.storage.io import get_bounding_box
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
-
-# Use the local GeoServer url inside GeoNode
-# The ows bit at the end if VERY important because
-# that is the endpoint of the OGC services.
-INTERNAL_SERVER_URL = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
-
-TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
-                         'riab_data', 'risiko_test_data')
+from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 
 
 def lembang_damage_function(x):
@@ -57,7 +50,7 @@ class Test_calculations(unittest.TestCase):
         for filename in ['lembang_mmi_hazmap.asc', 'lembang_schools.shp']:
             basename, ext = os.path.splitext(filename)
 
-            filename = os.path.join(TEST_DATA, filename)
+            filename = os.path.join(TESTDATA, filename)
 
             # FIXME (Ole): I set overwrite=True to make this pass.
             # However, in general there is a problem with get_layers_metadata
@@ -155,11 +148,11 @@ class Test_calculations(unittest.TestCase):
                              #'Lembang_Earthquake_Scenario.asc']:
             # Upload input data
 
-            hazardfile = os.path.join(TEST_DATA, mmi_filename)
+            hazardfile = os.path.join(TESTDATA, mmi_filename)
             hazard_layer = save_to_geonode(hazardfile, user=self.user)
             hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
 
-            exposurefile = os.path.join(TEST_DATA, 'lembang_schools.shp')
+            exposurefile = os.path.join(TESTDATA, 'lembang_schools.shp')
             exposure_layer = save_to_geonode(exposurefile, user=self.user)
             exposure_name = '%s:%s' % (exposure_layer.workspace,
                                        exposure_layer.name)
@@ -254,12 +247,12 @@ class Test_calculations(unittest.TestCase):
         """Population exposed to groundshaking matches USGS numbers
         """
 
-        hazardfile = os.path.join(TEST_DATA, 'shakemap_sumatra_20110129.tif')
+        hazardfile = os.path.join(TESTDATA, 'shakemap_sumatra_20110129.tif')
         hazard_layer = save_to_geonode(hazardfile, overwrite=True,
                                        user=self.user)
         hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
 
-        exposurefile = os.path.join(TEST_DATA, 'population_indonesia_2008.tif')
+        exposurefile = os.path.join(TESTDATA, 'population_indonesia_2008.tif')
         exposure_layer = save_to_geonode(exposurefile, overwrite=True,
                                          user=self.user)
         exposure_name = '%s:%s' % (exposure_layer.workspace,
@@ -316,7 +309,7 @@ class Test_calculations(unittest.TestCase):
                          'shakemap_padang_20090930.asc']:
 
             # Upload file to GeoNode
-            f = os.path.join(TEST_DATA, filename)
+            f = os.path.join(TESTDATA, filename)
             layer = save_to_geonode(f, user=self.user)
 
             # Read raster file and obtain reference resolution

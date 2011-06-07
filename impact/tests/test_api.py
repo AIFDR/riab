@@ -11,13 +11,7 @@ from django.conf import settings
 from geonode.maps.utils import check_geonode_is_up
 from geonode.maps.models import Layer
 
-# Use the local GeoServer url inside GeoNode
-# The ows bit at the end if VERY important because
-# that is the endpoint of the OGC services.
-INTERNAL_SERVER_URL = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
-
-TEST_DATA = os.path.join(os.environ['RIAB_HOME'],
-                         'riab_data', 'risiko_test_data')
+from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 
 
 class Test_HTTP(unittest.TestCase):
