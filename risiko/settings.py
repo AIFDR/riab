@@ -274,9 +274,7 @@ ABSOLUTE_URL_OVERRIDES = {'auth.user': get_user_url}
 
 AUTH_PROFILE_MODULE = 'maps.Contact'
 REGISTRATION_OPEN = False
-
-DB_DATASTORE=False
-
+DB_DATASTORE = False
 
 # Logging debug information to a file.
 import logging

@@ -515,7 +515,8 @@ class Test_Engine(unittest.TestCase):
 
         # FIXME - when we know how to reproject, replace hazard
         # file with UTM version (i.e. without _geographic).
-        hazard_filename = os.path.join(TESTDATA, 'Ashload_Gede_VEI4_geographic.asc')
+        hazard_filename = os.path.join(TESTDATA,
+                                       'Ashload_Gede_VEI4_geographic.asc')
         exposure_filename = os.path.join(TESTDATA, 'lembang_schools.shp')
 
         # Calculate impact using API

@@ -9,10 +9,11 @@ where filename can be either a single file or a directory of files
 """
 
 import sys
+import time
 from risiko.utilities import save_to_geonode
 
 def usage():
-    print 'risiko-upload filename'
+    print 'risiko-upload {directory|filename}'
 
 if __name__ == '__main__':
 
@@ -22,5 +23,6 @@ if __name__ == '__main__':
         thefile = sys.argv[1]
 
         # FIXME (Ole): Expose overwrite to command line
+        t0 = time.time()
         uploaded = save_to_geonode(thefile, overwrite=True)
-
+        print 'Finished uploading in %.f seconds' % (time.time() - t0)
