@@ -60,15 +60,26 @@ echo ">>> Activating virtual environment"
 source ~/.bash_aliases
 source riab_env/bin/activate
 
-echo ">>> Downloading tomcat bundle"
+echo ">>> Downloading bundled pre-requisites"
+
+# Determine data source
+zone=$(cat /etc/timezone)
+if [ "$zone" == "Asia/Jakarta" ]; then
+    export RISIKO_DATASOURCE="http://203.77.224.75/store/risiko_support_data"
+    echo "Using Indonesian mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
+else
+    export RISIKO_DATASOURCE="https://s3.amazonaws.com/geonodeariel"
+    echo "Using Amazon mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
+fi
+
 # Install GeoNode and it's pre-requisites
 mkdir temp
 cd temp
-wget -c https://s3.amazonaws.com/geonodeariel/tomcat.zip
-wget -c https://s3.amazonaws.com/geonodeariel/geoserver-geonode-dev.war
-wget -c https://s3.amazonaws.com/geonodeariel/geonetwork.war
-wget -c https://s3.amazonaws.com/geonodeariel/riab-libs.pybundle
-wget -c https://s3.amazonaws.com/geonodeariel/geonode-client.zip
+wget -c "$RISIKO_DATASOURCE/tomcat.zip"
+wget -c "$RISIKO_DATASOURCE/geoserver-geonode-dev.war"
+wget -c "$RISIKO_DATASOURCE/geonetwork.war"
+wget -c "$RISIKO_DATASOURCE/riab-libs.pybundle"
+wget -c "$RISIKO_DATASOURCE/geonode-client.zip"
 cd ..
 
 echo ">>> Installing riab dependencies"
@@ -108,7 +119,7 @@ else
         echo "Test data $TESTDATA_NAME already exists, skipping data download."
     else
 	export TESTDATA_BUNDLE="$TESTDATA_NAME.tgz"
-	export TESTDATA_SOURCE="https://s3.amazonaws.com/geonodeariel/$TESTDATA_BUNDLE"
+	export TESTDATA_SOURCE="$RISIKO_DATASOURCE/$TESTDATA_BUNDLE"
 	wget -c $TESTDATA_SOURCE
 	tar xvfz $TESTDATA_BUNDLE
 	/bin/rm $TESTDATA_BUNDLE
@@ -119,7 +130,7 @@ else
         echo 'Demo data $DEMODATA_NAME already exists, skipping data download.'
     else
 	export DEMODATA_BUNDLE="$DEMODATA_NAME.tgz"
-	export DEMODATA_SOURCE="https://s3.amazonaws.com/geonodeariel/$DEMODATA_BUNDLE"
+	export DEMODATA_SOURCE="$RISIKO_DATASOURCE/$DEMODATA_BUNDLE"
 	wget -c $DEMODATA_SOURCE
 	tar xvfz $DEMODATA_BUNDLE
 	/bin/rm $DEMODATA_BUNDLE
