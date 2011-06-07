@@ -9,90 +9,82 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-06-07 15:22-0500\n"
-"PO-Revision-Date: 2011-06-07 15:17\n"
-"Last-Translator:   <>\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: \n"
-"Plural-Forms: nplurals=1; plural=0\n"
-"X-Translated-Using: django-rosetta 0.6.0\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
 #: templates/fullscreen.html:20 templates/page_layout.html:21
 msgid "Change password"
-msgstr "Ubah Password"
+msgstr ""
 
 #: templates/fullscreen.html:20 templates/page_layout.html:21
 msgid "Log out"
-msgstr "Log out"
+msgstr ""
 
 #: templates/fullscreen.html:23 templates/page_layout.html:24
 msgid "Register"
-msgstr "Register"
+msgstr ""
 
 #: templates/page_layout.html:23
 msgid "Sign in"
-msgstr "sign in"
+msgstr ""
 
 #: templates/page_layout.html:34 templates/risiko/index.html:113
 msgid "Calculator"
-msgstr "Calkulator"
+msgstr ""
 
 #: templates/page_layout.html:35 templates/risiko/index.html:114
 msgid "Index"
-msgstr "Indeks"
+msgstr ""
 
 #: templates/page_layout.html:36
 msgid "Layers"
-msgstr "Lapisan"
+msgstr ""
 
 #: templates/page_layout.html:37 templates/risiko/index.html:116
 msgid "Maps"
-msgstr "Maps"
+msgstr ""
 
 #: templates/page_layout.html:39 templates/risiko/index.html:118
 msgid "Profile"
-msgstr "Profil"
+msgstr ""
 
 #: templates/page_layout.html:41 templates/risiko/index.html:120
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: templates/page_layout.html:60
 msgid "GeoNode"
-msgstr "GeoNode"
+msgstr ""
 
 #: templates/page_layout.html:61
 msgid "Need Help?"
-msgstr "Butuh Bantuan"
+msgstr ""
 
 #: templates/page_layout.html:62
 msgid "Help"
-msgstr "Bantuan"
+msgstr ""
 
 #: templates/page_layout.html:63
 msgid "For Developers"
-msgstr "Untuk Pengembang"
+msgstr ""
 
 #: templates/admin/base_site.html:4
 msgid "Risiko admin"
-msgstr "Risiko admin"
+msgstr ""
 
 #: templates/admin/base_site.html:7
 msgid "Risiko administration"
-msgstr "Risiko administrasi"
+msgstr ""
 
 #: templates/risiko/index.html:3
 msgid "Risiko Calculator"
-msgstr "Risiko Kalkulator"
+msgstr ""
 
 #: templates/risiko/index.html:115
 msgid "Data"
-msgstr "Data"
-
-#~ msgid "Indonesian"
-#~ msgstr "Indonesian"
-
-#~ msgid "English"
-#~ msgstr "English"
+msgstr ""
