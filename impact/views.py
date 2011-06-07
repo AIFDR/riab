@@ -29,6 +29,7 @@ import datetime
 from django.utils import simplejson as json
 from django.http import HttpResponse
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 from impact.storage.io import dummy_save, download, get_layers_metadata
 from impact.plugins.core import get_plugins, compatible_layers
@@ -41,6 +42,7 @@ import logging
 logger = logging.getLogger('risiko')
 
 
+@csrf_exempt
 def calculate(request, save_output=dummy_save):
     start = datetime.datetime.now()
 
