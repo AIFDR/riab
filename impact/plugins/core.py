@@ -67,12 +67,6 @@ def get_plugins(name=None):
         return plugins_dict
 
     if isinstance(name, basestring):
-        print
-        print 'name', name
-
-        for p in FunctionProvider.plugins:
-            print p
-
         # Add the names
         plugins_dict.update(dict([(p.__name__, p)
                                   for p in FunctionProvider.plugins]))
