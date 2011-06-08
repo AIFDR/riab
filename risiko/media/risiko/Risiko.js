@@ -890,6 +890,7 @@ function addLayerFromCombo(combo){
 var lastHazardSelect="None";
 var lastExposureSelect="None";
 var lastImpactSelect="None";
+var lastImpactLayer="None";
 
 function hazardSelected(combo){
        removeLayer(lastHazardSelect);
@@ -915,10 +916,10 @@ function reset_view() {
 
     removeLayer(exposure.getValue());
     removeLayer(hazard.getValue());
-    removeLayer(lastImpactSelect)
+    removeLayer(lastImpactLayer)
     lastImpactSelect="None"
     lastExposureSelect="None"
-    lastHaxardSelect="None"
+    lastHazardSelect="None"
     exposure.setValue("");
     hazard.setValue("");
     exposure.disable();
@@ -988,7 +989,7 @@ function received(result, request) {
         return
     }
     reset_view();
-    //removeLayer(lastImpactSelect);
+    removeLayer(lastImpactLayer);
     var layer_uri = data.layer;
     var run_date = data.run_date;
     var run_duration = data.run_duration;
@@ -1001,6 +1002,7 @@ function received(result, request) {
     var result_name = layer_uri.split('/')[4].split(':')[1];
     var result_label = exposure + ' X ' + hazard + '=' +result_name;
     layer=addLayer(server_url, result_label, result_name, 0.9);
+    lastImpactLayer=result_label
 }
 
 function calculate()
