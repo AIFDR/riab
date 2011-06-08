@@ -27,7 +27,7 @@ NAME=tomcat
 DESC="Tomcat servlet engine"
 DEFAULT=/etc/default/$NAME
 JVM_TMP=/tmp/tomcat6-tmp
-GEONODE_BASE_URL="http://localhost/"
+GEONODE_BASE_URL="http://%(host)s/"
 
 # Make sure tomcat is started with system locale
 if [ -r /etc/default/locale ]; then
@@ -45,8 +45,8 @@ fi
 # The following variables can be overwritten in $DEFAULT
 
 # Run Tomcat 6 as this user ID and group ID
-TOMCAT6_USER=software
-TOMCAT6_GROUP=software
+TOMCAT6_USER=%(user)s
+TOMCAT6_GROUP=%(user)s
 
 # The first existing directory is used for JAVA_HOME (if JAVA_HOME is not
 # defined in $DEFAULT)
@@ -61,10 +61,10 @@ done
 export JAVA_HOME
 
 # Directory where the Tomcat 6 binary distribution resides
-CATALINA_HOME=/home/software/$NAME
+CATALINA_HOME=%(riab_home)s/$NAME
 
 # Directory for per-instance configuration files and webapps
-CATALINA_BASE=/home/software/$NAME
+CATALINA_BASE=%(riab_home)s/$NAME
 
 # Use the Java security manager? (yes/no)
 TOMCAT6_SECURITY=no

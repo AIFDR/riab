@@ -1,34 +1,33 @@
 from fabric.api import run, sudo, put, env
+from fabric.contrib.files import upload_template
 
 # Edit this section if you get tired of writing the parameters on the command line
 #env.hosts = ['username@192.168.0.2']
 #env.password = 'hardtoremember'
 
+
 def install():
     """Install RISIKO and it's dependencies
     """
-    sudo('apt-get install -y curl')
-    run('curl https://github.com/AIFDR/riab/raw/master/scripts/risiko-install | bash')
+    run('wget https://github.com/AIFDR/riab/raw/master/scripts/risiko-install')
+    run('bash risiko-install')
     run('echo "risiko-activate" >> .bash_aliases')
 
 
 def production():
     """Install and configure Apache and Tomcat
     """
-    put('local_settings.py', 'riab/risiko')
+    ctx = dict(user=env.user, host=env.host, riab_home='/home/%s' % env.user)
+    upload_template('local_settings.py', 'riab/risiko', context=ctx )
+    upload_template('risiko.apache', 'risiko.apache', context=ctx)
+    upload_template('tomcat6', 'tomcat6', context=ctx)
     sudo('apt-get install -y libapache2-mod-wsgi')
-    put('risiko.apache', 'risiko.apache')
     sudo('/bin/mv -f risiko.apache /etc/apache2/sites-available/risiko')
     sudo('a2dissite default')
     sudo('a2ensite risiko')
     sudo('a2enmod proxy_http')
     run('mkdir -p logs')
-    # FIXME: The staticfiles version we ship is wrong,
-    # we need to drop it when we switch to django 1.3
-    # run('django-admin.py collectstatic --noinput')
-    run('. riab_env/bin/activate; pip install -U django-staticfiles==0.3')
-    run('. riab_env/bin/activate; django-admin.py build_static --noinput')
-    put('tomcat6', 'tomcat6')
+    run('. riab_env/bin/activate; django-admin.py collectstatic --noinput')
     sudo('/bin/mv -f tomcat6 /etc/init.d/')
     sudo('chmod +x /etc/init.d/tomcat6')
     sudo('ln -sf /etc/init.d/tomcat6 /etc/rc1.d/K99tomcat')
@@ -48,12 +47,11 @@ def manual():
     print "        Navigate to http://%s/geoserver-geonode-dev/" % env.host
     print "        and click on 'Global Settings', the fill the 'Proxy Base URL' setting with"
     print "        the same path you used to access geoserver (be default geoserver uses http://localhost:8001"
-    # Step 2
-    print
-    print "Step 2. Create a superuser to administer Risk in a Box"
-    print "        ssh into the production server and run:"
-    print "        django-admin.py createsuperuser"
 
+def demo():
+    """Install the demo data
+    """
+    run('. riab_env/bin/activate; risiko-upload risiko_demo_data')
 
 def risiko():
     """Do a full production setup of RISIKO

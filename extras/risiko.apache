@@ -1,35 +1,36 @@
-WSGIDaemonProcess riab user=software threads=1 processes=5 python-path=/home/software/riab_env/lib/python2.6/site-packages
-
+WSGIDaemonProcess riab user=%(user)s threads=1 processes=5 python-path=%(riab_home)s/riab_env/lib/python2.6/site-packages
 <VirtualHost *:80>
-   ServerAdmin webmaster@localhost
-   ServerName demo.riskinabox.org
-   ServerAlias localhost
+   ServerAdmin foo@bar.com
+   ServerName %(host)s
 
-   ErrorLog /home/software/logs/apache.error.log
+   ErrorLog %(riab_home)s/logs/apache.error.log
 
    # Possible values include: debug, info, notice, warn, error, crit,
    # alert, emerg.
    LogLevel warn
 
-   CustomLog /home/software/logs/apache.access.log combined
+   CustomLog %(riab_home)s/logs/apache.access.log combined
 
-  <Directory "/home/software/riab/extras/deploy/">
+   <Directory "%(riab_home)s/riab/extras/">
        Allow from all
    </Directory>
 
-   Alias /media/ "/home/software/static/"
-   <Directory "/home/software/static/">
+   Alias /static/ "%(riab_home)s/riab/risiko/static/"
+   <Directory "%(riab_home)s/riab/risiko/static/">
      Order allow,deny
      Options Indexes FollowSymLinks
      Allow from all
      IndexOptions FancyIndexing
    </Directory>
+   <Proxy *>
+       Order allow,deny
+       Allow from all
+   </Proxy>
 
    WSGIProcessGroup riab
-   WSGIApplicationGroup %{GLOBAL}
-   WSGIScriptAlias / /home/software/riab/extras/project.wsgi
+   WSGIScriptAlias / %(riab_home)s/riab/extras/project.wsgi
    WSGIPassAuthorization On
-  
+ 
    ProxyPass /geoserver-geonode-dev http://localhost:8001/geoserver-geonode-dev
    ProxyPassReverse /geoserver-geonode-dev http://localhost:8001/geoserver-geonode-dev
    ProxyPass /geonetwork http://localhost:8001/geonetwork/

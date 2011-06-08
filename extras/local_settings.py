@@ -1,31 +1,33 @@
 import os
 
-DEBUG = False
-#DEBUG = True
+#DEBUG = False
+DEBUG = True
 
-SERVER_IP = 'http://demo.riskinabox.org'
 
-PROJECT_HOME = '/home/software'
-SITEURL = '%s/' % SERVER_IP
-GEOSERVER_BASE_URL = '%s/geoserver-geonode-dev/' % SERVER_IP
-GEONETWORK_BASE_URL = '%s/geonetwork/' % SERVER_IP
-MEDIA_ROOT = os.path.join(PROJECT_HOME, 'static')
-STATIC_ROOT = MEDIA_ROOT
-MEDIA_URL = '/media/'
-STATIC_URL = MEDIA_URL
-GEONODE_CLIENT_LOCATION = MEDIA_URL + 'geonode/'
-ADMIN_MEDIA_PREFIX = MEDIA_URL + 'admin/'
+PROJECT_HOME = '%(riab_home)s'
+SITEURL = 'http://%(host)s/'
+GEOSERVER_BASE_URL = 'http://%(host)s/geoserver-geonode-dev/'
+GEONETWORK_BASE_URL = 'http://%(host)s/geonetwork/'
 
 # This key works for demo.riskinabox.org
 GOOGLE_API_KEY = 'ABQIAAAAC7wlIZDRK6Oon88pViNfRRQ_mqcryycL5Nm40t3UsHGXnKbk7hStK8jHoORRBSPpXKFZ66cYUdvpZA'
 
-import logging
-for _module in ['geonode.maps.views', 'geonode.maps.gs_helpers']:
-    _logger = logging.getLogger(_module)
-    _logger.addHandler(logging.FileHandler(os.path.join(PROJECT_HOME,
-                                                        'logs',
-                                                        'geonode.log')))
-    # available levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
-    # The earlier a level appears in this list, the more output it will
-    # produce in the log file.
-    _logger.setLevel(logging.WARNING)
+# Added this here because mod_wsgi did not seem to like django_nose
+INSTALLED_APPS = (
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.admin',
+    'django.contrib.staticfiles',
+    'django_extensions',
+    'registration',
+    'profiles',
+    'avatar',
+    'geonode.core',
+    'geonode.maps',
+    'geonode.proxy',
+    'impact',
+    'rosetta',
+)
+
