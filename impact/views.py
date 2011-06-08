@@ -82,27 +82,45 @@ def calculate(request, save_output=dummy_save):
                               success=False)
     calculation.save()
 
-    logger.info('Performing requested calculation')
+    msg = 'Performing requested calculation'
+    print msg
+    logger.info(msg)
+
     # Download selected layer objects
-    logger.info('- Downloading hazard layer %s from %s' % (hazard_layer,
-                                                           hazard_server))
+    msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
+                                                     hazard_server))
+    print msg
+    logger.info(msg)
+
     H = download(hazard_server, hazard_layer, bbox)
-    logger.info('- Downloading exposure layer %s from %s' % (exposure_layer,
-                                                             exposure_server))
+
+    msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
+                                                        exposure_server))
+    print msg
+    logger.info(msg)
+
     E = download(exposure_server, exposure_layer, bbox)
 
     # Calculate result using specified impact function
-    logger.info('- Calculating impact using %s' % impact_function)
+
+    msg = ('- Calculating impact using %s' % impact_function)
+    print msg
+    logger.info(msg)
 
     impact_filename = calculate_impact(layers=[H, E],
                                        impact_function=impact_function)
 
     # Upload result to internal GeoServer
-    logger.info('- Uploading impact layer %s' % impact_filename)
+    msg = ('- Uploading impact layer %s' % impact_filename)
+    print msg
+    logger.info(msg)
     result = save_output(impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
-    logger.info('- Result available at %s.' % result.get_absolute_url())
+
+    msg = ('- Result available at %s.' % result.get_absolute_url())
+    print msg
+    logger.info(msg)
 
     calculation.layer = result.get_absolute_url()
     calculation.success = True
