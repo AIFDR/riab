@@ -121,6 +121,6 @@ echo
 echo "We have added a shortcut called 'risiko-activate' to your ~/.bash_aliases file to activate Risk In a Box"
 echo "~/.bash_aliases is sourced every time you open a new terminal. For now just do:"
 echo
-echo "source ~/.bash_aliases"
-echo "risiko-activate"
+echo "1) source ~/.bash_aliases"
+echo "2) risiko-activate"
 echo
