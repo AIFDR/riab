@@ -3,6 +3,7 @@
 Provides the function calculate_impact()
 """
 
+import sys
 import numpy
 
 from impact.storage.projection import Projection
@@ -95,7 +96,8 @@ def check_data_integrity(layer_files):
                          layer.projection.get_projection(proj4=True)))
             assert projection == layer.projection, msg
 
-        # Ensure that geotransform is consistent across all *raster* layers
+        # Ensure that geotransform and dimensions is consistent across
+        # all *raster* layers
         if layer.is_raster:
             if geotransform is None:
                 geotransform = layer.get_geotransform()
@@ -108,7 +110,7 @@ def check_data_integrity(layer_files):
                                       layer.get_geotransform(),
                                       rtol=1.0e-1), msg
 
-        # In case of vector layers, we check that the coordinates
+        # In either case of vector layers, we check that the coordinates
         # are the same
         if layer.is_vector:
             if coordinates is None:
@@ -118,3 +120,33 @@ def check_data_integrity(layer_files):
                        '%s %s' % (coordinates, layer.get_geometry()))
                 assert numpy.allclose(coordinates,
                                       layer.get_geometry()), msg
+
+
+    # FIXME (Ole): Hack due to Geoserver resolution changes,
+    #              This will ensure alignment of arrays to the first
+    #              encountered
+    #              This is truly horrible!!!!!!!!!!
+
+    # First find the minimum dimensions
+    dimensions = [sys.maxint, sys.maxint]
+    for layer in layer_files:
+
+        if layer.is_raster:
+            if layer.rows < dimensions[0]:
+                dimensions[0] = layer.rows
+            if layer.columns < dimensions[1]:
+                dimensions[1] = layer.columns
+
+    # Make sure all rasters are clipped to the same box
+    for layer in layer_files:
+
+        if layer.is_raster:
+            data = layer.get_data()
+
+            layer.rows = dimensions[0]
+            layer.columns = dimensions[1]
+
+            # XTreme Monkey Patching!
+            layer.data = data[0:layer.rows, 0:layer.columns]
+
+
