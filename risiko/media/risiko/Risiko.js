@@ -157,6 +157,18 @@ var Risiko = Ext.extend(gxp.Viewer, {
     zoomToLayerExtentText: GeoExplorer.prototype.zoomToLayerExtentText,
     zoomVisibleButtonText: GeoExplorer.prototype.zoomVisibleButtonText,
 
+    //Risiko
+    hazardComboLabelText: GeoExplorer.prototype.hazardComboLabelText,
+    exposureComboLabelText: GeoExplorer.prototype.exposureComboLabelText,
+    functionComboLabelText: GeoExplorer.prototype.functionComboLabelText,
+    resetButtonText: GeoExplorer.prototype.resetButtonText,
+    calculateButtonText: GeoExplorer.prototype.calculateButtonText,
+    calculatingText: GeoExplorer.prototype.calculatingText,
+    calculatorTitleText: GeoExplorer.prototype.calculatorTitleText,
+    hazardSelectText: GeoExplorer.prototype.hazardSelectText,
+    exposureSelectText: GeoExplorer.prototype.exposureSelectText,
+    functionSelectText: GeoExplorer.prototype.functionSelectText,
+
     constructor: function(config) {
         this.popupCache = {};
         this.propDlgCache = {};
@@ -1087,7 +1099,7 @@ function calculate()
 
           items:[{
                 id: "calcform",
-                title: "Kalkulator Dampak Bencana", //TODO: Use proper internationalization TR:"Impact Calculator",
+                title: this.calculatorTitleText,
                 xtype: 'form',
                 labelWidth: 60,
                 height: 180,
@@ -1099,11 +1111,11 @@ function calculate()
                              width: '100%',
                              displayField:'name',
                              valueField: 'name',
-                             fieldLabel: 'Bahaya',//TR:'Hazard',
+                             fieldLabel: this.hazardComboLabelText,
                              typeAhead: true,
                              mode: 'local',
                              triggerAction: 'all',
-                             emptyText:'Pilih Bahaya...',//TR:'Select Hazard...',
+                             emptyText: this.hazardSelectText,
                              selectOnFocus:false,
                              listeners: {
                                 "select": hazardSelected
@@ -1115,11 +1127,11 @@ function calculate()
                              width: '100%',
                              displayField:'name',
                              valueField:'name',
-                             fieldLabel: 'Paparan',//TR:'Exposure',
+                             fieldLabel: this.exposureComboLabelText,
                              typeAhead: true,
                              mode: 'local',
                              triggerAction: 'all',
-                             emptyText:'Pilih Paparan...',//TR:'Select Exposure...',
+                             emptyText: this.exposureSelectText,
                              selectOnFocus:false,
                              disabled: true,
                              listeners: {
@@ -1132,27 +1144,27 @@ function calculate()
                              width: '100%',
                              displayField:'name',
                              valueField:'name',
-                             fieldLabel: 'Fungsi',//TR:Function',
+                             fieldLabel: this.functionComboLabelText,
                              typeAhead: true,
                              mode: 'local',
                              triggerAction: 'all',
                              disabled: true,
-                             emptyText:'Pilih Fungsi...', //TR:Select Function
+                             emptyText: this.functionSelectText,
                              selectOnFocus:false
 		    }, {
                              xtype: 'progress',
                              id: 'calculateprogress',
 			     cls: 'right-align',
                              displayField:'name',
-			     fieldLabel: 'Menghitung',//'TR:Calculating',
+			     fieldLabel: this.calculatingText,
                              hidden: true
 		    }
 		    ],
 
-		buttons: [{text:'Mulai lagi', //'Reset',
+		buttons: [{text: this.resetButtonText,
 			   handler:reset_view}
 		         ,{
-				text: 'Menghitung',//'TR:Calculate',
+				text: this.calculateButtonText,
                            handler: calculate
 			  }]
              },{
@@ -1165,7 +1177,6 @@ function calculate()
                      "<p>"+
                        "<img src='/static/theme/img/bnpb_logo.jpg' alt='BNPB' title='BNPB' width=120 style='padding-left: 10px; float: left' />"+
                        "<img src='/static/theme/img/bppt_logo.jpg' alt='BPPT' title='BPPT' width=120 style='padding-right: 10px; padding-top: 20px;float: right' />" +
-                     "</p><p style='clear:both; padding: 10px 80px'>Didukung oleh:</p><p>"+
 	               "<img src='/static/theme/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=100 style='padding-left: 20px; float: left;' />" +
                        "<img src='/static/theme/img/aifdr.png' alt='AIFDR' title='AIFDR' width=100 style='padding-right: 20px; float: right;' />" +
                      "</p></div>",
