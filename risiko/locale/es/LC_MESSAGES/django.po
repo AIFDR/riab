@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-09 15:43-0500\n"
+"POT-Creation-Date: 2011-06-09 17:08-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,12 +25,20 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
+#: templates/fullscreen.html:22 templates/page_layout.html:23
+msgid "Sign in"
+msgstr ""
+
+#: templates/fullscreen.html:23 templates/page_layout.html:24
+msgid "or"
+msgstr ""
+
 #: templates/fullscreen.html:23 templates/page_layout.html:24
 msgid "Register"
 msgstr ""
 
-#: templates/page_layout.html:23
-msgid "Sign in"
+#: templates/fullscreen.html:24 templates/page_layout.html:25
+msgid "for extra features"
 msgstr ""
 
 #: templates/page_layout.html:34 templates/risiko/index.html:113

@@ -2,14 +2,14 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-09 15:43-0500\n"
-"PO-Revision-Date: 2011-06-07 15:17\n"
+"POT-Creation-Date: 2011-06-09 17:08-0500\n"
+"PO-Revision-Date: 2011-06-09 17:08\n"
 "Last-Translator:   <>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -27,13 +27,21 @@ msgstr "Ubah Password"
 msgid "Log out"
 msgstr "Log out"
 
+#: templates/fullscreen.html:22 templates/page_layout.html:23
+msgid "Sign in"
+msgstr "sign in"
+
+#: templates/fullscreen.html:23 templates/page_layout.html:24
+msgid "or"
+msgstr "atau"
+
 #: templates/fullscreen.html:23 templates/page_layout.html:24
 msgid "Register"
 msgstr "Register"
 
-#: templates/page_layout.html:23
-msgid "Sign in"
-msgstr "sign in"
+#: templates/fullscreen.html:24 templates/page_layout.html:25
+msgid "for extra features"
+msgstr "untuk fitur tambahan"
 
 #: templates/page_layout.html:34 templates/risiko/index.html:113
 msgid "Calculator"

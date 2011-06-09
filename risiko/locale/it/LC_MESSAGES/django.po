@@ -2,89 +2,98 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-09 15:43-0500\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2011-06-09 17:08-0500\n"
+"PO-Revision-Date: 2011-06-09 17:09\n"
+"Last-Translator:   <>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Translated-Using: django-rosetta 0.6.0\n"
 
 #: templates/fullscreen.html:20 templates/page_layout.html:21
 msgid "Change password"
-msgstr ""
+msgstr "Modificare la password"
 
 #: templates/fullscreen.html:20 templates/page_layout.html:21
 msgid "Log out"
-msgstr ""
+msgstr "Log out"
+
+#: templates/fullscreen.html:22 templates/page_layout.html:23
+msgid "Sign in"
+msgstr "Entra"
+
+#: templates/fullscreen.html:23 templates/page_layout.html:24
+msgid "or"
+msgstr "o"
 
 #: templates/fullscreen.html:23 templates/page_layout.html:24
 msgid "Register"
-msgstr ""
+msgstr "Registrati"
 
-#: templates/page_layout.html:23
-msgid "Sign in"
-msgstr ""
+#: templates/fullscreen.html:24 templates/page_layout.html:25
+msgid "for extra features"
+msgstr "per le funzioni extra"
 
 #: templates/page_layout.html:34 templates/risiko/index.html:113
 msgid "Calculator"
-msgstr ""
+msgstr "Calcolatore"
 
 #: templates/page_layout.html:35 templates/risiko/index.html:114
 msgid "Index"
-msgstr ""
+msgstr "Indice"
 
 #: templates/page_layout.html:36
 msgid "Layers"
-msgstr ""
+msgstr "Livelli"
 
 #: templates/page_layout.html:37 templates/risiko/index.html:116
 msgid "Maps"
-msgstr ""
+msgstr "Mappe"
 
 #: templates/page_layout.html:39 templates/risiko/index.html:118
 msgid "Profile"
-msgstr ""
+msgstr "Profilo"
 
 #: templates/page_layout.html:41 templates/risiko/index.html:120
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: templates/page_layout.html:60
 msgid "GeoNode"
-msgstr ""
+msgstr "GeoNode"
 
 #: templates/page_layout.html:61
 msgid "Need Help?"
-msgstr ""
+msgstr "Hai bisogno di aiuto?"
 
 #: templates/page_layout.html:62
 msgid "Help"
-msgstr ""
+msgstr "Aiuto"
 
 #: templates/page_layout.html:63
 msgid "For Developers"
-msgstr ""
+msgstr "Per gli sviluppatori"
 
 #: templates/admin/base_site.html:4
 msgid "Risiko admin"
-msgstr ""
+msgstr "Risiko admin"
 
 #: templates/admin/base_site.html:7
 msgid "Risiko administration"
-msgstr ""
+msgstr "Risiko amministrazione"
 
 #: templates/risiko/index.html:3
 msgid "Risiko Calculator"
-msgstr ""
+msgstr "Risiko Calculator"
 
 #: templates/risiko/index.html:115
 msgid "Data"
-msgstr ""
+msgstr "Data"
