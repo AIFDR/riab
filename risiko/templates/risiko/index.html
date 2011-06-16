@@ -30,8 +30,8 @@ Ext.onReady(function() {
         useBackgroundCapabilities: false,
         proxy: "/proxy/?url=",
 
-        /* The URL to a REST map configuration service.  This service 
-         * provides listing and, with an authenticated user, saving of 
+        /* The URL to a REST map configuration service.  This service
+         * provides listing and, with an authenticated user, saving of
          * maps on the server for sharing and editing.
          */
         rest: "/maps/",
@@ -44,30 +44,33 @@ Ext.onReady(function() {
     }, {"defaultSourceType": "gx_wmssource",
         "about": {"abstract": "Calculated by Risk in a Box", "title": "Impact map"},
         "map": {"layers": [
-                     {"opacity": 1, "group": "background", "args": ["No background"], 
+                     {"opacity": 1, "group": "background", "args": ["No background"],
                       "visibility": false, "source": "0", "fixed": true, "type": "OpenLayers.Layer"
                      }, {
                        "opacity": 1, "group": "background", "args": ["OpenStreetMap"],
-                       "visibility": true, "source": "0", "fixed": true, "type": "OpenLayers.Layer.OSM"
+                       "visibility": false, "source": "0", "fixed": true, "type": "OpenLayers.Layer.OSM"
+                     }, {
+                       "opacity": 1, "group": "background", "args": ["Static", "http://127.0.0.1:8001/geoserver-geonode-dev/wms", {"layers": ["geonode:basemap_300dpi"], "tiled": false, "format": "image/png"}, {"buffer": 0}],
+                       "visibility": true, "source": "0", "fixed": true, "type": "OpenLayers.Layer.WMS"
                      }, {
                        "opacity": 1, "group": "background", "args": ["bluemarble", "http://maps.opengeo.org/geowebcache/service/wms", {"layers": ["bluemarble"], "tiled": true, "tilesOrigin": [-20037508.34, -20037508.34], "format": "image/png"}, {"buffer": 0}], "visibility": false, "source": "0", "fixed": true, "type": "OpenLayers.Layer.WMS"
                      }, {
                        "opacity": 1, "group": "background", "name": "SATELLITE", "visibility": false, "source": "1", "fixed": true
-                 }], 
-        "center": [12501178.816084614, -882223.77466104657], 
-        "units": "m", 
-        "maxResolution": 156543.03390000001, 
-        "maxExtent": [-20037508.34, -20037508.34, 20037508.34, 20037508.34],  
-        "zoom": 5, 
-        "projection": "EPSG:900913"}, 
-        "id": null, 
-        "sources": 
-               {"1": 
+                 }],
+        "center": [12501178.816084614, -882223.77466104657],
+        "units": "m",
+        "maxResolution": 156543.03390000001,
+        "maxExtent": [-20037508.34, -20037508.34, 20037508.34, 20037508.34],
+        "zoom": 5,
+        "projection": "EPSG:900913"},
+        "id": null,
+        "sources":
+               {"1":
                   {
-                  "apiKey": "ABQIAAAAkofooZxTfcCv9Wi3zzGTVxTnme5EwnLVtEDGnh-lFVzRJhbdQhQgAhB1eT_2muZtc0dl-ZSWrtzmrw", 
+                  "apiKey": "ABQIAAAAkofooZxTfcCv9Wi3zzGTVxTnme5EwnLVtEDGnh-lFVzRJhbdQhQgAhB1eT_2muZtc0dl-ZSWrtzmrw",
                   "ptype": "gx_googlesource"
-                        }, 
-                "0": {"ptype": "gx_olsource"}, 
+                        },
+                "0": {"ptype": "gx_olsource"},
                 "2": {"url": "{{ GEOSERVER_BASE_URL }}/wms", "ptype": "gx_wmssource"}}
     });
 
@@ -93,7 +96,7 @@ Ext.onReady(function() {
 
     {% get_current_language as LANGUAGE %}
 
-                                                                                                                         
+
     <form class="langbar" id="target" action="/i18n/setlang/" method="post">
       {% csrf_token %}
        <div style="display: inline;">
@@ -132,7 +135,7 @@ Ext.onReady(function() {
 
   </div>
   <div id="title-tpl">
-    
+
     </div>
 </div>
 {% endblock %}
