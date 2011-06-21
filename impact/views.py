@@ -179,7 +179,7 @@ def functions(request):
             get_layers_metadata(geoserver['url'],
                                 geoserver['version']))
 
-     # For each plugin return all layers that meet the requirements
+    # For each plugin return all layers that meet the requirements
     # an empty layer is returned where the plugin cannot run
     annotated_plugins = []
     for name, f in plugin_list.items():
