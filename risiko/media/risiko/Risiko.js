@@ -1055,8 +1055,7 @@ function calculate()
        exposure: exposure_layer,
        bbox: bbox,
        keywords: 'test,riab_client',
-       impact_function: impact_function,
-       impact_level: 10
+       impact_function: impact_function
        },
      method: 'POST',
      timeout: 1200000, // 20 minutes

@@ -169,7 +169,6 @@ class Test_calculations(unittest.TestCase):
                     exposure=exposure_name,
                     bbox=haz_bbox_string,
                     impact_function='EarthquakeFatalityFunction',
-                    impact_level=10, # FIXME (Ole): Get rid of this parameter
                     keywords='test,shakemap,usgs',
                     ))
 
@@ -211,9 +210,6 @@ class Test_calculations(unittest.TestCase):
             # Read calculated result
             #impact_raster = read_layer(result_layer.filename)
             #I = impact_raster.get_data()
-
-
-
 
         # # Calculate impact using API
         # H = read_layer(hazard_filename)
@@ -311,7 +307,6 @@ class Test_calculations(unittest.TestCase):
                         exposure=exposure_name,
                         bbox=bbox,
                         impact_function='Earthquake Building Damage Function',
-                        impact_level=10,
                         keywords='test,schools,lembang',
                         ))
 
@@ -375,7 +370,6 @@ class Test_calculations(unittest.TestCase):
             # Make only a few points were 0
             assert count > len(attributes) - 4
 
-
     def XXtest_shakemap_population_exposure(self):
         """Population exposed to groundshaking matches USGS numbers
         """
@@ -401,7 +395,6 @@ class Test_calculations(unittest.TestCase):
                 exposure=exposure_name,
                 bbox=get_bounding_box_string(hazardfile),
                 impact_function='USGSFatalityFunction',
-                impact_level=10,
                 keywords='test,shakemap,usgs',
                 ))
 
@@ -447,12 +440,11 @@ class Test_calculations(unittest.TestCase):
         exposure_name = '%s:%s' % (exposure_layer.workspace,
                                    exposure_layer.name)
 
-
         bbox_correct = '105.592,-7.809,110.159,-5.647'
         bbox_with_spaces = '105.592, -7.809, 110.159, -5.647'
         bbox_non_numeric = '105.592,-7.809,x,-5.647'
-        bbox_list = [1,2,3,4]
-        bbox_list_non_numeric = [1,'2',3,4]
+        bbox_list = [1, 2, 3, 4]
+        bbox_list_non_numeric = [1, '2', 3, 4]
         bbox_none = None
         bbox_wrong_number1 = '105.592,-7.809,-5.647'
         bbox_wrong_number2 = '105.592,-7.809,-5.647,34,123'
@@ -470,9 +462,7 @@ class Test_calculations(unittest.TestCase):
                     exposure=exposure_name,
                     bbox=bbox_correct,
                     impact_function='Earthquake Building Damage Function',
-                    impact_level=10,
                     keywords='test,schools,lembang')
-
 
         # First do it correctly (twice)
         c = Client()
@@ -508,10 +498,6 @@ class Test_calculations(unittest.TestCase):
                 msg = ('Bad bounding box %s should have raised '
                        'on exception' % bad_bbox)
                 raise Exception(msg)
-
-
-
-
 
     def test_geotransform_from_geonode(self):
         """Geotransforms of GeoNode layers can be correctly determined

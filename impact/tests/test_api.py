@@ -60,7 +60,6 @@ class Test_HTTP(unittest.TestCase):
                    exposure_server=INTERNAL_SERVER_URL,
                    bbox='99.36,-2.199,102.237,0.00',
                    impact_function='Earthquake Fatality Function',
-                   impact_level=10,
                    keywords='test,earthquake,fatality',
             ))
         self.assertEqual(rv.status_code, 200)
@@ -97,7 +96,6 @@ class Test_HTTP(unittest.TestCase):
                    exposure='geonode:lembang_schools',
                    bbox='105.592,-7.809,110.159,-5.647',
                    impact_function='Earthquake Building Damage Function',
-                   impact_level=10,
                    keywords="test,schools,lembang",
         ))
         self.assertEqual(rv.status_code, 200)

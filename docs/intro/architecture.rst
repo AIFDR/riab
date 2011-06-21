@@ -9,13 +9,13 @@
 
 
 :Name:
-  Riab (Risk in a Box) 
+  Riab (Risk in a Box)
 
 :Version: 0.2
 :Date: 03/03/2011
 
 ================== ==================================== =========== ==========
-Name               Changes                              Doc Vers    Date        
+Name               Changes                              Doc Vers    Date
 ================== ==================================== =========== ==========
 Ted Dunstone       Initial Document                     0.1a        14/1/2011
 Ole Nielsen        Update and questions                 0.1b        18/1/2011
@@ -430,7 +430,6 @@ The API documentation::
 		    ? ?-F "impact_function=/functions/1" \
 		    ? ?-F "hazards=/data/geonode:hazard1" \
 		    ? ?-F "exposure=user:pass@geoserver_url:exposure_1" \
-		    ? ?-F "impact_level=100" \
 		    ? ?-F "keywords=some,keywords,added,to,the,created,map"
 
 
