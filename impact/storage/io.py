@@ -254,9 +254,8 @@ def download(server_url, layer_name, bbox):
         assert len(bbox) == 4
         bbox_string = '%f,%f,%f,%f' % tuple(bbox)
     elif isinstance(bbox, basestring):
-        # FIXME (Ole): Remove spaces if any as
-        # geoserver doesn't like formats like 'a, b, c, d'
-        bbox_string = bbox
+        # Remove spaces if any (GeoServer freaks if string has spaces)
+        bbox_string = ','.join([x.strip() for x in bbox.split(',')])
     else:
         msg = ('Bounding box must be a string or a list of coordinates with '
                'format [west, south, east, north]. I got %s' % bbox)
