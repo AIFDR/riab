@@ -65,6 +65,20 @@ def calculate(request, save_output=dummy_save):
     else:
         theuser = request.user
 
+    # Input checks
+    msg = 'This cannot happen :-)'
+    assert isinstance(bbox, basestring), msg
+
+    msg = ('Bounding box must be a string with coordinates following the '
+           'format 105.592,-7.809,110.159,-5.647\n'
+           'Instead I got %s.' % bbox)
+    assert len(bbox.split(',')) == 4, msg
+
+    #msg = ('Bounding box must be a string with format such as '
+    #       '105.592,-7.809,110.159,-5.647 and it must *not* contain spaces!\n'
+    #       'Instead I got %s.' % bbox)
+    #assert ' ' not in bbox, msg
+
     plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
     impact_function_source = inspect.getsource(impact_function)
@@ -83,20 +97,17 @@ def calculate(request, save_output=dummy_save):
     calculation.save()
 
     msg = 'Performing requested calculation'
-    print msg
     logger.info(msg)
 
     # Download selected layer objects
     msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
                                                      hazard_server))
-    print msg
     logger.info(msg)
 
     H = download(hazard_server, hazard_layer, bbox)
 
     msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
                                                         exposure_server))
-    print msg
     logger.info(msg)
 
     E = download(exposure_server, exposure_layer, bbox)
@@ -104,7 +115,6 @@ def calculate(request, save_output=dummy_save):
     # Calculate result using specified impact function
 
     msg = ('- Calculating impact using %s' % impact_function)
-    print msg
     logger.info(msg)
 
     impact_filename = calculate_impact(layers=[H, E],
@@ -112,14 +122,12 @@ def calculate(request, save_output=dummy_save):
 
     # Upload result to internal GeoServer
     msg = ('- Uploading impact layer %s' % impact_filename)
-    print msg
     logger.info(msg)
     result = save_output(impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
 
     msg = ('- Result available at %s.' % result.get_absolute_url())
-    print msg
     logger.info(msg)
 
     calculation.layer = result.get_absolute_url()

@@ -433,6 +433,86 @@ class Test_calculations(unittest.TestCase):
 
         # FIXME (Ole): Not finished
 
+    def test_exceptions_in_calculate_endpoint(self):
+        """Wrong bbox input is handled nicely by /api/v1/calculate/
+        """
+
+        # Upload input data
+        hazardfile = os.path.join(TESTDATA, 'lembang_mmi_hazmap.asc')
+        hazard_layer = save_to_geonode(hazardfile, user=self.user)
+        hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
+
+        exposurefile = os.path.join(TESTDATA, 'lembang_schools.shp')
+        exposure_layer = save_to_geonode(exposurefile, user=self.user)
+        exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                   exposure_layer.name)
+
+
+        bbox_correct = '105.592,-7.809,110.159,-5.647'
+        bbox_with_spaces = '105.592, -7.809, 110.159, -5.647'
+        bbox_non_numeric = '105.592,-7.809,x,-5.647'
+        bbox_list = [1,2,3,4]
+        bbox_list_non_numeric = [1,'2',3,4]
+        bbox_none = None
+        bbox_wrong_number1 = '105.592,-7.809,-5.647'
+        bbox_wrong_number2 = '105.592,-7.809,-5.647,34,123'
+        bbox_empty = ''
+        bbox_inconsistent1 = '110,-7.809,105,-5.647'
+        bbox_inconsistent2 = '105.592,-5,110.159,-7'
+        bbox_out_of_bound1 = '-185.592,-7.809,110.159,-5.647'
+        bbox_out_of_bound2 = '105.592,-97.809,110.159,-5.647'
+        bbox_out_of_bound3 = '105.592,-7.809,189.159,-5.647'
+        bbox_out_of_bound4 = '105.592,-7.809,110.159,-105.647'
+
+        data = dict(hazard_server=INTERNAL_SERVER_URL,
+                    hazard=hazard_name,
+                    exposure_server=INTERNAL_SERVER_URL,
+                    exposure=exposure_name,
+                    bbox=bbox_correct,
+                    impact_function='Earthquake Building Damage Function',
+                    impact_level=10,
+                    keywords='test,schools,lembang')
+
+
+        # First do it correctly (twice)
+        c = Client()
+        rv = c.post('/api/v1/calculate/', data=data)
+        rv = c.post('/api/v1/calculate/', data=data)
+
+        # Then check that spaces are dealt with correctly
+        data['bbox'] = bbox_with_spaces
+        rv = c.post('/api/v1/calculate/', data=data)
+
+        # Then with a range of wrong bbox inputs
+        for bad_bbox in [bbox_list,
+                         bbox_none,
+                         bbox_empty,
+                         bbox_non_numeric,
+                         bbox_list_non_numeric,
+                         bbox_wrong_number1,
+                         bbox_wrong_number2,
+                         bbox_inconsistent1,
+                         bbox_inconsistent2,
+                         bbox_out_of_bound1,
+                         bbox_out_of_bound2,
+                         bbox_out_of_bound3,
+                         bbox_out_of_bound4]:
+
+            data['bbox'] = bad_bbox
+            try:
+                rv = c.post('/api/v1/calculate/', data=data)
+            except AssertionError, e:
+                #print 'GREAT: bbox %s triggered exception %s' %(bad_bbox, e)
+                pass
+            else:
+                msg = ('Bad bounding box %s should have raised '
+                       'on exception' % bad_bbox)
+                raise Exception(msg)
+
+
+
+
+
     def test_geotransform_from_geonode(self):
         """Geotransforms of GeoNode layers can be correctly determined
         """

@@ -261,6 +261,40 @@ def download(server_url, layer_name, bbox):
                'format [west, south, east, north]. I got %s' % bbox)
         raise Exception(msg)
 
+    fields = bbox_string.split(',')
+    for x in fields:
+        try:
+            float(x)
+        except ValueError, e:
+            msg = ('Bounding box %s contained non-numeric entry %s, '
+                   'original error was "%s".' % (bbox_string, str(x), str(e)))
+            raise AssertionError(msg)
+
+    minx, miny, maxx, maxy = [float(x) for x in fields]
+    msg = ('Left border %.5f of bounding box %s was out of range '
+           'for longitudes ([-180:180])' % (minx, bbox_string))
+    assert -180 <= minx <= 180, msg
+
+    msg = ('Right border %.5f of bounding box %s was out of range '
+           'for longitudes ([-180:180])' % (maxx, bbox_string))
+    assert -180 <= maxx <= 180, msg
+
+    msg = ('Southern border %.5f of bounding box %s was out of range '
+           'for latitudes ([-90:90])' % (miny, bbox_string))
+    assert -90  <= miny <= 90, msg
+
+    msg = ('Northern border %.5f of bounding box %s was out of range '
+           'for latitudes ([-90:90])' % (maxy, bbox_string))
+    assert -90  <= maxy <= 90, msg
+
+    msg = ('Western border %.5f was greater than or equal to eastern border '
+           '%.5f of bounding box %s' % (minx, maxx, bbox_string))
+    assert minx < maxx, msg
+
+    msg = ('Southern border %.5f was greater than or equal to northern border '
+           '%.5f of bounding box %s' % (miny, maxy, bbox_string))
+    assert miny < maxy, msg
+
     # Create REST request and download file
     template = None
     layer_metadata = get_metadata(server_url, layer_name)
