@@ -18,7 +18,8 @@ from impact.storage.io import get_bounding_box
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
-from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
+from impact.tests.utilities import assert_bounding_box_matches
+from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 
 
 def lembang_damage_function(x):
@@ -71,37 +72,11 @@ class Test_calculations(unittest.TestCase):
             msg = 'Expected workspace to be "geonode". Got %s' % workspace
             assert workspace == 'geonode'
 
-            msg = 'Expected layer name to be "geonode". Got %s' % workspace
-            assert workspace == 'geonode', msg
-
             # Check metadata
-            assert isinstance(layer.geographic_bounding_box, basestring)
-
-            # Exctract bounding bounding box from layer handle
-            s = 'POLYGON(('
-            i = layer.geographic_bounding_box.find(s) + len(s)
-            assert i > len(s)
-
-            j = layer.geographic_bounding_box.find('))')
-            assert j > i
-
-            bbox_string = str(layer.geographic_bounding_box[i:j])
-            A = numpy.array([[float(x[0]), float(x[1])] for x in
-                             (p.split() for p in bbox_string.split(','))])
-            south = min(A[:, 1])
-            north = max(A[:, 1])
-            west = min(A[:, 0])
-            east = max(A[:, 0])
-            bbox = [west, south, east, north]
-
-            # Check correctness of bounding box against reference
-            ref_bbox = get_bounding_box(filename)
-
-            msg = ('Bounding box from layer handle "%s" was not as expected.\n'
-                   'Got %s, expected %s' % (layer_name, bbox, ref_bbox))
-            assert numpy.allclose(bbox, ref_bbox), msg
+            assert_bounding_box_matches(layer, filename)
 
             # Download layer again using workspace:name
+            bbox = get_bounding_box(filename)
             downloaded_layer = download(INTERNAL_SERVER_URL,
                                         '%s:%s' % (workspace, layer_name),
                                         bbox)
@@ -137,6 +112,101 @@ class Test_calculations(unittest.TestCase):
             #    msg = 'Write exception handling of invalid workspace name'
             #    print msg
             #    #raise Exception(msg)
+
+    def test_earthquake_fatality_estimation_allen(self):
+        """Fatality computation computed correctly with GeoServer Data
+        """
+
+        # Upload exposure data for this test
+        name = 'Population_2010'
+        exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+        layer = save_to_geonode(exposure_filename,
+                                user=self.user, overwrite=True)
+
+        msg = 'Expected workspace to be "geonode". Got %s' % layer.workspace
+        assert layer.workspace == 'geonode'
+
+        msg = 'Expected layer name to be "%s". Got %s' % (name, layer.name)
+        assert layer.name == name.lower(), msg
+
+        # Check metadata
+        assert_bounding_box_matches(layer, exposure_filename)
+
+        # Download layer again using workspace:name
+        bbox = get_bounding_box(exposure_filename)
+        downloaded_layer = download(INTERNAL_SERVER_URL,
+                                    '%s:%s' % (layer.workspace, layer.name),
+                                    bbox)
+        assert os.path.exists(downloaded_layer.filename)
+
+        # Now we know that exposure layer is good, lets upload some
+        # hazard layers and do the calculations
+        for filename in ['Earthquake_Ground_Shaking.asc',
+                         'Lembang_Earthquake_Scenario.asc',
+                         'Shakemap_Padang_2009.asc']:
+
+            hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
+            layer = save_to_geonode(hazard_filename,
+                                    user=self.user, overwrite=True)
+
+            # Check metadata
+            assert_bounding_box_matches(layer, hazard_filename)
+
+
+        # # Calculate impact using API
+        # H = read_layer(hazard_filename)
+        # E = read_layer(exposure_filename)
+
+        # plugin_name = 'Earthquake Fatality Function'
+        # plugin_list = get_plugins(plugin_name)
+        # assert len(plugin_list) == 1
+        # assert plugin_list[0].keys()[0] == plugin_name
+
+        # IF = plugin_list[0][plugin_name]
+
+        # # Call calculation engine
+        # impact_filename = calculate_impact(layers=[H, E],
+        #                                    impact_function=IF)
+
+        # # Do calculation manually and check result
+        # hazard_raster = read_layer(hazard_filename)
+        # H = hazard_raster.get_data(nan=0)
+
+        # exposure_raster = read_layer(exposure_filename)
+        # E = exposure_raster.get_data(nan=0)
+
+        # # Calculate impact manually
+        # a = 0.97429
+        # b = 11.037
+        # F = 10 ** (a * H - b) * E
+
+        # # Verify correctness of result
+        # calculated_raster = read_layer(impact_filename)
+        # C = calculated_raster.get_data(nan=0)
+
+        # # Compare shape and extrema
+        # msg = ('Shape of calculated raster differs from reference raster: '
+        #        'C=%s, F=%s' % (C.shape, F.shape))
+        # assert numpy.allclose(C.shape, F.shape, rtol=1e-12, atol=1e-12), msg
+
+        # msg = ('Minimum of calculated raster differs from reference raster: '
+        #        'C=%s, F=%s' % (numpy.min(C), numpy.min(F)))
+        # assert numpy.allclose(numpy.min(C), numpy.min(F),
+        #                       rtol=1e-12, atol=1e-12), msg
+        # msg = ('Maximum of calculated raster differs from reference raster: '
+        #        'C=%s, F=%s' % (numpy.max(C), numpy.max(F)))
+        # assert numpy.allclose(numpy.max(C), numpy.max(F),
+        #                       rtol=1e-12, atol=1e-12), msg
+
+        # # Compare every single value numerically
+        # msg = 'Array values of written raster array were not as expected'
+        # assert numpy.allclose(C, F, rtol=1e-12, atol=1e-12), msg
+
+        # # Check that extrema are in range
+        # xmin, xmax = calculated_raster.get_extrema()
+        # assert numpy.alltrue(C >= xmin)
+        # assert numpy.alltrue(C <= xmax)
+        # assert numpy.alltrue(C >= 0)
 
     def test_lembang_building_examples(self):
         """Lembang building impact calculation works through the API
