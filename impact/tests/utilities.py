@@ -12,6 +12,7 @@ DEMODATA = os.path.join(os.environ['RIAB_HOME'], 'risiko_demo_data')
 # that is the endpoint of the OGC services.
 INTERNAL_SERVER_URL = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
+
 def _same_API(X, Y, exclude=None):
     """Check that public methods of X also exist in Y
     """
@@ -50,6 +51,7 @@ def same_API(X, Y, exclude=None):
 
     return True
 
+
 def assert_bounding_box_matches(layer, filename):
     """Verify that GeoNode layer has the same bounding box as filename
     """
@@ -82,5 +84,4 @@ def assert_bounding_box_matches(layer, filename):
     msg = ('Bounding box from layer handle "%s" was not as expected.\n'
            'Got %s, expected %s' % (layer.name, bbox, ref_bbox))
     assert numpy.allclose(bbox, ref_bbox, rtol=1.0e-6, atol=1.0e-8), msg
-
 

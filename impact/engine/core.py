@@ -121,7 +121,6 @@ def check_data_integrity(layer_files):
                 assert numpy.allclose(coordinates,
                                       layer.get_geometry()), msg
 
-
     # FIXME (Ole): Hack due to Geoserver resolution changes,
     #              This will ensure alignment of arrays to the first
     #              encountered
@@ -148,5 +147,4 @@ def check_data_integrity(layer_files):
 
             # XTreme Monkey Patching!
             layer.data = data[0:layer.rows, 0:layer.columns]
-
 
