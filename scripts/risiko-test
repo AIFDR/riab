@@ -16,11 +16,10 @@ mkdir -p logs
 echo; echo ">>> Starting Django server with GeoNode"
 paster serve --reload $RIAB_HOME/riab/extras/project.paste.ini &
 
-echo ">>> Waiting for GeoServer and GeoNode to boot properly"
-sleep 15
-
 if [ -z "$EXTRA_INFO" ]; then
     echo; echo ">>> Skipping pylint and pep8 check because we are not running the full suite"
+    echo ">>> Waiting for GeoServer and GeoNode to boot properly"
+    sleep 5
 else
     echo; echo ">>> Running pylint to check code quality. See pylint.output for details"
     cd $RIAB_HOME/riab/;pylint --disable=C0103 risiko impact > pylint.output 2> pylint.err

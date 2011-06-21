@@ -120,23 +120,27 @@ class Test_calculations(unittest.TestCase):
         # Upload exposure data for this test
         name = 'Population_2010'
         exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
-        layer = save_to_geonode(exposure_filename,
-                                user=self.user, overwrite=True)
+        exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
 
-        msg = 'Expected workspace to be "geonode". Got %s' % layer.workspace
-        assert layer.workspace == 'geonode'
+        workspace = exposure_layer.workspace
+        msg = 'Expected workspace to be "geonode". Got %s' % workspace
+        assert workspace == 'geonode'
 
-        msg = 'Expected layer name to be "%s". Got %s' % (name, layer.name)
-        assert layer.name == name.lower(), msg
+        layer_name = exposure_layer.name
+        msg = 'Expected layer name to be "%s". Got %s' % (name, layer_name)
+        assert layer_name == name.lower(), msg
+
+        exposure_name = '%s:%s' % (workspace, layer_name)
 
         # Check metadata
-        assert_bounding_box_matches(layer, exposure_filename)
+        assert_bounding_box_matches(exposure_layer, exposure_filename)
 
         # Download layer again using workspace:name
-        bbox = get_bounding_box(exposure_filename)
+        exp_bbox = get_bounding_box(exposure_filename)
         downloaded_layer = download(INTERNAL_SERVER_URL,
-                                    '%s:%s' % (layer.workspace, layer.name),
-                                    bbox)
+                                    '%s:%s' % (workspace, layer_name),
+                                    exp_bbox)
         assert os.path.exists(downloaded_layer.filename)
 
         # Now we know that exposure layer is good, lets upload some
@@ -145,12 +149,70 @@ class Test_calculations(unittest.TestCase):
                          'Lembang_Earthquake_Scenario.asc',
                          'Shakemap_Padang_2009.asc']:
 
+            # Save
             hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
-            layer = save_to_geonode(hazard_filename,
-                                    user=self.user, overwrite=True)
+            hazard_layer = save_to_geonode(hazard_filename,
+                                           user=self.user, overwrite=True)
+            hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                     hazard_layer.name)
 
             # Check metadata
-            assert_bounding_box_matches(layer, hazard_filename)
+            assert_bounding_box_matches(hazard_layer, hazard_filename)
+            haz_bbox_string = get_bounding_box_string(hazard_filename)
+
+            # Run calculation
+            c = Client()
+            rv = c.post('/api/v1/calculate/', data=dict(
+                    hazard_server=INTERNAL_SERVER_URL,
+                    hazard=hazard_name,
+                    exposure_server=INTERNAL_SERVER_URL,
+                    exposure=exposure_name,
+                    bbox=haz_bbox_string,
+                    impact_function='EarthquakeFatalityFunction',
+                    impact_level=10, # FIXME (Ole): Get rid of this parameter
+                    keywords='test,shakemap,usgs',
+                    ))
+
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            data = json.loads(rv.content)
+            assert 'hazard_layer' in data.keys()
+            assert 'exposure_layer' in data.keys()
+            assert 'run_duration' in data.keys()
+            assert 'run_date' in data.keys()
+            assert 'layer' in data.keys()
+
+            # Download result and check
+            layer_name = data['layer'].split('/')[-1]
+
+            #print
+            #print data.keys()
+            #for key in data.keys():
+            #    print
+            #    print 'KEY', key
+            #    print data[key]
+            #print
+
+            # Check bounding box of calculated layer
+            #assert numpy.allclose(exp_bbox, haz_bbox)
+            #assert numpy.allclose(data['bbox'], haz_bbox)
+            #assert numpy.allclose(data['bbox'], exp_bbox)
+
+            result_layer = download(INTERNAL_SERVER_URL,
+                                    layer_name,
+                                    get_bounding_box(hazard_filename))
+            assert os.path.exists(result_layer.filename)
+
+            # Read hazard data for reference
+            #hazard_raster = read_layer(hazardfile)
+            #H = hazard_raster.get_data()
+            #mmi_min, mmi_max = hazard_raster.get_extrema()
+
+            # Read calculated result
+            #impact_raster = read_layer(result_layer.filename)
+            #I = impact_raster.get_data()
+
+
 
 
         # # Calculate impact using API
@@ -216,8 +278,8 @@ class Test_calculations(unittest.TestCase):
 
         for mmi_filename in ['lembang_mmi_hazmap.asc']:
                              #'Lembang_Earthquake_Scenario.asc']:
-            # Upload input data
 
+            # Upload input data
             hazardfile = os.path.join(TESTDATA, mmi_filename)
             hazard_layer = save_to_geonode(hazardfile, user=self.user)
             hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
@@ -312,6 +374,7 @@ class Test_calculations(unittest.TestCase):
 
             # Make only a few points were 0
             assert count > len(attributes) - 4
+
 
     def XXtest_shakemap_population_exposure(self):
         """Population exposed to groundshaking matches USGS numbers
