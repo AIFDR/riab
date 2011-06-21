@@ -32,6 +32,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from impact.storage.io import dummy_save, download, get_layers_metadata
+from impact.storage.io import get_metadata
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
@@ -91,6 +92,32 @@ def calculate(request, save_output=dummy_save):
                               success=False)
     calculation.save()
 
+    # FIXME (Ole): Maybe we can get bounding boxes from metadata.
+    # Raster layers have their geotransform which is good.
+    # However, vector layers don't have anything useful at this stage.
+
+    # Get bounding boxes
+    #metadata = get_metadata(hazard_server, hazard_layer)
+    #print hazard_server, hazard_layer
+    #print metadata.keys()
+    #for key in metadata:
+    #    print metadata[key]
+    #print
+    #
+    #if metadata['layer_type'] == 'raster':
+    #    # Can get bounding box from its geotransform
+    #    geotransform = metadata['geotransform']
+    #else:
+    #    pass
+    #
+    #
+    #metadata = get_metadata(exposure_server, exposure_layer)
+    #print exposure_server, exposure_layer
+    #print metadata.keys()
+    #for key in metadata:
+    #    print metadata[key]
+    #print
+
     msg = 'Performing requested calculation'
     logger.info(msg)
 
@@ -105,6 +132,9 @@ def calculate(request, save_output=dummy_save):
                                                         exposure_server))
     logger.info(msg)
     E = download(exposure_server, exposure_layer, bbox)
+
+
+
 
     # Calculate result using specified impact function
 
