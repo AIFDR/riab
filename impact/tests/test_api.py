@@ -96,7 +96,7 @@ class Test_HTTP(unittest.TestCase):
                    exposure='geonode:lembang_schools',
                    bbox='105.592,-7.809,110.159,-5.647',
                    impact_function='Earthquake Building Damage Function',
-                   keywords="test,schools,lembang",
+                   keywords='test,schools,lembang',
         ))
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')

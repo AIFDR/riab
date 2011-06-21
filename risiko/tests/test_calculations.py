@@ -117,6 +117,9 @@ class Test_calculations(unittest.TestCase):
         """Fatality computation computed correctly with GeoServer Data
         """
 
+        # Simulate bounding box from application
+        viewport_bbox_string = '104.3,-8.2,110.04,-5.17'
+
         # Upload exposure data for this test
         name = 'Population_2010'
         exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
@@ -137,10 +140,10 @@ class Test_calculations(unittest.TestCase):
         assert_bounding_box_matches(exposure_layer, exposure_filename)
 
         # Download layer again using workspace:name
-        exp_bbox = get_bounding_box(exposure_filename)
+        exp_bbox_string = get_bounding_box_string(exposure_filename)
         downloaded_layer = download(INTERNAL_SERVER_URL,
                                     '%s:%s' % (workspace, layer_name),
-                                    exp_bbox)
+                                    exp_bbox_string)
         assert os.path.exists(downloaded_layer.filename)
 
         # Now we know that exposure layer is good, lets upload some
@@ -160,6 +163,12 @@ class Test_calculations(unittest.TestCase):
             assert_bounding_box_matches(hazard_layer, hazard_filename)
             haz_bbox_string = get_bounding_box_string(hazard_filename)
 
+            print
+            print filename
+            print haz_bbox_string
+            print exp_bbox_string
+            print viewport_bbox_string
+
             # Run calculation
             c = Client()
             rv = c.post('/api/v1/calculate/', data=dict(
@@ -167,7 +176,8 @@ class Test_calculations(unittest.TestCase):
                     hazard=hazard_name,
                     exposure_server=INTERNAL_SERVER_URL,
                     exposure=exposure_name,
-                    bbox=haz_bbox_string,
+                    #bbox=viewport_bbox_string,
+                    bbox=exp_bbox_string,
                     impact_function='EarthquakeFatalityFunction',
                     keywords='test,shakemap,usgs',
                     ))

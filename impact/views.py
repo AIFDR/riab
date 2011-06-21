@@ -74,11 +74,6 @@ def calculate(request, save_output=dummy_save):
            'Instead I got %s.' % bbox)
     assert len(bbox.split(',')) == 4, msg
 
-    #msg = ('Bounding box must be a string with format such as '
-    #       '105.592,-7.809,110.159,-5.647 and it must *not* contain spaces!\n'
-    #       'Instead I got %s.' % bbox)
-    #assert ' ' not in bbox, msg
-
     plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
     impact_function_source = inspect.getsource(impact_function)
@@ -101,7 +96,7 @@ def calculate(request, save_output=dummy_save):
 
     # Download selected layer objects
     msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
-                                                     hazard_server))
+                                                      hazard_server))
     logger.info(msg)
 
     H = download(hazard_server, hazard_layer, bbox)
@@ -109,7 +104,6 @@ def calculate(request, save_output=dummy_save):
     msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
                                                         exposure_server))
     logger.info(msg)
-
     E = download(exposure_server, exposure_layer, bbox)
 
     # Calculate result using specified impact function
