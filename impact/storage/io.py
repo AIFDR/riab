@@ -281,11 +281,11 @@ def download(server_url, layer_name, bbox):
 
     msg = ('Southern border %.5f of bounding box %s was out of range '
            'for latitudes ([-90:90])' % (miny, bbox_string))
-    assert -90  <= miny <= 90, msg
+    assert -90 <= miny <= 90, msg
 
     msg = ('Northern border %.5f of bounding box %s was out of range '
            'for latitudes ([-90:90])' % (maxy, bbox_string))
-    assert -90  <= maxy <= 90, msg
+    assert -90 <= maxy <= 90, msg
 
     msg = ('Western border %.5f was greater than or equal to eastern border '
            '%.5f of bounding box %s' % (minx, maxx, bbox_string))

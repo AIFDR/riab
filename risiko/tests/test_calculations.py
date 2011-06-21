@@ -163,12 +163,6 @@ class Test_calculations(unittest.TestCase):
             assert_bounding_box_matches(hazard_layer, hazard_filename)
             haz_bbox_string = get_bounding_box_string(hazard_filename)
 
-            print
-            print filename
-            print haz_bbox_string
-            print exp_bbox_string
-            print viewport_bbox_string
-
             # Run calculation
             c = Client()
             rv = c.post('/api/v1/calculate/', data=dict(

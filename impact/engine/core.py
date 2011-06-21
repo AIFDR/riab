@@ -147,4 +147,3 @@ def check_data_integrity(layer_files):
 
             # XTreme Monkey Patching!
             layer.data = data[0:layer.rows, 0:layer.columns]
-

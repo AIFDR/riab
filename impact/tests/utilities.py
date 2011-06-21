@@ -84,4 +84,3 @@ def assert_bounding_box_matches(layer, filename):
     msg = ('Bounding box from layer handle "%s" was not as expected.\n'
            'Got %s, expected %s' % (layer.name, bbox, ref_bbox))
     assert numpy.allclose(bbox, ref_bbox, rtol=1.0e-6, atol=1.0e-8), msg
-
