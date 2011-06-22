@@ -80,6 +80,10 @@ def get_layers_metadata(url, version='1.0.0'):
         A list of dictionaries containing the metadata for each layer
     """
 
+    # FIXME (Ole): This should be superseded by new get_metadata
+    #              function which will be entirely based on OWSLib
+    #              Issue #95
+
     # Make sure the server is reachable before continuing
     msg = ('Server %s is not reachable' % url)
     if not is_server_reachable(url):

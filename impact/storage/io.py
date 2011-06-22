@@ -16,6 +16,7 @@ from impact.storage.raster import Raster
 from impact.storage.utilities import get_layers_metadata, geotransform2bbox
 
 from owslib.wcs import WebCoverageService
+from owslib.wfs import WebFeatureService
 
 
 def read_layer(filename):
@@ -108,6 +109,13 @@ def get_bounding_box(filename):
     return layer.get_bounding_box()
 
 
+def bboxlist2string(bbox):
+    """Convert bounding box list to comma separated string
+    """
+
+    assert len(bbox) == 4
+    return ','.join([str(x) for x in bbox])
+
 def get_bounding_box_string(filename):
     """Get bounding box for specified raster or vector file
 
@@ -118,7 +126,7 @@ def get_bounding_box_string(filename):
         bounding box as python string 'West, South, East, North'
     """
 
-    return ','.join([str(x) for x in get_bounding_box(filename)])
+    return bboxlist2string(get_bounding_box(filename))
 
 
 def get_geotransform(server_url, layer_name):
@@ -136,6 +144,11 @@ def get_geotransform(server_url, layer_name):
             to uniquely determine if rasters are aligned
 
     """
+
+    # FIXME (Ole): This should be superseded by new get_metadata
+    #              function which will be entirely based on OWSLib
+    #              Issue #95
+
     wcs = WebCoverageService(server_url, version='1.0.0')
 
     if layer_name in wcs.contents:
@@ -172,6 +185,11 @@ def get_metadata(server_url, layer_name):
         layer_name: must follow the convention workspace:name
     """
 
+    # FIXME (Ole): This should be superseded by new get_metadata
+    #              function which will be entirely based on OWSLib
+    #              Issue #95
+
+
     # Get all metadata (allow for three tries in case it wasn't ready)
     for _ in range(3):
 
@@ -207,6 +225,39 @@ def get_metadata(server_url, layer_name):
 
     return layer_metadata
 
+
+def get_ows_metadata(server_url, layer_name):
+    """Uses OWSLib to get the metadata for a given layer
+
+    Input
+        server_url: e.g. http://localhost:8001/geoserver-geonode-dev/ows
+        layer_name: must follow the convention workspace:name
+
+    Output
+        metadata: Dictionary of metadata fields common to both raster and vector
+    """
+
+    # FIXME (Ole): Want to use this approach for all metadata including bounding boxes!
+    #              Then deal with issue #95
+    #
+    #              Very early days, but got bounding box from both layers out!
+
+    wcs = WebCoverageService(server_url, version='1.0.0')
+    wfs = WebFeatureService(server_url, version='1.0.0')
+
+    metadata = {}
+    if layer_name in wcs.contents:
+        layer = wcs.contents[layer_name]
+        metadata['layer_type'] = 'raster'
+    elif layer_name in wfs.contents:
+        layer = wfs.contents[layer_name]
+        metadata['layer_type'] = 'vector'
+
+    metadata['bounding_box'] = layer.boundingBoxWGS84
+    metadata['title'] = layer.title
+    metadata['id'] = layer.id
+
+    return metadata
 
 def get_file(download_url, suffix):
     """Download a file from an HTTP server.

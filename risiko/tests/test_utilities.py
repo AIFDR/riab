@@ -1,9 +1,10 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
-from impact.storage.io import download
+from impact.storage.io import download, get_ows_metadata
 from django.conf import settings
 import os
+import time
 import unittest
 import urllib2
 from geonode.maps.utils import get_valid_user
@@ -324,6 +325,35 @@ class Test_utilities(unittest.TestCase):
             msg = 'Could not find keyword "%s" in %s' % (keyword,
                                                          keywords_list)
             assert keyword in keywords_list, msg
+
+    def test_metadata(self):
+        """Metadata is retrieved correctly for both raster and vector data
+        """
+
+        layers = []
+        for filename in ['Lembang_Earthquake_Scenario.asc',
+                         'lembang_schools.shp']:
+            basename, ext = os.path.splitext(filename)
+
+            path = os.path.join(TESTDATA, filename)
+            layer = save_to_geonode(path, user=self.user, overwrite=True)
+
+            layers.append(layer)
+
+        # FIXME: Sleep to make sure metadata is ready. Try to remove.
+        time.sleep(1)
+        for layer in layers:
+            print filename
+
+            metadata = get_ows_metadata(INTERNAL_SERVER_URL,
+                                        '%s:%s' % (layer.workspace, layer.name))
+
+            assert 'id' in metadata
+            assert 'title' in metadata
+            assert 'layer_type' in metadata
+            assert 'bounding_box' in metadata
+            assert len(metadata['bounding_box']) == 4
+
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

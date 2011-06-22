@@ -118,6 +118,13 @@ def calculate(request, save_output=dummy_save):
     #    print metadata[key]
     #print
 
+
+    # FIXME (Ole): Use new get_ows_metadata to get bounding boxes and do it.
+    #              I have to go home now, but will do this tomorrow 23 June.
+    #
+    #              Plan is to find the intersection of layer bounding boxes and viewport
+    #              and use that to download only the necessary data.
+
     msg = 'Performing requested calculation'
     logger.info(msg)
 
