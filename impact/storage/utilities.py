@@ -185,21 +185,25 @@ class MetadataReader(object):
         return etree.fromstring(st)
 
     def get_metadata(self):
+        """Get metadata for all layers of given service_type
+
+        FIXME (Ole): Need all metadata, especially bounding boxes
+                     for both vector and raster data.
+                     See issue https://github.com/AIFDR/riab/issues/95
+        """
 
         _capabilities = self.read()
         request_url = self.capabilities_url()
         serviceidentelem = _capabilities.find(self.NAMESPACE + 'Service')
-        featuretypelistelem = _capabilities.find(self.NAMESPACE +\
-                                                     self.typelist)
+        typelistelem = _capabilities.find(self.NAMESPACE + self.typelist)
 
         msg = ('Could not find element "%s" in namespace %s on %s'
                % (self.typelist, self.NAMESPACE, self.url))
-        assert featuretypelistelem is not None, msg
+        assert typelistelem is not None, msg
 
-        featuretypeelems = featuretypelistelem.findall(self.NAMESPACE +\
-                                                           self.typeelms)
+        typeelems = typelistelem.findall(self.NAMESPACE + self.typeelms)
         layers = []
-        for f in featuretypeelems:
+        for f in typeelems:
             metadata = {'layer_type': self.layer_type}
             name = f.findall(self.NAMESPACE + self.namestr)
             title = f.findall(self.NAMESPACE + self.titlestr)
@@ -216,7 +220,7 @@ class MetadataReader(object):
 
             if kwds is not None:
                 for kwd in kwds[:]:
-                    # Split all the kepairs
+                    # Split all the keypairs
                     keypairs = str(kwd.text).split(',')
                     for val in keypairs:
                         # Only use keywords containing at least one :
