@@ -9,6 +9,7 @@ from impact.storage.utilities import DRIVER_MAP
 from impact.engine.interpolation import interpolate_raster_vector
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
+from impact.storage.utilities import geotransform2bbox
 
 
 class Raster:
@@ -443,21 +444,7 @@ class Raster:
         Format is [West, South, East, North]
         """
 
-        geotransform = self.geotransform
-
-        x_origin = geotransform[0]  # top left x
-        y_origin = geotransform[3]  # top left y
-        x_res = geotransform[1]     # w-e pixel resolution
-        y_res = geotransform[5]     # n-s pixel resolution
-        x_pix = self.columns
-        y_pix = self.rows
-
-        minx = x_origin
-        maxx = x_origin + (x_pix * x_res)
-        miny = y_origin + (y_pix * y_res)
-        maxy = y_origin
-
-        return [minx, miny, maxx, maxy]
+        return geotransform2bbox(self.geotransform, self.columns, self.rows)
 
     @property
     def is_raster(self):

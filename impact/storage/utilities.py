@@ -101,6 +101,8 @@ class MetadataReader(object):
               owslib/feature/wfs200.py#L402
     """
 
+    # FIXME (Ole): Why are we not using WebCoverageService and
+    #              WebFeatureService from OWSLib?
     def __init__(self, server_url, service_type, version):
         """Initialize"""
         self.WFS_NAMESPACE = '{http://www.opengis.net/wfs}'
@@ -215,6 +217,7 @@ class MetadataReader(object):
 
             metadata['title'] = title[0].text
 
+            # FIXME (Ole): Why only wcs?
             if self.service_type == 'wcs':
                 kwds = kwds[0].findall(self.NAMESPACE + 'keyword')
 
@@ -334,3 +337,34 @@ def read_keywords(filename):
     fid.close()
 
     return keywords
+
+def geotransform2bbox(geotransform, columns, rows):
+    """Convert geotransform to bounding box
+
+    Input
+        geotransform: GDAL geotransform (6-tuple).
+                      (top left x, w-e pixel resolution, rotation,
+                      top left y, rotation, n-s pixel resolution).
+                      See e.g. http://www.gdal.org/gdal_tutorial.html
+        columns: Number of columns in grid
+        rows: Number of rows in grid
+
+    Output
+        bbox: Bounding box as a list of geographic coordinates
+              [west, south, east, north]
+    """
+
+    x_origin = geotransform[0]  # top left x
+    y_origin = geotransform[3]  # top left y
+    x_res = geotransform[1]     # w-e pixel resolution
+    y_res = geotransform[5]     # n-s pixel resolution
+    x_pix = columns
+    y_pix = rows
+
+    minx = x_origin
+    maxx = x_origin + (x_pix * x_res)
+    miny = y_origin + (y_pix * y_res)
+    maxy = y_origin
+
+    return [minx, miny, maxx, maxy]
+

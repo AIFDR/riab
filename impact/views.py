@@ -109,7 +109,7 @@ def calculate(request, save_output=dummy_save):
     #    geotransform = metadata['geotransform']
     #else:
     #    pass
-    #
+    #print geotransform
     #
     #metadata = get_metadata(exposure_server, exposure_layer)
     #print exposure_server, exposure_layer

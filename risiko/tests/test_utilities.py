@@ -8,8 +8,7 @@ import unittest
 import urllib2
 from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode, RisikoException
-from impact.tests.utilities import TESTDATA
-
+from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 
 def check_layer(uploaded):
     """Verify if an object is a valid Layer.
@@ -328,6 +327,6 @@ class Test_utilities(unittest.TestCase):
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
-    suite = unittest.makeSuite(Test_utilities, 'test_keywords')
+    suite = unittest.makeSuite(Test_utilities, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

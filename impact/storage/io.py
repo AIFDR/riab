@@ -13,7 +13,7 @@ from zipfile import ZipFile
 
 from impact.storage.vector import Vector
 from impact.storage.raster import Raster
-from impact.storage.utilities import get_layers_metadata
+from impact.storage.utilities import get_layers_metadata, geotransform2bbox
 
 from owslib.wcs import WebCoverageService
 
@@ -141,6 +141,7 @@ def get_geotransform(server_url, layer_name):
     if layer_name in wcs.contents:
         layer = wcs.contents[layer_name]
         grid = layer.grid
+
         top_left_x = float(layer.grid.origin[0])
         we_pixel_res = float(layer.grid.offsetvectors[0][0])
         x_rotation = float(layer.grid.offsetvectors[0][1])
@@ -198,8 +199,11 @@ def get_metadata(server_url, layer_name):
     # FIXME: We need a geotransform attribute in get_metadata
     # Let's add it here for the time being
     if layer_metadata['layer_type'] == 'raster':
-        layer_metadata['geotransform'] = get_geotransform(server_url,
-                                                          layer_name)
+        geotransform = get_geotransform(server_url, layer_name)
+
+        layer_metadata['geotransform'] = geotransform
+        #layer_metadata['bbox'] = geotransform2bbox(geotransform,
+        #                                           columns, rows)
 
     return layer_metadata
 
