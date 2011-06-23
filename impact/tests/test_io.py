@@ -14,6 +14,7 @@ from impact.storage.utilities import write_keywords
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import bbox_intersection
 from impact.storage.io import get_bounding_box
+from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.tests.utilities import same_API
 from impact.storage.utilities import DEFAULT_PROJECTION
 from impact.tests.utilities import TESTDATA
@@ -785,6 +786,53 @@ class Test_IO(unittest.TestCase):
         else:
             msg = 'Colon in keywords value %s was not caught' % keywords
             raise Exception(msg)
+
+    def test_bounding_box_conversions(self):
+        """Bounding boxes can be converted between list and string
+        """
+
+        # Good ones
+        for x in [[105, -7, 108, -5],
+                  [106.5, -6.5, 107, -6],
+                  [94.972335, -11.009721, 141.014, 6.073612333333],
+                  [105.3, -8.5, 110.0, -5.5],
+                  [105.6, -7.8, 110.5, -5.1]]:
+            bbox_string = bboxlist2string(x)
+            bbox_list = bboxstring2list(bbox_string)
+
+            assert numpy.allclose(x, bbox_list, rtol=1.0e-6, atol=1.0e-6)
+
+        for x in ['105,-7,108,-5',
+                  '106.5, -6.5, 107,-6',
+                  '94.972335,-11.009721,141.014,6.073612333333']:
+            bbox_list = bboxstring2list(x)
+
+            # Check that numbers are numerically consistent
+            assert numpy.allclose([float(z) for z in x.split(',')],
+                                  bbox_list, rtol=1.0e-6, atol=1.0e-6)
+
+        # Bad ones
+        for bbox in [[105, -7, 'x', -5],
+                     [106.5, -6.5, -6],
+                     [94.972335, 0, -11.009721, 141.014, 6]]:
+            try:
+                bbox_string = bboxlist2string(bbox)
+            except:
+                pass
+            else:
+                msg = 'Should have raised exception'
+                raise Exception(msg)
+
+        for x in ['106.5,-6.5,-6',
+                  '106.5,-6.5,-6,4,10',
+                  '94.972335,x,141.014,6.07']:
+            try:
+                bbox_list = bboxstring2list(x)
+            except:
+                pass
+            else:
+                msg = 'Should have raised exception: %s' % x
+                raise Exception(msg)
 
     def test_bounding_box_intersection(self):
         """Intersections of bounding boxes work

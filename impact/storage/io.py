@@ -111,10 +111,55 @@ def get_bounding_box(filename):
 
 def bboxlist2string(bbox):
     """Convert bounding box list to comma separated string
+
+    Input
+        bbox: List of coordinates of the form [W, S, E, N]
+    Output
+        bbox_string: Format 'W,S,E,N' - each will have 6 decimal points
     """
 
-    assert len(bbox) == 4
-    return ','.join([str(x) for x in bbox])
+    msg = ('Bounding box must have 4 coordinates [W, S, E, N]. '
+           'I got %s' % bbox)
+    assert len(bbox) == 4, msg
+
+    for x in bbox:
+        try:
+            float(x)
+        except ValueError, e:
+            msg = ('Bounding box %s contained non-numeric entry %s, '
+                   'original error was "%s".' % (bbox, x, e))
+            raise AssertionError(msg)
+
+    return '%.6f,%.6f,%.6f,%.6f' % tuple(bbox)
+
+def bboxstring2list(bbox_string):
+    """Convert bounding box string to list
+
+    Input
+        bbox_string: String of bounding box coordinates of the form 'W,S,E,N'
+    Output
+        bbox: List of floating point numbers with format [W, S, E, N]
+    """
+
+    msg = ('Bounding box must be a string with coordinates following the '
+           'format 105.592,-7.809,110.159,-5.647\n'
+           'Instead I got %s.' % bbox_string)
+    assert isinstance(bbox_string, basestring), msg
+
+    fields = bbox_string.split(',')
+    msg = ('Bounding box string must have 4 coordinates in the form '
+           'W,S,E,N,. I got %s' % bbox_string)
+    assert len(fields) == 4, msg
+
+    for x in fields:
+        try:
+            float(x)
+        except ValueError, e:
+            msg = ('Bounding box %s contained non-numeric entry %s, '
+                   'original error was "%s".' % (bbox_string, x, e))
+            raise AssertionError(msg)
+
+    return [float(x) for x in fields]
 
 
 def get_bounding_box_string(filename):
@@ -310,8 +355,7 @@ def download(server_url, layer_name, bbox):
     assert len(layer_name.split(':')) == 2, msg
 
     if isinstance(bbox, list):
-        assert len(bbox) == 4
-        bbox_string = '%f,%f,%f,%f' % tuple(bbox)
+        bbox_string = bboxlist2string(bbox)
     elif isinstance(bbox, basestring):
         # Remove spaces if any (GeoServer freaks if string has spaces)
         bbox_string = ','.join([x.strip() for x in bbox.split(',')])
@@ -320,16 +364,9 @@ def download(server_url, layer_name, bbox):
                'format [west, south, east, north]. I got %s' % bbox)
         raise Exception(msg)
 
-    fields = bbox_string.split(',')
-    for x in fields:
-        try:
-            float(x)
-        except ValueError, e:
-            msg = ('Bounding box %s contained non-numeric entry %s, '
-                   'original error was "%s".' % (bbox_string, str(x), str(e)))
-            raise AssertionError(msg)
+    # Check integrity
+    minx, miny, maxx, maxy = bboxstring2list(bbox)
 
-    minx, miny, maxx, maxy = [float(x) for x in fields]
     msg = ('Western border %.5f of bounding box %s was out of range '
            'for longitudes ([-180:180])' % (minx, bbox_string))
     assert -180 <= minx <= 180, msg

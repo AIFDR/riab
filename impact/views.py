@@ -32,7 +32,9 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from impact.storage.io import dummy_save, download, get_layers_metadata
-from impact.storage.io import get_metadata
+from impact.storage.io import get_metadata, get_ows_metadata
+from impact.storage.io import bboxlist2string, bboxstring2list
+from impact.storage.utilities import bbox_intersection
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
@@ -70,10 +72,23 @@ def calculate(request, save_output=dummy_save):
     msg = 'This cannot happen :-)'
     assert isinstance(bbox, basestring), msg
 
+    vpt_bbox = bboxstring2list(bbox)
     msg = ('Bounding box must be a string with coordinates following the '
            'format 105.592,-7.809,110.159,-5.647\n'
            'Instead I got %s.' % bbox)
-    assert len(bbox.split(',')) == 4, msg
+    assert len(vpt_bbox) == 4, msg
+
+    # Find the intersection of bounding boxes for hazard, exposure
+    # and viewport. Download only data within intersection
+    haz_bbox = get_ows_metadata(hazard_server, hazard_layer)['bounding_box']
+    exp_bbox = get_ows_metadata(exposure_server, exposure_layer)['bounding_box']
+
+    print
+    print 'BOXES'
+    print vpt_bbox
+    print haz_bbox
+    print exp_bbox
+    bbox = bboxlist2string(bbox_intersection(vpt_bbox, haz_bbox, exp_bbox))
 
     plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
@@ -91,13 +106,6 @@ def calculate(request, save_output=dummy_save):
                               bbox=bbox,
                               success=False)
     calculation.save()
-
-    # FIXME (Ole): Use new get_ows_metadata to get bounding boxes and do it.
-    #              I have to go home now, but will do this tomorrow 23 June.
-    #
-    #              Plan is to find the intersection of layer bounding boxes
-    #              and viewport
-    #              and use that to download only the necessary data.
 
     msg = 'Performing requested calculation'
     #logger.info(msg)
