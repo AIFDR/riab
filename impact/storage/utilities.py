@@ -342,6 +342,7 @@ def read_keywords(filename):
 
     return keywords
 
+
 def geotransform2bbox(geotransform, columns, rows):
     """Convert geotransform to bounding box
 
@@ -384,7 +385,6 @@ def bbox_intersection(*args):
         result: The minimal common bounding box
 
     """
-
 
     msg = 'Function bbox_intersection must take at least 2 arguments.'
     assert len(args) > 1, msg

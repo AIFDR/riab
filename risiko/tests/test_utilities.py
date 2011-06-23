@@ -1,15 +1,19 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
+from impact.storage.io import get_bounding_box
 from impact.storage.io import download, get_ows_metadata
 from django.conf import settings
 import os
 import time
 import unittest
+import numpy
 import urllib2
 from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode, RisikoException
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
+from impact.tests.utilities import assert_bounding_box_matches
+
 
 def check_layer(uploaded):
     """Verify if an object is a valid Layer.
@@ -330,7 +334,9 @@ class Test_utilities(unittest.TestCase):
         """Metadata is retrieved correctly for both raster and vector data
         """
 
+        # Upload test data
         layers = []
+        paths = []
         for filename in ['Lembang_Earthquake_Scenario.asc',
                          'lembang_schools.shp']:
             basename, ext = os.path.splitext(filename)
@@ -338,14 +344,16 @@ class Test_utilities(unittest.TestCase):
             path = os.path.join(TESTDATA, filename)
             layer = save_to_geonode(path, user=self.user, overwrite=True)
 
+            # Record layer and file
             layers.append(layer)
+            paths.append(path)
 
-        # FIXME: Sleep to make sure metadata is ready. Try to remove.
-        time.sleep(1)
-        for layer in layers:
+        # Check integrity
+        for i, layer in enumerate(layers):
 
+            layer_name = '%s:%s' % (layer.workspace, layer.name)
             metadata = get_ows_metadata(INTERNAL_SERVER_URL,
-                                        '%s:%s' % (layer.workspace, layer.name))
+                                        layer_name)
 
             assert 'id' in metadata
             assert 'title' in metadata
@@ -353,8 +361,24 @@ class Test_utilities(unittest.TestCase):
             assert 'bounding_box' in metadata
             assert len(metadata['bounding_box']) == 4
 
-            print metadata['title']
-            print metadata['bounding_box']
+            # Check integrity between Django layer and file
+            assert_bounding_box_matches(layer, paths[i])
+
+            # Check integrity between file and OWS metadata
+            ref_bbox = get_bounding_box(paths[i])
+            msg = ('Bounding box from OWS did not match bounding box '
+                   'from file. They are\n'
+                   'From file %s: %s\n'
+                   'From OWS: %s' % (paths[i],
+                                     ref_bbox,
+                                     metadata['bounding_box']))
+
+            assert numpy.allclose(metadata['bounding_box'],
+                                  ref_bbox), msg
+
+            assert layer.name == metadata['title']
+            assert '%s:%s' % (layer.workspace, layer.name) == metadata['id']
+
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

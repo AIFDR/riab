@@ -791,7 +791,7 @@ class Test_IO(unittest.TestCase):
         """
 
         west_java = [105, -7, 108, -5]
-        jakarta  = [106.5, -6.5, 107, -6]
+        jakarta = [106.5, -6.5, 107, -6]
 
         # Test commutative law
         assert numpy.allclose(bbox_intersection(west_java, jakarta),

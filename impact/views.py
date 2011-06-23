@@ -95,44 +95,41 @@ def calculate(request, save_output=dummy_save):
     # FIXME (Ole): Use new get_ows_metadata to get bounding boxes and do it.
     #              I have to go home now, but will do this tomorrow 23 June.
     #
-    #              Plan is to find the intersection of layer bounding boxes and viewport
+    #              Plan is to find the intersection of layer bounding boxes
+    #              and viewport
     #              and use that to download only the necessary data.
 
     msg = 'Performing requested calculation'
-    logger.info(msg)
+    #logger.info(msg)
 
     # Download selected layer objects
     msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
                                                       hazard_server))
-    logger.info(msg)
+    #logger.info(msg)
 
     H = download(hazard_server, hazard_layer, bbox)
 
     msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
                                                         exposure_server))
-    logger.info(msg)
+    #logger.info(msg)
     E = download(exposure_server, exposure_layer, bbox)
 
-
-
-
     # Calculate result using specified impact function
-
     msg = ('- Calculating impact using %s' % impact_function)
-    logger.info(msg)
+    #logger.info(msg)
 
     impact_filename = calculate_impact(layers=[H, E],
                                        impact_function=impact_function)
 
     # Upload result to internal GeoServer
     msg = ('- Uploading impact layer %s' % impact_filename)
-    logger.info(msg)
+    #logger.info(msg)
     result = save_output(impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
 
     msg = ('- Result available at %s.' % result.get_absolute_url())
-    logger.info(msg)
+    #logger.info(msg)
 
     calculation.layer = result.get_absolute_url()
     calculation.success = True

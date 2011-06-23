@@ -116,6 +116,7 @@ def bboxlist2string(bbox):
     assert len(bbox) == 4
     return ','.join([str(x) for x in bbox])
 
+
 def get_bounding_box_string(filename):
     """Get bounding box for specified raster or vector file
 
@@ -189,7 +190,6 @@ def get_metadata(server_url, layer_name):
     #              function which will be entirely based on OWSLib
     #              Issue #95
 
-
     # Get all metadata (allow for three tries in case it wasn't ready)
     for _ in range(3):
 
@@ -234,10 +234,12 @@ def get_ows_metadata(server_url, layer_name):
         layer_name: must follow the convention workspace:name
 
     Output
-        metadata: Dictionary of metadata fields common to both raster and vector
+        metadata: Dictionary of metadata fields common to both
+                  raster and vector layers
     """
 
-    # FIXME (Ole): Want to use this approach for all metadata including bounding boxes!
+    # FIXME (Ole): Want to use this approach for all metadata including
+    #              bounding boxes!
     #              Then deal with issue #95
     #
     #              Very early days, but got bounding box from both layers out!
@@ -259,6 +261,7 @@ def get_ows_metadata(server_url, layer_name):
     metadata['id'] = layer.id
 
     return metadata
+
 
 def get_file(download_url, suffix):
     """Download a file from an HTTP server.
@@ -327,11 +330,11 @@ def download(server_url, layer_name, bbox):
             raise AssertionError(msg)
 
     minx, miny, maxx, maxy = [float(x) for x in fields]
-    msg = ('Left border %.5f of bounding box %s was out of range '
+    msg = ('Western border %.5f of bounding box %s was out of range '
            'for longitudes ([-180:180])' % (minx, bbox_string))
     assert -180 <= minx <= 180, msg
 
-    msg = ('Right border %.5f of bounding box %s was out of range '
+    msg = ('Eastern border %.5f of bounding box %s was out of range '
            'for longitudes ([-180:180])' % (maxx, bbox_string))
     assert -180 <= maxx <= 180, msg
 
