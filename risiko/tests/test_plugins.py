@@ -15,13 +15,14 @@ from impact.storage.utilities import get_layers_metadata
 
 from impact.models import Calculation, Workspace
 from impact.tests.utilities import TESTDATA
+from impact.tests.utilities import check_layer
 
 from risiko.utilities import save_to_geonode
 
 from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
-
+from geonode.maps.utils import get_valid_user
 
 # FIXME (Ole): Change H, E to layers.
 class BasicFunction(FunctionProvider):
@@ -42,6 +43,11 @@ class BasicFunction(FunctionProvider):
 class Test_plugins(unittest.TestCase):
     """Tests of Risiko calculations
     """
+
+    def setUp(self):
+        """Create valid superuser
+        """
+        self.user = get_valid_user()
 
     def test_get_plugins(self):
         """Plugins can be collected
@@ -92,6 +98,18 @@ class Test_plugins(unittest.TestCase):
         """Performance of the default plugins using internal GeoServer
         """
 
+        # Upload a raster and a vector data set
+        hazard_filename = os.path.join(TESTDATA,
+                                       'lembang_mmi_hazmap.asc')
+        hazard_layer = save_to_geonode(hazard_filename)
+        check_layer(hazard_layer)
+
+        exposure_filename = os.path.join(TESTDATA,
+                                         'lembang_schools.shp')
+        exposure_layer = save_to_geonode(exposure_filename)
+        check_layer(exposure_layer)
+
+        # Test
         plugin_list = get_plugins()
         assert len(plugin_list) > 0
 
@@ -130,11 +148,18 @@ class Test_plugins(unittest.TestCase):
         # Upload a raster and a vector data set
         hazard_filename = os.path.join(TESTDATA,
                                        'lembang_mmi_hazmap.asc')
-        hazard_layer = save_to_geonode(hazard_filename)
+        hazard_layer = save_to_geonode(hazard_filename, user=self.user, overwrite=True)
+        check_layer(hazard_layer)
+
+        msg = 'No keywords found in layer %s' % hazard_layer.name
+        assert len(hazard_layer.keywords) > 0, msg
 
         exposure_filename = os.path.join(TESTDATA,
                                          'lembang_schools.shp')
         exposure_layer = save_to_geonode(exposure_filename)
+        check_layer(exposure_layer)
+        msg = 'No keywords found in layer %s' % exposure_layer.name
+        assert len(exposure_layer.keywords) > 0, msg
 
         c = Client()
         rv = c.post('/api/v1/functions/', data={})
@@ -147,7 +172,7 @@ class Test_plugins(unittest.TestCase):
 
         functions = data['functions']
 
-        #FIXME (Ariel): This test should implement an alternative function to
+        # FIXME (Ariel): This test should implement an alternative function to
         # parse the requirements, but for now it will just take the buildings
         # damage one.
         for function in functions:
@@ -165,6 +190,6 @@ class Test_plugins(unittest.TestCase):
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
 
-    suite = unittest.makeSuite(Test_plugins, 'test')
+    suite = unittest.makeSuite(Test_plugins, 'test_plugin_selection')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
