@@ -18,7 +18,7 @@ from impact.storage.io import get_bounding_box
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
-from impact.tests.utilities import assert_bounding_box_matches
+from impact.tests.utilities import assert_bounding_box_matches, check_layer
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 
 
@@ -137,14 +137,9 @@ class Test_calculations(unittest.TestCase):
         exposure_name = '%s:%s' % (workspace, layer_name)
 
         # Check metadata
+        check_layer(exposure_layer)
         assert_bounding_box_matches(exposure_layer, exposure_filename)
-
-        # Download layer again using workspace:name
         exp_bbox_string = get_bounding_box_string(exposure_filename)
-        downloaded_layer = download(INTERNAL_SERVER_URL,
-                                    '%s:%s' % (workspace, layer_name),
-                                    exp_bbox_string)
-        assert os.path.exists(downloaded_layer.filename)
 
         # Now we know that exposure layer is good, lets upload some
         # hazard layers and do the calculations
@@ -156,6 +151,7 @@ class Test_calculations(unittest.TestCase):
             hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
             hazard_layer = save_to_geonode(hazard_filename,
                                            user=self.user, overwrite=True)
+            check_layer(hazard_layer)
             hazard_name = '%s:%s' % (hazard_layer.workspace,
                                      hazard_layer.name)
 
@@ -171,7 +167,8 @@ class Test_calculations(unittest.TestCase):
                     exposure_server=INTERNAL_SERVER_URL,
                     exposure=exposure_name,
                     #bbox=viewport_bbox_string,
-                    bbox=exp_bbox_string,
+                    bbox=exp_bbox_string,  # This one reproduced the
+                                           # crash for lembang
                     impact_function='EarthquakeFatalityFunction',
                     keywords='test,shakemap,usgs',
                     ))
@@ -188,23 +185,12 @@ class Test_calculations(unittest.TestCase):
             # Download result and check
             layer_name = data['layer'].split('/')[-1]
 
-            #print
-            #print data.keys()
-            #for key in data.keys():
-            #    print
-            #    print 'KEY', key
-            #    print data[key]
-            #print
-
-            # Check bounding box of calculated layer
-            #assert numpy.allclose(exp_bbox, haz_bbox)
-            #assert numpy.allclose(data['bbox'], haz_bbox)
-            #assert numpy.allclose(data['bbox'], exp_bbox)
-
             result_layer = download(INTERNAL_SERVER_URL,
                                     layer_name,
-                                    get_bounding_box(hazard_filename))
+                                    get_bounding_box_string(hazard_filename))
             assert os.path.exists(result_layer.filename)
+
+            # FIXME: TODO
 
             # Read hazard data for reference
             #hazard_raster = read_layer(hazardfile)
@@ -492,6 +478,7 @@ class Test_calculations(unittest.TestCase):
                          bbox_out_of_bound3,
                          bbox_out_of_bound4]:
 
+            # Use erroneous bounding box
             data['bbox'] = bad_bbox
 
             # FIXME (Ole): Suppress error output from c.post

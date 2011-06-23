@@ -34,6 +34,7 @@ from django.views.decorators.csrf import csrf_exempt
 from impact.storage.io import dummy_save, download, get_layers_metadata
 from impact.storage.io import get_metadata, get_ows_metadata
 from impact.storage.io import bboxlist2string, bboxstring2list
+from impact.storage.io import check_bbox_string
 from impact.storage.utilities import bbox_intersection
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
@@ -72,20 +73,15 @@ def calculate(request, save_output=dummy_save):
     msg = 'This cannot happen :-)'
     assert isinstance(bbox, basestring), msg
 
-    # Find the intersection of bounding boxes for hazard, exposure
-    # and viewport. Download only data within intersection
+    check_bbox_string(bbox)
+
+    # Find the intersection of bounding boxes for viewport,
+    # hazard and exposure. Download only data within intersection
     vpt_bbox = bboxstring2list(bbox)
     haz_bbox = get_ows_metadata(hazard_server, hazard_layer)['bounding_box']
     exp_bbox = get_ows_metadata(exposure_server, exposure_layer)['bounding_box']
 
-    print
-    print 'BOXES'
-    print vpt_bbox
-    print haz_bbox
-    print exp_bbox
-
     intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
-    print intersection
     bbox = bboxlist2string(intersection)
 
     plugin_list = get_plugins(impact_function_name)

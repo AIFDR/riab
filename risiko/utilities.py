@@ -190,7 +190,9 @@ def save_directory_to_geonode(directory,
                 except Exception, e:
                     msg = ('Filename "%s" could not be uploaded. '
                            'Error was: %s' % (filename, str(e)))
-                    logger.info(msg)
+                    # FIXME (Ole): Bring back when we can control
+                    #              logging so as not to pollute test output
+                    #logger.info(msg)
                 else:
                     layers.append(layer)
 
@@ -198,7 +200,7 @@ def save_directory_to_geonode(directory,
     return layers
 
 
-def save_to_geonode(incoming, user=None, title=None, overwrite=False):
+def save_to_geonode(incoming, user=None, title=None, overwrite=True):
     """Save a files to local Risiko GeoNode
 
     Input
@@ -207,7 +209,11 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=False):
         title: If specified, it will be applied to all files. If None or ''
                filenames will be used to infer titles.
         overwrite: Boolean variable controlling whether existing layers
-                   can be overwritten by this operation. Default is False
+                   can be overwritten by this operation. Default is True
+
+        FIXME (Ole): WxS contents does not reflect the renaming done
+                     when overwrite is False. This should be reported to
+                     the geonode-dev mailing list
 
     Output
         layer object or list of layer objects

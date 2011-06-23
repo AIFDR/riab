@@ -118,8 +118,17 @@ def bboxlist2string(bbox):
         bbox_string: Format 'W,S,E,N' - each will have 6 decimal points
     """
 
+    msg = 'Got string %s, but expected bounding box as a list' % str(bbox)
+    assert not isinstance(bbox, basestring), msg
+
+    try:
+        bbox = list(bbox)
+    except:
+        msg = 'Could not coerce bbox %s into a list' % str(bbox)
+        raise Exception(msg)
+
     msg = ('Bounding box must have 4 coordinates [W, S, E, N]. '
-           'I got %s' % bbox)
+           'I got %s' % str(bbox))
     assert len(bbox) == 4, msg
 
     for x in bbox:
@@ -143,12 +152,13 @@ def bboxstring2list(bbox_string):
 
     msg = ('Bounding box must be a string with coordinates following the '
            'format 105.592,-7.809,110.159,-5.647\n'
-           'Instead I got %s.' % bbox_string)
+           'Instead I got %s of type %s.' % (str(bbox_string),
+                                             type(bbox_string)))
     assert isinstance(bbox_string, basestring), msg
 
     fields = bbox_string.split(',')
     msg = ('Bounding box string must have 4 coordinates in the form '
-           'W,S,E,N,. I got %s' % bbox_string)
+           '"W,S,E,N". I got bbox == "%s"' % bbox_string)
     assert len(fields) == 4, msg
 
     for x in fields:
@@ -299,6 +309,12 @@ def get_ows_metadata(server_url, layer_name):
     elif layer_name in wfs.contents:
         layer = wfs.contents[layer_name]
         metadata['layer_type'] = 'vector'
+    else:
+        msg = ('Layer %s was not found in WxS contents on server %s.\n'
+               'WCS contents: %s\n'
+               'WFS contents: %s\n' % (layer_name, server_url,
+                                       wcs.contents, wfs.contents))
+        raise Exception(msg)
 
     # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
@@ -317,11 +333,56 @@ def get_file(download_url, suffix):
     t = tempfile.NamedTemporaryFile(delete=False,
                                     suffix=suffix,
                                     dir=tempdir)
-    with contextlib.closing(urllib2.urlopen(download_url)) as f:
-        t.write(f.read())
 
+    with contextlib.closing(urllib2.urlopen(download_url)) as f:
+        data = f.read()
+
+    if '<ServiceException>' in data:
+        msg = ('File download failed.\n'
+               'URL: %s\n'
+               'Error message: %s' % (download_url, data))
+        raise Exception(msg)
+
+    # Write and return filename
+    t.write(data)
     filename = os.path.abspath(t.name)
     return filename
+
+
+def check_bbox_string(bbox_string):
+    """Check that bbox string is valid
+    """
+
+    msg = 'Expected bbox as a string with format "W,S,E,N"'
+    assert isinstance(bbox_string, basestring), msg
+
+    # Use checks from string to list conversion
+    minx, miny, maxx, maxy = bboxstring2list(bbox_string)
+
+    # Check semantic integrity
+    msg = ('Western border %.5f of bounding box %s was out of range '
+           'for longitudes ([-180:180])' % (minx, bbox_string))
+    assert -180 <= minx <= 180, msg
+
+    msg = ('Eastern border %.5f of bounding box %s was out of range '
+           'for longitudes ([-180:180])' % (maxx, bbox_string))
+    assert -180 <= maxx <= 180, msg
+
+    msg = ('Southern border %.5f of bounding box %s was out of range '
+           'for latitudes ([-90:90])' % (miny, bbox_string))
+    assert -90 <= miny <= 90, msg
+
+    msg = ('Northern border %.5f of bounding box %s was out of range '
+           'for latitudes ([-90:90])' % (maxy, bbox_string))
+    assert -90 <= maxy <= 90, msg
+
+    msg = ('Western border %.5f was greater than or equal to eastern border '
+           '%.5f of bounding box %s' % (minx, maxx, bbox_string))
+    assert minx < maxx, msg
+
+    msg = ('Southern border %.5f was greater than or equal to northern border '
+           '%.5f of bounding box %s' % (miny, maxy, bbox_string))
+    assert miny < maxy, msg
 
 
 def download(server_url, layer_name, bbox):
@@ -349,47 +410,27 @@ def download(server_url, layer_name, bbox):
                'I got %s. Error message was: %s' % (server_url, str(e)))
         raise Exception(msg)
 
-    assert isinstance(layer_name, basestring)
+    msg = ('Expected layer_name to be a basestring. '
+           'Instead got %s which is of type %s' % (layer_name,
+                                                   type(layer_name)))
+    assert isinstance(layer_name, basestring), msg
+
     msg = ('Argument layer name must have the form'
            'workspace:name. I got %s' % layer_name)
     assert len(layer_name.split(':')) == 2, msg
 
-    if isinstance(bbox, list):
+    if isinstance(bbox, list) or isinstance(bbox, tuple):
         bbox_string = bboxlist2string(bbox)
     elif isinstance(bbox, basestring):
         # Remove spaces if any (GeoServer freaks if string has spaces)
         bbox_string = ','.join([x.strip() for x in bbox.split(',')])
     else:
         msg = ('Bounding box must be a string or a list of coordinates with '
-               'format [west, south, east, north]. I got %s' % bbox)
+               'format [west, south, east, north]. I got %s' % str(bbox))
         raise Exception(msg)
 
-    # Check integrity
-    minx, miny, maxx, maxy = bboxstring2list(bbox)
-
-    msg = ('Western border %.5f of bounding box %s was out of range '
-           'for longitudes ([-180:180])' % (minx, bbox_string))
-    assert -180 <= minx <= 180, msg
-
-    msg = ('Eastern border %.5f of bounding box %s was out of range '
-           'for longitudes ([-180:180])' % (maxx, bbox_string))
-    assert -180 <= maxx <= 180, msg
-
-    msg = ('Southern border %.5f of bounding box %s was out of range '
-           'for latitudes ([-90:90])' % (miny, bbox_string))
-    assert -90 <= miny <= 90, msg
-
-    msg = ('Northern border %.5f of bounding box %s was out of range '
-           'for latitudes ([-90:90])' % (maxy, bbox_string))
-    assert -90 <= maxy <= 90, msg
-
-    msg = ('Western border %.5f was greater than or equal to eastern border '
-           '%.5f of bounding box %s' % (minx, maxx, bbox_string))
-    assert minx < maxx, msg
-
-    msg = ('Southern border %.5f was greater than or equal to northern border '
-           '%.5f of bounding box %s' % (miny, maxy, bbox_string))
-    assert miny < maxy, msg
+    # Check integrity of bounding box
+    check_bbox_string(bbox_string)
 
     # Create REST request and download file
     template = None

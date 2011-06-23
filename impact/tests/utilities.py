@@ -2,7 +2,7 @@ import os
 import types
 import numpy
 from django.conf import settings
-from impact.storage.io import get_bounding_box
+from impact.storage.io import download, get_bounding_box, get_ows_metadata
 
 TESTDATA = os.path.join(os.environ['RIAB_HOME'], 'risiko_test_data')
 DEMODATA = os.path.join(os.environ['RIAB_HOME'], 'risiko_demo_data')
@@ -84,3 +84,66 @@ def assert_bounding_box_matches(layer, filename):
     msg = ('Bounding box from layer handle "%s" was not as expected.\n'
            'Got %s, expected %s' % (layer.name, bbox, ref_bbox))
     assert numpy.allclose(bbox, ref_bbox, rtol=1.0e-6, atol=1.0e-8), msg
+
+
+def check_layer(layer):
+    """Verify if an object is a valid Layer.
+    """
+
+    # FIXME (Ole): I know it shouldn't be here!
+    from geonode.maps.models import Layer
+
+    msg = ('Was expecting layer object, got %s' % (type(layer)))
+    assert type(layer) is Layer, msg
+    msg = ('The layer does not have a valid name: %s' % layer.name)
+    assert len(layer.name) > 0, msg
+    msg = ('The layer does not have a valid workspace: %s' % layer.workspace)
+    assert len(layer.workspace) > 0, msg
+
+    # Check that layer can be downloaded again using workspace:name
+    layer_name = '%s:%s' % (layer.workspace, layer.name)
+
+    bbox = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)['bounding_box']
+    downloaded_layer = download(INTERNAL_SERVER_URL, layer_name, bbox)
+    assert os.path.exists(downloaded_layer.filename)
+
+    #print dir(uploaded)
+    #print 'name', uploaded.name
+    #print 'url', uploaded.get_absolute_url()
+    #print 'bbox', uploaded.geographic_bounding_box
+    #download(server_url, layer_name, bbox)
+
+
+def get_web_page(url, username=None, password=None):
+    """Get url page possible with username and password.
+    """
+    import urllib2
+
+    if username is not None:
+
+        # Create password manager
+        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        passman.add_password(None, url, username, password)
+
+        # create the handler
+        authhandler = urllib2.HTTPBasicAuthHandler(passman)
+        opener = urllib2.build_opener(authhandler)
+        urllib2.install_opener(opener)
+
+    try:
+        pagehandle = urllib2.urlopen(url)
+    except HTTPError, e:
+        msg = ('The server couldn\'t fulfill the request. '
+                'Error code: ' % e.code)
+        e.args = (msg,)
+        raise
+    except urllib2.URLError, e:
+        msg = 'Could not open URL "%s": %s' % (url, e)
+        e.args = (msg,)
+        raise
+    else:
+        page = pagehandle.readlines()
+
+    return page
+
+
