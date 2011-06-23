@@ -493,6 +493,8 @@ class Test_calculations(unittest.TestCase):
                          bbox_out_of_bound4]:
 
             data['bbox'] = bad_bbox
+
+            # FIXME (Ole): Suppress error output from c.post
             try:
                 rv = c.post('/api/v1/calculate/', data=data)
             except AssertionError, e:
