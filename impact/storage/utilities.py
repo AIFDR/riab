@@ -379,7 +379,8 @@ def bbox_intersection(*args):
 
     Input
         args: two or more bounding boxes.
-              Each is assumed to be a list with four coordinates (W, S, E, N)
+              Each is assumed to be a list or a tuple with
+              four coordinates (W, S, E, N)
 
     Output
         result: The minimal common bounding box
@@ -393,22 +394,21 @@ def bbox_intersection(*args):
     for a in args:
         msg = ('Bounding box expected to be a list of the '
                'form [W, S, E, N]. '
-               'Instead i got "%s"' % a)
+               'Instead i got "%s"' % str(a))
         try:
-            list(a)
+            box = list(a)
         except:
             raise Exception(msg)
 
-        assert len(a) == 4, msg
+        assert len(box) == 4, msg
 
-        msg = 'Western boundary must be less than eastern. I got %s' % a
-        assert a[0] < a[2], msg
+        msg = 'Western boundary must be less than eastern. I got %s' % box
+        assert box[0] < box[2], msg
 
-        msg = 'Southern boundary must be less than northern. I got %s' % a
-        assert a[1] < a[3], msg
+        msg = 'Southern boundary must be less than northern. I got %s' % box
+        assert box[1] < box[3], msg
 
         # Compute intersection
-        box = list(a)
 
         # West and South
         for i in [0, 1]:

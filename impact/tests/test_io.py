@@ -875,6 +875,16 @@ class Test_IO(unittest.TestCase):
                                                 west_java, jakarta),
                               jakarta)
 
+        # From actual example
+        b1 = [94.972335000000001, -11.009721000000001,
+              141.014002, 6.0736119999999998]
+        b2 = (95.059660952000002, -10.997409961000001,
+              141.00132578099999, 5.9109226959999983)
+        b3 = (94.972335000000001, -11.009721000000001,
+              141.0140016666665, 6.0736123333332639)
+
+        res = bbox_intersection(b1, b2, b3)
+
         # Empty
         print bbox_intersection(bbox2, [50, 2, 53, 4])
         assert bbox_intersection(bbox2, [50, 2, 53, 4]) is None

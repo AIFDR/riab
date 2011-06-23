@@ -72,14 +72,9 @@ def calculate(request, save_output=dummy_save):
     msg = 'This cannot happen :-)'
     assert isinstance(bbox, basestring), msg
 
-    vpt_bbox = bboxstring2list(bbox)
-    msg = ('Bounding box must be a string with coordinates following the '
-           'format 105.592,-7.809,110.159,-5.647\n'
-           'Instead I got %s.' % bbox)
-    assert len(vpt_bbox) == 4, msg
-
     # Find the intersection of bounding boxes for hazard, exposure
     # and viewport. Download only data within intersection
+    vpt_bbox = bboxstring2list(bbox)
     haz_bbox = get_ows_metadata(hazard_server, hazard_layer)['bounding_box']
     exp_bbox = get_ows_metadata(exposure_server, exposure_layer)['bounding_box']
 
@@ -88,7 +83,10 @@ def calculate(request, save_output=dummy_save):
     print vpt_bbox
     print haz_bbox
     print exp_bbox
-    bbox = bboxlist2string(bbox_intersection(vpt_bbox, haz_bbox, exp_bbox))
+
+    intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
+    print intersection
+    bbox = bboxlist2string(intersection)
 
     plugin_list = get_plugins(impact_function_name)
     _, impact_function = plugin_list[0].items()[0]
