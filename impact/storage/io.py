@@ -293,12 +293,6 @@ def get_ows_metadata(server_url, layer_name):
                   raster and vector layers
     """
 
-    # FIXME (Ole): Want to use this approach for all metadata including
-    #              bounding boxes!
-    #              Then deal with issue #95
-    #
-    #              Very early days, but got bounding box from both layers out!
-
     wcs = WebCoverageService(server_url, version='1.0.0')
     wfs = WebFeatureService(server_url, version='1.0.0')
 

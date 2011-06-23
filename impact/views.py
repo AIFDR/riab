@@ -76,11 +76,15 @@ def calculate(request, save_output=dummy_save):
     check_bbox_string(bbox)
 
     # Find the intersection of bounding boxes for viewport,
-    # hazard and exposure. Download only data within intersection
+    # hazard and exposure.
     vpt_bbox = bboxstring2list(bbox)
-    haz_bbox = get_ows_metadata(hazard_server, hazard_layer)['bounding_box']
-    exp_bbox = get_ows_metadata(exposure_server, exposure_layer)['bounding_box']
+    haz_bbox = get_ows_metadata(hazard_server,
+                                hazard_layer)['bounding_box']
+    exp_bbox = get_ows_metadata(exposure_server,
+                                exposure_layer)['bounding_box']
 
+    # New bounding box for data common to hazard, exposure and viewport
+    # Download only data within this intersection
     intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
     bbox = bboxlist2string(intersection)
 
@@ -102,36 +106,36 @@ def calculate(request, save_output=dummy_save):
     calculation.save()
 
     msg = 'Performing requested calculation'
-    #logger.info(msg)
+    logger.info(msg)
 
     # Download selected layer objects
     msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
                                                       hazard_server))
-    #logger.info(msg)
+    logger.info(msg)
 
     H = download(hazard_server, hazard_layer, bbox)
 
     msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
                                                         exposure_server))
-    #logger.info(msg)
+    logger.info(msg)
     E = download(exposure_server, exposure_layer, bbox)
 
     # Calculate result using specified impact function
     msg = ('- Calculating impact using %s' % impact_function)
-    #logger.info(msg)
+    logger.info(msg)
 
     impact_filename = calculate_impact(layers=[H, E],
                                        impact_function=impact_function)
 
     # Upload result to internal GeoServer
     msg = ('- Uploading impact layer %s' % impact_filename)
-    #logger.info(msg)
+    logger.info(msg)
     result = save_output(impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
 
     msg = ('- Result available at %s.' % result.get_absolute_url())
-    #logger.info(msg)
+    logger.info(msg)
 
     calculation.layer = result.get_absolute_url()
     calculation.success = True
