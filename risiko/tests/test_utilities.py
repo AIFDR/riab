@@ -34,8 +34,7 @@ class Test_utilities(unittest.TestCase):
         expected_layers = []
         not_expected_layers = []
         datadir = TESTDATA
-        BAD_LAYERS = ['grid_without_projection.asc',
-                      'tsunami_max_inundation_depth_bb_utm.asc']
+        BAD_LAYERS = ['grid_without_projection.asc']
 
         for root, dirs, files in os.walk(datadir):
             for filename in files:
@@ -45,10 +44,10 @@ class Test_utilities(unittest.TestCase):
 
                     # FIXME(Ole): GeoNode converts names to lower case
                     name = unicode(basename.lower())
-                    if filename not in BAD_LAYERS:
-                        expected_layers.append(name)
-                    else:
+                    if filename in BAD_LAYERS:
                         not_expected_layers.append(name)
+                    else:
+                        expected_layers.append(name)
 
         # Upload
         layers = save_to_geonode(datadir, user=self.user, overwrite=True)
@@ -60,8 +59,9 @@ class Test_utilities(unittest.TestCase):
             msg = 'Layer %s was uploaded but not expected' % layer.name
             assert layer.name in expected_layers, msg
 
-            if layer.name in expected_layers:
-                check_layer(layer)
+            # Uncomment to reproduce issue #40
+            # for layer tsunami_max_inundation_depth_bb_utm
+            #check_layer(layer)
 
         for layer_name in expected_layers:
             msg = ('The following layer should have been uploaded '
@@ -115,8 +115,11 @@ class Test_utilities(unittest.TestCase):
         """Shapefile can be uploaded
         """
         thefile = os.path.join(TESTDATA, 'lembang_schools.shp')
-        uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(uploaded)
+        layer = save_to_geonode(thefile, user=self.user, overwrite=True)
+        check_layer(layer)
+
+        assert isinstance(layer.geographic_bounding_box, basestring)
+
 
     def test_shapefile_without_prj(self):
         """Shapefile with without prj file is rejected

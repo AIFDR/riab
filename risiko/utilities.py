@@ -1,6 +1,7 @@
 from geonode.maps.utils import file_upload, GeoNodeException
 from impact.storage.utilities import LAYER_TYPES, unique_filename
-from impact.storage.io import read_layer
+from impact.storage.io import read_layer, get_ows_metadata
+import time
 import os
 
 import logging
@@ -51,7 +52,7 @@ def run(cmd, stdout=None, stderr=None):
 
 
 def save_file_to_geonode(filename, user=None, title=None,
-                         overwrite=False):
+                         overwrite=True):
     """Save a single layer file to local Risiko GeoNode
 
     Input
@@ -60,7 +61,7 @@ def save_file_to_geonode(filename, user=None, title=None,
         title: String describing the layer.
                If None or '' the filename will be used.
         overwrite: Boolean variable controlling whether existing layers
-                   can be overwritten by this operation. Default is False
+                   can be overwritten by this operation. Default is True
     Output
         layer object
     """
@@ -164,7 +165,7 @@ def save_directory_to_geonode(directory,
         directory: Valid root directory for layer files
         user: Django User object
         overwrite: Boolean variable controlling whether existing layers
-                   can be overwritten by this operation. Default is False
+                   can be overwritten by this operation. Default is True
     Output
         list of layer objects
     """
@@ -235,6 +236,23 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=True):
 
         layer = save_file_to_geonode(incoming, title=title, user=user,
                                      overwrite=overwrite)
+
+        # Wait until layer metadata is OK
+        # FIXME (Ole): Please help me find out what the WxS url is!!!
+
+        #layer_name = '%s:%s' % (layer.workspace, layer.name)
+        #server_url = layer.get_absolute_url()
+        #
+        #for i in range(3):
+        #    try:
+        #        metadata = get_ows_metadata(server_url, layer_name)
+        #    except:
+        #        # Not ready, wait and try again
+        #        time.sleep(2)
+        #    else:
+        #        # Metadata ready
+        #        break
+
         return layer
     else:
         msg = 'Argument %s was neither a file or a directory' % incoming

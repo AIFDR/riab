@@ -1,4 +1,5 @@
 import os
+import time
 import types
 import numpy
 from django.conf import settings
@@ -57,7 +58,6 @@ def assert_bounding_box_matches(layer, filename):
     """
 
     # Check integrity
-
     assert hasattr(layer, 'geographic_bounding_box')
     assert isinstance(layer.geographic_bounding_box, basestring)
 
@@ -90,7 +90,8 @@ def check_layer(layer):
     """Verify if an object is a valid Layer.
     """
 
-    # FIXME (Ole): I know it shouldn't be here!
+    # FIXME (Ole): I know this function shouldn't be here as it
+    #              refers to geonode
     from geonode.maps.models import Layer
 
     msg = ('Was expecting layer object, got %s' % (type(layer)))
@@ -103,7 +104,20 @@ def check_layer(layer):
     # Check that layer can be downloaded again using workspace:name
     layer_name = '%s:%s' % (layer.workspace, layer.name)
 
-    bbox = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)['bounding_box']
+    # If layer has just been uploaded, the metadata may not yet be ready.
+    # Hence a couple of tries
+    for i in range(4):
+        try:
+            metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
+        except:
+            # Delay for meta data to be ready
+            time.sleep(1)
+        else:
+            # OK
+            break
+
+    # Get bounding box and download
+    bbox = metadata['bounding_box']
     downloaded_layer = download(INTERNAL_SERVER_URL, layer_name, bbox)
     assert os.path.exists(downloaded_layer.filename)
 

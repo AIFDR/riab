@@ -3,7 +3,6 @@ import os
 import sys
 import unittest
 import warnings
-import time
 
 from django.test.client import Client
 from django.conf import settings
@@ -137,9 +136,9 @@ class Test_calculations(unittest.TestCase):
         exposure_name = '%s:%s' % (workspace, layer_name)
 
         # Check metadata
-        check_layer(exposure_layer)
         assert_bounding_box_matches(exposure_layer, exposure_filename)
         exp_bbox_string = get_bounding_box_string(exposure_filename)
+        check_layer(exposure_layer)
 
         # Now we know that exposure layer is good, lets upload some
         # hazard layers and do the calculations
@@ -151,13 +150,13 @@ class Test_calculations(unittest.TestCase):
             hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
             hazard_layer = save_to_geonode(hazard_filename,
                                            user=self.user, overwrite=True)
-            check_layer(hazard_layer)
             hazard_name = '%s:%s' % (hazard_layer.workspace,
                                      hazard_layer.name)
 
             # Check metadata
             assert_bounding_box_matches(hazard_layer, hazard_filename)
             haz_bbox_string = get_bounding_box_string(hazard_filename)
+            check_layer(hazard_layer)
 
             # Run calculation
             c = Client()
@@ -170,8 +169,7 @@ class Test_calculations(unittest.TestCase):
                     bbox=exp_bbox_string,  # This one reproduced the
                                            # crash for lembang
                     impact_function='EarthquakeFatalityFunction',
-                    keywords='test,shakemap,usgs',
-                    ))
+                    keywords='test,shakemap,usgs'))
 
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(rv['Content-Type'], 'application/json')
@@ -385,8 +383,7 @@ class Test_calculations(unittest.TestCase):
                 exposure=exposure_name,
                 bbox=get_bounding_box_string(hazardfile),
                 impact_function='USGSFatalityFunction',
-                keywords='test,shakemap,usgs',
-                ))
+                keywords='test,shakemap,usgs'))
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
