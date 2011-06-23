@@ -372,11 +372,6 @@ def geotransform2bbox(geotransform, columns, rows):
 
     return [minx, miny, maxx, maxy]
 
-def _bbox_intersection(bbox1, bbox2):
-    """Compute intersection between two bounding boxes
-    """
-
-
 
 def bbox_intersection(*args):
     """Compute intersection between two or more bounding boxes
