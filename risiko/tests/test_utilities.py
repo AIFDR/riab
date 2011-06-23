@@ -343,7 +343,6 @@ class Test_utilities(unittest.TestCase):
         # FIXME: Sleep to make sure metadata is ready. Try to remove.
         time.sleep(1)
         for layer in layers:
-            print filename
 
             metadata = get_ows_metadata(INTERNAL_SERVER_URL,
                                         '%s:%s' % (layer.workspace, layer.name))
@@ -354,6 +353,8 @@ class Test_utilities(unittest.TestCase):
             assert 'bounding_box' in metadata
             assert len(metadata['bounding_box']) == 4
 
+            print metadata['title']
+            print metadata['bounding_box']
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

@@ -253,6 +253,7 @@ def get_ows_metadata(server_url, layer_name):
         layer = wfs.contents[layer_name]
         metadata['layer_type'] = 'vector'
 
+    # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
     metadata['title'] = layer.title
     metadata['id'] = layer.id

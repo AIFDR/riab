@@ -6,3 +6,4 @@ import numpy
 
 # A maximum floating point number for this package
 MAXFLOAT = float(sys.maxint)
+

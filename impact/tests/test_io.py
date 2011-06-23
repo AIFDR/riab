@@ -12,6 +12,7 @@ from impact.storage.io import write_raster_data
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import write_keywords
 from impact.storage.utilities import read_keywords
+from impact.storage.utilities import bbox_intersection
 from impact.storage.io import get_bounding_box
 from impact.tests.utilities import same_API
 from impact.storage.utilities import DEFAULT_PROJECTION
@@ -783,6 +784,100 @@ class Test_IO(unittest.TestCase):
             pass
         else:
             msg = 'Colon in keywords value %s was not caught' % keywords
+            raise Exception(msg)
+
+    def test_bounding_box_intersection(self):
+        """Intersections of bounding boxes work
+        """
+
+        west_java = [105, -7, 108, -5]
+        jakarta  = [106.5, -6.5, 107, -6]
+
+        # Test commutative law
+        assert numpy.allclose(bbox_intersection(west_java, jakarta),
+                              bbox_intersection(jakarta, west_java))
+
+        # Test inclusion
+        assert numpy.allclose(bbox_intersection(west_java, jakarta), jakarta)
+
+        # Realistic ones
+        bbox1 = [94.972335, -11.009721, 141.014, 6.073612333333]
+        bbox2 = [105.3, -8.5, 110.0, -5.5]
+        bbox3 = [105.6, -7.8, 110.5, -5.1]
+
+        ref1 = [max(bbox1[0], bbox2[0]),
+                max(bbox1[1], bbox2[1]),
+                min(bbox1[2], bbox2[2]),
+                min(bbox1[3], bbox2[3])]
+        assert numpy.allclose(bbox_intersection(bbox1, bbox2), ref1)
+        assert numpy.allclose(bbox_intersection(bbox1, bbox2), bbox2)
+
+        ref2 = [max(bbox3[0], bbox2[0]),
+                max(bbox3[1], bbox2[1]),
+                min(bbox3[2], bbox2[2]),
+                min(bbox3[3], bbox2[3])]
+        assert numpy.allclose(bbox_intersection(bbox3, bbox2), ref2)
+        assert numpy.allclose(bbox_intersection(bbox2, bbox3), ref2)
+
+        # Multiple boxes
+        assert numpy.allclose(bbox_intersection(bbox1, bbox2, bbox3),
+                              bbox_intersection(ref1, ref2))
+
+        assert numpy.allclose(bbox_intersection(bbox1, bbox2, bbox3,
+                                                west_java, jakarta),
+                              jakarta)
+
+        # Empty
+        print bbox_intersection(bbox2, [50, 2, 53, 4])
+        assert bbox_intersection(bbox2, [50, 2, 53, 4]) is None
+
+        # Deal with invalid boxes
+        try:
+            bbox_intersection(bbox1, [53, 2, 40, 4])
+        except AssertionError:
+            pass
+        else:
+            msg = 'Should have raised exception'
+            raise Exception(msg)
+
+        try:
+            bbox_intersection(bbox1, [50, 7, 53, 4])
+        except AssertionError:
+            pass
+        else:
+            msg = 'Should have raised exception'
+            raise Exception(msg)
+
+        try:
+            bbox_intersection(bbox1, 'blko ho skrle')
+        except AssertionError:
+            pass
+        else:
+            msg = 'Should have raised exception'
+            raise Exception(msg)
+
+        try:
+            bbox_intersection(bbox1)
+        except AssertionError:
+            pass
+        else:
+            msg = 'Should have raised exception'
+            raise Exception(msg)
+
+        try:
+            bbox_intersection('')
+        except AssertionError:
+            pass
+        else:
+            msg = 'Should have raised exception'
+            raise Exception(msg)
+
+        try:
+            bbox_intersection()
+        except AssertionError:
+            pass
+        else:
+            msg = 'Should have raised exception'
             raise Exception(msg)
 
 if __name__ == '__main__':

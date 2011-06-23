@@ -372,3 +372,59 @@ def geotransform2bbox(geotransform, columns, rows):
 
     return [minx, miny, maxx, maxy]
 
+def _bbox_intersection(bbox1, bbox2):
+    """Compute intersection between two bounding boxes
+    """
+
+
+
+def bbox_intersection(*args):
+    """Compute intersection between two or more bounding boxes
+
+    Input
+        args: two or more bounding boxes.
+              Each is assumed to be a list with four coordinates (W, S, E, N)
+
+    Output
+        result: The minimal common bounding box
+
+    """
+
+
+    msg = 'Function bbox_intersection must take at least 2 arguments.'
+    assert len(args) > 1, msg
+
+    result = [-180, -90, 180, 90]
+    for a in args:
+        msg = ('Bounding box expected to be a list of the '
+               'form [W, S, E, N]. '
+               'Instead i got "%s"' % a)
+        try:
+            list(a)
+        except:
+            raise Exception(msg)
+
+        assert len(a) == 4, msg
+
+        msg = 'Western boundary must be less than eastern. I got %s' % a
+        assert a[0] < a[2], msg
+
+        msg = 'Southern boundary must be less than northern. I got %s' % a
+        assert a[1] < a[3], msg
+
+        # Compute intersection
+        box = list(a)
+
+        # West and South
+        for i in [0, 1]:
+            result[i] = max(result[i], box[i])
+
+        # East and North
+        for i in [2, 3]:
+            result[i] = min(result[i], box[i])
+
+    # Check validity and return
+    if result[0] < result[2] and result[1] < result[3]:
+        return result
+    else:
+        return None

@@ -92,33 +92,6 @@ def calculate(request, save_output=dummy_save):
                               success=False)
     calculation.save()
 
-    # FIXME (Ole): Maybe we can get bounding boxes from metadata.
-    # Raster layers have their geotransform which is good.
-    # However, vector layers don't have anything useful at this stage.
-
-    # Get bounding boxes
-    #metadata = get_metadata(hazard_server, hazard_layer)
-    #print hazard_server, hazard_layer
-    #print metadata.keys()
-    #for key in metadata:
-    #    print metadata[key]
-    #print
-    #
-    #if metadata['layer_type'] == 'raster':
-    #    # Can get bounding box from its geotransform
-    #    geotransform = metadata['geotransform']
-    #else:
-    #    pass
-    #print geotransform
-    #
-    #metadata = get_metadata(exposure_server, exposure_layer)
-    #print exposure_server, exposure_layer
-    #print metadata.keys()
-    #for key in metadata:
-    #    print metadata[key]
-    #print
-
-
     # FIXME (Ole): Use new get_ows_metadata to get bounding boxes and do it.
     #              I have to go home now, but will do this tomorrow 23 June.
     #
