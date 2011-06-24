@@ -1,0 +1,5 @@
+#!/bin/bash
+. $RIAB_HOME/riab_env/bin/activate
+risiko-stop
+risiko-start
+

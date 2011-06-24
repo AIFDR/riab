@@ -3,7 +3,36 @@ from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
 
 
-class EarthquakeBuildingDamageFunction(FunctionProvider):
+
+#------------------------------------------------------------
+# Define damage curves for structural building damage
+#
+# MMI: % Damage
+#------------------------------------------------------------
+struct_damage_curve = {'Weak': Damage_curve([[-MAXFLOAT, 0.0],
+                                             [4.0, 0],
+                                             [5.0, 15],
+                                             [6.0, 30],
+                                             [6.5, 50],
+                                             [6.8, 70],
+                                             [7.0, 85],
+                                             [8.0, 100],
+                                             [9.0, 100],
+                                             [MAXFLOAT, 100]]),
+                       'Strong': Damage_curve([[-MAXFLOAT, 0.0],
+                                               [4.0, 0],
+                                               [5.0, 10],
+                                               [6.0, 20],
+                                               [6.5, 30],
+                                               [6.8, 45],
+                                               [7.0, 55],
+                                               [8.0, 90],
+                                               [9.0, 100],
+                                               [MAXFLOAT, 100]]),
+
+
+
+class HOTEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for earthquake damage to buildings
 
     :param requires category=="hazard" and \
@@ -15,7 +44,7 @@ class EarthquakeBuildingDamageFunction(FunctionProvider):
 
     @staticmethod
     def run(layers):
-        """Risk plugin for earthquake school damage
+        """Risk plugin for HOT building data
         """
 
         # Extract data
@@ -35,6 +64,10 @@ class EarthquakeBuildingDamageFunction(FunctionProvider):
         building_damage = []
         for i in range(len(shaking)):
             x = float(shaking[i].values()[0])
+
+            structure_type = E.get_data('STRUCTURE_TYPE', i)
+
+
             if x < 6.0:
                 value = 0.0
             else:
