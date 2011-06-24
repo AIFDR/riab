@@ -47,8 +47,6 @@ def calculate_impact(layers, impact_function,
     F = impact_function.run(layers)
 
     # Write result and return filename
-    # FIXME (Ole): Maybe this filename should be defined in the plugin
-    #              Oh Yes it should.
     if F.is_raster:
         extension = '.tif'
         # use default style for raster

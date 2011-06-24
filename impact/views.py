@@ -86,6 +86,13 @@ def calculate(request, save_output=dummy_save):
     # New bounding box for data common to hazard, exposure and viewport
     # Download only data within this intersection
     intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
+    if intersection is None:
+        # Bounding boxes did not overlap
+        msg = ('Bounding boxes of hazard data, exposure data and '
+               'viewport did not overlap, so no computation was '
+               'done. Please try again.')
+        logger.info(msg)
+        return HttpResponse(msg)
     bbox = bboxlist2string(intersection)
 
     plugin_list = get_plugins(impact_function_name)
