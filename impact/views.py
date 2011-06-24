@@ -88,6 +88,7 @@ def calculate(request, save_output=dummy_save):
     intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
     if intersection is None:
         # Bounding boxes did not overlap
+        # FIXME (Ole): Still need to bring this message forward to app
         msg = ('Bounding boxes of hazard data, exposure data and '
                'viewport did not overlap, so no computation was '
                'done. Please try again.')
