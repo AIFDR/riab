@@ -36,6 +36,7 @@ from impact.storage.io import get_metadata, get_ows_metadata
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.storage.io import check_bbox_string
 from impact.storage.utilities import bbox_intersection
+from impact.storage.utilities import minimal_bounding_box
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
@@ -86,15 +87,14 @@ def calculate(request, save_output=dummy_save):
     # Impose minimum bounding box size (as per issue #101).
     # FIXME (Ole): This will need to be revisited in conjunction with
     # raster resolutions at some point.
-
-
+    min_res = 0.00833334
+    eps = 1.0e-1
+    vpt_bbox = minimal_bounding_box(vpt_bbox, min_res, eps=eps)
+    haz_bbox = minimal_bounding_box(haz_bbox, min_res, eps=eps)
+    exp_bbox = minimal_bounding_box(exp_bbox, min_res, eps=eps)
 
     # New bounding box for data common to hazard, exposure and viewport
     # Download only data within this intersection
-    print
-    print 'View Port', vpt_bbox
-    print 'Hazard box', haz_bbox
-    print 'Exposure box', exp_bbox, exp_bbox[2]-exp_bbox[0], exp_bbox[3]-exp_bbox[1]
     intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
     if intersection is None:
         # Bounding boxes did not overlap
