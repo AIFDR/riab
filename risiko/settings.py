@@ -44,20 +44,21 @@ SITE_ID = 1
 
 # Setting a custom test runner to avoid running the tests for
 # some problematic 3rd party apps
-TEST_RUNNER = 'risiko.tests.runner.RisikoTestRunner'
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
 NOSE_ARGS = [
 #      '--failed',
 #      '--stop',
-      '--verbosity=2',
+      '--verbosity=0',
       '--cover-erase',
       '--with-doctest',
       '--nocapture',
       '--with-coverage',
       '--cover-package=risiko,impact',
       '--cover-inclusive',
-#      '--cover-tests',
+      '--cover-tests',
       '--detailed-errors',
-#      '--with-xunit',
+      '--with-xunit',
       '--with-color',
 #      '--with-pdb',
       ]
@@ -312,6 +313,7 @@ LOGGING = {
         'risiko': {
             'handlers': ['console'],
             'level': 'INFO',
+            'propagate': False,
        }
     }
 }
