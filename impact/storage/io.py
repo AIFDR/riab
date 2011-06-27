@@ -83,7 +83,7 @@ def write_point_data(data, projection, geometry, filename, keywords=None):
     V = Vector(data, projection, geometry, keywords=keywords)
     V.write_to_file(filename)
 
-# FIXME (Ole): Why is the resolution hard coded here?
+# FIXME (Ole): Why is the resolution hard coded here (issue #103)
 WCS_TEMPLATE = '%s?version=1.0.0' + \
                       '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
                       'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
