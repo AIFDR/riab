@@ -1,6 +1,0 @@
-#!/bin/bash
-
-risiko-stop
-rm -rf $RIAB_HOME/tomcat/webapps/geoserver-geonode-dev
-rm -rf $RIAB_HOME/tomcat/webapps/geonetwork
-rm -rf $RIAB_HOME/riab/risiko/development.db

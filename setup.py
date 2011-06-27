@@ -143,10 +143,9 @@ setup(
         # for improving source code quality
         'pylint', 'pep8'],
     cmdclass = {'test': RunTests},
-    scripts = ['scripts/risiko-clean',
-               'scripts/risiko-stop',
-               'scripts/risiko-start',
+    scripts = ['scripts/risiko',
                'scripts/risiko-test',
+               'scripts/risiko-lint',
                'scripts/risiko-upload',
               ],
     classifiers = [

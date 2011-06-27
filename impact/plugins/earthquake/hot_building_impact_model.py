@@ -29,7 +29,7 @@ struct_damage_curve = {'Weak': Damage_curve([[-MAXFLOAT, 0.0],
                                                [8.0, 90],
                                                [9.0, 100],
                                                [MAXFLOAT, 100]]),
-
+                       }
 
 
 class HOTEarthquakeBuildingDamageFunction(FunctionProvider):

@@ -256,7 +256,66 @@ INSTALLED_APPS = (
     'impact',
     'django_nose',
     'rosetta',
+    'gunicorn',
 )
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'file':{
+            'level':'DEBUG',
+            'class' : 'logging.handlers.RotatingFileHandler',
+            'formatter': 'verbose',
+            'filename': 'risiko.log',
+            'maxBytes': '1024',
+            'backupCount': '3',
+         },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers':['null'],
+            'propagate': False,
+            'level':'INFO',
+        },
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'geonode.maps': {
+            'handlers': ['null'],
+            'propagate': False,
+            'level': 'ERROR',
+        },
+        'risiko': {
+            'handlers': ['console'],
+            'level': 'INFO',
+       }
+    }
+}
+
 
 
 def get_user_url(u):
@@ -273,19 +332,6 @@ ABSOLUTE_URL_OVERRIDES = {'auth.user': get_user_url}
 AUTH_PROFILE_MODULE = 'maps.Contact'
 REGISTRATION_OPEN = False
 DB_DATASTORE = False
-
-# Logging debug information to a file.
-import logging
-
-# Risiko logging providing high level info
-# to $RIAB_HOME/logs/risiko.log or PROJECT_ROOT/risiko.log
-if 'RIAB_HOME' in os.environ:
-    log_file = os.path.join(os.environ['RIAB_HOME'],
-                            'logs', 'risiko.log')
-else:
-    log_file = os.path.join(PROJECT_ROOT, 'risiko.log')
-
-logging.basicConfig(level=logging.INFO, filename=log_file)
 
 try:
     from local_settings import *
