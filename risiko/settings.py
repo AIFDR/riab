@@ -49,7 +49,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
 #      '--failed',
 #      '--stop',
-      '--verbosity=0',
+      '--verbosity=2',
       '--cover-erase',
       '--with-doctest',
       '--nocapture',
@@ -268,7 +268,7 @@ LOGGING = {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '%(levelname)s %(asctime)s %(message)s'
         },
     },
     'handlers': {
@@ -279,7 +279,7 @@ LOGGING = {
         'console':{
             'level':'DEBUG',
             'class':'logging.StreamHandler',
-            'formatter': 'verbose'
+            'formatter': 'simple'
         },
         'file':{
             'level':'DEBUG',

@@ -4,7 +4,7 @@
 risiko clean
 
 # Start GeoNode servers in silent mode
-risiko start >> /dev/null
+risiko start
 
 # Show code quality
 risiko-lint
