@@ -83,8 +83,18 @@ def calculate(request, save_output=dummy_save):
     exp_bbox = get_ows_metadata(exposure_server,
                                 exposure_layer)['bounding_box']
 
+    # Impose minimum bounding box size (as per issue #101).
+    # FIXME (Ole): This will need to be revisited in conjunction with
+    # raster resolutions at some point.
+
+
+
     # New bounding box for data common to hazard, exposure and viewport
     # Download only data within this intersection
+    print
+    print 'View Port', vpt_bbox
+    print 'Hazard box', haz_bbox
+    print 'Exposure box', exp_bbox, exp_bbox[2]-exp_bbox[0], exp_bbox[3]-exp_bbox[1]
     intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
     if intersection is None:
         # Bounding boxes did not overlap

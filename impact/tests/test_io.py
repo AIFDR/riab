@@ -13,6 +13,7 @@ from impact.storage.utilities import unique_filename
 from impact.storage.utilities import write_keywords
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import bbox_intersection
+from impact.storage.utilities import minimal_bounding_box
 from impact.storage.io import get_bounding_box
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.tests.utilities import same_API
@@ -937,6 +938,43 @@ class Test_IO(unittest.TestCase):
         else:
             msg = 'Should have raised exception'
             raise Exception(msg)
+
+    def test_minimal_bounding_box(self):
+        """Bounding box minimal size can be controlled
+        """
+
+        big = (95.06, -11.0, 141.0, 5.9)
+        mid = [103.28, -8.46, 109.67, -4.68]
+        sml = (106.818998, -6.18585170, 106.82264510, -6.1810)
+
+        min_res = 0.008333333333000
+        eps = 1.0e-4
+
+        # Check that sml box is actually too small
+        assert sml[2]-sml[0] < min_res
+        assert sml[3]-sml[1] < min_res
+
+        for bbox in [big, mid, sml]:
+
+            adjusted_bbox = minimal_bounding_box(bbox, min_res, eps=eps)
+
+            # Check that adjusted box exceeds minimal resolution
+            assert adjusted_bbox[2]-adjusted_bbox[0] > min_res
+            assert adjusted_bbox[3]-adjusted_bbox[1] > min_res
+
+            # Check that if box was adjusted eps was applied
+            if bbox[2]-bbox[0] <= min_res:
+                assert numpy.allclose(adjusted_bbox[2]-adjusted_bbox[0],
+                                      min_res+(2*eps))
+
+            if bbox[3]-bbox[1] <= min_res:
+                assert numpy.allclose(adjusted_bbox[3]-adjusted_bbox[1],
+                                      min_res+(2*eps))
+
+
+            # Check that input box was not changed
+            assert adjusted_bbox is not bbox
+
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')

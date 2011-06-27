@@ -2,6 +2,7 @@
 """
 
 import os
+import copy
 import numpy
 from osgeo import ogr, gdal
 from tempfile import mkstemp
@@ -423,3 +424,33 @@ def bbox_intersection(*args):
         return result
     else:
         return None
+
+
+def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
+    """Grow bounding box to exceed specified resolution if needed
+
+    Input
+        bbox: Bounding box with format [W, S, E, N]
+        min_res: Minimal acceptable resolution to exceed
+        eps: Optional tolerance that will be applied to 'buffer' result
+
+    Ouput
+        Adjusted bounding box guarenteed to exceed specified resolution
+    """
+
+    bbox = copy.copy(list(bbox))
+
+    delta_x = bbox[2] - bbox[0]
+    delta_y = bbox[3] - bbox[1]
+
+    if delta_x < min_res:
+        dx = (min_res-delta_x)/2 + eps
+        bbox[0] -= dx
+        bbox[2] += dx
+
+    if delta_y < min_res:
+        dy = (min_res-delta_y)/2 + eps
+        bbox[1] -= dy
+        bbox[3] += dy
+
+    return bbox
