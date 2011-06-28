@@ -676,7 +676,8 @@ class Test_IO(unittest.TestCase):
 
         # Exceptions
         exclude = ['get_topN', 'get_bins',
-                   'get_geotransform', 'get_nodata_value']
+                   'get_geotransform', 'get_nodata_value',
+                   'get_attribute_names']
 
         V = Vector()  # Empty vector instance
         R = Raster()  # Empty raster instance
