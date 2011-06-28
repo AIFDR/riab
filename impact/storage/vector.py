@@ -387,6 +387,14 @@ class Vector:
         # Write keywords if any
         write_keywords(self.keywords, basename + '.keywords')
 
+    def get_attribute_names(self):
+        """ Get available attribute names
+
+        These are the ones that can be used with get_data
+        """
+
+        return self.data[0].keys()
+
     def get_data(self, attribute=None, index=None):
         """Get vector attributes
 
