@@ -256,9 +256,7 @@ INSTALLED_APPS = (
     'geonode.proxy',
     'impact',
     'django_nose',
-    'rosetta',
-    'gunicorn',
-)
+    'rosetta')
 
 LOGGING = {
     'version': 1,
