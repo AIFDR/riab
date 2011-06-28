@@ -106,6 +106,7 @@ pip install temp/riab-libs.pybundle
 pip install django==1.3
 pip install fabric
 pip install psycopg2
+pip install gunicorn
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pushd .
