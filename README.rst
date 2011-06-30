@@ -42,11 +42,31 @@ To install a RISIKO development environment, start a terminal window, cd to your
 
 This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it.
 
+To run the test suite, you'll need the commands:
+risiko-activate
+risiko-test
+
+To upload the bundled demo date, you'll need to do the following
+In one terminal:
+risiko-activate
+risiko-clean
+risiko-start
+
+In another terminal and in the directory referenced by $RIAB_HOME, do
+risiko-activate
+risiko-upload risiko_demo_data
+
+when this is finished point the browser to 127.0.0.1:8000, select layers and try the risk calculator.
+
+
+
 Note:
 If you wish to commit changes back to the repository, you must
  1. Get an account on github.com
  2. Get commit access to https://github.com/AIFDR/riab
  3. Setup and register your ssh keys with your account: https://github.com/account/ssh
+
+
 
 -----------------------
 Production installation
