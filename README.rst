@@ -47,7 +47,7 @@ To run the test suite, you'll need the commands::
  risiko-activate
  risiko-test
 
-To upload the bundled demo date, you'll need to do the following
+To upload the bundled demo data, you'll need to do the following
 In one terminal::
 
  risiko-activate
@@ -55,6 +55,7 @@ In one terminal::
  risiko-start
 
 In another terminal and in the directory referenced by $RIAB_HOME, do::
+
  risiko-activate
  risiko-upload risiko_demo_data
 
