@@ -44,19 +44,19 @@ This will create a working development installation and provide guidance on how 
 
 To run the test suite, you'll need the commands::
 
-risiko-activate
-risiko-test
+ risiko-activate
+ risiko-test
 
 To upload the bundled demo date, you'll need to do the following
 In one terminal::
 
-risiko-activate
-risiko-clean
-risiko-start
+ risiko-activate
+ risiko-clean
+ risiko-start
 
 In another terminal and in the directory referenced by $RIAB_HOME, do::
-risiko-activate
-risiko-upload risiko_demo_data
+ risiko-activate
+ risiko-upload risiko_demo_data
 
 when this is finished point the browser to 127.0.0.1:8000, select layers and try the risk calculator.
 
