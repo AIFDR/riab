@@ -23,6 +23,7 @@ All API calls start with:
 """
 from __future__ import division
 
+import sys
 import inspect
 import datetime
 
@@ -46,6 +47,13 @@ from geonode.maps.utils import get_valid_user
 import logging
 logger = logging.getLogger('risiko')
 
+def exception_format(e):
+    """Convert an exception object into a string,
+    complete with stack trace info, suitable for display.
+    """
+    import traceback
+    info = "".join(traceback.format_tb(sys.exc_info()[2]))
+    return str(e) + "\n\n" + info
 
 @csrf_exempt
 def calculate(request, save_output=dummy_save):
@@ -70,87 +78,104 @@ def calculate(request, save_output=dummy_save):
     else:
         theuser = request.user
 
-    # Input checks
-    msg = 'This cannot happen :-)'
-    assert isinstance(bbox, basestring), msg
-
-    check_bbox_string(bbox)
-
-    # Find the intersection of bounding boxes for viewport,
-    # hazard and exposure.
-    vpt_bbox = bboxstring2list(bbox)
-    haz_bbox = get_ows_metadata(hazard_server,
-                                hazard_layer)['bounding_box']
-    exp_bbox = get_ows_metadata(exposure_server,
-                                exposure_layer)['bounding_box']
-
-    # Impose minimum bounding box size (as per issue #101).
-    # FIXME (Ole): This will need to be revisited in conjunction with
-    # raster resolutions at some point.
-    min_res = 0.00833334
-    eps = 1.0e-1
-    vpt_bbox = minimal_bounding_box(vpt_bbox, min_res, eps=eps)
-    haz_bbox = minimal_bounding_box(haz_bbox, min_res, eps=eps)
-    exp_bbox = minimal_bounding_box(exp_bbox, min_res, eps=eps)
-
-    # New bounding box for data common to hazard, exposure and viewport
-    # Download only data within this intersection
-    intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
-    if intersection is None:
-        # Bounding boxes did not overlap
-        # FIXME (Ole): Still need to bring this message forward to app
-        msg = ('Bounding boxes of hazard data, exposure data and '
-               'viewport did not overlap, so no computation was '
-               'done. Please try again.')
-        logger.info(msg)
-        return HttpResponse(msg)
-    bbox = bboxlist2string(intersection)
-
-    plugin_list = get_plugins(impact_function_name)
-    _, impact_function = plugin_list[0].items()[0]
-    impact_function_source = inspect.getsource(impact_function)
-
     # Create entry in database
     calculation = Calculation(user=theuser,
-                              run_date=start,
-                              hazard_server=hazard_server,
-                              hazard_layer=hazard_layer,
-                              exposure_server='exposure_server',
-                              exposure_layer='exposure_layer',
-                              impact_function=impact_function_name,
-                              impact_function_source=impact_function_source,
-                              bbox=bbox,
-                              success=False)
-    calculation.save()
+                                  run_date=start,
+                                  hazard_server=hazard_server,
+                                  hazard_layer=hazard_layer,
+                                  exposure_server=exposure_server,
+                                  exposure_layer=exposure_layer,
+                                  impact_function=impact_function_name,
+                                  success=False)
+ 
 
-    msg = 'Performing requested calculation'
-    logger.info(msg)
 
-    # Download selected layer objects
-    msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
+    try:
+
+        # Input checks
+        msg = 'This cannot happen :-)'
+        assert isinstance(bbox, basestring), msg
+
+        check_bbox_string(bbox)
+
+        # Find the intersection of bounding boxes for viewport,
+        # hazard and exposure.
+        vpt_bbox = bboxstring2list(bbox)
+        haz_bbox = get_ows_metadata(hazard_server,
+                                hazard_layer)['bounding_box']
+        exp_bbox = get_ows_metadata(exposure_server,
+                                exposure_layer)['bounding_box']
+
+        # Impose minimum bounding box size (as per issue #101).
+        # FIXME (Ole): This will need to be revisited in conjunction with
+        # raster resolutions at some point.
+        min_res = 0.00833334
+        eps = 1.0e-1
+        vpt_bbox = minimal_bounding_box(vpt_bbox, min_res, eps=eps)
+        haz_bbox = minimal_bounding_box(haz_bbox, min_res, eps=eps)
+        exp_bbox = minimal_bounding_box(exp_bbox, min_res, eps=eps)
+
+        # New bounding box for data common to hazard, exposure and viewport
+        # Download only data within this intersection
+        intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
+        if intersection is None:
+            # Bounding boxes did not overlap
+            # FIXME (Ole): Still need to bring this message forward to app
+            msg = ('Bounding boxes of hazard data, exposure data and '
+                   'viewport did not overlap, so no computation was '
+                   'done. Please try again.')
+            logger.info(msg)
+            raise Exception(msg)
+
+        bbox = bboxlist2string(intersection)
+
+        plugin_list = get_plugins(impact_function_name)
+        _, impact_function = plugin_list[0].items()[0]
+        impact_function_source = inspect.getsource(impact_function)
+
+        calculation.impact_function_source=impact_function_source
+        calculation.bbox=bbox
+
+        calculation.save()
+
+        msg = 'Performing requested calculation'
+        logger.info(msg)
+
+        # Download selected layer objects
+        msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
                                                       hazard_server))
-    logger.info(msg)
+        logger.info(msg)
 
-    H = download(hazard_server, hazard_layer, bbox)
+        H = download(hazard_server, hazard_layer, bbox)
 
-    msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
+        msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
                                                         exposure_server))
-    logger.info(msg)
-    E = download(exposure_server, exposure_layer, bbox)
+        logger.info(msg)
+        E = download(exposure_server, exposure_layer, bbox)
 
-    # Calculate result using specified impact function
-    msg = ('- Calculating impact using %s' % impact_function)
-    logger.info(msg)
+        # Calculate result using specified impact function
+        msg = ('- Calculating impact using %s' % impact_function)
+        logger.info(msg)
 
-    impact_filename = calculate_impact(layers=[H, E],
-                                       impact_function=impact_function)
+        impact_filename = calculate_impact(layers=[H, E],
+                                           impact_function=impact_function)
 
-    # Upload result to internal GeoServer
-    msg = ('- Uploading impact layer %s' % impact_filename)
-    logger.info(msg)
-    result = save_output(impact_filename,
+        # Upload result to internal GeoServer
+        msg = ('- Uploading impact layer %s' % impact_filename)
+        logger.info(msg)
+        result = save_output(impact_filename,
                          title='output_%s' % start.isoformat(),
                          user=theuser)
+    except Exception, e:
+        #FIXME: Reimplement error saving for calculation
+        logger.error(e)
+        errors = e.__str__()
+        trace = exception_format(e)
+        calculation.errors = errors
+        calculation.stacktrace = trace
+        calculation.save()
+        jsondata = json.dumps([{'errors': errors}])
+        return HttpResponse(jsondata, mimetype='application/json')
 
     msg = ('- Result available at %s.' % result.get_absolute_url())
     logger.info(msg)
