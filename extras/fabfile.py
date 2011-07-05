@@ -138,3 +138,8 @@ def local_sources_mirror(country):
     put('%s.sources.list' % country, 'sources.list')
     sudo('/bin/mv -f sources.list /etc/apt')
     sudo('apt-get update')
+
+try:
+    from local_fabfile import *
+except:
+    pass
