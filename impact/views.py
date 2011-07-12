@@ -196,11 +196,13 @@ def calculate(request, save_output=dummy_save):
 
     # json.dumps does not like django users
     output['user'] = calculation.user.username
-
+    output['keywords'] = result.keywords
     # Delete _state and _user_cache item from the dict,
     # they were created automatically by Django
     del output['_user_cache']
     del output['_state']
+
+
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')
 
