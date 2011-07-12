@@ -174,11 +174,15 @@ class Test_calculations(unittest.TestCase):
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(rv['Content-Type'], 'application/json')
             data = json.loads(rv.content)
-            assert 'hazard_layer' in data.keys()
-            assert 'exposure_layer' in data.keys()
-            assert 'run_duration' in data.keys()
-            assert 'run_date' in data.keys()
-            assert 'layer' in data.keys()
+            if 'errors' in data:
+                errors = data['errors']
+                raise Exception(errors)
+
+            assert 'hazard_layer' in data
+            assert 'exposure_layer' in data
+            assert 'run_duration' in data
+            assert 'run_date' in data
+            assert 'layer' in data
 
             # Download result and check
             layer_name = data['layer'].split('/')[-1]

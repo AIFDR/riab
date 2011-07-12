@@ -174,7 +174,7 @@ def calculate(request, save_output=dummy_save):
         calculation.errors = errors
         calculation.stacktrace = trace
         calculation.save()
-        jsondata = json.dumps([{'errors': errors}])
+        jsondata = json.dumps({'errors': errors})
         return HttpResponse(jsondata, mimetype='application/json')
 
     msg = ('- Result available at %s.' % result.get_absolute_url())
