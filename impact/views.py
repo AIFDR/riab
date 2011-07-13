@@ -196,7 +196,13 @@ def calculate(request, save_output=dummy_save):
 
     # json.dumps does not like django users
     output['user'] = calculation.user.username
-    output['keywords'] = result.keywords
+
+    # Keywords do not like caption being there.
+    #FIXME: Do proper parsing, don't assume caption is the only keyword.
+    if 'caption' in result.keywords:
+        output['caption'] = result.keywords.split('caption:')[1]
+    else:
+        output['caption'] = 'Calculation finished in %s' % calculation.run_duration
     # Delete _state and _user_cache item from the dict,
     # they were created automatically by Django
     del output['_user_cache']

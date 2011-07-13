@@ -987,6 +987,10 @@ function exposureSelected(combo){
 
 }
 
+function showCaption(caption){
+    Ext.MessageBox.alert('Calculation finished successfully', caption);
+}
+
 function received(result, request) {
     var progressbar = Ext.getCmp('calculateprogress');
     progressbar.reset();
@@ -994,7 +998,7 @@ function received(result, request) {
 
     data = Ext.decode( result.responseText );
     if (data.errors !== null){
-        alert('Calculation failed with error: '+ data.errors);
+        Ext.MessageBox.alert('Calculation failed with error:', data.errors);
         if (window.console && console.log){
              console.log(data.stacktrace);
         }
@@ -1006,7 +1010,7 @@ function received(result, request) {
     var run_date = data.run_date;
     var run_duration = data.run_duration;
     var bbox = data.bbox;
-    var keywords = data.keywords;
+    var caption = data.caption;
     var exposure = data.exposure_layer;
     var hazard = data.hazard_layer;
     var base_url = layer_uri.split('/')[2];
@@ -1014,7 +1018,8 @@ function received(result, request) {
     var result_name = layer_uri.split('/')[4].split(':')[1];
     var result_label = exposure + ' X ' + hazard + '=' +result_name;
     layer=addLayer(server_url, result_label, result_name, 0.9);
-    lastImpactLayer=result_label
+    lastImpactLayer=result_label;
+    showCaption(caption);
 }
 
 function calculate()
