@@ -61,7 +61,8 @@ class TsunamiBuildingLossFunction(FunctionProvider):
                     layer_type=="feature"
     """
 
-    def target_value(self):
+    @staticmethod
+    def target_value():
         field = 'STRUCT_DAMAGE_fraction'
         return field[0:9]
 

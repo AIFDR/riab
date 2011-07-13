@@ -483,15 +483,14 @@ class Test_calculations(unittest.TestCase):
             data['bbox'] = bad_bbox
 
             # FIXME (Ole): Suppress error output from c.post
-            try:
-                rv = c.post('/api/v1/calculate/', data=data)
-            except AssertionError, e:
-                #print 'GREAT: bbox %s triggered exception %s' %(bad_bbox, e)
-                pass
-            else:
-                msg = ('Bad bounding box %s should have raised '
-                       'on exception' % bad_bbox)
-                raise Exception(msg)
+            rv = c.post('/api/v1/calculate/', data=data)
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            data_out = json.loads(rv.content)
+
+            msg = ('Bad bounding box %s should have raised '
+                       'an error' % bad_bbox)
+            assert 'errors' in data_out, msg
 
     def test_geotransform_from_geonode(self):
         """Geotransforms of GeoNode layers can be correctly determined
