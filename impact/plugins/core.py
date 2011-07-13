@@ -48,9 +48,10 @@ class FunctionProvider:
         if data.is_raster:
             return render_to_string('impact/styles/raster.sld', params)
         elif data.is_vector:
-            #FIXME: How do we get the target_value from here?
-            params['damage'] = 'Percent_da'
-            params['stroke'] = False
+            if self.target_value() is not None:
+                params['damage'] = self.target_value()
+            else:
+                params['damage'] = 'Percent_da'
             return render_to_string('impact/styles/vector.sld', params)
 
 
