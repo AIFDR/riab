@@ -1,0 +1,9 @@
+[submodule "calculator/app/static/externals/openlayers"]
+	path = calculator/app/static/externals/openlayers
+	url = https://github.com/openlayers/openlayers.git
+[submodule "calculator/app/static/externals/geoext"]
+	path = calculator/app/static/externals/geoext
+	url = https://github.com/opengeo/GeoExt.git
+[submodule "calculator/app/static/externals/gxp"]
+	path = calculator/app/static/externals/gxp
+	url = https://github.com/opengeo/gxp.git
