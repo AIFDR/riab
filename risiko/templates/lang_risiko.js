@@ -12,7 +12,7 @@ if (window.GeoExplorer) {
         calculatorTitleText: gettext("Impact Calculator"),
         hazardSelectText: gettext("Select Hazard ..."),
         exposureSelectText: gettext("Select Exposure ..."),
-        functionSelectText: gettext("Select Function ..."),
+        functionSelectText: gettext("Select Function ...")
   });
 }
 {% endblock %}
