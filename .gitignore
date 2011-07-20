@@ -6,3 +6,4 @@ RISIKO_test_data.tgz
 risiko.egg-info/
 risiko/development.db
 impact/tests/small_test_raster.tif
+extras/.vagrant
