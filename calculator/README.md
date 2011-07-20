@@ -1,26 +1,30 @@
-# Ready GXP
+# Risiko Calculator
 
-The intention of this project is to provide a simple reusable template for 
-GeoExt applications bound for a servlet container. To get started, see
-http://github.com/ahocevar/gxp-simpledemo/ for a simple WMS/WFS browser/editor
-created on top of the structure provided by Ready GXP.
+## Preparation
 
-## Setup
+Initialize the build environment.
 
-    curl -L https://github.com/opengeo/readygxp/raw/master/readygxp.sh | sh -s myapp
+    ant init
 
-Enhancements to come later.  For now, an application can be run as follows:
+You only need to run `ant init` once (or any time dependencies change).
 
 ## Debug Mode
 
 Loads all scripts uncompressed.
 
-    ant init
     ant debug
 
 This will give you an application available at http://localhost:8080/ by
-default.  You only need to run `ant init` once (or any time dependencies
-change).
+default.
+
+To use a GeoServer instance other than
+http://localhost:8001/geoserver-geonode-dev, add the following option to the
+`ant debug` command:
+
+    -Dapp.proxy.geoserver=<geoserver_url>
+
+where `<geoserver_url>` is e.g.
+http://my.risiko.box/geoserver-geonode-dev/
 
 ## Prepare App for Deployment
 

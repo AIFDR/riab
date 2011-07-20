@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="readygxp" default="dist" basedir=".">
+<project name="Risiko Calculator" default="dist" basedir=".">
 
     <description>
-        Ready GXP Build File
+        Risiko Calculator Build File
     </description>
 
     <property name="build" location="build"/>
-    <property name="app.proxy.geoserver" value=""/>
+    <property name="app.proxy.geoserver" value="http://localhost:8001/geoserver-geonode-dev"/>
     <property name="app.port" value="8080"/>
 
     <target name="init">
@@ -46,14 +46,14 @@
         </exec>
 
         <echo message="pulling in submodules"/>
-        <exec executable="git" failonerror="true">
-            <arg line="submodule init"/>
+        <exec executable="git" dir="../" failonerror="true">
+            <arg line="submodule update --init -- calculator/app/static/externals/openlayers"/>
         </exec>
-        <exec executable="git" failonerror="true">
-            <arg line="submodule sync"/>
+        <exec executable="git" dir="../" failonerror="true">
+            <arg line="submodule update --init -- calculator/app/static/externals/geoext"/>
         </exec>
-        <exec executable="git" failonerror="true">
-            <arg line="submodule update"/>
+        <exec executable="git" dir="../" failonerror="true">
+            <arg line="submodule update --init -- calculator/app/static/externals/gxp"/>
         </exec>
 
     </target>
@@ -69,7 +69,7 @@
 
     </target>
     
-    <target name="dist" depends="init, buildjs, redist"/>
+    <target name="dist" depends="buildjs, redist"/>
     
     <target name="redist">
 
