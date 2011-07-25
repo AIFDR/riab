@@ -47,6 +47,7 @@ from geonode.maps.utils import get_valid_user
 import logging
 logger = logging.getLogger('risiko')
 
+
 def exception_format(e):
     """Convert an exception object into a string,
     complete with stack trace info, suitable for display.
@@ -54,6 +55,7 @@ def exception_format(e):
     import traceback
     info = "".join(traceback.format_tb(sys.exc_info()[2]))
     return str(e) + "\n\n" + info
+
 
 @csrf_exempt
 def calculate(request, save_output=dummy_save):
@@ -87,8 +89,6 @@ def calculate(request, save_output=dummy_save):
                                   exposure_layer=exposure_layer,
                                   impact_function=impact_function_name,
                                   success=False)
- 
-
 
     try:
 
@@ -133,8 +133,8 @@ def calculate(request, save_output=dummy_save):
         _, impact_function = plugin_list[0].items()[0]
         impact_function_source = inspect.getsource(impact_function)
 
-        calculation.impact_function_source=impact_function_source
-        calculation.bbox=bbox
+        calculation.impact_function_source = impact_function_source
+        calculation.bbox = bbox
 
         calculation.save()
 
@@ -202,13 +202,36 @@ def calculate(request, save_output=dummy_save):
     if 'caption' in result.keywords:
         output['caption'] = result.keywords.split('caption:')[1]
     else:
-        output['caption'] = 'Calculation finished in %s' % calculation.run_duration
+        output['caption'] = "Calculation finished " \
+                            "in %s" % calculation.run_duration
     # Delete _state and _user_cache item from the dict,
     # they were created automatically by Django
     del output['_user_cache']
     del output['_state']
 
+    jsondata = json.dumps(output)
+    return HttpResponse(jsondata, mimetype='application/json')
 
+
+def debug(request):
+    """Show a list of all the functions"""
+    plugin_list = get_plugins()
+
+    plugins_info = []
+    for name, f in plugin_list.items():
+        if not 'doc' in request.GET:
+            plugins_info.append({
+             'name': name,
+             'location': f.__module__,
+            })
+        else:
+            plugins_info.append({
+             'name': name,
+             'location': f.__module__,
+             'doc': f.__doc__,
+            })
+
+    output = {'plugins': plugins_info}
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')
 
