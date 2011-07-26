@@ -91,7 +91,7 @@ WCS_TEMPLATE = '%s?version=1.0.0' + \
 
 # FIXME (Ole): Why is maxFeatures hard coded?
 WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
-               '&request=GetFeature&typeName=%s&maxFeatures=500' + \
+               '&request=GetFeature&typeName=%s' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'
 
 
