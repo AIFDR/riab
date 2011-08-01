@@ -10,11 +10,11 @@ risiko start
 risiko-lint
 
 # Give GeoServer time to boot
-sleep 30
+sleep 10
 
 # Run unit tests
 if [ $# -eq 0 ];then
-    args="risiko impact"
+    args="risiko impact --with-id"
 else
     args=$@
 fi

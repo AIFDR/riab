@@ -180,7 +180,7 @@ def calculate(request, save_output=dummy_save):
     msg = ('- Result available at %s.' % result.get_absolute_url())
     logger.info(msg)
 
-    calculation.layer = result.get_absolute_url()
+    calculation.layer = settings.SITEURL + result.get_absolute_url()
     calculation.success = True
     calculation.save()
 

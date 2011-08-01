@@ -304,12 +304,12 @@ LOGGING = {
             'propagate': False,
         },
         'geonode.maps': {
-            'handlers': ['null'],
+            'handlers': ['file'],
             'propagate': False,
             'level': 'ERROR',
         },
         'risiko': {
-            'handlers': ['console'],
+            'handlers': ['file'],
             'level': 'INFO',
             'propagate': False,
        }

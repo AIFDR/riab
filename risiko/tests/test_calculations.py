@@ -8,7 +8,7 @@ from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
 
-from geonode.maps.utils import get_valid_user
+from geonode.maps.utils import get_valid_user, check_geonode_is_up
 from risiko.utilities import save_to_geonode
 
 from impact.views import calculate
@@ -115,6 +115,12 @@ class Test_calculations(unittest.TestCase):
     def test_earthquake_fatality_estimation_allen(self):
         """Fatality computation computed correctly with GeoServer Data
         """
+        #FIXME: This test is failing because there is a timeout in GeoServer,
+        # it only happens for this test (which is the first to run)
+        # A workaround could be achieved by doing some checks before save_to_geonode
+        # is called. I have tried putting minutes in the delay before running this
+        # test but have not made it pass. Ariel.
+#        check_geonode_is_up()
 
         # Simulate bounding box from application
         viewport_bbox_string = '104.3,-8.2,110.04,-5.17'
