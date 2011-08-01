@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Risiko Calculator" default="dist" basedir=".">
+<project name="calculator" default="dist" basedir=".">
 
     <description>
         Risiko Calculator Build File
@@ -7,6 +7,7 @@
 
     <property name="build" location="build"/>
     <property name="app.proxy.geoserver" value="http://localhost:8001/geoserver-geonode-dev"/>
+    <property name="app.proxy.geonode" value="http://localhost:8000"/>
     <property name="app.port" value="8080"/>
 
     <target name="init">
@@ -109,6 +110,7 @@
     <target name="debug">
         <java jar="${build}/ringo/run.jar" fork="true">
             <sysproperty key="app.proxy.geoserver" value="${app.proxy.geoserver}"/>
+            <sysproperty key="app.proxy.geonode" value="${app.proxy.geonode}"/>
             <sysproperty key="ringo.home" path="${build}/ringo"/>
             <arg path="app/main.js"/>
             <arg line="-p ${app.port}"/>

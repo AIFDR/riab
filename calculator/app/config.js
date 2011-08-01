@@ -30,6 +30,20 @@ if (java.lang.System.getProperty("app.debug")) {
             [(/^\/geoserver\/(.*)/), require("./proxy").pass({url: geoserver, preserveHost: true})]
         );
     }
+
+    // proxy a remote geonode on / - only recommended for debug mode
+    var geonode = java.lang.System.getProperty("app.proxy.geonode");
+    if (geonode) {
+        if (geonode.charAt(geonode.length-1) !== "/") {
+            geonode = geonode + "/";
+        }
+        var endpoints = ["maps", "data", "accounts", "api", "proxy"];
+        for (var i=endpoints.length-1; i>=0; --i) {            
+            urls.push(
+                [new RegExp("^\\/" + endpoints[i] + "\\/(.*)"), require("./proxy").pass({url: geonode + endpoints[i] + "/"})]
+            );
+        }
+    }
 }
 
 exports.urls = urls;

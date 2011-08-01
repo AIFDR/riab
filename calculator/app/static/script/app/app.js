@@ -3,6 +3,7 @@
 var app;
 Ext.onReady(function() {
     app = new gxp.Viewer({
+        proxy: "/proxy?url=",
         portalConfig: {
             layout: "border",
             region: "center",
@@ -15,15 +16,14 @@ Ext.onReady(function() {
                 layout: "fit",
                 region: "center",
                 border: false,
-                items: ["mymap"]
+                items: ["map"]
             }, {
                 id: "westpanel",
                 xtype: "container",
                 layout: "fit",
                 region: "west",
                 width: 200
-            }],
-            bbar: {id: "mybbar"}
+            }]
         },
         
         // configuration of all tool plugins for this application
@@ -52,42 +52,26 @@ Ext.onReady(function() {
             actionTarget: "map.tbar"
         }],
         
-        // layer sources
-        sources: {
-            local: {
-                ptype: "gxp_wmscsource",
-                url: "/geoserver/wms",
-                version: "1.1.1"
-            },
-            osm: {
-                ptype: "gxp_osmsource"
-            }
-        },
+        // map items
+        mapItems: [{
+            xtype: "gx_zoomslider",
+            vertical: true,
+            height: 100
+        }],
         
-        // map and layers
-        map: {
-            id: "mymap", // id needed to reference map in portalConfig above
-            title: "Map",
-            projection: "EPSG:900913",
-            units: "m",
-            maxResolution: 156543.0339,
-            maxExtent: [-20037508, -20037508, 20037508, 20037508],
-            center: [-10764594.758211, 4523072.3184791],
-            zoom: 3,
-            layers: [{
-                source: "osm",
-                name: "mapnik",
-                group: "background"
-            }, {
-                source: "local",
-                name: "usa:states",
-                selected: true
-            }],
-            items: [{
-                xtype: "gx_zoomslider",
-                vertical: true,
-                height: 100
-            }]
+        loadConfig: function(config, callback) {
+            Ext.Ajax.request({
+                url: "/maps/new/data",
+                success: function(response) {
+                    //TODO remove the replace call below when
+                    // https://github.com/AIFDR/riab/issues/112 is fixed
+                    var json = response.responseText.replace(/gxp_wmscsource/g, "gxp_wmssource");
+                    Ext.apply(config, Ext.decode(json, true));
+                    config.map.id = "map";
+                    callback.call(this, config);
+                },
+                scope: this
+            });
         }
 
     });
