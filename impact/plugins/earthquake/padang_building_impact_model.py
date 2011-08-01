@@ -62,11 +62,8 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                                     'MMI': mmi,
                                     'Building_Class': building_class})
 
-        # FIXME (Ole): Need helper to generate new layer using
-        #              correct spatial reference
-        #              (i.e. sensibly wrap the following lines)
-        projection = E.get_projection()
 
+        # Create vector layer and return
         V = Vector(data=building_damage,
                    projection=E.get_projection(),
                    geometry=coordinates,
