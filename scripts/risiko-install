@@ -16,8 +16,10 @@ sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
 echo ">>> Installing Ubuntu packages"
 # Python development prerequisites
-sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext
+sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext ant
 
+# Java development prerequisites
+sudo apt-get install -y ant
 
 echo ">>> Creating the virtual environment"
 if [ -d riab_env ]; then
@@ -113,6 +115,13 @@ cd geonode/src
 pip install -e GeoNodePy
 popd
 pip install -e riab
+
+echo ">>> Building and installing the Calculator application"
+pushd .
+cd riab/calculator
+ant init
+ant dist
+cp -Rf build/calculator/WEB-INF/app/static ../../geonode/src/GeoNodePy/geonode/maps/static/calculator
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
