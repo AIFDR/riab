@@ -13,10 +13,10 @@ import time
 from risiko.utilities import save_to_geonode
 
 def usage():
-    print 'risiko-upload {directory|filename}'
+    print 'ccccc risiko-upload {directory|filename}'
 
 if __name__ == '__main__':
-
+    print sys.argv
     if len(sys.argv) != 2:
         usage()
     else:

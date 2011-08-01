@@ -1,4 +1,4 @@
-from impact.plugins.earthquake import allen_fatality_model
-from impact.plugins.earthquake import usgs_fatality_model
-from impact.plugins.earthquake import haji_fatality_model
-from impact.plugins.earthquake import unspecific_building_impact_model
+import os
+import glob
+__all__ = [ os.path.basename(f)[:-3] for f in glob.glob(os.path.dirname(__file__)+"/*.py")]
+
