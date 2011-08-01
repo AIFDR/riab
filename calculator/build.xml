@@ -14,20 +14,12 @@
 
         <mkdir dir="${build}"/>
 
-        <echo message="pulling in ringo (ignore fatal warning)"/>
-        <mkdir dir="${build}/ringo"/>
-        <exec executable="git" dir="${build}/ringo" failonerror="false">
-            <arg line="clone -nq git://github.com/ringo/ringojs.git ."/>
-        </exec>
-        <exec executable="git" dir="${build}/ringo" failonerror="true">
-            <arg line="pull origin master"/>
-        </exec>
-        <exec executable="git" dir="${build}/ringo" failonerror="true">
-            <arg line="checkout 7af8f2bba20890e4860973fea5254b55bd00c7d7"/>
-        </exec>
-
-        <echo message="building ringo jars"/>
-        <ant dir="${build}/ringo" target="jar"/>
+        <echo message="pulling in ringo"/>
+        <get src="http://cloud.github.com/downloads/ringo/ringojs/ringojs-0.7.zip" dest="${build}/ringojs-0.7.zip"/>
+        <unzip src="${build}/ringojs-0.7.zip" dest="${build}"/>
+        <move todir="${build}/ringo">
+          <fileset dir="${build}/ringojs-0.7"/>
+        </move>
         <!-- uncomment this if you have additional jars in a lib dir
         <copy todir="${build}/ringo/lib" flatten="true" includeEmptyDirs="false">
             <fileset dir="lib"/>
