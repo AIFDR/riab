@@ -172,9 +172,9 @@ DEFAULT_MAP_CENTER = (112.3, -7.9)
 DEFAULT_MAP_ZOOM = 5
 
 MAP_BASELAYERSOURCES = {
-    'any': {'ptype': 'gx_olsource'},
+    'any': {'ptype': 'gxp_olsource'},
     'capra': {'url': GEOSERVER_BASE_URL + 'wms'},
-    'google': {'ptype': 'gx_googlesource',
+    'google': {'ptype': 'gxp_googlesource',
                'apiKey': GOOGLE_API_KEY}}
 
 MAP_BASELAYERS = \
