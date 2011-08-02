@@ -5,8 +5,6 @@ from impact.plugins.utilities import Damage_curve
 
 from impact.storage.vector import Vector
 
-
-
 #------------------------------------------------------------
 # Define damage curves for structural building damage
 #
@@ -42,6 +40,7 @@ vulnerability_map = {('unreinforced_masonry', 'tin'): 'weak',
                       ('reinforced masonry', 'concrete'): 'strong',
                       ('reinforced_masonry', 'concrete'): 'strong',
                       ('plastered', 'concrete'): 'weak'}
+
 
 class HOTEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for earthquake damage to buildings

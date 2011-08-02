@@ -27,6 +27,7 @@ class PluginMount(type):
 
 DEFAULT_TARGET_VALUE = 'Percent_da'
 
+
 class FunctionProvider:
     """
     Mount point for plugins which refer to actions that can be performed.

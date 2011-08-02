@@ -62,7 +62,6 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                                     'MMI': mmi,
                                     'Building_Class': building_class})
 
-
         # Create vector layer and return
         V = Vector(data=building_damage,
                    projection=E.get_projection(),
