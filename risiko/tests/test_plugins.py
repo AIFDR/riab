@@ -24,6 +24,7 @@ from django.conf import settings
 from django.utils import simplejson as json
 from geonode.maps.utils import get_valid_user
 
+
 # FIXME (Ole): Change H, E to layers.
 class BasicFunction(FunctionProvider):
     """Risk plugin for testing

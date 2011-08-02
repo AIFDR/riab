@@ -317,7 +317,6 @@ LOGGING = {
 }
 
 
-
 def get_user_url(u):
     """Helper function for profile module
     """
