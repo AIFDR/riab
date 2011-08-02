@@ -952,26 +952,25 @@ class Test_IO(unittest.TestCase):
         eps = 1.0e-4
 
         # Check that sml box is actually too small
-        assert sml[2]-sml[0] < min_res
-        assert sml[3]-sml[1] < min_res
+        assert sml[2] - sml[0] < min_res
+        assert sml[3] - sml[1] < min_res
 
         for bbox in [big, mid, sml]:
-
+            # Calculate minimal bounding box
             adjusted_bbox = minimal_bounding_box(bbox, min_res, eps=eps)
 
             # Check that adjusted box exceeds minimal resolution
-            assert adjusted_bbox[2]-adjusted_bbox[0] > min_res
-            assert adjusted_bbox[3]-adjusted_bbox[1] > min_res
+            assert adjusted_bbox[2] - adjusted_bbox[0] > min_res
+            assert adjusted_bbox[3] - adjusted_bbox[1] > min_res
 
             # Check that if box was adjusted eps was applied
-            if bbox[2]-bbox[0] <= min_res:
-                assert numpy.allclose(adjusted_bbox[2]-adjusted_bbox[0],
-                                      min_res+(2*eps))
+            if bbox[2] - bbox[0] <= min_res:
+                assert numpy.allclose(adjusted_bbox[2] - adjusted_bbox[0],
+                                      min_res + (2 * eps))
 
-            if bbox[3]-bbox[1] <= min_res:
-                assert numpy.allclose(adjusted_bbox[3]-adjusted_bbox[1],
-                                      min_res+(2*eps))
-
+            if bbox[3] - bbox[1] <= min_res:
+                assert numpy.allclose(adjusted_bbox[3] - adjusted_bbox[1],
+                                      min_res + (2 * eps))
 
             # Check that input box was not changed
             assert adjusted_bbox is not bbox
