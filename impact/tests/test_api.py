@@ -74,6 +74,7 @@ class Test_HTTP(unittest.TestCase):
         assert 'impact_function' in data.keys()
 
         layer_uri = data['layer']
+
         #FIXME: This is not a good way to access the layer name
         typename = layer_uri.split('/')[4]
         name = typename.split(':')[1]
