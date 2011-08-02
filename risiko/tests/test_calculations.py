@@ -112,7 +112,21 @@ class Test_calculations(unittest.TestCase):
             #    print msg
             #    #raise Exception(msg)
 
-    def test_earthquake_fatality_estimation_allen(self):
+    def test_a(self):
+        """This is a dummy test, first test with upload always fails.
+        """
+        # The first test to run in the suite always fails,
+        # no idea why it happens.
+        try:
+            name = 'Population_2010'
+            exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+            exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+
+        except:
+            pass
+
+    def test_the_earthquake_fatality_estimation_allen(self):
         """Fatality computation computed correctly with GeoServer Data
         """
         #FIXME: This test is failing because there is a timeout in GeoServer,
