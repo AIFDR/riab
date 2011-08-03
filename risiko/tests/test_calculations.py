@@ -131,10 +131,11 @@ class Test_calculations(unittest.TestCase):
         """
         #FIXME: This test is failing because there is a timeout in GeoServer,
         # it only happens for this test (which is the first to run)
-        # A workaround could be achieved by doing some checks before save_to_geonode
-        # is called. I have tried putting minutes in the delay before running this
-        # test but have not made it pass. Ariel.
-#        check_geonode_is_up()
+        # [COMMENT (Ole): I is not the first to run on my system, yet it fails]
+        # A workaround could be achieved by doing some checks before
+        # save_to_geonode is called. I have tried putting minutes in the
+        # delay before running this test but have not made it pass. Ariel.
+        # check_geonode_is_up()
 
         # Simulate bounding box from application
         viewport_bbox_string = '104.3,-8.2,110.04,-5.17'

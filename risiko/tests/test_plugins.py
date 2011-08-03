@@ -149,7 +149,9 @@ class Test_plugins(unittest.TestCase):
         # Upload a raster and a vector data set
         hazard_filename = os.path.join(TESTDATA,
                                        'lembang_mmi_hazmap.asc')
-        hazard_layer = save_to_geonode(hazard_filename, user=self.user, overwrite=True)
+        hazard_layer = save_to_geonode(hazard_filename,
+                                       user=self.user,
+                                       overwrite=True)
         check_layer(hazard_layer)
 
         msg = 'No keywords found in layer %s' % hazard_layer.name
@@ -162,8 +164,8 @@ class Test_plugins(unittest.TestCase):
         msg = 'No keywords found in layer %s' % exposure_layer.name
         assert len(exposure_layer.keywords) > 0, msg
 
-        #FIXME(Ariel): A timeout here is needed for the layer to appear in the functions
-        # call, this should not be needed.
+        # FIXME(Ariel): A timeout here is needed for the layer to appear in
+        # the functions call, this should not be needed.
         import time
         time.sleep(5)
 
@@ -177,7 +179,7 @@ class Test_plugins(unittest.TestCase):
         assert 'functions' in data
 
         functions = data['functions']
-      
+
         # FIXME (Ariel): This test should implement an alternative function to
         # parse the requirements, but for now it will just take the buildings
         # damage one.
