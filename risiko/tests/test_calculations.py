@@ -8,7 +8,7 @@ from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
 
-from geonode.maps.utils import get_valid_user
+from geonode.maps.utils import get_valid_user, check_geonode_is_up
 from risiko.utilities import save_to_geonode
 
 from impact.views import calculate
@@ -112,9 +112,29 @@ class Test_calculations(unittest.TestCase):
             #    print msg
             #    #raise Exception(msg)
 
-    def test_earthquake_fatality_estimation_allen(self):
+    def test_a(self):
+        """This is a dummy test, first test with upload always fails.
+        """
+        # The first test to run in the suite always fails,
+        # no idea why it happens.
+        try:
+            name = 'Population_2010'
+            exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+            exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+
+        except:
+            pass
+
+    def test_the_earthquake_fatality_estimation_allen(self):
         """Fatality computation computed correctly with GeoServer Data
         """
+        #FIXME: This test is failing because there is a timeout in GeoServer,
+        # it only happens for this test (which is the first to run)
+        # A workaround could be achieved by doing some checks before save_to_geonode
+        # is called. I have tried putting minutes in the delay before running this
+        # test but have not made it pass. Ariel.
+#        check_geonode_is_up()
 
         # Simulate bounding box from application
         viewport_bbox_string = '104.3,-8.2,110.04,-5.17'
@@ -483,15 +503,14 @@ class Test_calculations(unittest.TestCase):
             data['bbox'] = bad_bbox
 
             # FIXME (Ole): Suppress error output from c.post
-            try:
-                rv = c.post('/api/v1/calculate/', data=data)
-            except AssertionError, e:
-                #print 'GREAT: bbox %s triggered exception %s' %(bad_bbox, e)
-                pass
-            else:
-                msg = ('Bad bounding box %s should have raised '
-                       'on exception' % bad_bbox)
-                raise Exception(msg)
+            rv = c.post('/api/v1/calculate/', data=data)
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            data_out = json.loads(rv.content)
+
+            msg = ('Bad bounding box %s should have raised '
+                       'an error' % bad_bbox)
+            assert 'errors' in data_out, msg
 
     def test_geotransform_from_geonode(self):
         """Geotransforms of GeoNode layers can be correctly determined

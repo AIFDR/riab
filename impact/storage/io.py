@@ -141,6 +141,7 @@ def bboxlist2string(bbox):
 
     return '%.6f,%.6f,%.6f,%.6f' % tuple(bbox)
 
+
 def bboxstring2list(bbox_string):
     """Convert bounding box string to list
 

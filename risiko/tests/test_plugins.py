@@ -24,6 +24,7 @@ from django.conf import settings
 from django.utils import simplejson as json
 from geonode.maps.utils import get_valid_user
 
+
 # FIXME (Ole): Change H, E to layers.
 class BasicFunction(FunctionProvider):
     """Risk plugin for testing
@@ -161,6 +162,11 @@ class Test_plugins(unittest.TestCase):
         msg = 'No keywords found in layer %s' % exposure_layer.name
         assert len(exposure_layer.keywords) > 0, msg
 
+        #FIXME(Ariel): A timeout here is needed for the layer to appear in the functions
+        # call, this should not be needed.
+        import time
+        time.sleep(5)
+
         c = Client()
         rv = c.post('/api/v1/functions/', data={})
 
@@ -171,7 +177,7 @@ class Test_plugins(unittest.TestCase):
         assert 'functions' in data
 
         functions = data['functions']
-
+      
         # FIXME (Ariel): This test should implement an alternative function to
         # parse the requirements, but for now it will just take the buildings
         # damage one.

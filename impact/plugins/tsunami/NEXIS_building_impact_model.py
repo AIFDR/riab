@@ -62,6 +62,11 @@ class TsunamiBuildingLossFunction(FunctionProvider):
     """
 
     @staticmethod
+    def target_value():
+        field = 'STRUCT_DAMAGE_fraction'
+        return field[0:9]
+
+    @staticmethod
     def run(layers):
         """Risk plugin for tsunami building damage
         """

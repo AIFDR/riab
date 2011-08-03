@@ -67,7 +67,6 @@ def pandang_check_results(mmi, building_class):
           [7.427594, 9, 1.050452],
           [7.345935, 9, 0.862066]]
 
-
     impact_array = [verified_impact
         for verified_mmi, verified_building_class, verified_impact
                in padang_verified_results

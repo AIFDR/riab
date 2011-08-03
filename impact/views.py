@@ -44,6 +44,8 @@ from impact.models import Calculation, Workspace
 
 from geonode.maps.utils import get_valid_user
 
+from urlparse import urljoin 
+
 import logging
 logger = logging.getLogger('risiko')
 
@@ -180,7 +182,7 @@ def calculate(request, save_output=dummy_save):
     msg = ('- Result available at %s.' % result.get_absolute_url())
     logger.info(msg)
 
-    calculation.layer = result.get_absolute_url()
+    calculation.layer = urljoin(settings.SITEURL, result.get_absolute_url())
     calculation.success = True
     calculation.save()
 

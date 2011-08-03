@@ -1,7 +1,8 @@
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
-import scipy.stats 
+import scipy.stats
+
 
 class SimplisticEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for simplistic earthquake damage to buildings
@@ -12,8 +13,6 @@ class SimplisticEarthquakeBuildingDamageFunction(FunctionProvider):
     :param requires category=="exposure" and \
                     subcategory.startswith("building")
     """
-
-    
 
     @staticmethod
     def run(layers):
@@ -37,20 +36,17 @@ class SimplisticEarthquakeBuildingDamageFunction(FunctionProvider):
         building_damage = []
         for i in range(len(shaking)):
             mmi = float(shaking[i].values()[0])
-            if mmi>=7.0:
-                percent_damage=100
-            elif mmi>=6.0:
-                percent_damage=50
+            if mmi >= 7.0:
+                percent_damage = 100
+            elif mmi >= 6.0:
+                percent_damage = 50
             else:
-                percent_damage=0
-            
-	    building_damage.append({'Percent_damage': percent_damage, 'MMI': mmi})
+                percent_damage = 0
 
-        # FIXME (Ole): Need helper to generate new layer using
-        #              correct spatial reference
-        #              (i.e. sensibly wrap the following lines)
-        projection = E.get_projection()
+            building_damage.append({'Percent_damage': percent_damage,
+                                    'MMI': mmi})
 
+        # Create vector layer and return
         V = Vector(data=building_damage,
                    projection=E.get_projection(),
                    geometry=coordinates,

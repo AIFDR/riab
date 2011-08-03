@@ -25,6 +25,9 @@ class PluginMount(type):
             cls.plugins.append(cls)
 
 
+DEFAULT_TARGET_VALUE = 'Percent_da'
+
+
 class FunctionProvider:
     """
     Mount point for plugins which refer to actions that can be performed.
@@ -41,16 +44,18 @@ class FunctionProvider:
     __metaclass__ = PluginMount
 
     @staticmethod
-    def generate_style(data):
+    def target_value():
+        return DEFAULT_TARGET_VALUE
+
+    @staticmethod
+    def generate_style(data, target_value):
         params = {
                    'name': data.get_name(),
         }
         if data.is_raster:
             return render_to_string('impact/styles/raster.sld', params)
         elif data.is_vector:
-            #FIXME: How do we get the target_value from here?
-            params['damage'] = 'Percent_da'
-            params['stroke'] = False
+            params['damage'] = target_value
             return render_to_string('impact/styles/vector.sld', params)
 
 

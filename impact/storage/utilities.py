@@ -444,12 +444,12 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
     delta_y = bbox[3] - bbox[1]
 
     if delta_x < min_res:
-        dx = (min_res-delta_x)/2 + eps
+        dx = (min_res - delta_x) / 2 + eps
         bbox[0] -= dx
         bbox[2] += dx
 
     if delta_y < min_res:
-        dy = (min_res-delta_y)/2 + eps
+        dy = (min_res - delta_y) / 2 + eps
         bbox[1] -= dy
         bbox[3] += dy
 

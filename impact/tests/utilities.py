@@ -159,5 +159,3 @@ def get_web_page(url, username=None, password=None):
         page = pagehandle.readlines()
 
     return page
-
-

@@ -15,6 +15,7 @@ from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import assert_bounding_box_matches
 from impact.tests.utilities import check_layer, get_web_page
 
+
 class Test_utilities(unittest.TestCase):
     """Tests riab_geonode utilities
     """
@@ -119,7 +120,6 @@ class Test_utilities(unittest.TestCase):
         check_layer(layer)
 
         assert isinstance(layer.geographic_bounding_box, basestring)
-
 
     def test_shapefile_without_prj(self):
         """Shapefile with without prj file is rejected

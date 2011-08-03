@@ -58,7 +58,7 @@ def calculate_impact(layers, impact_function,
     F.write_to_file(output_filename)
 
     # Generate style as defined by the impact_function
-    style = impact_function.generate_style(F)
+    style = impact_function.generate_style(F, impact_function.target_value())
     f = open(output_filename.replace(extension, '.sld'), 'w')
     f.write(style)
     f.close()

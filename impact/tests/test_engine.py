@@ -19,7 +19,7 @@ def linear_function(x, y):
     """Auxiliary function for use with interpolation test
     """
 
-    return x + y / 2.
+    return x + y / 2.0
 
 
 def lembang_damage_function(x):
