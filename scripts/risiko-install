@@ -16,7 +16,7 @@ sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
 echo ">>> Installing Ubuntu packages"
 # Python development prerequisites
-sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext python-psycopg2 ant
+sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext python-psycopg2
 
 # Java development prerequisites, make sure to use this line with --no-install-recommends
 # the ant package behaves badly and wants to install gcj.
@@ -120,7 +120,8 @@ pushd .
 cd riab/calculator
 ant init
 ant dist
-cp -Rf build/calculator/WEB-INF/app/static ../../geonode/src/GeoNodePy/geonode/maps/static/calculator
+mkdir -p ../impact/static
+cp -Rf build/calculator/WEB-INF/app/static ../impact/static/calculator
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
