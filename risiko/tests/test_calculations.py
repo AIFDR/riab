@@ -112,30 +112,90 @@ class Test_calculations(unittest.TestCase):
             #    print msg
             #    #raise Exception(msg)
 
-    def test_a(self):
-        """This is a dummy test, first test with upload always fails.
-        """
-        # The first test to run in the suite always fails,
-        # no idea why it happens.
-        try:
-            name = 'Population_2010'
-            exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
-            exposure_layer = save_to_geonode(exposure_filename,
-                                         user=self.user, overwrite=True)
-
-        except:
-            pass
 
     def test_the_earthquake_fatality_estimation_allen(self):
         """Fatality computation computed correctly with GeoServer Data
         """
-        #FIXME: This test is failing because there is a timeout in GeoServer,
-        # it only happens for this test (which is the first to run)
-        # [COMMENT (Ole): I is not the first to run on my system, yet it fails]
-        # A workaround could be achieved by doing some checks before
-        # save_to_geonode is called. I have tried putting minutes in the
-        # delay before running this test but have not made it pass. Ariel.
-        # check_geonode_is_up()
+
+        # Simulate bounding box from application
+        viewport_bbox_string = '104.3,-8.2,110.04,-5.17'
+
+        # Upload exposure data for this test
+        name = 'Population_2010'
+        exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+        exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+
+        workspace = exposure_layer.workspace
+        msg = 'Expected workspace to be "geonode". Got %s' % workspace
+        assert workspace == 'geonode'
+
+        layer_name = exposure_layer.name
+        msg = 'Expected layer name to be "%s". Got %s' % (name, layer_name)
+        assert layer_name == name.lower(), msg
+
+        exposure_name = '%s:%s' % (workspace, layer_name)
+
+        # Check metadata
+        assert_bounding_box_matches(exposure_layer, exposure_filename)
+        exp_bbox_string = get_bounding_box_string(exposure_filename)
+        check_layer(exposure_layer)
+
+        # Now we know that exposure layer is good, lets upload some
+        # hazard layers and do the calculations
+        filename = 'Lembang_Earthquake_Scenario.asc'
+
+        # Save
+        hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
+        hazard_layer = save_to_geonode(hazard_filename,
+                                       user=self.user, overwrite=True)
+        hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                 hazard_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(hazard_layer, hazard_filename)
+        haz_bbox_string = get_bounding_box_string(hazard_filename)
+        check_layer(hazard_layer)
+
+        # Run calculation
+        c = Client()
+        rv = c.post('/api/v1/calculate/', data=dict(
+                hazard_server=INTERNAL_SERVER_URL,
+                hazard=hazard_name,
+                exposure_server=INTERNAL_SERVER_URL,
+                exposure=exposure_name,
+                #bbox=viewport_bbox_string,
+                bbox=exp_bbox_string,  # This one reproduced the
+                                       # crash for lembang
+                impact_function='EarthquakeFatalityFunction',
+                keywords='test,shakemap,usgs'))
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+        if 'errors' in data:
+            errors = data['errors']
+            if errors is not None:
+                raise Exception(errors)
+
+        assert 'hazard_layer' in data
+        assert 'exposure_layer' in data
+        assert 'run_duration' in data
+        assert 'run_date' in data
+        assert 'layer' in data
+
+        # Download result and check
+        layer_name = data['layer'].split('/')[-1]
+
+        result_layer = download(INTERNAL_SERVER_URL,
+                                layer_name,
+                                get_bounding_box_string(hazard_filename))
+        assert os.path.exists(result_layer.filename)
+
+
+    def test_poking_geonode(self):
+        """Various uploads and downloads to make sure GeoNode can cope with heavy usage
+        """
 
         # Simulate bounding box from application
         viewport_bbox_string = '104.3,-8.2,110.04,-5.17'
@@ -197,7 +257,8 @@ class Test_calculations(unittest.TestCase):
             data = json.loads(rv.content)
             if 'errors' in data:
                 errors = data['errors']
-                raise Exception(errors)
+                if errors is not None:
+                    raise Exception(errors)
 
             assert 'hazard_layer' in data
             assert 'exposure_layer' in data
