@@ -164,11 +164,6 @@ class Test_plugins(unittest.TestCase):
         msg = 'No keywords found in layer %s' % exposure_layer.name
         assert len(exposure_layer.keywords) > 0, msg
 
-        # FIXME(Ariel): A timeout here is needed for the layer to appear in
-        # the functions call, this should not be needed.
-        import time
-        time.sleep(5)
-
         c = Client()
         rv = c.post('/api/v1/functions/', data={})
 

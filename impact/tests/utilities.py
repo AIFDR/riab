@@ -104,17 +104,7 @@ def check_layer(layer):
     # Check that layer can be downloaded again using workspace:name
     layer_name = '%s:%s' % (layer.workspace, layer.name)
 
-    # If layer has just been uploaded, the metadata may not yet be ready.
-    # Hence a couple of tries
-    for i in range(4):
-        try:
-            metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
-        except:
-            # Delay for meta data to be ready
-            time.sleep(1)
-        else:
-            # OK
-            break
+    metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
 
     # Get bounding box and download
     bbox = metadata['bounding_box']
