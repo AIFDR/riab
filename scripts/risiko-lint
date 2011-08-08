@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# If this file is modified, you need to run
+# pip install -e riab
+# in a working directory outside the riab tree
+
 echo; echo ">>> Running pylint to check code quality. See pylint.output for details"
 cd $RIAB_HOME/riab/;pylint --disable=C0103 risiko impact > pylint.output 2> pylint.err
 echo; echo ">>> Reporting FIXME's and TODO's in source code"

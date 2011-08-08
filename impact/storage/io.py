@@ -246,24 +246,18 @@ def get_metadata(server_url, layer_name):
     #              function which will be entirely based on OWSLib
     #              Issue #95
 
-    # Get all metadata (allow for three tries in case it wasn't ready)
-    for _ in range(3):
+    # Get all metadata
 
-        themetadata = get_layers_metadata(server_url, version='1.0.0')
+    themetadata = get_layers_metadata(server_url, version='1.0.0')
 
-        # Look for specific layer
-        layer_metadata = None
-        for x in themetadata:
-            if x[0] == layer_name:
-                # We expect only one element in this list, if there is more
-                # than one, we will use the first one.
-                layer_metadata = x[1]
-                break
-
-        if layer_metadata is None:
-            time.sleep(1)  # Wait a second and try again
-        else:
-            break  # Found it, let's move on
+    # Look for specific layer
+    layer_metadata = None
+    for x in themetadata:
+        if x[0] == layer_name:
+            # We expect only one element in this list, if there is more
+            # than one, we will use the first one.
+            layer_metadata = x[1]
+            break
 
     msg = ('There is no metadata in server %s for layer '
            '%s. Available metadata is %s' % (server_url, layer_name,

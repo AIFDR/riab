@@ -16,7 +16,7 @@ sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
 echo ">>> Installing Ubuntu packages"
 # Python development prerequisites
-sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext ant
+sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext python-psycopg2 ant
 
 # Java development prerequisites
 sudo apt-get install -y ant
@@ -106,8 +106,6 @@ pip install temp/riab-libs.pybundle
 
 # FIXME: Need to add these to the bundle
 pip install django==1.3
-pip install fabric
-pip install psycopg2
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pushd .

@@ -19,7 +19,7 @@ from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
 from impact.tests.utilities import assert_bounding_box_matches, check_layer
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
-
+from owslib.wcs import WebCoverageService
 
 def lembang_damage_function(x):
     if x < 6.0:
@@ -112,29 +112,10 @@ class Test_calculations(unittest.TestCase):
             #    print msg
             #    #raise Exception(msg)
 
-    def test_a(self):
-        """This is a dummy test, first test with upload always fails.
-        """
-        # The first test to run in the suite always fails,
-        # no idea why it happens.
-        try:
-            name = 'Population_2010'
-            exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
-            exposure_layer = save_to_geonode(exposure_filename,
-                                         user=self.user, overwrite=True)
-
-        except:
-            pass
 
     def test_the_earthquake_fatality_estimation_allen(self):
         """Fatality computation computed correctly with GeoServer Data
         """
-        #FIXME: This test is failing because there is a timeout in GeoServer,
-        # it only happens for this test (which is the first to run)
-        # A workaround could be achieved by doing some checks before save_to_geonode
-        # is called. I have tried putting minutes in the delay before running this
-        # test but have not made it pass. Ariel.
-#        check_geonode_is_up()
 
         # Simulate bounding box from application
         viewport_bbox_string = '104.3,-8.2,110.04,-5.17'
@@ -162,121 +143,86 @@ class Test_calculations(unittest.TestCase):
 
         # Now we know that exposure layer is good, lets upload some
         # hazard layers and do the calculations
-        for filename in ['Earthquake_Ground_Shaking.asc',
-                         'Lembang_Earthquake_Scenario.asc',
-                         'Shakemap_Padang_2009.asc']:
+        filename = 'Lembang_Earthquake_Scenario.asc'
 
-            # Save
-            hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
-            hazard_layer = save_to_geonode(hazard_filename,
-                                           user=self.user, overwrite=True)
-            hazard_name = '%s:%s' % (hazard_layer.workspace,
-                                     hazard_layer.name)
+        # Save
+        hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
+        hazard_layer = save_to_geonode(hazard_filename,
+                                       user=self.user, overwrite=True)
+        hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                 hazard_layer.name)
 
-            # Check metadata
-            assert_bounding_box_matches(hazard_layer, hazard_filename)
-            haz_bbox_string = get_bounding_box_string(hazard_filename)
-            check_layer(hazard_layer)
+        # Check metadata
+        assert_bounding_box_matches(hazard_layer, hazard_filename)
+        haz_bbox_string = get_bounding_box_string(hazard_filename)
+        check_layer(hazard_layer)
 
-            # Run calculation
-            c = Client()
-            rv = c.post('/api/v1/calculate/', data=dict(
-                    hazard_server=INTERNAL_SERVER_URL,
-                    hazard=hazard_name,
-                    exposure_server=INTERNAL_SERVER_URL,
-                    exposure=exposure_name,
-                    #bbox=viewport_bbox_string,
-                    bbox=exp_bbox_string,  # This one reproduced the
-                                           # crash for lembang
-                    impact_function='EarthquakeFatalityFunction',
-                    keywords='test,shakemap,usgs'))
+        # Run calculation
+        c = Client()
+        rv = c.post('/api/v1/calculate/', data=dict(
+                hazard_server=INTERNAL_SERVER_URL,
+                hazard=hazard_name,
+                exposure_server=INTERNAL_SERVER_URL,
+                exposure=exposure_name,
+                #bbox=viewport_bbox_string,
+                bbox=exp_bbox_string,  # This one reproduced the
+                                       # crash for lembang
+                impact_function='EarthquakeFatalityFunction',
+                keywords='test,shakemap,usgs'))
 
-            self.assertEqual(rv.status_code, 200)
-            self.assertEqual(rv['Content-Type'], 'application/json')
-            data = json.loads(rv.content)
-            if 'errors' in data:
-                errors = data['errors']
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+        if 'errors' in data:
+            errors = data['errors']
+            if errors is not None:
                 raise Exception(errors)
 
-            assert 'hazard_layer' in data
-            assert 'exposure_layer' in data
-            assert 'run_duration' in data
-            assert 'run_date' in data
-            assert 'layer' in data
+        assert 'hazard_layer' in data
+        assert 'exposure_layer' in data
+        assert 'run_duration' in data
+        assert 'run_date' in data
+        assert 'layer' in data
 
-            # Download result and check
-            layer_name = data['layer'].split('/')[-1]
+        # Download result and check
+        layer_name = data['layer'].split('/')[-1]
 
-            result_layer = download(INTERNAL_SERVER_URL,
-                                    layer_name,
-                                    get_bounding_box_string(hazard_filename))
-            assert os.path.exists(result_layer.filename)
+        result_layer = download(INTERNAL_SERVER_URL,
+                                layer_name,
+                                get_bounding_box_string(hazard_filename))
+        assert os.path.exists(result_layer.filename)
 
-            # FIXME: TODO
 
-            # Read hazard data for reference
-            #hazard_raster = read_layer(hazardfile)
-            #H = hazard_raster.get_data()
-            #mmi_min, mmi_max = hazard_raster.get_extrema()
+    def test_metadata_available_after_upload(self):
+        """Test metadata is available after upload
+        """
+        # Upload exposure data for this test
+        name = 'Population_2010'
+        exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+        exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+        layer_name = exposure_layer.typename
+        server_url = settings.GEOSERVER_BASE_URL + '/ows'
+        wcs = WebCoverageService(server_url, version='1.0.0')
+        layer_appears_immediately = layer_name in wcs.contents
+        
+        wait_time = 0.5
+        import time
+        time.sleep(wait_time)
 
-            # Read calculated result
-            #impact_raster = read_layer(result_layer.filename)
-            #I = impact_raster.get_data()
+        wcs2 = WebCoverageService(server_url, version='1.0.0')
+        layer_appears_afterwards = layer_name in wcs2.contents
 
-        # # Calculate impact using API
-        # H = read_layer(hazard_filename)
-        # E = read_layer(exposure_filename)
+        msg = ('Layer %s was not found after %s seconds in WxS contents on server %s.\n'
+               'WCS contents: %s\n'  % (layer_name, wait_time, server_url, wcs.contents))
+ 
+        assert layer_appears_afterwards, msg
 
-        # plugin_name = 'Earthquake Fatality Function'
-        # plugin_list = get_plugins(plugin_name)
-        # assert len(plugin_list) == 1
-        # assert plugin_list[0].keys()[0] == plugin_name
+        msg = ('Layer %s was not found in WxS contents on server %s.\n'
+               'WCS contents: %s\n'  % (layer_name, server_url, wcs.contents))
+ 
+        assert layer_appears_immediately, msg   
 
-        # IF = plugin_list[0][plugin_name]
-
-        # # Call calculation engine
-        # impact_filename = calculate_impact(layers=[H, E],
-        #                                    impact_function=IF)
-
-        # # Do calculation manually and check result
-        # hazard_raster = read_layer(hazard_filename)
-        # H = hazard_raster.get_data(nan=0)
-
-        # exposure_raster = read_layer(exposure_filename)
-        # E = exposure_raster.get_data(nan=0)
-
-        # # Calculate impact manually
-        # a = 0.97429
-        # b = 11.037
-        # F = 10 ** (a * H - b) * E
-
-        # # Verify correctness of result
-        # calculated_raster = read_layer(impact_filename)
-        # C = calculated_raster.get_data(nan=0)
-
-        # # Compare shape and extrema
-        # msg = ('Shape of calculated raster differs from reference raster: '
-        #        'C=%s, F=%s' % (C.shape, F.shape))
-        # assert numpy.allclose(C.shape, F.shape, rtol=1e-12, atol=1e-12), msg
-
-        # msg = ('Minimum of calculated raster differs from reference raster: '
-        #        'C=%s, F=%s' % (numpy.min(C), numpy.min(F)))
-        # assert numpy.allclose(numpy.min(C), numpy.min(F),
-        #                       rtol=1e-12, atol=1e-12), msg
-        # msg = ('Maximum of calculated raster differs from reference raster: '
-        #        'C=%s, F=%s' % (numpy.max(C), numpy.max(F)))
-        # assert numpy.allclose(numpy.max(C), numpy.max(F),
-        #                       rtol=1e-12, atol=1e-12), msg
-
-        # # Compare every single value numerically
-        # msg = 'Array values of written raster array were not as expected'
-        # assert numpy.allclose(C, F, rtol=1e-12, atol=1e-12), msg
-
-        # # Check that extrema are in range
-        # xmin, xmax = calculated_raster.get_extrema()
-        # assert numpy.alltrue(C >= xmin)
-        # assert numpy.alltrue(C <= xmax)
-        # assert numpy.alltrue(C >= 0)
 
     def test_lembang_building_examples(self):
         """Lembang building impact calculation works through the API

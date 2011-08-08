@@ -236,23 +236,8 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=True):
 
         layer = save_file_to_geonode(incoming, title=title, user=user,
                                      overwrite=overwrite)
-
-        # Wait until layer metadata is OK
-        # FIXME (Ole): Please help me find out what the WxS url is!!!
-
-        #layer_name = '%s:%s' % (layer.workspace, layer.name)
-        #server_url = layer.get_absolute_url()
-        #
-        #for i in range(3):
-        #    try:
-        #        metadata = get_ows_metadata(server_url, layer_name)
-        #    except:
-        #        # Not ready, wait and try again
-        #        time.sleep(2)
-        #    else:
-        #        # Metadata ready
-        #        break
-
+        import time
+        time.sleep(1)
         return layer
     else:
         msg = 'Argument %s was neither a file or a directory' % incoming

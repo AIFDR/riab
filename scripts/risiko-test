@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# If this file is modified, you need to run
+# pip install -e riab
+# in a working directory outside the riab tree
+
 # Clean stale data in GeoServer, GeoNetwork and Django.
 risiko clean
 

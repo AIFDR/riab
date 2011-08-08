@@ -186,9 +186,7 @@ class Test_utilities(unittest.TestCase):
         uploaded3 = save_to_geonode(thefile, overwrite=False,
                                     user=self.user)
 
-        # FIXME (Ole): Renamed layer does not show up in WxS metadata
-        # Uncomment check_layer and see it fail. This is noted in issue #96
-        #check_layer(uploaded3)
+        check_layer(uploaded3)
         msg = ('Expected %s but got %s' % (uploaded1.name, uploaded2.name))
         assert uploaded1.name == uploaded2.name, msg
         msg = ('Expected a different name when uploading %s using '
