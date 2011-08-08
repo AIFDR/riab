@@ -8,6 +8,10 @@ risiko-upload filename
 where filename can be either a single file or a directory of files
 """
 
+# If this file is modified, you need to run
+# pip install -e riab
+# in a working directory outside the riab tree
+
 import sys
 import time
 from risiko.utilities import save_to_geonode
