@@ -236,7 +236,8 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=True):
 
         layer = save_file_to_geonode(incoming, title=title, user=user,
                                      overwrite=overwrite)
-
+        import time
+        time.sleep(1)
         return layer
     else:
         msg = 'Argument %s was neither a file or a directory' % incoming
