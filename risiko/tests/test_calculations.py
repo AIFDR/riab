@@ -47,7 +47,7 @@ class Test_calculations(unittest.TestCase):
         """
 
         # Upload a raster and a vector data set
-        for filename in ['lembang_mmi_hazmap.asc', 'lembang_schools.shp']:
+        for filename in ['population_padang_1.asc', 'lembang_schools.shp']:
             basename, ext = os.path.splitext(filename)
 
             filename = os.path.join(TESTDATA, filename)
@@ -62,9 +62,9 @@ class Test_calculations(unittest.TestCase):
 
             # Name checking
             layer_name = layer.name
-
-            msg = 'Expected layername %s but got %s' % (basename, layer_name)
-            assert layer_name == basename, msg
+            expected_name = basename.lower()
+            msg = 'Expected layername %s but got %s' % (expected_name, layer_name)
+            assert layer_name == expected_name, msg
 
             workspace = layer.workspace
 
@@ -463,8 +463,7 @@ class Test_calculations(unittest.TestCase):
         """
 
         for filename in ['lembang_mmi_hazmap.asc',
-                         'test_grid.asc',
-                         'shakemap_padang_20090930.asc']:
+                         'test_grid.asc']:
 
             # Upload file to GeoNode
             f = os.path.join(TESTDATA, filename)
