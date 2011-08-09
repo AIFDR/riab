@@ -106,7 +106,7 @@ class Test_calculations(unittest.TestCase):
             hazard_name = '%s:%s' % (hazard_layer.workspace,
                                         hazard_layer.name)
 
-            exposurefile = os.path.join(TESTDATA, 'Padang_WSG84.shp')
+            exposurefile = os.path.join(TESTDATA, 'Padang_WGS84.shp')
             exposure_layer = save_to_geonode(exposurefile, user=self.user)
             exposure_name = '%s:%s' % (exposure_layer.workspace,
                                           exposure_layer.name)
