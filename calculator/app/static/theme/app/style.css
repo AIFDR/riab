@@ -1,0 +1,17 @@
+/* setting font fixes combobox rendering issues in IE. See
+ * http://extjs.com/forum/showthread.php?t=72505 */
+body {
+    font-family:helvetica,tahoma,verdana,sans-serif;
+}
+
+/* don't wrap lines on any tooltips */
+.x-tip {
+    white-space: nowrap;
+}
+
+/* application css goes here */
+
+.olControlAttribution {
+    font-size: 9px;
+    bottom: 2px;
+}

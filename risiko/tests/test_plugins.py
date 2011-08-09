@@ -101,7 +101,7 @@ class Test_plugins(unittest.TestCase):
 
         # Upload a raster and a vector data set
         hazard_filename = os.path.join(TESTDATA,
-                                       'lembang_mmi_hazmap.asc')
+                                       'shakemap_padang_20090930.asc')
         hazard_layer = save_to_geonode(hazard_filename)
         check_layer(hazard_layer)
 
@@ -148,7 +148,7 @@ class Test_plugins(unittest.TestCase):
         """
         # Upload a raster and a vector data set
         hazard_filename = os.path.join(TESTDATA,
-                                       'lembang_mmi_hazmap.asc')
+                                       'Earthquake_Ground_Shaking.asc')
         hazard_layer = save_to_geonode(hazard_filename,
                                        user=self.user,
                                        overwrite=True)
