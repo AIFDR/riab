@@ -1,6 +1,7 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
+from impact.storage.utilities import unique_filename
 from impact.storage.io import get_bounding_box
 from impact.storage.io import download, get_ows_metadata
 from django.conf import settings
@@ -11,9 +12,9 @@ import numpy
 import urllib2
 from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode, RisikoException
+from risiko.utilities import check_layer, assert_bounding_box_matches
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
-from impact.tests.utilities import assert_bounding_box_matches
-from impact.tests.utilities import check_layer, get_web_page
+from impact.tests.utilities import get_web_page
 
 
 class Test_utilities(unittest.TestCase):
@@ -62,7 +63,7 @@ class Test_utilities(unittest.TestCase):
 
             # Uncomment to reproduce issue #40
             # for layer tsunami_max_inundation_depth_bb_utm
-            #check_layer(layer)
+            #check_layer(layer, full=True)
 
         for layer_name in expected_layers:
             msg = ('The following layer should have been uploaded '
@@ -117,7 +118,7 @@ class Test_utilities(unittest.TestCase):
         """
         thefile = os.path.join(TESTDATA, 'lembang_schools.shp')
         layer = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(layer)
+        check_layer(layer, full=True)
 
         assert isinstance(layer.geographic_bounding_box, basestring)
 
@@ -157,21 +158,21 @@ class Test_utilities(unittest.TestCase):
         """
         thefile = os.path.join(TESTDATA, 'Population_2010_clip.tif')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(uploaded)
+        check_layer(uploaded, full=True)
 
     def test_asc(self):
         """ASCII file can be uploaded
         """
         thefile = os.path.join(TESTDATA, 'test_grid.asc')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(uploaded)
+        check_layer(uploaded, full=True)
 
     def test_another_asc(self):
         """Real world ASCII file can be uploaded
         """
         thefile = os.path.join(TESTDATA, 'lembang_mmi_hazmap.asc')
         layer = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(layer)
+        check_layer(layer, full=True)
 
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
@@ -179,16 +180,18 @@ class Test_utilities(unittest.TestCase):
         thefile = os.path.join(TESTDATA, 'test_grid.asc')
         uploaded1 = save_to_geonode(thefile, overwrite=True,
                                     user=self.user)
-        check_layer(uploaded1)
+        check_layer(uploaded1, full=True)
         uploaded2 = save_to_geonode(thefile, overwrite=True,
                                     user=self.user)
-        check_layer(uploaded2)
+        check_layer(uploaded2, full=True)
         uploaded3 = save_to_geonode(thefile, overwrite=False,
                                     user=self.user)
 
-        check_layer(uploaded3)
+        check_layer(uploaded3, full=True)
+
         msg = ('Expected %s but got %s' % (uploaded1.name, uploaded2.name))
         assert uploaded1.name == uploaded2.name, msg
+
         msg = ('Expected a different name when uploading %s using '
                'overwrite=False but got %s' % (thefile, uploaded3.name))
         assert uploaded1.name != uploaded3.name, msg
@@ -240,7 +243,7 @@ class Test_utilities(unittest.TestCase):
 
         thefile = os.path.join(TESTDATA, 'lembang_mmi_hazmap.asc')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(uploaded)
+        check_layer(uploaded, full=True)
 
         name = uploaded.name
         uuid = uploaded.uuid
@@ -298,6 +301,112 @@ class Test_utilities(unittest.TestCase):
                 msg = 'Could not find keyword "%s" in %s' % (keyword,
                                                              uploaded_keywords)
                 assert keyword in uploaded_keywords, msg
+
+
+    def test_metadata_twice(self):
+        """Layer metadata can be correctly uploaded multiple times
+        """
+
+        # This test reproduces ticket #99 by creating new data,
+        # uploading twice and verifying metadata
+
+        # Base test data
+        filenames = ['Lembang_Earthquake_Scenario.asc',
+                     'lembang_schools.shp']
+
+        for org_filename in filenames:
+            org_basename, ext = os.path.splitext(os.path.join(TESTDATA,
+                                                              org_filename))
+
+            # Copy data to temporary unique name
+            basename = unique_filename(dir='/tmp')
+
+            cmd = '/bin/cp %s.keywords %s.keywords' % (org_basename, basename)
+            os.system(cmd)
+
+            cmd = '/bin/cp %s.prj %s.prj' % (org_basename, basename)
+            os.system(cmd)
+
+            if ext == '.asc':
+                layer_type = 'raster'
+                filename = '%s.asc' % basename
+                cmd = '/bin/cp %s.asc %s' % (org_basename, filename)
+                os.system(cmd)
+            elif ext == '.shp':
+                layer_type = 'vector'
+                filename = '%s.shp' % basename
+                for e in ['shp', 'shx', 'sbx', 'sbn', 'dbf']:
+                    cmd = '/bin/cp %s.%s %s.%s' % (org_basename, e,
+                                                   basename, e)
+                    os.system(cmd)
+            else:
+                msg = ('Unknown layer extension in %s. '
+                       'Expected .shp or .asc' % filename)
+                raise Exception(msg)
+
+            # Repeat multiple times
+            for i in range(3):
+                # Upload
+                layer = save_to_geonode(filename, user=self.user, overwrite=True)
+
+                # Get metadata
+                layer_name = '%s:%s' % (layer.workspace, layer.name)
+                metadata = get_ows_metadata(INTERNAL_SERVER_URL,
+                                            layer_name)
+
+                # Verify
+                assert 'id' in metadata
+                assert 'title' in metadata
+                assert 'layer_type' in metadata
+                assert 'keywords' in metadata
+                assert 'bounding_box' in metadata
+                assert len(metadata['bounding_box']) == 4
+
+                # Check integrity between Django layer and file
+                assert_bounding_box_matches(layer, filename)
+
+                # Check integrity between file and OWS metadata
+                ref_bbox = get_bounding_box(filename)
+                msg = ('Bounding box from OWS did not match bounding box '
+                       'from file. They are\n'
+                       'From file %s: %s\n'
+                       'From OWS: %s' % (filename,
+                                         ref_bbox,
+                                         metadata['bounding_box']))
+
+                assert numpy.allclose(metadata['bounding_box'],
+                                      ref_bbox), msg
+                assert layer.name == metadata['title']
+                assert layer_name == metadata['id']
+                assert layer_type == metadata['layer_type']
+
+                # Check keywords
+                if layer_type == 'raster':
+                    category = 'hazard'
+                    subcategory = 'earthquake'
+                elif layer_type == 'vector':
+                    category = 'exposure'
+                    subcategory = 'building'
+                else:
+                    msg = 'Unknown layer type %s' % layer_type
+                    raise Exception(msg)
+
+                keywords = metadata['keywords']
+
+                msg = 'Did not find key "category" in keywords: %s' % keywords
+                assert 'category' in keywords, msg
+
+                msg = 'Did not find key "subcategory" in keywords: %s' % keywords
+                assert 'subcategory' in keywords, msg
+
+                msg = ('Category keyword %s did not match expected %s'
+                       % (keywords['category'], category))
+                assert category == keywords['category'], msg
+
+                msg = ('Subcategory keyword %s did not match expected %s'
+                       % (keywords['subcategory'], category))
+                assert subcategory == keywords['subcategory'], msg
+
 
     def test_metadata(self):
         """Metadata is retrieved correctly for both raster and vector data
@@ -388,6 +497,7 @@ class Test_utilities(unittest.TestCase):
             msg = ('Subcategory keyword %s did not match expected %s'
                    % (keywords['subcategory'], category))
             assert subcategory == keywords['subcategory'], msg
+
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

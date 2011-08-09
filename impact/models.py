@@ -23,8 +23,12 @@ class Calculation(models.Model):
     stacktrace = models.TextField(null=True, blank=True)
     layer = models.CharField(max_length=255, null=True, blank=True)
 
+    @property
+    def url(self):
+        return self.layer.url
+
     def get_absolute_url(self):
-        return self.layer
+        return self.layer.get_absolute_url()
 
     def __unicode__(self):
         if self.success:

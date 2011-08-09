@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils import simplejson as json
 
 from geonode.maps.utils import get_valid_user, check_geonode_is_up
-from risiko.utilities import save_to_geonode
+from risiko.utilities import save_to_geonode, check_layer, assert_bounding_box_matches
 
 from impact.views import calculate
 from impact.storage.io import download
@@ -17,7 +17,6 @@ from impact.storage.io import get_bounding_box
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
-from impact.tests.utilities import assert_bounding_box_matches, check_layer
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 from owslib.wcs import WebCoverageService
 
@@ -139,7 +138,7 @@ class Test_calculations(unittest.TestCase):
         # Check metadata
         assert_bounding_box_matches(exposure_layer, exposure_filename)
         exp_bbox_string = get_bounding_box_string(exposure_filename)
-        check_layer(exposure_layer)
+        check_layer(exposure_layer, full=True)
 
         # Now we know that exposure layer is good, lets upload some
         # hazard layers and do the calculations
@@ -155,7 +154,7 @@ class Test_calculations(unittest.TestCase):
         # Check metadata
         assert_bounding_box_matches(hazard_layer, hazard_filename)
         haz_bbox_string = get_bounding_box_string(hazard_filename)
-        check_layer(hazard_layer)
+        check_layer(hazard_layer, full=True)
 
         # Run calculation
         c = Client()
@@ -205,7 +204,7 @@ class Test_calculations(unittest.TestCase):
         server_url = settings.GEOSERVER_BASE_URL + '/ows'
         wcs = WebCoverageService(server_url, version='1.0.0')
         layer_appears_immediately = layer_name in wcs.contents
-        
+
         wait_time = 0.5
         import time
         time.sleep(wait_time)
@@ -215,13 +214,13 @@ class Test_calculations(unittest.TestCase):
 
         msg = ('Layer %s was not found after %s seconds in WxS contents on server %s.\n'
                'WCS contents: %s\n'  % (layer_name, wait_time, server_url, wcs.contents))
- 
+
         assert layer_appears_afterwards, msg
 
         msg = ('Layer %s was not found in WxS contents on server %s.\n'
                'WCS contents: %s\n'  % (layer_name, server_url, wcs.contents))
- 
-        assert layer_appears_immediately, msg   
+
+        assert layer_appears_immediately, msg
 
 
     def test_lembang_building_examples(self):

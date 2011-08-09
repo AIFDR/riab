@@ -15,8 +15,7 @@ from impact.storage.utilities import get_layers_metadata
 
 from impact.models import Calculation, Workspace
 from impact.tests.utilities import TESTDATA
-from impact.tests.utilities import check_layer
-
+from risiko.utilities import check_layer
 from risiko.utilities import save_to_geonode
 
 from django.test.client import Client
@@ -103,12 +102,12 @@ class Test_plugins(unittest.TestCase):
         hazard_filename = os.path.join(TESTDATA,
                                        'shakemap_padang_20090930.asc')
         hazard_layer = save_to_geonode(hazard_filename)
-        check_layer(hazard_layer)
+        check_layer(hazard_layer, full=True)
 
         exposure_filename = os.path.join(TESTDATA,
                                          'lembang_schools.shp')
         exposure_layer = save_to_geonode(exposure_filename)
-        check_layer(exposure_layer)
+        check_layer(exposure_layer, full=True)
 
         # Test
         plugin_list = get_plugins()
@@ -152,7 +151,7 @@ class Test_plugins(unittest.TestCase):
         hazard_layer = save_to_geonode(hazard_filename,
                                        user=self.user,
                                        overwrite=True)
-        check_layer(hazard_layer)
+        check_layer(hazard_layer, full=True)
 
         msg = 'No keywords found in layer %s' % hazard_layer.name
         assert len(hazard_layer.keywords) > 0, msg
@@ -160,7 +159,7 @@ class Test_plugins(unittest.TestCase):
         exposure_filename = os.path.join(TESTDATA,
                                          'lembang_schools.shp')
         exposure_layer = save_to_geonode(exposure_filename)
-        check_layer(exposure_layer)
+        check_layer(exposure_layer, full=True)
         msg = 'No keywords found in layer %s' % exposure_layer.name
         assert len(exposure_layer.keywords) > 0, msg
 

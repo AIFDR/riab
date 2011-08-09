@@ -10,6 +10,7 @@ from django.utils import simplejson as json
 
 from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode
+from risiko.utilities import assert_bounding_box_matches, check_layer
 
 from impact.views import calculate
 from impact.storage.io import download
@@ -17,7 +18,6 @@ from impact.storage.io import get_bounding_box
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
-from impact.tests.utilities import assert_bounding_box_matches, check_layer
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 
 

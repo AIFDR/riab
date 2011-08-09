@@ -1,8 +1,12 @@
 from geonode.maps.utils import file_upload, GeoNodeException
 from impact.storage.utilities import LAYER_TYPES, unique_filename
-from impact.storage.io import read_layer, get_ows_metadata
+from impact.storage.io import read_layer, download, get_bounding_box, get_ows_metadata
+import numpy
 import time
 import os
+
+import settings
+INTERNAL_SERVER_URL = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
 import logging
 logger = logging.getLogger('risiko')
@@ -51,6 +55,95 @@ def run(cmd, stdout=None, stderr=None):
             os.remove(stderr)
 
 
+def assert_bounding_box_matches(layer, filename):
+    """Verify that GeoNode layer has the same bounding box as filename
+    """
+
+    # Check integrity
+    assert hasattr(layer, 'geographic_bounding_box')
+    assert isinstance(layer.geographic_bounding_box, basestring)
+
+    # Exctract bounding bounding box from layer handle
+    s = 'POLYGON(('
+    i = layer.geographic_bounding_box.find(s) + len(s)
+    assert i > len(s)
+
+    j = layer.geographic_bounding_box.find('))')
+    assert j > i
+
+    bbox_string = str(layer.geographic_bounding_box[i:j])
+    A = numpy.array([[float(x[0]), float(x[1])] for x in
+                     (p.split() for p in bbox_string.split(','))])
+    south = min(A[:, 1])
+    north = max(A[:, 1])
+    west = min(A[:, 0])
+    east = max(A[:, 0])
+    bbox = [west, south, east, north]
+
+    # Check correctness of bounding box against reference
+    ref_bbox = get_bounding_box(filename)
+
+    msg = ('Bounding box from layer handle "%s" was not as expected.\n'
+           'Got %s, expected %s' % (layer.name, bbox, ref_bbox))
+    assert numpy.allclose(bbox, ref_bbox, rtol=1.0e-6, atol=1.0e-8), msg
+
+
+def check_layer(layer, full=False):
+    """Verify if an object is a valid Layer.
+
+    If check fails an exception is raised.
+
+    Input
+        layer: Layer object
+        full: Optional flag controlling whether layer is to be downloaded
+              as part of the check.
+    """
+
+    from geonode.maps.models import Layer
+
+    msg = ('Was expecting layer object, got %s' % (type(layer)))
+    assert type(layer) is Layer, msg
+    msg = ('The layer does not have a valid name: %s' % layer.name)
+    assert len(layer.name) > 0, msg
+    msg = ('The layer does not have a valid workspace: %s' % layer.workspace)
+    assert len(layer.workspace) > 0, msg
+
+    # Get layer metadata
+    layer_name = '%s:%s' % (layer.workspace, layer.name)
+    try:
+        metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
+    except:
+        # Convert any exception to AssertionError for use in retry loop in
+        # save_file_to_geonode.
+        raise AssertionError
+
+    assert 'id' in metadata
+    assert 'title' in metadata
+    assert 'layer_type' in metadata
+    assert 'keywords' in metadata
+    assert 'bounding_box' in metadata
+
+    # Get bounding box and download
+    bbox = metadata['bounding_box']
+    assert len(bbox) == 4
+
+    if full:
+        # Check that layer can be downloaded again
+        downloaded_layer = download(INTERNAL_SERVER_URL, layer_name, bbox)
+        assert os.path.exists(downloaded_layer.filename)
+
+        # Check integrity between Django layer and file
+        assert_bounding_box_matches(layer, downloaded_layer.filename)
+
+        # Read layer and verify
+        L = read_layer(downloaded_layer.filename)
+
+        # Could do more here
+        #print dir(L)
+        #print L.keywords  #FIXME(Ole): I don't think keywords are downloaded!
+        #print metadata['keywords']
+
+
 def save_file_to_geonode(filename, user=None, title=None,
                          overwrite=True):
     """Save a single layer file to local Risiko GeoNode
@@ -88,6 +181,7 @@ def save_file_to_geonode(filename, user=None, title=None,
     if os.path.exists(keyword_file):
         f = open(keyword_file, 'r')
         for line in f.readlines():
+
             # Ignore blank lines
             raw_keyword = line.strip()
             if raw_keyword == '':
@@ -146,8 +240,21 @@ def save_file_to_geonode(filename, user=None, title=None,
         # Unknown problem. Re-raise
         raise
     else:
-        # Return layer object
-        return layer
+        # Check and return layer object
+        ok = False
+        for i in range(4):
+            try:
+                check_layer(layer)
+            except AssertionError:
+                time.sleep(0.3)
+            else:
+                ok = True
+                break
+        if ok:
+            return layer
+        else:
+            msg = 'Could not confirm that layer %s was uploaded correctly' % layer
+            raise Exception(msg)
     finally:
         # Clean up generated tif files in either case
         if extension == '.asc':
@@ -236,8 +343,6 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=True):
 
         layer = save_file_to_geonode(incoming, title=title, user=user,
                                      overwrite=overwrite)
-        import time
-        time.sleep(1)
         return layer
     else:
         msg = 'Argument %s was neither a file or a directory' % incoming
