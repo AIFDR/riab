@@ -270,34 +270,47 @@ class Test_utilities(unittest.TestCase):
     def test_keywords(self):
         """Check that keywords are read from the .keywords file
         """
-        thefile = os.path.join(TESTDATA, 'Lembang_Earthquake_Scenario.asc')
-        uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
 
-        keywords = uploaded.keywords
-        msg = 'No keywords found in layer %s' % uploaded.name
-        assert len(keywords) > 0, msg
 
-        keywords_file = thefile.replace('.asc', '.keywords')
-        f = open(keywords_file, 'r')
-        keywords_list = []
-        for line in f.readlines():
-            keywords_list.append(line.strip())
-        f.close()
+        for filename in ['Earthquake_Ground_Shaking.asc',
+                         'Lembang_Earthquake_Scenario.asc',
+                         'Padang_WGS84.shp']:
 
-        for keyword in keywords_list:
-            msg = 'Could not find keyword "%s" in %s' % (keyword,
-                                                         keywords_list)
-            assert keyword in keywords_list, msg
+            _, ext = os.path.splitext(filename)
+            thefile = os.path.join(TESTDATA, filename)
+            uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
+
+            # Get uploaded keywords from uploaded layer object
+            uploaded_keywords = uploaded.keywords
+            msg = 'No keywords found in layer %s' % uploaded.name
+            assert len(uploaded_keywords) > 0, msg
+
+            # Get reference keywords from file
+            keywords_file = thefile.replace(ext, '.keywords')
+            f = open(keywords_file, 'r')
+            keywords_list = []
+            for line in f.readlines():
+                keywords_list.append(line.strip().replace(' ',''))
+            f.close()
+
+            # Verify that every keyword from file has been uploaded
+            for keyword in keywords_list:
+                msg = 'Could not find keyword "%s" in %s' % (keyword,
+                                                             uploaded_keywords)
+                assert keyword in uploaded_keywords, msg
 
     def test_metadata(self):
         """Metadata is retrieved correctly for both raster and vector data
         """
 
         # Upload test data
+        filenames = ['Lembang_Earthquake_Scenario.asc',
+                     'Earthquake_Ground_Shaking.asc',
+                     'lembang_schools.shp',
+                     'Padang_WGS84.shp']
         layers = []
         paths = []
-        for filename in ['Lembang_Earthquake_Scenario.asc',
-                         'lembang_schools.shp']:
+        for filename in filenames:
             basename, ext = os.path.splitext(filename)
 
             path = os.path.join(TESTDATA, filename)
@@ -310,6 +323,16 @@ class Test_utilities(unittest.TestCase):
         # Check integrity
         for i, layer in enumerate(layers):
 
+            if filenames[i].endswith('.shp'):
+                layer_type = 'vector'
+            elif filenames[i].endswith('.asc'):
+                layer_type = 'raster'
+            else:
+                msg = ('Unknown layer extension in %s. '
+                       'Expected .shp or .asc' % filenames[i])
+                raise Exception(msg)
+
+
             layer_name = '%s:%s' % (layer.workspace, layer.name)
             metadata = get_ows_metadata(INTERNAL_SERVER_URL,
                                         layer_name)
@@ -317,6 +340,7 @@ class Test_utilities(unittest.TestCase):
             assert 'id' in metadata
             assert 'title' in metadata
             assert 'layer_type' in metadata
+            assert 'keywords' in metadata
             assert 'bounding_box' in metadata
             assert len(metadata['bounding_box']) == 4
 
@@ -334,10 +358,32 @@ class Test_utilities(unittest.TestCase):
 
             assert numpy.allclose(metadata['bounding_box'],
                                   ref_bbox), msg
-
             assert layer.name == metadata['title']
-            assert '%s:%s' % (layer.workspace, layer.name) == metadata['id']
+            assert layer_name == metadata['id']
+            assert layer_type == metadata['layer_type']
 
+            # Check keywords
+            if layer_type == 'raster':
+                category = 'hazard'
+                subcategory = 'earthquake'
+            elif layer_type == 'vector':
+                category = 'exposure'
+                subcategory = 'building'
+            else:
+                msg = 'Unknown layer type %s' % layer_type
+                raise Exception(msg)
+
+            keywords = metadata['keywords']
+            assert 'category' in keywords
+            assert 'subcategory' in keywords
+
+            msg = ('Category keyword %s did not match expected %s'
+                   % (keywords['category'], category))
+            assert category == keywords['category'], msg
+
+            msg = ('Subcategory keyword %s did not match expected %s'
+                   % (keywords['subcategory'], category))
+            assert subcategory == keywords['subcategory'], msg
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

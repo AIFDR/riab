@@ -310,6 +310,24 @@ def get_ows_metadata(server_url, layer_name):
     metadata['title'] = layer.title
     metadata['id'] = layer.id
 
+    # Extract keywords
+    if not hasattr(layer, 'keywords'):
+        msg = 'No keywords in %s. Submit patch to OWSLib maintainers' % layer
+        # FIXME (Ole): Uncomment when OWSLib patch has been submitted
+        #Raise Exception(msg)
+    else:
+        keyword_dict = {}
+        for keyword in layer.keywords:
+            for keyword_string in keyword.split(','):
+
+                if ':' in keyword_string:
+                    key, value = keyword_string.strip().split(':')
+                    keyword_dict[key] = value
+                else:
+                    keyword_dict[keyword_string] = None
+
+                metadata['keywords'] = keyword_dict
+
     return metadata
 
 
