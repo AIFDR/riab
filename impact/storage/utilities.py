@@ -35,7 +35,7 @@ TYPE_MAP = {type(''): ogr.OFTString,
 
 # Miscellaneous auxiliary functions
 def unique_filename(**kwargs):
-    """Create new filename guarenteed not to exist previoously
+    """Create new filename guaranteed not to exist previoously
 
     Use mkstemp to create the file, then remove it and return the name
 

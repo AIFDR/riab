@@ -1,6 +1,7 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
+from impact.storage.utilities import unique_filename
 from impact.storage.io import get_bounding_box
 from impact.storage.io import download, get_ows_metadata
 from django.conf import settings
@@ -298,6 +299,112 @@ class Test_utilities(unittest.TestCase):
                 msg = 'Could not find keyword "%s" in %s' % (keyword,
                                                              uploaded_keywords)
                 assert keyword in uploaded_keywords, msg
+
+
+    def test_metadata_twice(self):
+        """Layer metadata can be correctly uploaded multiple times
+        """
+
+        # This test reproduces ticket #99 by creating new data,
+        # uploading twice and verifying metadata
+
+        # Base test data
+        filenames = ['Lembang_Earthquake_Scenario.asc',
+                     'lembang_schools.shp']
+
+        for org_filename in filenames:
+            org_basename, ext = os.path.splitext(os.path.join(TESTDATA,
+                                                              org_filename))
+
+            # Copy data to temporary unique name
+            basename = unique_filename(dir='/tmp')
+
+            cmd = '/bin/cp %s.keywords %s.keywords' % (org_basename, basename)
+            os.system(cmd)
+
+            cmd = '/bin/cp %s.prj %s.prj' % (org_basename, basename)
+            os.system(cmd)
+
+            if ext == '.asc':
+                layer_type = 'raster'
+                filename = '%s.asc' % basename
+                cmd = '/bin/cp %s.asc %s' % (org_basename, filename)
+                os.system(cmd)
+            elif ext == '.shp':
+                layer_type = 'vector'
+                filename = '%s.shp' % basename
+                for e in ['shp', 'shx', 'sbx', 'sbn', 'dbf']:
+                    cmd = '/bin/cp %s.%s %s.%s' % (org_basename, e,
+                                                   basename, e)
+                    os.system(cmd)
+            else:
+                msg = ('Unknown layer extension in %s. '
+                       'Expected .shp or .asc' % filename)
+                raise Exception(msg)
+
+            # Repeat multiple times
+            for i in range(3):
+                # Upload
+                layer = save_to_geonode(filename, user=self.user, overwrite=True)
+
+                # Get metadata
+                layer_name = '%s:%s' % (layer.workspace, layer.name)
+                metadata = get_ows_metadata(INTERNAL_SERVER_URL,
+                                            layer_name)
+
+                # Verify
+                assert 'id' in metadata
+                assert 'title' in metadata
+                assert 'layer_type' in metadata
+                assert 'keywords' in metadata
+                assert 'bounding_box' in metadata
+                assert len(metadata['bounding_box']) == 4
+
+                # Check integrity between Django layer and file
+                assert_bounding_box_matches(layer, filename)
+
+                # Check integrity between file and OWS metadata
+                ref_bbox = get_bounding_box(filename)
+                msg = ('Bounding box from OWS did not match bounding box '
+                       'from file. They are\n'
+                       'From file %s: %s\n'
+                       'From OWS: %s' % (filename,
+                                         ref_bbox,
+                                         metadata['bounding_box']))
+
+                assert numpy.allclose(metadata['bounding_box'],
+                                      ref_bbox), msg
+                assert layer.name == metadata['title']
+                assert layer_name == metadata['id']
+                assert layer_type == metadata['layer_type']
+
+                # Check keywords
+                if layer_type == 'raster':
+                    category = 'hazard'
+                    subcategory = 'earthquake'
+                elif layer_type == 'vector':
+                    category = 'exposure'
+                    subcategory = 'building'
+                else:
+                    msg = 'Unknown layer type %s' % layer_type
+                    raise Exception(msg)
+
+                keywords = metadata['keywords']
+
+                msg = 'Did not find key "category" in keywords: %s' % keywords
+                assert 'category' in keywords, msg
+
+                msg = 'Did not find key "subcategory" in keywords: %s' % keywords
+                assert 'subcategory' in keywords, msg
+
+                msg = ('Category keyword %s did not match expected %s'
+                       % (keywords['category'], category))
+                assert category == keywords['category'], msg
+
+                msg = ('Subcategory keyword %s did not match expected %s'
+                       % (keywords['subcategory'], category))
+                assert subcategory == keywords['subcategory'], msg
+
 
     def test_metadata(self):
         """Metadata is retrieved correctly for both raster and vector data
