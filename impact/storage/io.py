@@ -318,15 +318,18 @@ def get_ows_metadata(server_url, layer_name):
     else:
         keyword_dict = {}
         for keyword in layer.keywords:
-            for keyword_string in keyword.split(','):
+            if keyword is not None:
+                # FIXME (Ole): Why would this be None sometimes?
 
-                if ':' in keyword_string:
-                    key, value = keyword_string.strip().split(':')
-                    keyword_dict[key] = value
-                else:
-                    keyword_dict[keyword_string] = None
+                for keyword_string in keyword.split(','):
 
-                metadata['keywords'] = keyword_dict
+                    if ':' in keyword_string:
+                        key, value = keyword_string.strip().split(':')
+                        keyword_dict[key] = value
+                    else:
+                        keyword_dict[keyword_string] = None
+
+        metadata['keywords'] = keyword_dict
 
     return metadata
 
