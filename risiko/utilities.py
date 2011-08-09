@@ -245,7 +245,7 @@ def save_file_to_geonode(filename, user=None, title=None,
         for i in range(4):
             try:
                 check_layer(layer)
-            except AssertionError:
+            except AssertionError, e:
                 time.sleep(0.3)
             else:
                 ok = True
@@ -253,7 +253,8 @@ def save_file_to_geonode(filename, user=None, title=None,
         if ok:
             return layer
         else:
-            msg = 'Could not confirm that layer %s was uploaded correctly' % layer
+            msg = ('Could not confirm that layer %s was uploaded '
+                   'correctly: %s' % (layer, e))
             raise Exception(msg)
     finally:
         # Clean up generated tif files in either case

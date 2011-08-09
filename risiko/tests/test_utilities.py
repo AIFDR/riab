@@ -346,6 +346,7 @@ class Test_utilities(unittest.TestCase):
 
             # Repeat multiple times
             for i in range(3):
+
                 # Upload
                 layer = save_to_geonode(filename, user=self.user, overwrite=True)
 
