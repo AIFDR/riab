@@ -297,6 +297,13 @@ LOGGING = {
             'propagate': False,
             'level':'INFO',
         },
+        'gsconfig': {
+            'handlers':['null'],
+            'propagate': False,
+            'level':'INFO',
+        },
+
+
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',

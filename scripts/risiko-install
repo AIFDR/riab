@@ -60,7 +60,7 @@ cd temp
 wget -c "$RISIKO_DATASOURCE/tomcat.zip"
 wget -c "$RISIKO_DATASOURCE/geoserver-geonode-dev.war"
 wget -c "$RISIKO_DATASOURCE/geonetwork.war"
-wget -c "$RISIKO_DATASOURCE/riab-libs.pybundle"
+wget -c "$RISIKO_DATASOURCE/geonode-libs.pybundle"
 wget -c "$RISIKO_DATASOURCE/geonode-client.zip"
 wget -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
 wget -c "$RISIKO_DATASOURCE/risiko_demo_data.tgz"
@@ -103,10 +103,7 @@ tar xvfz temp/risiko_demo_data.tgz
 mkdir -p geonode/src/GeoNodePy/geonode/maps/static
 unzip -o temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode
 mkdir -p logs
-pip install temp/riab-libs.pybundle
-
-# FIXME: Need to add these to the bundle
-pip install django==1.3
+pip install temp/geonode-libs.pybundle
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pushd .
