@@ -11,19 +11,14 @@ risiko clean
 risiko start
 
 # Show code quality
-risiko-lint
 
-# Give GeoServer time to boot
-sleep 10
-
-# Run unit tests
 if [ $# -eq 0 ];then
-    args="risiko impact --with-id"
+    echo
 else
-    args=$@
+    risiko-lint
 fi
 
-risiko test $args --noinput
+risiko test risiko impact --noinput $@
 
 # Stop GeoNode
 risiko stop
