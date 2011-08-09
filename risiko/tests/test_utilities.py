@@ -12,9 +12,9 @@ import numpy
 import urllib2
 from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode, RisikoException
+from risiko.utilities import check_layer, assert_bounding_box_matches
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
-from impact.tests.utilities import assert_bounding_box_matches
-from impact.tests.utilities import check_layer, get_web_page
+from impact.tests.utilities import get_web_page
 
 
 class Test_utilities(unittest.TestCase):
@@ -63,7 +63,7 @@ class Test_utilities(unittest.TestCase):
 
             # Uncomment to reproduce issue #40
             # for layer tsunami_max_inundation_depth_bb_utm
-            #check_layer(layer)
+            #check_layer(layer, full=True)
 
         for layer_name in expected_layers:
             msg = ('The following layer should have been uploaded '
@@ -118,7 +118,7 @@ class Test_utilities(unittest.TestCase):
         """
         thefile = os.path.join(TESTDATA, 'lembang_schools.shp')
         layer = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(layer)
+        check_layer(layer, full=True)
 
         assert isinstance(layer.geographic_bounding_box, basestring)
 
@@ -158,21 +158,21 @@ class Test_utilities(unittest.TestCase):
         """
         thefile = os.path.join(TESTDATA, 'Population_2010_clip.tif')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(uploaded)
+        check_layer(uploaded, full=True)
 
     def test_asc(self):
         """ASCII file can be uploaded
         """
         thefile = os.path.join(TESTDATA, 'test_grid.asc')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(uploaded)
+        check_layer(uploaded, full=True)
 
     def test_another_asc(self):
         """Real world ASCII file can be uploaded
         """
         thefile = os.path.join(TESTDATA, 'lembang_mmi_hazmap.asc')
         layer = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(layer)
+        check_layer(layer, full=True)
 
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
@@ -180,16 +180,18 @@ class Test_utilities(unittest.TestCase):
         thefile = os.path.join(TESTDATA, 'test_grid.asc')
         uploaded1 = save_to_geonode(thefile, overwrite=True,
                                     user=self.user)
-        check_layer(uploaded1)
+        check_layer(uploaded1, full=True)
         uploaded2 = save_to_geonode(thefile, overwrite=True,
                                     user=self.user)
-        check_layer(uploaded2)
+        check_layer(uploaded2, full=True)
         uploaded3 = save_to_geonode(thefile, overwrite=False,
                                     user=self.user)
 
-        check_layer(uploaded3)
+        check_layer(uploaded3, full=True)
+
         msg = ('Expected %s but got %s' % (uploaded1.name, uploaded2.name))
         assert uploaded1.name == uploaded2.name, msg
+
         msg = ('Expected a different name when uploading %s using '
                'overwrite=False but got %s' % (thefile, uploaded3.name))
         assert uploaded1.name != uploaded3.name, msg
@@ -241,7 +243,7 @@ class Test_utilities(unittest.TestCase):
 
         thefile = os.path.join(TESTDATA, 'lembang_mmi_hazmap.asc')
         uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
-        check_layer(uploaded)
+        check_layer(uploaded, full=True)
 
         name = uploaded.name
         uuid = uploaded.uuid
@@ -495,6 +497,7 @@ class Test_utilities(unittest.TestCase):
             msg = ('Subcategory keyword %s did not match expected %s'
                    % (keywords['subcategory'], category))
             assert subcategory == keywords['subcategory'], msg
+
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
