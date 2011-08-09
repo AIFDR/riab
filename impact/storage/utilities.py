@@ -83,7 +83,7 @@ def get_layers_metadata(url, version='1.0.0'):
 
     # FIXME (Ole): This should be superseded by new get_metadata
     #              function which will be entirely based on OWSLib
-    #              Issue #95
+    #              Issue #115
 
     # Make sure the server is reachable before continuing
     msg = ('Server %s is not reachable' % url)
@@ -107,7 +107,7 @@ class MetadataReader(object):
     """
 
     # FIXME (Ole): Why are we not using WebCoverageService and
-    #              WebFeatureService from OWSLib?
+    #              WebFeatureService from OWSLib? See issue #115
     def __init__(self, server_url, service_type, version):
         """Initialize"""
         self.WFS_NAMESPACE = '{http://www.opengis.net/wfs}'
