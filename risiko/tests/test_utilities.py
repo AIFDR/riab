@@ -374,8 +374,12 @@ class Test_utilities(unittest.TestCase):
                 raise Exception(msg)
 
             keywords = metadata['keywords']
-            assert 'category' in keywords
-            assert 'subcategory' in keywords
+
+            msg = 'Did not find key "category" in keywords: %s' % keywords
+            assert 'category' in keywords, msg
+
+            msg = 'Did not find key "subcategory" in keywords: %s' % keywords
+            assert 'subcategory' in keywords, msg
 
             msg = ('Category keyword %s did not match expected %s'
                    % (keywords['category'], category))
@@ -387,6 +391,6 @@ class Test_utilities(unittest.TestCase):
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
-    suite = unittest.makeSuite(Test_utilities, 'test')
+    suite = unittest.makeSuite(Test_utilities, 'test_meta')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
