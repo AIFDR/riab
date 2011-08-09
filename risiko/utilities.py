@@ -101,6 +101,8 @@ def check_layer(layer, full=False):
 
     from geonode.maps.models import Layer
 
+    msg = ('Was expecting layer object, got None')
+    assert layer is not None, msg
     msg = ('Was expecting layer object, got %s' % (type(layer)))
     assert type(layer) is Layer, msg
     msg = ('The layer does not have a valid name: %s' % layer.name)
