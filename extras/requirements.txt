@@ -1,4 +1,5 @@
 ### Git and svn repos
+-e git+https://github.com/ericflo/django-avatar.git#egg=avatar
 -e git+git://github.com/cmheisel/nose-xcover.git#egg=nosexcover
 -e svn+http://svn.gispython.org/svn/gispy/OWSLib/trunk/@1717#egg=OWSLib
 -e git+git://github.com/dwins/gsconfig.py.git#egg=gsconfig.py
