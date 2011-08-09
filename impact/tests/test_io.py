@@ -887,8 +887,7 @@ class Test_IO(unittest.TestCase):
 
         res = bbox_intersection(b1, b2, b3)
 
-        # Empty
-        print bbox_intersection(bbox2, [50, 2, 53, 4])
+        # Empty intersection should return None
         assert bbox_intersection(bbox2, [50, 2, 53, 4]) is None
 
         # Deal with invalid boxes
