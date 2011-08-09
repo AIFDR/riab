@@ -112,12 +112,13 @@ def check_layer(layer, full=False):
 
     # Get layer metadata
     layer_name = '%s:%s' % (layer.workspace, layer.name)
-    try:
-        metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
-    except:
-        # Convert any exception to AssertionError for use in retry loop in
-        # save_file_to_geonode.
-        raise AssertionError
+    metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
+    #try:
+    #    metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
+    #except:
+    #    # Convert any exception to AssertionError for use in retry loop in
+    #    # save_file_to_geonode.
+    #    raise AssertionError
 
     assert 'id' in metadata
     assert 'title' in metadata
@@ -242,22 +243,24 @@ def save_file_to_geonode(filename, user=None, title=None,
         # Unknown problem. Re-raise
         raise
     else:
+        time.sleep(1)
+        return layer
         # Check and return layer object
-        ok = False
-        for i in range(4):
-            try:
-                check_layer(layer)
-            except AssertionError, e:
-                time.sleep(0.3)
-            else:
-                ok = True
-                break
-        if ok:
-            return layer
-        else:
-            msg = ('Could not confirm that layer %s was uploaded '
-                   'correctly: %s' % (layer, e))
-            raise Exception(msg)
+        # ok = False
+        # for i in range(4):
+        #     try:
+        #         check_layer(layer)
+        #     except AssertionError, e:
+        #         time.sleep(0.3)
+        #     else:
+        #         ok = True
+        #         break
+        # if ok:
+        #     return layer
+        # else:
+        #     msg = ('Could not confirm that layer %s was uploaded '
+        #            'correctly: %s' % (layer, e))
+        #    raise Exception(msg)
     finally:
         # Clean up generated tif files in either case
         if extension == '.asc':
