@@ -25,7 +25,7 @@ class PluginMount(type):
             cls.plugins.append(cls)
 
 
-DEFAULT_TARGET_VALUE = 'Percent_da'
+DEFAULT_TARGET_VALUE = 'DAMAGE'
 
 class ColorMapEntry:
     """Representation of color map entry in SLD file
@@ -75,14 +75,14 @@ class FunctionProvider:
         if data.is_raster:
             colormapentries = [
                 ColorMapEntry(color='#ffffff', opacity='0', quantity='-9999.0'),
-                ColorMapEntry(color='#38A800', opacity='0', quantity='5.0'),
-                ColorMapEntry(color='#38A800', quantity='5.5'),
-                ColorMapEntry(color='#79C900', quantity='6'),
-                ColorMapEntry(color='#CEED00', quantity='6.5'),
-                ColorMapEntry(color='#FFCC00', quantity='7'),
-                ColorMapEntry(color='#FF6600', quantity='7.5'),
-                ColorMapEntry(color='#FF0000', quantity='8'),
-                ColorMapEntry(color='#7A0000', quantity='10')]
+                ColorMapEntry(color='#38A800', opacity='0', quantity='0.1'),
+                ColorMapEntry(color='#38A800', quantity='0.2'),
+                ColorMapEntry(color='#79C900', quantity='0.5'),
+                ColorMapEntry(color='#CEED00', quantity='1'),
+                ColorMapEntry(color='#FFCC00', quantity='2'),
+                ColorMapEntry(color='#FF6600', quantity='3'),
+                ColorMapEntry(color='#FF0000', quantity='5'),
+                ColorMapEntry(color='#7A0000', quantity='9')]
 
             params['colormapentries'] = colormapentries
             return render_to_string('impact/styles/raster.sld', params)
