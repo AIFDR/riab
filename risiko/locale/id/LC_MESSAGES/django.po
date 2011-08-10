@@ -2,20 +2,20 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-09 17:08-0500\n"
+"POT-Creation-Date: 2011-08-10 03:20-0500\n"
 "PO-Revision-Date: 2011-06-09 17:08\n"
 "Last-Translator:   <>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: \n"
 "Plural-Forms: nplurals=1; plural=0\n"
 "X-Translated-Using: django-rosetta 0.6.0\n"
 
@@ -43,11 +43,11 @@ msgstr "Register"
 msgid "for extra features"
 msgstr "untuk fitur tambahan"
 
-#: templates/page_layout.html:34 templates/risiko/index.html:113
+#: templates/page_layout.html:34 templates/risiko/index.html:116
 msgid "Calculator"
 msgstr "Calkulator"
 
-#: templates/page_layout.html:35 templates/risiko/index.html:114
+#: templates/page_layout.html:35 templates/risiko/index.html:117
 msgid "Index"
 msgstr "Indeks"
 
@@ -55,15 +55,15 @@ msgstr "Indeks"
 msgid "Layers"
 msgstr "Lapisan"
 
-#: templates/page_layout.html:37 templates/risiko/index.html:116
+#: templates/page_layout.html:37 templates/risiko/index.html:119
 msgid "Maps"
 msgstr "Maps"
 
-#: templates/page_layout.html:39 templates/risiko/index.html:118
+#: templates/page_layout.html:39 templates/risiko/index.html:121
 msgid "Profile"
 msgstr "Profil"
 
-#: templates/page_layout.html:41 templates/risiko/index.html:120
+#: templates/page_layout.html:41 templates/risiko/index.html:123
 msgid "Admin"
 msgstr "Admin"
 
@@ -95,7 +95,7 @@ msgstr "Risiko administrasi"
 msgid "Risiko Calculator"
 msgstr "Risiko Kalkulator"
 
-#: templates/risiko/index.html:115
+#: templates/risiko/index.html:118
 msgid "Data"
 msgstr "Data"
 

@@ -1,6 +1,7 @@
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
+from django.utils.translation import ugettext as _
 import scipy.stats
 
 
@@ -43,10 +44,14 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         # Extract relevant numerical data
         coordinates = E.get_geometry()
         shaking = H.get_data()
+        N = len(shaking)
 
         # Calculate building damage
+        count50 = 0
+        count25 = 0
+        count10 = 0
         building_damage = []
-        for i in range(len(shaking)):
+        for i in range(N):
             mmi = float(shaking[i].values()[0])
 
             building_class = E.get_data('TestBLDGCl', i)
@@ -61,10 +66,33 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
             building_damage.append({'Percent_damage': percent_damage,
                                     'MMI': mmi,
                                     'Building_Class': building_class})
+            if 10 <= percent_damage < 25:
+                count10 += 1
+
+            if 25 <= percent_damage < 50:
+                count25 += 1
+
+            if 50 <= percent_damage:
+                count50 += 1
+
+        caption = ('<table border="0" width="350px">'
+                   '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
+                    '   <tr></tr>'
+                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
+                    '</table>' % (_('Buildings'),  _('Total'),
+                                  _('All'), N,
+                                  _('Low damage'), count10,
+                                  _('Medium damage'), count25,
+                                  _('High damage'), count50))
+
 
         # Create vector layer and return
         V = Vector(data=building_damage,
                    projection=E.get_projection(),
                    geometry=coordinates,
-                   name='Estimated pct damage')
+                   name='Estimated pct damage',
+                   keywords={'caption': caption})
         return V
