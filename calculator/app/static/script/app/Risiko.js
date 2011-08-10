@@ -173,6 +173,11 @@ var Risiko = Ext.extend(gxp.Viewer, {
             }, {
                 ptype: "gxp_navigationhistory",
                 actionTarget: "map.tbar"
+            }, {
+                actions: ["-"]
+            }, {
+                ptype: "gxp_wmsgetfeatureinfo",
+                actionTarget: "map.tbar"
             }],
 
             // map items
