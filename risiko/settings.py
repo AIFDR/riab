@@ -302,8 +302,11 @@ LOGGING = {
             'propagate': False,
             'level': 'INFO',
         },
-
-
+        'owslib': {
+            'handlers': ['null'],
+            'propagate': False,
+            'level': 'INFO',
+        },
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
