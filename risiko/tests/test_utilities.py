@@ -16,6 +16,14 @@ from risiko.utilities import check_layer, assert_bounding_box_matches
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page
 
+#---Jeff
+from owslib.wcs import WebCoverageService
+import tempfile
+
+# FIXME: Can go when OWSLib patch comes on line
+def ns(tag):
+    return '{http://www.opengis.net/wcs}'+tag
+#---
 
 class Test_utilities(unittest.TestCase):
     """Tests riab_geonode utilities
@@ -99,6 +107,160 @@ class Test_utilities(unittest.TestCase):
         assert len(metadata) > 0, msg
 
         # FIXME(Ole): Check the keywords are recognized too
+
+    def test_raster_wcs_reprojection(self):
+        """UTM Raster can be reprojected by Geoserver and downloaded correctly
+        """
+        # FIXME (Ole): Still need to do this with assertions
+
+        projected_tif_file = os.path.join(TESTDATA,
+                                          'tsunami_max_inundation_depth_BB_utm.asc')
+
+        #projected_tif = file_upload(projected_tif_file, overwrite=True)
+        projected_tif = save_to_geonode(projected_tif_file, user=self.user, overwrite=True)
+        check_layer(projected_tif)
+
+        wcs_url = settings.GEOSERVER_BASE_URL + 'wcs'
+        wcs = WebCoverageService(wcs_url, version='1.0.0')
+        #logger.info(wcs.contents)
+        metadata = wcs.contents[projected_tif.typename]
+        #logger.info(metadata.grid)
+        bboxWGS84 = metadata.boundingBoxWGS84
+        #logger.info(bboxWGS84)
+        resx = metadata.grid.offsetvectors[0][0]
+        resy = abs(float(metadata.grid.offsetvectors[1][1]))
+        #logger.info("resx=%s resy=%s" % (str(resx), str(resy)))
+        formats = metadata.supportedFormats
+        #logger.info(formats)
+        supportedCRS = metadata.supportedCRS
+        #logger.info(supportedCRS)
+        width = metadata.grid.highlimits[0]
+        height = metadata.grid.highlimits[1]
+        #logger.info("width=%s height=%s" % (width, height))
+        gs_cat = Layer.objects.gs_catalog
+        cvg_store = gs_cat.get_store(projected_tif.name)
+        cvg_layer = gs_cat.get_resource(projected_tif.name, store=cvg_store)
+        #logger.info(cvg_layer.request_srs_list)
+        #logger.info(cvg_layer.response_srs_list)
+
+        # FIXME: A patch was submitted OWSlib 20110808
+        # Can delete the following once patch appears
+        # In the future get bboxNative and nativeSRS from get_ows_metadata
+        descCov=metadata._service.getDescribeCoverage(projected_tif.typename)
+        envelope = descCov.find(ns('CoverageOffering/')+ns('domainSet/')+ns('spatialDomain/')+'{http://www.opengis.net/gml}Envelope')
+        nativeSrs = envelope.attrib['srsName']
+        #logger.info(nativeSrs)
+        gmlpositions=envelope.findall('{http://www.opengis.net/gml}pos')
+        lc=gmlpositions[0].text
+        uc=gmlpositions[1].text
+        bboxNative = (
+            float(lc.split()[0]),float(lc.split()[1]),
+            float(uc.split()[0]), float(uc.split()[1]),
+        )
+        #logger.info(bboxNative)
+        # ---- END PATCH
+
+        # Make a temp dir to store the saved files
+        tempdir = '/tmp/%s' % str(time.time())
+        os.mkdir(tempdir)
+
+        # Check that the layer can be downloaded in its native projection
+        cvg = wcs.getCoverage(identifier=projected_tif.typename,
+                format='GeoTIFF',
+                crs=nativeSrs,
+                bbox=bboxNative,
+                resx=resx,
+                resy=resy)
+
+        t = tempfile.NamedTemporaryFile(delete=False,
+                                        dir=tempdir)
+
+        out = open(t.name, 'wb')
+        out.write(cvg.read())
+        out.close()
+        #logger.info("GeoTIFF in %s = %s" % (nativeSrs, t.name))
+        # TODO: Verify that the file is a valid GeoTiff and that it is
+        # _exactly_ the same size and bbox of the original
+
+
+        # Test that the layer can be downloaded in ARCGRID format
+        cvg_layer.supported_formats = cvg_layer.supported_formats + ['ARCGRID']
+        gs_cat.save(cvg_layer)
+        cvg = wcs.getCoverage(identifier=projected_tif.typename,
+                format='ARCGRID',
+                crs=nativeSrs,
+                bbox=bboxNative,
+                resx=resx,
+                resy=resy)
+
+        t = tempfile.NamedTemporaryFile(delete=False,
+                                    dir=tempdir)
+
+        out = open(t.name, 'wb')
+        out.write(cvg.read())
+        out.close()
+        #logger.info("ARCGRID in %s = %s" % (nativeSrs, t.name))
+        # Check that the downloaded file is a valid ARCGRID file and that it
+        # the required projection information (FIXME: There is no prj file here. GS bug)
+
+        # Check that the layer can downloaded in WGS84
+        cvg_layer.request_srs_list = cvg_layer.request_srs_list + ['EPSG:4326']
+        cvg_layer.response_srs_list = cvg_layer.response_srs_list + ['EPSG:4326']
+        gs_cat.save(cvg_layer)
+        #logger.info(cvg_layer.request_srs_list)
+        #logger.info(cvg_layer.response_srs_list)
+        cvg = wcs.getCoverage(identifier=projected_tif.typename,
+                format='GeoTIFF',
+                crs="EPSG:4326",
+                bbox=bboxWGS84,
+                #resx=0.000202220898116, # Should NOT be hard-coded! How do we convert
+                #resy=0.000202220898116) # See comments in riab issue #103
+                width=width,
+                height=height)
+
+        t = tempfile.NamedTemporaryFile(delete=False,
+                                    dir=tempdir)
+
+        out = open(t.name, 'wb')
+        out.write(cvg.read())
+        out.close()
+        #logger.info("GeoTIFF in %s = %s" % ("EPSG:4326", t.name))
+        # TODO: Verify that the file is a valid GeoTiff and that it is
+        # the correct size and bbox based on the resx and resy or width
+        # and height specified
+
+        # Check that we can download the layer in another projection
+        cvg_layer.request_srs_list = cvg_layer.request_srs_list + ['EPSG:32356']
+        cvg_layer.response_srs_list = cvg_layer.request_srs_list + ['EPSG:32356']
+        cvg_layer.request_srs_list = cvg_layer.request_srs_list + ['EPSG:900913']
+        cvg_layer.response_srs_list = cvg_layer.request_srs_list + ['EPSG:900913']
+        gs_cat.save(cvg_layer)
+        #logger.info(cvg_layer.request_srs_list)
+        #logger.info(cvg_layer.response_srs_list)
+        # How do we get the bboxes for the newly assigned request/response SRS??
+
+        cvg = wcs.getCoverage(identifier=projected_tif.typename,
+                format='GeoTIFF',
+                crs="EPSG:32356", # Should not be hardcoded for a test, or should use 900913 (need bbox)
+                bbox=bboxNative,
+                #resx=0.000202220898116, # Should NOT be hard-coded! How do we convert
+                #resy=0.000202220898116) # See comments in riab issue #103
+                width=width,
+                height=height)
+
+        t = tempfile.NamedTemporaryFile(delete=False,
+                                        dir=tempdir)
+
+        out = open(t.name, 'wb')
+        out.write(cvg.read())
+        out.close()
+        #logger.info("GeoTIFF in %s = %s" % ("EPSG:32356", t.name))
+        # TODO: Verify that the file is a valid GeoTiff and that it is
+        # the correct size and bbox based on the resx and resy or width
+        # and height specified
+
+        # Clean up and completely delete the layer
+        #projected_tif.delete()
 
     def test_extension_not_implemented(self):
         """RisikoException is returned for not compatible extensions
@@ -186,7 +348,6 @@ class Test_utilities(unittest.TestCase):
         check_layer(uploaded2, full=True)
         uploaded3 = save_to_geonode(thefile, overwrite=False,
                                     user=self.user)
-
         check_layer(uploaded3, full=True)
 
         msg = ('Expected %s but got %s' % (uploaded1.name, uploaded2.name))
@@ -502,6 +663,6 @@ class Test_utilities(unittest.TestCase):
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
-    suite = unittest.makeSuite(Test_utilities, 'test')
+    suite = unittest.makeSuite(Test_utilities, 'test_raster')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
