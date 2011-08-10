@@ -56,6 +56,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
 
             building_class = E.get_data('TestBLDGCl', i)
             #building_id = E.get_data('UNIQUE_FIE', i)
+            use_major = E.get_data('USE_MAJOR', i)
 
             building_type = str(int(building_class))
             damage_params = damage_curves[building_type]
@@ -63,8 +64,9 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                                         mmi,
                                         damage_params['beta'],
                                         scale=damage_params['median']) * 100
-            building_damage.append({'Percent_damage': percent_damage,
+            building_damage.append({'DAMAGE': percent_damage,
                                     'MMI': mmi,
+                                    'USE_MAJOR': use_major,
                                     'Building_Class': building_class})
             if 10 <= percent_damage < 25:
                 count10 += 1
