@@ -8,3 +8,4 @@ risiko/development.db
 impact/tests/small_test_raster.tif
 extras/.vagrant
 calculator/build/
+impact/static/calculator
