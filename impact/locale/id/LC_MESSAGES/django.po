@@ -20,24 +20,24 @@ msgstr ""
 
 #: plugins/earthquake/padang_building_impact_model.py:85
 msgid "Buildings"
-msgstr ""
+msgstr "Bangunan"
 
 #: plugins/earthquake/padang_building_impact_model.py:85
 msgid "Total"
-msgstr ""
+msgstr "Jumlah"
 
 #: plugins/earthquake/padang_building_impact_model.py:86
 msgid "All"
-msgstr ""
+msgstr "Semua"
 
 #: plugins/earthquake/padang_building_impact_model.py:87
 msgid "Low damage"
-msgstr ""
+msgstr "Kerusakan rendah"
 
 #: plugins/earthquake/padang_building_impact_model.py:88
 msgid "Medium damage"
-msgstr ""
+msgstr "Kerusakan sedang"
 
 #: plugins/earthquake/padang_building_impact_model.py:89
 msgid "High damage"
-msgstr ""
+msgstr "Kerusakan tinggi"
