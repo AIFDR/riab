@@ -14,3 +14,4 @@ risiko.egg-info/
 risiko/development.db
 extras/.vagrant
 calculator/build/
+impact/static/calculator
