@@ -63,6 +63,13 @@ class FunctionProvider:
 
     @staticmethod
     def generate_style(data, target_value):
+        """Make a default style for all plugins
+
+        """
+
+        # The paramers are substituted into the sld according the the
+        # Django template methodology:
+        #https://docs.djangoproject.com/en/dev/ref/templates/builtins/?from=olddocs
         params = {'name': data.get_name()}
 
         if data.is_raster:
