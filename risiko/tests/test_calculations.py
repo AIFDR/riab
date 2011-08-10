@@ -9,7 +9,8 @@ from django.conf import settings
 from django.utils import simplejson as json
 
 from geonode.maps.utils import get_valid_user, check_geonode_is_up
-from risiko.utilities import save_to_geonode, check_layer, assert_bounding_box_matches
+from risiko.utilities import save_to_geonode, check_layer
+from risiko.utilities import assert_bounding_box_matches
 
 from impact.views import calculate
 from impact.storage.io import download
@@ -19,6 +20,7 @@ from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 from owslib.wcs import WebCoverageService
+
 
 def lembang_damage_function(x):
     if x < 6.0:
@@ -62,7 +64,8 @@ class Test_calculations(unittest.TestCase):
             # Name checking
             layer_name = layer.name
             expected_name = basename.lower()
-            msg = 'Expected layername %s but got %s' % (expected_name, layer_name)
+            msg = 'Expected layername %s but got %s' % (expected_name,
+                                                        layer_name)
             assert layer_name == expected_name, msg
 
             workspace = layer.workspace
@@ -110,7 +113,6 @@ class Test_calculations(unittest.TestCase):
             #    msg = 'Write exception handling of invalid workspace name'
             #    print msg
             #    #raise Exception(msg)
-
 
     def test_the_earthquake_fatality_estimation_allen(self):
         """Fatality computation computed correctly with GeoServer Data
@@ -191,7 +193,6 @@ class Test_calculations(unittest.TestCase):
                                 get_bounding_box_string(hazard_filename))
         assert os.path.exists(result_layer.filename)
 
-
     def test_metadata_available_after_upload(self):
         """Test metadata is available after upload
         """
@@ -212,16 +213,19 @@ class Test_calculations(unittest.TestCase):
         wcs2 = WebCoverageService(server_url, version='1.0.0')
         layer_appears_afterwards = layer_name in wcs2.contents
 
-        msg = ('Layer %s was not found after %s seconds in WxS contents on server %s.\n'
-               'WCS contents: %s\n'  % (layer_name, wait_time, server_url, wcs.contents))
+        msg = ('Layer %s was not found after %s seconds in WxS contents '
+               'on server %s.\n'
+               'WCS contents: %s\n' % (layer_name,
+                                       wait_time,
+                                       server_url,
+                                       wcs.contents))
 
         assert layer_appears_afterwards, msg
 
         msg = ('Layer %s was not found in WxS contents on server %s.\n'
-               'WCS contents: %s\n'  % (layer_name, server_url, wcs.contents))
+               'WCS contents: %s\n' % (layer_name, server_url, wcs.contents))
 
         assert layer_appears_immediately, msg
-
 
     def test_lembang_building_examples(self):
         """Lembang building impact calculation works through the API

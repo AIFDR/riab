@@ -273,13 +273,13 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'django.utils.log.NullHandler',
         },
-        'console':{
+        'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'file':{
-            'level':'DEBUG',
+        'file': {
+            'level': 'DEBUG',
             'class' : 'logging.handlers.RotatingFileHandler',
             'formatter': 'verbose',
             'filename': 'risiko.log',
@@ -293,14 +293,14 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers':['null'],
+            'handlers': ['null'],
             'propagate': False,
-            'level':'INFO',
+            'level': 'INFO',
         },
         'gsconfig': {
-            'handlers':['null'],
+            'handlers': ['null'],
             'propagate': False,
-            'level':'INFO',
+            'level': 'INFO',
         },
 
 

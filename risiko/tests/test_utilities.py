@@ -20,10 +20,12 @@ from impact.tests.utilities import get_web_page
 from owslib.wcs import WebCoverageService
 import tempfile
 
+
 # FIXME: Can go when OWSLib patch comes on line
 def ns(tag):
-    return '{http://www.opengis.net/wcs}'+tag
+    return '{http://www.opengis.net/wcs}' + tag
 #---
+
 
 class Test_utilities(unittest.TestCase):
     """Tests riab_geonode utilities
@@ -113,11 +115,13 @@ class Test_utilities(unittest.TestCase):
         """
         # FIXME (Ole): Still need to do this with assertions
 
-        projected_tif_file = os.path.join(TESTDATA,
-                                          'tsunami_max_inundation_depth_BB_utm.asc')
+        filename = 'tsunami_max_inundation_depth_BB_utm.asc'
+        projected_tif_file = os.path.join(TESTDATA, filename)
 
         #projected_tif = file_upload(projected_tif_file, overwrite=True)
-        projected_tif = save_to_geonode(projected_tif_file, user=self.user, overwrite=True)
+        projected_tif = save_to_geonode(projected_tif_file,
+                                        user=self.user,
+                                        overwrite=True)
         check_layer(projected_tif)
 
         wcs_url = settings.GEOSERVER_BASE_URL + 'wcs'
@@ -146,17 +150,17 @@ class Test_utilities(unittest.TestCase):
         # FIXME: A patch was submitted OWSlib 20110808
         # Can delete the following once patch appears
         # In the future get bboxNative and nativeSRS from get_ows_metadata
-        descCov=metadata._service.getDescribeCoverage(projected_tif.typename)
-        envelope = descCov.find(ns('CoverageOffering/')+ns('domainSet/')+ns('spatialDomain/')+'{http://www.opengis.net/gml}Envelope')
+        descCov = metadata._service.getDescribeCoverage(projected_tif.typename)
+        envelope = (descCov.find(ns('CoverageOffering/') + ns('domainSet/') +
+                                 ns('spatialDomain/') +
+                                 '{http://www.opengis.net/gml}Envelope'))
         nativeSrs = envelope.attrib['srsName']
         #logger.info(nativeSrs)
-        gmlpositions=envelope.findall('{http://www.opengis.net/gml}pos')
-        lc=gmlpositions[0].text
-        uc=gmlpositions[1].text
-        bboxNative = (
-            float(lc.split()[0]),float(lc.split()[1]),
-            float(uc.split()[0]), float(uc.split()[1]),
-        )
+        gmlpositions = envelope.findall('{http://www.opengis.net/gml}pos')
+        lc = gmlpositions[0].text
+        uc = gmlpositions[1].text
+        bboxNative = (float(lc.split()[0]), float(lc.split()[1]),
+                      float(uc.split()[0]), float(uc.split()[1]))
         #logger.info(bboxNative)
         # ---- END PATCH
 
@@ -182,7 +186,6 @@ class Test_utilities(unittest.TestCase):
         # TODO: Verify that the file is a valid GeoTiff and that it is
         # _exactly_ the same size and bbox of the original
 
-
         # Test that the layer can be downloaded in ARCGRID format
         cvg_layer.supported_formats = cvg_layer.supported_formats + ['ARCGRID']
         gs_cat.save(cvg_layer)
@@ -201,19 +204,21 @@ class Test_utilities(unittest.TestCase):
         out.close()
         #logger.info("ARCGRID in %s = %s" % (nativeSrs, t.name))
         # Check that the downloaded file is a valid ARCGRID file and that it
-        # the required projection information (FIXME: There is no prj file here. GS bug)
+        # the required projection information
+        # (FIXME: There is no prj file here. GS bug)
 
         # Check that the layer can downloaded in WGS84
-        cvg_layer.request_srs_list = cvg_layer.request_srs_list + ['EPSG:4326']
-        cvg_layer.response_srs_list = cvg_layer.response_srs_list + ['EPSG:4326']
+        cvg_layer.request_srs_list += ['EPSG:4326']
+        cvg_layer.response_srs_list += ['EPSG:4326']
         gs_cat.save(cvg_layer)
         #logger.info(cvg_layer.request_srs_list)
         #logger.info(cvg_layer.response_srs_list)
         cvg = wcs.getCoverage(identifier=projected_tif.typename,
                 format='GeoTIFF',
-                crs="EPSG:4326",
+                crs='EPSG:4326',
                 bbox=bboxWGS84,
-                #resx=0.000202220898116, # Should NOT be hard-coded! How do we convert
+                #resx=0.000202220898116, # Should NOT be hard-coded!
+                                         # How do we convert
                 #resy=0.000202220898116) # See comments in riab issue #103
                 width=width,
                 height=height)
@@ -230,20 +235,23 @@ class Test_utilities(unittest.TestCase):
         # and height specified
 
         # Check that we can download the layer in another projection
-        cvg_layer.request_srs_list = cvg_layer.request_srs_list + ['EPSG:32356']
-        cvg_layer.response_srs_list = cvg_layer.request_srs_list + ['EPSG:32356']
-        cvg_layer.request_srs_list = cvg_layer.request_srs_list + ['EPSG:900913']
-        cvg_layer.response_srs_list = cvg_layer.request_srs_list + ['EPSG:900913']
+        cvg_layer.request_srs_list += ['EPSG:32356']
+        cvg_layer.response_srs_list += ['EPSG:32356']
+        cvg_layer.request_srs_list += ['EPSG:900913']
+        cvg_layer.response_srs_list += ['EPSG:900913']
         gs_cat.save(cvg_layer)
         #logger.info(cvg_layer.request_srs_list)
         #logger.info(cvg_layer.response_srs_list)
-        # How do we get the bboxes for the newly assigned request/response SRS??
+        # How do we get the bboxes for the newly assigned
+        # request/response SRS??
 
         cvg = wcs.getCoverage(identifier=projected_tif.typename,
                 format='GeoTIFF',
-                crs="EPSG:32356", # Should not be hardcoded for a test, or should use 900913 (need bbox)
+                crs='EPSG:32356',  # Should not be hardcoded for a test,
+                                   # or should use 900913 (need bbox)
                 bbox=bboxNative,
-                #resx=0.000202220898116, # Should NOT be hard-coded! How do we convert
+                #resx=0.000202220898116, # Should NOT be hard-coded!
+                                         # How do we convert
                 #resy=0.000202220898116) # See comments in riab issue #103
                 width=width,
                 height=height)
@@ -435,7 +443,6 @@ class Test_utilities(unittest.TestCase):
         """Check that keywords are read from the .keywords file
         """
 
-
         for filename in ['Earthquake_Ground_Shaking.asc',
                          'Lembang_Earthquake_Scenario.asc',
                          'Padang_WGS84.shp']:
@@ -454,7 +461,7 @@ class Test_utilities(unittest.TestCase):
             f = open(keywords_file, 'r')
             keywords_list = []
             for line in f.readlines():
-                keywords_list.append(line.strip().replace(' ',''))
+                keywords_list.append(line.strip().replace(' ', ''))
             f.close()
 
             # Verify that every keyword from file has been uploaded
@@ -462,7 +469,6 @@ class Test_utilities(unittest.TestCase):
                 msg = 'Could not find keyword "%s" in %s' % (keyword,
                                                              uploaded_keywords)
                 assert keyword in uploaded_keywords, msg
-
 
     def test_metadata_twice(self):
         """Layer metadata can be correctly uploaded multiple times
@@ -509,7 +515,8 @@ class Test_utilities(unittest.TestCase):
             for i in range(3):
 
                 # Upload
-                layer = save_to_geonode(filename, user=self.user, overwrite=True)
+                layer = save_to_geonode(filename, user=self.user,
+                                        overwrite=True)
 
                 # Get metadata
                 layer_name = '%s:%s' % (layer.workspace, layer.name)
@@ -558,7 +565,8 @@ class Test_utilities(unittest.TestCase):
                 msg = 'Did not find key "category" in keywords: %s' % keywords
                 assert 'category' in keywords, msg
 
-                msg = 'Did not find key "subcategory" in keywords: %s' % keywords
+                msg = ('Did not find key "subcategory" in keywords: %s'
+                       % keywords)
                 assert 'subcategory' in keywords, msg
 
                 msg = ('Category keyword %s did not match expected %s'
@@ -568,7 +576,6 @@ class Test_utilities(unittest.TestCase):
                 msg = ('Subcategory keyword %s did not match expected %s'
                        % (keywords['subcategory'], category))
                 assert subcategory == keywords['subcategory'], msg
-
 
     def test_metadata(self):
         """Metadata is retrieved correctly for both raster and vector data
@@ -602,7 +609,6 @@ class Test_utilities(unittest.TestCase):
                 msg = ('Unknown layer extension in %s. '
                        'Expected .shp or .asc' % filenames[i])
                 raise Exception(msg)
-
 
             layer_name = '%s:%s' % (layer.workspace, layer.name)
             metadata = get_ows_metadata(INTERNAL_SERVER_URL,
@@ -663,6 +669,6 @@ class Test_utilities(unittest.TestCase):
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
-    suite = unittest.makeSuite(Test_utilities, 'test_raster')
+    suite = unittest.makeSuite(Test_utilities, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

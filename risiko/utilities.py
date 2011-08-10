@@ -1,6 +1,7 @@
 from geonode.maps.utils import file_upload, GeoNodeException
 from impact.storage.utilities import LAYER_TYPES, unique_filename
-from impact.storage.io import read_layer, download, get_bounding_box, get_ows_metadata
+from impact.storage.io import read_layer, download, get_bounding_box
+from impact.storage.io import get_ows_metadata
 import numpy
 import time
 import os

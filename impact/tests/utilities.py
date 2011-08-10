@@ -53,8 +53,6 @@ def same_API(X, Y, exclude=None):
     return True
 
 
-
-
 def get_web_page(url, username=None, password=None):
     """Get url page possible with username and password.
     """
