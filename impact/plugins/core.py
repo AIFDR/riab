@@ -27,6 +27,20 @@ class PluginMount(type):
 
 DEFAULT_TARGET_VALUE = 'Percent_da'
 
+class ColorMapEntry:
+    """Representation of color map entry in SLD file
+
+    Input
+        color
+        quantity
+        opacity (default '0')
+    """
+
+    def __init__(self, color, quantity, opacity=None):
+        self.color = color
+        self.opacity = opacity
+        self.quantity = quantity
+
 
 class FunctionProvider:
     """
@@ -49,10 +63,21 @@ class FunctionProvider:
 
     @staticmethod
     def generate_style(data, target_value):
-        params = {
-                   'name': data.get_name(),
-        }
+        params = {'name': data.get_name()}
+
         if data.is_raster:
+            colormapentries = [
+                ColorMapEntry(color='#ffffff', opacity='0', quantity='-9999.0'),
+                ColorMapEntry(color='#38A800', opacity='0', quantity='5.0'),
+                ColorMapEntry(color='#38A800', quantity='5.5'),
+                ColorMapEntry(color='#79C900', quantity='6'),
+                ColorMapEntry(color='#CEED00', quantity='6.5'),
+                ColorMapEntry(color='#FFCC00', quantity='7'),
+                ColorMapEntry(color='#FF6600', quantity='7.5'),
+                ColorMapEntry(color='#FF0000', quantity='8'),
+                ColorMapEntry(color='#7A0000', quantity='10')]
+
+            params['colormapentries'] = colormapentries
             return render_to_string('impact/styles/raster.sld', params)
         elif data.is_vector:
             params['damage'] = target_value
