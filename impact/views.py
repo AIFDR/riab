@@ -160,7 +160,7 @@ def calculate(request, save_output=dummy_save):
         logger.info(msg)
 
         impact_filename = calculate_impact(layers=[H, E],
-                                           impact_function=impact_function)
+                                           impact_fcn=impact_function)
 
         # Upload result to internal GeoServer
         msg = ('- Uploading impact layer %s' % impact_filename)

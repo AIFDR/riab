@@ -58,7 +58,7 @@ class Test_Engine(unittest.TestCase):
 
         # Call calculation engine
         impact_filename = calculate_impact(layers=[H, E],
-                                           impact_function=IF)
+                                           impact_fcn=IF)
 
         # Do calculation manually and check result
         hazard_raster = read_layer(hazard_filename)
@@ -122,7 +122,7 @@ class Test_Engine(unittest.TestCase):
 
         # Call calculation engine
         impact_filename = calculate_impact(layers=[H, E],
-                                           impact_function=IF)
+                                           impact_fcn=IF)
 
         # Do calculation manually and check result
         hazard_raster = read_layer(hazard_filename)
@@ -196,7 +196,7 @@ class Test_Engine(unittest.TestCase):
 
             # Call impact calculation engine
             impact_filename = calculate_impact(layers=[H, E],
-                                               impact_function=IF)
+                                               impact_fcn=IF)
 
             # Do calculation manually and check result
             hazard_raster = read_layer(hazard_filename)
@@ -282,7 +282,7 @@ class Test_Engine(unittest.TestCase):
             IF = plugin_list[0][plugin_name]
 
             impact_filename = calculate_impact(layers=[H, E],
-                                               impact_function=IF)
+                                               impact_fcn=IF)
 
             # Read input data
             hazard_raster = read_layer(hazard_filename)
@@ -416,7 +416,7 @@ class Test_Engine(unittest.TestCase):
 
         IF = plugin_list[0][plugin_name]
         impact_filename = calculate_impact(layers=[H, E],
-                                           impact_function=IF)
+                                           impact_fcn=IF)
 
         # Read calculated result
         impact_vector = read_layer(impact_filename)
@@ -528,7 +528,7 @@ class Test_Engine(unittest.TestCase):
 
         IF = plugin_list[0][plugin_name]
         impact_filename = calculate_impact(layers=[H, E],
-                                           impact_function=IF)
+                                           impact_fcn=IF)
 
         # Read input data
         hazard_raster = read_layer(hazard_filename)

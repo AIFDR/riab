@@ -1,4 +1,5 @@
 from django.template.loader import render_to_string
+from impact.plugins.utilities import ColorMapEntry
 import types
 
 ## See http://effbot.org/zone/metaclass-plugins.htm
@@ -25,23 +26,6 @@ class PluginMount(type):
             cls.plugins.append(cls)
 
 
-DEFAULT_TARGET_VALUE = 'DAMAGE'
-
-class ColorMapEntry:
-    """Representation of color map entry in SLD file
-
-    Input
-        color
-        quantity
-        opacity (default '0')
-    """
-
-    def __init__(self, color, quantity, opacity=None):
-        self.color = color
-        self.opacity = opacity
-        self.quantity = quantity
-
-
 class FunctionProvider:
     """
     Mount point for plugins which refer to actions that can be performed.
@@ -57,12 +41,10 @@ class FunctionProvider:
     """
     __metaclass__ = PluginMount
 
-    @staticmethod
-    def target_value():
-        return DEFAULT_TARGET_VALUE
+    target_field = 'DAMAGE'
+    symbol_field = 'USE_MAJOR'
 
-    @staticmethod
-    def generate_style(data, target_value):
+    def generate_style(self, data):
         """Make a default style for all plugins
 
         """
@@ -87,7 +69,7 @@ class FunctionProvider:
             params['colormapentries'] = colormapentries
             return render_to_string('impact/styles/raster.sld', params)
         elif data.is_vector:
-            params['damage'] = target_value
+            params['damage_field'] = self.target_field
             return render_to_string('impact/styles/vector.sld', params)
 
 
