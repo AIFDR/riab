@@ -244,9 +244,8 @@ class Vector:
                 #              We need to cast each appropriately?
                 #              This is issue #66
                 feature_type = feature.GetFieldDefnRef(j).GetType()
-                #print 'Field', name, type
-
                 fields[name] = feature.GetField(j)
+                #print 'Field', name, feature_type, j, fields[name]
 
             data.append(fields)
 
@@ -328,8 +327,8 @@ class Vector:
                     # Establish OGR types for each element
                     ogrtypes = {}
                     for name in fields:
-                        py_type = type(data[0][name])
-                        ogrtypes[name] = TYPE_MAP[py_type]
+                        att = data[0][name]
+                        ogrtypes[name] = TYPE_MAP[type(att)]
 
             else:
                 msg = ('Input parameter "data" was specified '

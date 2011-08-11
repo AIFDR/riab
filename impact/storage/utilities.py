@@ -26,7 +26,8 @@ DRIVER_MAP = {'.shp': 'ESRI Shapefile',
 
 # Map between Python types and OGR field types
 # FIXME (Ole): I can't find a double precision type for OGR
-TYPE_MAP = {type(''): ogr.OFTString,
+TYPE_MAP = {type(None): ogr.OFTString,  # This is what
+            type(''): ogr.OFTString,
             type(0): ogr.OFTInteger,
             type(0.0): ogr.OFTReal,
             type(numpy.array([0.0])[0]): ogr.OFTReal,  # numpy.float64
