@@ -180,7 +180,8 @@ class Test_calculations(unittest.TestCase):
                                            lon, lat))
                     assert mmi_min <= calculated_mmi <= mmi_max, msg
 
-                    building_class = attributes[i]['Building_C']
+                    building_class = attributes[i]['TestBLDGCl']
+
                     # Check calculated damage
                     calculated_dam = attributes[i]['DAMAGE']
                     verified_dam = pandang_check_results(calculated_mmi,

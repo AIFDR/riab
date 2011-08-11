@@ -46,6 +46,9 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         shaking = H.get_data()
         N = len(shaking)
 
+        # List attributes to carry forward to result layer
+        attributes = E.get_attribute_names()
+
         # Calculate building damage
         count50 = 0
         count25 = 0
@@ -55,19 +58,25 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
             mmi = float(shaking[i].values()[0])
 
             building_class = E.get_data('TestBLDGCl', i)
-            #building_id = E.get_data('UNIQUE_FIE', i)
-            use_major = E.get_data('USE_MAJOR', i)
-
             building_type = str(int(building_class))
             damage_params = damage_curves[building_type]
             percent_damage = scipy.stats.lognorm.cdf(
                                         mmi,
                                         damage_params['beta'],
                                         scale=damage_params['median']) * 100
-            building_damage.append({'DAMAGE': percent_damage,
-                                    'MMI': mmi,
-                                    'USE_MAJOR': use_major,
-                                    'Building_Class': building_class})
+
+            # Collect shake level and calculated damage
+            result_dict = {'DAMAGE': percent_damage,
+                           'MMI': mmi}
+
+            # Carry all orginal attributes forward
+            for key in attributes:
+                result_dict[key] = E.get_data(key, i)
+
+            # Record result for this feature
+            building_damage.append(result_dict)
+
+            # Calculate statistics
             if 10 <= percent_damage < 25:
                 count10 += 1
 
@@ -77,6 +86,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
             if 50 <= percent_damage:
                 count50 += 1
 
+        # Create report
         caption = ('<table border="0" width="350px">'
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
                     '   <tr></tr>'
