@@ -44,7 +44,7 @@ class EarthquakeBuildingDamageFunction(FunctionProvider):
                          509.0 * x +
                          714.4)
 
-            building_damage.append({'Percent_damage': value, 'MMI': x})
+            building_damage.append({'DAMAGE': value, 'MMI': x})
 
         # FIXME (Ole): Need helper to generate new layer using
         #              correct spatial reference

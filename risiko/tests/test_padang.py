@@ -182,7 +182,7 @@ class Test_calculations(unittest.TestCase):
 
                     building_class = attributes[i]['Building_C']
                     # Check calculated damage
-                    calculated_dam = attributes[i]['Percent_da']
+                    calculated_dam = attributes[i]['DAMAGE']
                     verified_dam = pandang_check_results(calculated_mmi,
                                                          building_class)
                     if verified_dam != False:

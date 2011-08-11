@@ -53,7 +53,7 @@ class TephraImpactFunction(FunctionProvider):
             else:
                 impact = 0
 
-            result.append({'Percent_damage': impact, 'Ashload': load})
+            result.append({'DAMAGE': impact, 'ASHLOAD': load})
 
         # FIXME (Ole): Need helper to generate new layer using
         #              correct spatial reference

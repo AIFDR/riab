@@ -318,7 +318,7 @@ class Test_calculations(unittest.TestCase):
                 assert mmi_min <= calculated_mmi <= mmi_max, msg
 
                 # Check calculated damage
-                calculated_dam = attributes[i]['Percent_da']
+                calculated_dam = attributes[i]['DAMAGE']
 
                 ref_dam = lembang_damage_function(calculated_mmi)
                 msg = ('Calculated damage was not as expected '

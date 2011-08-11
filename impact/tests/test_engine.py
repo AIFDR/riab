@@ -349,9 +349,7 @@ class Test_Engine(unittest.TestCase):
                 assert numpy.allclose(calculated_mmi, MMI[i],
                                       rtol=float(pct) / 100), msg
 
-                # FIXME (Ole): Has to shorten name to 10 characters
-                #              until issue #1 has been resolved.
-                calculated_dam = iattributes[i]['Percent_da']
+                calculated_dam = iattributes[i]['DAMAGE']
                 if calculated_dam > max_damage:
                     max_damage = calculated_dam
 
@@ -553,8 +551,8 @@ class Test_Engine(unittest.TestCase):
         # FIXME: Change test when we decide what values should actually be
         #        calculated :-) :-) :-)
         for a in attributes:
-            load = a['Ashload']
-            impact = a['Percent_da']
+            load = a['ASHLOAD']
+            impact = a['DAMAGE']
 
             # Test interpolation
             msg = 'Load %.15f was outside bounds [%f, %f]' % (load,

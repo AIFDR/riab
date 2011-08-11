@@ -43,7 +43,7 @@ class SimplisticEarthquakeBuildingDamageFunction(FunctionProvider):
             else:
                 percent_damage = 0
 
-            building_damage.append({'Percent_damage': percent_damage,
+            building_damage.append({'DAMAGE': percent_damage,
                                     'MMI': mmi})
 
         # Create vector layer and return

@@ -94,7 +94,7 @@ class HOTEarthquakeBuildingDamageFunction(FunctionProvider):
 
             # Calculate percent damage
             value = curve(x)
-            building_damage.append({'Percent_damage': value, 'MMI': x})
+            building_damage.append({'DAMAGE': value, 'MMI': x})
 
             #print i, classification, x, value
 
