@@ -11,7 +11,7 @@ from impact.storage.utilities import unique_filename
 from impact.storage.utilities import DEFAULT_PROJECTION
 
 
-def calculate_impact(layers, impact_function,
+def calculate_impact(layers, impact_fcn,
                      comment=''):
     """Calculate impact levels as a function of list of input layers
 
@@ -21,7 +21,7 @@ def calculate_impact(layers, impact_function,
 
         layers: List of Raster and Vector layer objects to be used for analysis
 
-        impact_function: Function of the form f(layers)
+        impact_fcn: Function of the form f(layers)
         comment:
 
     Output
@@ -39,6 +39,9 @@ def calculate_impact(layers, impact_function,
 
     # Input checks
     check_data_integrity(layers)
+
+    # Get an instance of the passed impact_fcn 
+    impact_function = impact_fcn()
 
     # Pass input layers to plugin
 
@@ -58,7 +61,7 @@ def calculate_impact(layers, impact_function,
     F.write_to_file(output_filename)
 
     # Generate style as defined by the impact_function
-    style = impact_function.generate_style(F, impact_function.target_value())
+    style = impact_function.generate_style(F)
     f = open(output_filename.replace(extension, '.sld'), 'w')
     f.write(style)
     f.close()

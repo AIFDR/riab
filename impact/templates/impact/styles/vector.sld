@@ -9,7 +9,7 @@
       <sld:Title>0 to 2.0</sld:Title>
       <ogc:Filter>
         <ogc:PropertyIsLessThan>
-          <ogc:PropertyName>{{ damage }}</ogc:PropertyName>
+          <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
           <ogc:Literal>2.0</ogc:Literal>
         </ogc:PropertyIsLessThan>
       </ogc:Filter>
@@ -37,11 +37,11 @@
       <ogc:Filter>
         <ogc:And>
           <ogc:PropertyIsGreaterThanOrEqualTo>
-            <ogc:PropertyName>{{ damage }}</ogc:PropertyName>
+            <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
             <ogc:Literal>2.0</ogc:Literal>
           </ogc:PropertyIsGreaterThanOrEqualTo>
           <ogc:PropertyIsLessThan>
-            <ogc:PropertyName>{{ damage }}</ogc:PropertyName>
+            <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
             <ogc:Literal>10</ogc:Literal>
           </ogc:PropertyIsLessThan>
         </ogc:And>
@@ -71,11 +71,11 @@
       <ogc:Filter>
         <ogc:And>
           <ogc:PropertyIsGreaterThanOrEqualTo>
-            <ogc:PropertyName>{{ damage }}</ogc:PropertyName>
+            <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
             <ogc:Literal>10.0</ogc:Literal>
           </ogc:PropertyIsGreaterThanOrEqualTo>
           <ogc:PropertyIsLessThan>
-            <ogc:PropertyName>{{ damage }}</ogc:PropertyName>
+            <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
             <ogc:Literal>25</ogc:Literal>
           </ogc:PropertyIsLessThan>
         </ogc:And>
@@ -105,11 +105,11 @@
       <ogc:Filter>
         <ogc:And>
           <ogc:PropertyIsGreaterThanOrEqualTo>
-            <ogc:PropertyName>{{ damage }}</ogc:PropertyName>
+            <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
             <ogc:Literal>25.0</ogc:Literal>
           </ogc:PropertyIsGreaterThanOrEqualTo>
           <ogc:PropertyIsLessThan>
-            <ogc:PropertyName>{{ damage }}</ogc:PropertyName>
+            <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
             <ogc:Literal>50</ogc:Literal>
           </ogc:PropertyIsLessThan>
         </ogc:And>
@@ -138,7 +138,7 @@
       <sld:Title>Greater than 50</sld:Title>
       <ogc:Filter>
         <ogc:PropertyIsGreaterThanOrEqualTo>
-          <ogc:PropertyName>{{ damage }}</ogc:PropertyName>
+          <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
           <ogc:Literal>50</ogc:Literal>
         </ogc:PropertyIsGreaterThanOrEqualTo>
       </ogc:Filter>
@@ -163,4 +163,3 @@
     </sld:Rule>
   </sld:FeatureTypeStyle>
 </sld:UserStyle>
-

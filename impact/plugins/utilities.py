@@ -30,3 +30,45 @@ class Damage_curve:
 
     def __call__(self, x):
         return self.curve(x)
+
+class ColorMapEntry:
+    """Representation of color map entry in SLD file
+
+    Input
+        color
+        quantity
+        opacity (default '0')
+    """
+
+    def __init__(self, color, quantity, opacity=None):
+        self.color = color
+        self.opacity = opacity
+        self.quantity = quantity
+
+class PointSymbol:
+    """
+    """
+    
+    def __init__(self, value, icon):
+        self.value = value
+        self.icon = icon
+
+class PointClassColor:
+    """
+    """
+
+    def __init__(self, name, clmin, clmax, fill_color, stroke_color=None, opacity=1):
+        self.name = name
+        self.clmin = clmin
+        self.clmax = clmax
+        self.fill_color = fill_color
+        self.stroke_color = stroke_color
+        self.opacity = opacity
+
+class PointZoomSize:
+    """
+    """
+    
+    def __init__(self, level, size):
+        self.level = level
+        self.size = size

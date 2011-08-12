@@ -2,6 +2,7 @@ from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
+from impact.plugins.utilities import PointZoomSize, PointClassColor, PointSymbol
 import scipy.stats
 
 
@@ -15,8 +16,10 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                     subcategory.startswith("building")
     """
 
-    @staticmethod
-    def run(layers):
+    target_field = 'DAMAGE'
+    symbol_field = 'USE_MAJOR'
+
+    def run(self, layers):
         """Risk plugin for earthquake school damage
         """
 
@@ -66,7 +69,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                                         scale=damage_params['median']) * 100
 
             # Collect shake level and calculated damage
-            result_dict = {'DAMAGE': percent_damage,
+            result_dict = {self.target_field: percent_damage,
                            'MMI': mmi}
 
             # Carry all orginal attributes forward
@@ -108,3 +111,44 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                    name='Estimated pct damage',
                    keywords={'caption': caption})
         return V
+
+    def generate_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+        DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
+
+        symbol_field = None
+        symbol_keys = [None,]
+        symbol_values = [DEFAULT_SYMBOL,]
+
+        scale_keys = [10000000000,10000000,5000000,1000000,500000,250000,100000]
+        scale_values = [3,5,8,12,14,16,18]
+
+        class_keys = ['No Damage', '10-25', '25-50', '50-100']
+        class_values = [
+                        {'min':0, 'max':10, 'color': '#cccccc', 'opacity': '1'},
+                        {'min':10, 'max':25, 'color': '#fecc5c', 'opacity': '1'},
+                        {'min':25, 'max':50, 'color': '#fd8d3c', 'opacity': '1'},
+                        {'min':50, 'max':100, 'color': '#e31a1c', 'opacity': '1'},
+                       ]
+ 
+
+        if self.symbol_field in data.get_attribute_names():
+            symbol_field = self.symbol_field
+ 
+            symbol_keys.extend(['Church/Mosque', 'Commercial (office)', 'Hotel',
+                                'Medical facility', 'Other', 'Other industrial',
+                                'Residential', 'Retail', 'School', 'Unknown', 'Warehouse'])
+            symbol_values.extend(DEFAULT_SYMBOL * 11)
+
+
+        params = dict(
+                     name = data.get_name(),
+                     damage_field = self.target_field,
+                     symbol_field = symbol_field,
+                     symbols = dict(zip(symbol_keys,symbol_values)),
+                     scales = dict(zip(scale_keys, scale_values)),
+                     classifications = dict(zip(class_keys, class_values)),
+                    )
+
+        return render_to_string('impact/styles/point_classes.sld', params)
