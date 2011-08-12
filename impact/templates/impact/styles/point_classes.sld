@@ -15,7 +15,7 @@
                                 {% if symbol_field %}
                                 <ogc:PropertyIsEqualTo>
                                     <ogc:PropertyName>{{ symbol_field }}</ogc:PropertyName>
-                                    <ogc:Literal><![CDATA[{{ symbol_value }}]]></ogc:Literal>
+                                    <ogc:Literal><![CDATA[{{ symbol_key }}]]></ogc:Literal>
                                 </ogc:PropertyIsEqualTo>
                                 {% endif %}
                                 <ogc:PropertyIsGreaterThanOrEqualTo>
@@ -28,7 +28,7 @@
                                 </ogc:PropertyIsLessThan>
                             </ogc:And>
                         </ogc:Filter>
-                        <sld:MaxScaleDenominator>{{ scale_value }}</sld:MaxScaleDenominator>
+                        <sld:MaxScaleDenominator>{{ scale_key }}</sld:MaxScaleDenominator>
                         <sld:PointSymbolizer>
                             <sld:Graphic>
                                 <sld:Mark>
@@ -37,10 +37,6 @@
                                         <sld:CssParameter name='fill' >{{ class_value.color }}</sld:CssParameter>
                                         <sld:CssParameter name='fill-opacity' >{{ class_value.opacity }}</sld:CssParameter>
                                     </sld:Fill>
-                                    <sld:Stroke>
-                                        <sld:CssParameter name='stroke' >#000000</sld:CssParameter>
-                                        <sld:CssParameter name='stroke-opacity' >0</sld:CssParameter>
-                                    </sld:Stroke>
                                 </sld:Mark>
                                 <sld:Size>{{ scale_value }}</sld:Size>
                             </sld:Graphic>

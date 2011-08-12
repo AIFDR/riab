@@ -118,8 +118,8 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
 
         symbol_field = None
-        symbol_keys = [None,]
-        symbol_values = [DEFAULT_SYMBOL,]
+        symbol_keys = [None,'']
+        symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
         scale_keys = [10000000000,10000000,5000000,1000000,500000,250000,100000]
         scale_values = [3,5,8,12,14,16,18]
@@ -131,15 +131,21 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                         {'min':25, 'max':50, 'color': '#fd8d3c', 'opacity': '1'},
                         {'min':50, 'max':100, 'color': '#e31a1c', 'opacity': '1'},
                        ]
- 
+
 
         if self.symbol_field in data.get_attribute_names():
             symbol_field = self.symbol_field
  
             symbol_keys.extend(['Church/Mosque', 'Commercial (office)', 'Hotel',
                                 'Medical facility', 'Other', 'Other industrial',
-                                'Residential', 'Retail', 'School', 'Unknown', 'Warehouse'])
-            symbol_values.extend(DEFAULT_SYMBOL * 11)
+                                'Residential', 'Retail', 'School',
+                                'Unknown', 'Warehouse',
+                               ])
+            symbol_values.extend([DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                 ])
 
 
         params = dict(
