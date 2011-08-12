@@ -380,6 +380,7 @@ combo_functionstore = new Ext.data.JsonStore({
 function addLayer(server_url, label, layer_name, opacity_value) {
     var record = app.createLayerRecord({
         name: layer_name,
+        title: label,
         opacity: opacity_value,
         source: "0"
     }, function(rec) {
@@ -543,9 +544,13 @@ function received(result, request) {
     var server_url = data.ows_server_url;
     var result_name = layer_uri.split('/')[4].split(':')[1];
     var result_label = exposure + ' X ' + hazard + '=' +result_name;
-    addLayer(server_url, result_label, result_name, 0.9);
-    lastImpactLayer = result_label;
-    showCaption(caption);
+    app.layerSources["0"].store.reload({
+        callback: function() {
+            addLayer(server_url, result_label, "geonode:"+result_name, 0.9);
+            lastImpactLayer = result_label;
+            showCaption(caption);
+        }
+    });
 }
 
 function calculate() {
