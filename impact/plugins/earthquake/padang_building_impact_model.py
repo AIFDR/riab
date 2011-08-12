@@ -122,6 +122,8 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         DEFAULT_SYMBOL = 'circle'
 
         symbol_field = None
+
+        # FIXME: Replace these by dict and extend below
         symbol_keys = [None, '']
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
@@ -154,7 +156,8 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                        'School': 'ttf://ESRI Cartography#0x00e5',
                        'Unknown':'ttf://Comic Sans MS#0x003F',
                        'Warehouse': 'ttf://ESRI US MUTCD 3#0x00B5'}
-
+        else:
+            symbols = {None: DEFAULT_SYMBOL, '': DEFAULT_SYMBOL}
 
         # Generate sld style file
         params = dict(name=data.get_name(),
