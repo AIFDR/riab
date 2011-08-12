@@ -103,7 +103,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
                         }, {
                             xtype: 'combo',
                             id: 'functioncombo',
-                            store: this.combo_functionstore,
+                            store: combo_functionstore,
                             width: '100%',
                             displayField:'name',
                             valueField:'name',
@@ -371,7 +371,7 @@ hazardstore = new Ext.data.JsonStore({
     root: 'objects'
 });
 
-this.combo_functionstore = new Ext.data.JsonStore({
+combo_functionstore = new Ext.data.JsonStore({
     id: 'combo_functionstore',
     fields: ['name','doc', 'layers'],
     root: 'functions'
