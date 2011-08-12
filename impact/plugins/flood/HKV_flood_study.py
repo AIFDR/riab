@@ -12,7 +12,8 @@ class FloodImpactFunction(FunctionProvider):
     :rating 1
     :param requires category=="hazard" and \
                     subcategory.startswith("flood") and \
-                    layer_type=="raster"
+                    layer_type=="raster" and \
+                    unit=="m"
     :param requires category=="exposure" and \
                     subcategory.startswith("population") and \
                     layer_type=="raster"
@@ -46,7 +47,7 @@ class FloodImpactFunction(FunctionProvider):
         number_of_people_affected = sum(I.flat)
         caption = ('Number of people affected by flood levels greater '
                    'than %i cm = '
-                   '%.2f million' % (threshold * 100,
+                   '%.4f million' % (threshold * 100,
                                      number_of_people_affected / 1000000))
 
         # Create raster object and return
