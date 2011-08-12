@@ -1,0 +1,9 @@
+#! /bin/bash
+
+echo ">>> Building and installing the Calculator application"
+pushd .
+cd riab/calculator
+ant init
+ant dist
+mkdir -p ../impact/static
+cp -Rf build/calculator/WEB-INF/app/static ../impact/static/calculator

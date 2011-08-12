@@ -45,14 +45,18 @@ fi
 echo ">>> Downloading bundled pre-requisites"
 
 # Determine data source
-zone=$(cat /etc/timezone)
-if [ "$zone" == "Asia/Jakarta" ]; then
-    export RISIKO_DATASOURCE="http://203.77.224.75/store/risiko_support_data"
-    echo "Using Indonesian mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
-else
-    export RISIKO_DATASOURCE="https://s3.amazonaws.com/geonodeariel"
-    echo "Using Amazon mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
-fi
+#zone=$(cat /etc/timezone)
+#if [ "$zone" == "Asia/Jakarta" ]; then
+#    export RISIKO_DATASOURCE="http://203.77.224.75/store/risiko_support_data"
+#    echo "Using Indonesian mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
+#else
+#    export RISIKO_DATASOURCE="https://s3.amazonaws.com/geonodeariel"
+#    echo "Using Amazon mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
+#fi
+
+#FIXME: Using Indonesia until everything is back again in the Amazon repo
+export RISIKO_DATASOURCE="http://203.77.224.75/store/risiko_support_data"
+echo "Using Indonesian mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
 
 # Install GeoNode and it's pre-requisites
 mkdir -p temp

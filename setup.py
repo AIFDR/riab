@@ -150,6 +150,7 @@ setup(
                'scripts/risiko-clean',
                'scripts/risiko-lint',
                'scripts/risiko-upload',
+               'scripts/risiko-js',
               ],
     classifiers = [
         'Development Status :: 2 - Pre-Alpha',
