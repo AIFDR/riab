@@ -177,6 +177,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
                 actions: ["-"]
             }, {
                 ptype: "gxp_wmsgetfeatureinfo",
+                format: "grid",
                 actionTarget: "map.tbar"
             }],
 
