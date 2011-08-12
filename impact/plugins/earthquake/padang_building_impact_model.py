@@ -119,7 +119,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         # Define default behaviour to be used when
         # - symbol attribute is missing
         # - attribute value is None or ''
-        DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
+        DEFAULT_SYMBOL = 'circle'
 
         symbol_field = None
         symbol_keys = [None, '']
@@ -143,17 +143,17 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
             # Get actual symbol field to use
             symbol_field = self.symbol_field
 
-            symbols = {'Church/Mosque': 'ttf://ESRI Public1#0x0048',
+            symbols = {'Church/Mosque': 'ttf://ESRI US MUTCD 3#0x00F6',
                        'Commercial (office)': 'ttf://ESRI Business#0x0040',
-                       'Hotel': 'ttf://ESRI Public1#0x002e',
-                       'Medical facility': 'ttf://ESRI Public1#0x0024',
-                       'Other':  DEFAULT_SYMBOL,
-                       'Other industrial': 'ttf://ESRI Cartography#0x00f0',
+                       'Hotel': 'ttf://ESRI Public1#0x00b6',
+                       'Medical facility': 'ttf://ESRI Cartography#0x00D1',
+                       'Other': 'ttf://ESRI Business#0x002D',
+                       'Other industrial': 'ttf://ESRI Business#0x0043',
                        'Residential': 'ttf://ESRI Cartography#0x00d7',
-                       'Retail': 'ttf://ESRI Public1#0x0023',
+                       'Retail': 'ttf://Comic Sans MS#0x0024',
                        'School': 'ttf://ESRI Cartography#0x00e5',
-                       'Unknown': DEFAULT_SYMBOL,
-                       'Warehouse': 'ttf://ESRI Business#0x005e'}
+                       'Unknown':'ttf://Comic Sans MS#0x003F',
+                       'Warehouse': 'ttf://ESRI US MUTCD 3#0x00B5'}
 
 
         # Generate sld style file
