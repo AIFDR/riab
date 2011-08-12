@@ -125,18 +125,12 @@ popd
 pip install -e riab
 
 echo ">>> Building and installing the Calculator application"
-mkdir -p riab/calculator/build
-
 pushd .
-cd temp/;unzip * >> /dev/null
-popd
-
-mv temp/opengeo-GeoExt* riab/calculator/app/static/externals/geoext
-mv temp/opengeo-gxp* riab/calculator/app/static/externals/gxp
-mv temp/openlayers-openlayers-* riab/calculator/app/static/externals/openlayers
-mv temp/tschaub-ringojs* riab/calculator/build/ringo
-mv temp/tschaub-buildkit* riab/calculator/build/buildkit
+cd riab/calculator
+ant init
+ant dist
 mkdir -p ../impact/static
+cp -Rf build/calculator/WEB-INF/app/static ../impact/static/calculator
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
