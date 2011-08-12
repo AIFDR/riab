@@ -1,4 +1,4 @@
-GeoExt.lang.add("en", {
+GeoExt.Lang.add("it", {
     "Risiko.prototype": {
         hazardComboLabelText: "Pericolo",
         exposureComboLabelText: "Esposizione",

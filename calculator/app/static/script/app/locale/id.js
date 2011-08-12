@@ -1,4 +1,4 @@
-GeoExt.lang.add("id", {
+GeoExt.Lang.add("id", {
     "Risiko.prototype": {
         hazardComboLabelText: "Bahaya",
         exposureComboLabelText: "Paparan",
