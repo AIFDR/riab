@@ -378,13 +378,14 @@ this.combo_functionstore = new Ext.data.JsonStore({
 });
 
 function addLayer(server_url, label, layer_name, opacity_value) {
-    var layer = new OpenLayers.Layer.WMS(
-        label, server_url, {layers: layer_name, format: 'image/png', transparent: true},
-	    {opacity: opacity_value}, {attribution: 'My attribuion'}
-    );
-    var map = app.mapPanel.map;
-    map.addLayer(layer);
-    return layer;
+    var record = app.createLayerRecord({
+        name: layer_name,
+        opacity: opacity_value,
+        source: "0"
+    }, function(rec) {
+        rec.getLayer().attributeion = "My attribution";
+        app.mapPanel.layers.add(rec);
+    });
 }
 
 function createPopup(feature) {
@@ -542,7 +543,7 @@ function received(result, request) {
     var server_url = data.ows_server_url;
     var result_name = layer_uri.split('/')[4].split(':')[1];
     var result_label = exposure + ' X ' + hazard + '=' +result_name;
-    layer = addLayer(server_url, result_label, result_name, 0.9);
+    addLayer(server_url, result_label, result_name, 0.9);
     lastImpactLayer = result_label;
     showCaption(caption);
 }
