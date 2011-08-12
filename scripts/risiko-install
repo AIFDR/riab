@@ -125,19 +125,17 @@ popd
 pip install -e riab
 
 echo ">>> Building and installing the Calculator application"
-pushd .
 mkdir -p riab/calculator/build
-cd riab/calculator/build
-unzip ../../../temp/opengeo-GeoExt-deac166.zip > /dev/null
-mv opengeo-GeoExt* ../app/static/externals/geoext
-unzip ../../../temp/opengeo-gxp-a47244a.zip > /dev/null
-mv opengeo-gxp* ../app/static/externals/gxp
-unzip ../../../temp/openlayers-openlayers-79f0b0a.zip > /dev/null
-mv openlayers-openlayers-* ../app/static/externals/openlayers
-unzip ../../../temp/tschaub-ringojs-v0.5.0-433-gf058d4d.zip > /dev/null
-mv tschaub-ringojs* ringo
-unzip ../../../temp/tschaub-buildkit-86eacbd.zip > /dev/null
-mv tschaub-buildkit* buildkit
+
+pushd .
+cd temp/;unzip * >> /dev/null
+popd
+
+mv temp/opengeo-GeoExt* riab/calculator/app/static/externals/geoext
+mv temp/opengeo-gxp* riab/calculator/app/static/externals/gxp
+mv temp/openlayers-openlayers-* riab/calculator/app/static/externals/openlayers
+mv temp/tschaub-ringojs* riab/calculator/build/ringo
+mv temp/tschaub-buildkit* riab/calculator/build/buildkit
 mkdir -p ../impact/static
 
 echo ""
