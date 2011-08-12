@@ -6,6 +6,7 @@
     </description>
 
     <property name="build" location="build"/>
+    <property name="externals" location="app/static/externals/"/>
     <property name="app.proxy.geoserver" value="http://localhost:8001/geoserver-geonode-dev"/>
     <property name="app.proxy.geonode" value="http://localhost:8000"/>
     <property name="app.port" value="8080"/>
@@ -38,15 +39,21 @@
             <arg line="checkout 86eacbd7b3bf62b8e99f46911dd5a633464b8570"/>
         </exec>
 
-        <echo message="pulling in submodules"/>
-        <exec executable="git" dir="../" failonerror="true">
-            <arg line="submodule update --init -- calculator/app/static/externals/openlayers"/>
+        <echo message="pulling in js dependencies"/>
+        <get src="https://github.com/openlayers/openlayers/zipball/2.x" dest="${build}/openlayers.zip"/>
+        <unzip src="${build}/openlayers.zip" dest="${externals}"/>
+        <exec executable="sh" dir="${externals}" failonerror="true">
+          <arg line="-c 'rm -Rf openlayers &amp;&amp; mv openlayers-openlayers-* openlayers'"/>
         </exec>
-        <exec executable="git" dir="../" failonerror="true">
-            <arg line="submodule update --init -- calculator/app/static/externals/geoext"/>
+        <get src="https://github.com/opengeo/GeoExt/zipball/master" dest="${build}/geoext.zip"/>
+        <unzip src="${build}/geoext.zip" dest="${externals}"/>
+        <exec executable="sh" dir="${externals}" failonerror="true">
+          <arg line="-c 'rm -Rf geoext &amp;&amp; mv opengeo-GeoExt-* geoext'"/>
         </exec>
-        <exec executable="git" dir="../" failonerror="true">
-            <arg line="submodule update --init -- calculator/app/static/externals/gxp"/>
+        <get src="https://github.com/opengeo/gxp/zipball/master" dest="${build}/gxp.zip"/>
+        <unzip src="${build}/gxp.zip" dest="${externals}"/>
+        <exec executable="sh" dir="${externals}" failonerror="true">
+          <arg line="-c 'rm -Rf gxp &amp;&amp; mv opengeo-gxp-* gxp'"/>
         </exec>
 
     </target>

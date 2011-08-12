@@ -14,4 +14,7 @@ risiko.egg-info/
 risiko/development.db
 extras/.vagrant
 calculator/build/
+calculator/app/static/externals/openlayers
+calculator/app/static/externals/geoext
+calculator/app/static/externals/gxp
 impact/static/calculator
