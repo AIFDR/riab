@@ -115,46 +115,53 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     def generate_style(self, data):
         """Generates and SLD file based on the data values
         """
+
+        # Define default behaviour to be used when
+        # - symbol attribute is missing
+        # - attribute value is None or ''
         DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
 
         symbol_field = None
-        symbol_keys = [None,'']
+        symbol_keys = [None, '']
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
-        scale_keys = [10000000000,10000000,5000000,1000000,500000,250000,100000]
-        scale_values = [3,5,8,12,14,16,18]
+        # Predefined scales and corresponding font sizes
+        scale_keys = [10000000000, 10000000, 5000000, 1000000, 500000, 250000, 100000]
+        scale_values = [3, 5, 8, 12, 14, 16, 18]
 
+        # Predefined colour classes
         class_keys = ['No Damage', '10-25', '25-50', '50-100']
-        class_values = [
-                        {'min':0, 'max':10, 'color': '#cccccc', 'opacity': '1'},
-                        {'min':10, 'max':25, 'color': '#fecc5c', 'opacity': '1'},
-                        {'min':25, 'max':50, 'color': '#fd8d3c', 'opacity': '1'},
-                        {'min':50, 'max':100, 'color': '#e31a1c', 'opacity': '1'},
-                       ]
+        class_values = [{'min': 0, 'max': 10, 'color': '#cccccc', 'opacity': '1'},
+                        {'min': 10, 'max': 25, 'color': '#fecc5c', 'opacity': '1'},
+                        {'min': 25, 'max': 50, 'color': '#fd8d3c', 'opacity': '1'},
+                        {'min': 50, 'max': 100, 'color': '#e31a1c', 'opacity': '1'}]
 
 
+        # Definition of symbols for each attribute value
         if self.symbol_field in data.get_attribute_names():
+
+            # Get actual symbol field to use
             symbol_field = self.symbol_field
- 
-            symbol_keys.extend(['Church/Mosque', 'Commercial (office)', 'Hotel',
-                                'Medical facility', 'Other', 'Other industrial',
-                                'Residential', 'Retail', 'School',
-                                'Unknown', 'Warehouse',
-                               ])
-            symbol_values.extend([DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                 ])
+
+            symbols = {'Church/Mosque': 'ttf://ESRI Public1#0x0048',
+                       'Commercial (office)': 'ttf://ESRI Business#0x0040',
+                       'Hotel': 'ttf://ESRI Public1#0x002e',
+                       'Medical facility': 'ttf://ESRI Public1#0x0024',
+                       'Other':  DEFAULT_SYMBOL,
+                       'Other industrial': 'ttf://ESRI Cartography#0x00f0',
+                       'Residential': 'ttf://ESRI Cartography#0x00d7',
+                       'Retail': 'ttf://ESRI Public1#0x0023',
+                       'School': 'ttf://ESRI Cartography#0x00e5',
+                       'Unknown': DEFAULT_SYMBOL,
+                       'Warehouse': 'ttf://ESRI Business#0x005e'}
 
 
-        params = dict(
-                     name = data.get_name(),
-                     damage_field = self.target_field,
-                     symbol_field = symbol_field,
-                     symbols = dict(zip(symbol_keys,symbol_values)),
-                     scales = dict(zip(scale_keys, scale_values)),
-                     classifications = dict(zip(class_keys, class_values)),
-                    )
+        # Generate sld style file
+        params = dict(name=data.get_name(),
+                      damage_field=self.target_field,
+                      symbol_field=symbol_field,
+                      symbols=symbols,
+                      scales=dict(zip(scale_keys, scale_values)),
+                      classifications=dict(zip(class_keys, class_values)))
 
         return render_to_string('impact/styles/point_classes.sld', params)
