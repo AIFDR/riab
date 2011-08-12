@@ -4,49 +4,51 @@
         <sld:Name><![CDATA[{{ name }}]]></sld:Name>
             <sld:UserStyle>
                 <sld:FeatureTypeStyle>
-{% for scale_size in scale_sizes %}
-    {% for output_class in output_classes %}
-        {% for symbol_map in symbol_mapping %}
+{% for scale_key,scale_value in scales.items %}
+   {% for class_key,class_value in classifications.items %}
+       {% for symbol_key,symbol_value in symbols.items %}
                     <sld:Rule>
-                        <sld:Name><![CDATA[{{ output_class.name }}% Damage]]></sld:Name>
-                        <sld:Title><![CDATA[{{ output_class.name }}% Damage]]]></sld:Title>
+                        <sld:Name><![CDATA[{{ class_key }}% Damage]]></sld:Name>
+                        <sld:Title><![CDATA[{{ class_key }}% Damage]]]></sld:Title>
                         <ogc:Filter>
                             <ogc:And>
+                                {% if symbol_field %}
                                 <ogc:PropertyIsEqualTo>
                                     <ogc:PropertyName>{{ symbol_field }}</ogc:PropertyName>
-                                    <ogc:Literal><![CDATA[{{ symbol_map.value }}]]></ogc:Literal>
+                                    <ogc:Literal><![CDATA[{{ symbol_value }}]]></ogc:Literal>
                                 </ogc:PropertyIsEqualTo>
+                                {% endif %}
                                 <ogc:PropertyIsGreaterThanOrEqualTo>
                                     <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
-                                    <ogc:Literal>{{ output_class.clmin }}</ogc:Literal>
+                                    <ogc:Literal>{{ class_value.min }}</ogc:Literal>
                                 </ogc:PropertyIsGreaterThanOrEqualTo>
                                 <ogc:PropertyIsLessThan>
                                     <ogc:PropertyName>{{ damage_field }}</ogc:PropertyName>
-                                    <ogc:Literal>{{ output_class.clmax }}</ogc:Literal>
+                                    <ogc:Literal>{{ class_value.max }}</ogc:Literal>
                                 </ogc:PropertyIsLessThan>
                             </ogc:And>
                         </ogc:Filter>
-                        <sld:MaxScaleDenominator>{{ scale_size.level }}</sld:MaxScaleDenominator>
+                        <sld:MaxScaleDenominator>{{ scale_value }}</sld:MaxScaleDenominator>
                         <sld:PointSymbolizer>
                             <sld:Graphic>
                                 <sld:Mark>
-                                    <sld:WellKnownName>{{ symbol_map.icon }}</sld:WellKnownName>
+                                    <sld:WellKnownName>{{ symbol_value }}</sld:WellKnownName>
                                     <sld:Fill>
-                                        <sld:CssParameter name='fill' >{{ output_class.fill_color }}</sld:CssParameter>
-                                        <sld:CssParameter name='fill-opacity' >1</sld:CssParameter>
+                                        <sld:CssParameter name='fill' >{{ class_value.color }}</sld:CssParameter>
+                                        <sld:CssParameter name='fill-opacity' >{{ class_value.opacity }}</sld:CssParameter>
                                     </sld:Fill>
                                     <sld:Stroke>
                                         <sld:CssParameter name='stroke' >#000000</sld:CssParameter>
-                                        <sld:CssParameter name='stroke-opacity' >1</sld:CssParameter>
+                                        <sld:CssParameter name='stroke-opacity' >0</sld:CssParameter>
                                     </sld:Stroke>
                                 </sld:Mark>
-                                <sld:Size>{{ scale_size.size }}</sld:Size>
+                                <sld:Size>{{ scale_value }}</sld:Size>
                             </sld:Graphic>
                         </sld:PointSymbolizer>
                     </sld:Rule>
-        {% endfor %} 
-    {% endfor %} 
-{% endfor %} 
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
                 </sld:FeatureTypeStyle>
             </sld:UserStyle>
     </sld:NamedLayer>

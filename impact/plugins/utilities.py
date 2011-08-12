@@ -57,7 +57,7 @@ class PointClassColor:
     """
     """
 
-    def __init__(self, name, clmin, clmax, fill_color, stroke_color=None, opacity=None):
+    def __init__(self, name, clmin, clmax, fill_color, stroke_color=None, opacity=1):
         self.name = name
         self.clmin = clmin
         self.clmax = clmax
