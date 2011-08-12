@@ -383,7 +383,7 @@ function addLayer(server_url, label, layer_name, opacity_value) {
         opacity: opacity_value,
         source: "0"
     }, function(rec) {
-        rec.getLayer().attributeion = "My attribution";
+        rec.getLayer().attribution = "My attribution";
         app.mapPanel.layers.add(rec);
     });
 }
