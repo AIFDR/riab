@@ -68,6 +68,14 @@ wget -c "$RISIKO_DATASOURCE/geonode-libs.pybundle"
 wget -c "$RISIKO_DATASOURCE/geonode-client.zip"
 wget -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
 wget -c "$RISIKO_DATASOURCE/risiko_demo_data.tgz"
+
+# Getting new calculator dependencies (new version to replace ant init)
+
+wget -c "$RISIKO_DATASOURCE/opengeo-GeoExt-deac166.zip"
+wget -c "$RISIKO_DATASOURCE/opengeo-gxp-a47244a.zip"
+wget -c "$RISIKO_DATASOURCE/openlayers-openlayers-79f0b0a.zip"
+wget -c "$RISIKO_DATASOURCE/tschaub-ringojs-v0.5.0-433-gf058d4d.zip"
+wget -c "$RISIKO_DATASOURCE/tschaub-buildkit-86eacbd.zip"
 cd ..
 
 
@@ -97,15 +105,15 @@ source ~/.bash_aliases
 source riab_env/bin/activate
 
 echo ">>> Installing riab dependencies"
-unzip -o temp/tomcat.zip
+unzip -o temp/tomcat.zip > /dev/null
 cp temp/geoserver-geonode-dev.war tomcat/webapps/
 cp temp/geonetwork.war tomcat/webapps/
-tar xvfz temp/risiko_test_data.tgz
+tar xvfz temp/risiko_test_data.tgz > /dev/null
 #FIXME: We should remove this from the installer, it is too much data
 # and more related to our demo server than riab development.
-tar xvfz temp/risiko_demo_data.tgz
+tar xvfz temp/risiko_demo_data.tgz > /dev/null
 mkdir -p geonode/src/GeoNodePy/geonode/maps/static
-unzip -o temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode
+unzip -o temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode > /dev/null
 mkdir -p logs
 pip install temp/geonode-libs.pybundle
 
@@ -118,11 +126,19 @@ pip install -e riab
 
 echo ">>> Building and installing the Calculator application"
 pushd .
-cd riab/calculator
-ant init
-ant dist
+mkdir -p riab/calculator/build
+cd riab/calculator/build
+unzip ../../../temp/opengeo-GeoExt-deac166.zip > /dev/null
+mv opengeo-GeoExt* ../app/static/externals/geoext
+unzip ../../../temp/opengeo-gxp-a47244a.zip > /dev/null
+mv opengeo-gxp* ../app/static/externals/gxp
+unzip ../../../temp/openlayers-openlayers-79f0b0a.zip > /dev/null
+mv openlayers-openlayers-* ../app/static/externals/openlayers
+unzip ../../../temp/tschaub-ringojs-v0.5.0-433-gf058d4d.zip > /dev/null
+mv tschaub-ringojs* ringo
+unzip ../../../temp/tschaub-buildkit-86eacbd.zip > /dev/null
+mv tschaub-buildkit* buildkit
 mkdir -p ../impact/static
-cp -Rf build/calculator/WEB-INF/app/static ../impact/static/calculator
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
