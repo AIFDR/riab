@@ -328,7 +328,11 @@ class Vector:
                     ogrtypes = {}
                     for name in fields:
                         att = data[0][name]
-                        ogrtypes[name] = TYPE_MAP[type(att)]
+                        py_type = type(att)
+                        msg = ('Unknown type for storing vector '
+                               'data: %s, %s' % (name, str(py_type)[1:-1]))
+                        assert py_type in TYPE_MAP, msg
+                        ogrtypes[name] = TYPE_MAP[py_type]
 
             else:
                 msg = ('Input parameter "data" was specified '
