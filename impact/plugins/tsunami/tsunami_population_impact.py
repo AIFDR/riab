@@ -55,6 +55,8 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
             else:
                 affected = 0
 
+            print i, dep, pop, affected
+
             # Collect depth and calculated damage
             result_dict = {'AFFECTED': affected,
                            'DEPTH': dep}
@@ -93,14 +95,12 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
         scale_keys = [10000000000,10000000,5000000,1000000,500000,250000,100000]
-        scale_values = [20,20,20,20,20,20,20]
+        scale_values = [2,3,5,7,8,11,13]
 
-        class_keys = ['No Damage', '10-25', '25-50', '50-100']
+        class_keys = ['No Damage', '90-100']
         class_values = [
-                        {'min':0, 'max':10, 'color': '#cccccc', 'opacity': '0'},
-                        {'min':10, 'max':25, 'color': '#000004', 'opacity': '0.8'},
-                        {'min':25, 'max':50, 'color': '#fd8d3c', 'opacity': '0.8'},
-                        {'min':50, 'max':100, 'color': '#e31a1c', 'opacity': '1'},
+                        {'min':0, 'max':90, 'color': '#cccccc', 'opacity': '0'},
+                        {'min':90, 'max':100, 'color': '#e31a1c', 'opacity': '1'},
                        ]
 
 
