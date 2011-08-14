@@ -86,16 +86,17 @@ def check_data_integrity(layer_files):
         layer = filename
 
         # Ensure that projection is consistent across all layers
+        # FIXME (Ole): Ideally use a library to ascertain this 
         if projection is None:
             projection = layer.projection
         else:
+            refprj = projection.get_projection(proj4=True)
+            lyrprj = layer.projection.get_projection(proj4=True)
             msg = ('Projections in input layer %s is not as expected:\n'
                    'projection: %s\n'
                    'default:    %s'
-                   '' % (filename,
-                         projection.get_projection(proj4=True),
-                         layer.projection.get_projection(proj4=True)))
-            assert projection == layer.projection, msg
+                   '' % (filename, lyrprj, refprj))
+            assert refprj == lyrprj, msg
 
         # Ensure that geotransform and dimensions is consistent across
         # all *raster* layers
