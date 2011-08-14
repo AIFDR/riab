@@ -176,7 +176,7 @@ def calculate(request, save_output=dummy_save):
         calculation.errors = errors
         calculation.stacktrace = trace
         calculation.save()
-        jsondata = json.dumps({'errors': errors})
+        jsondata = json.dumps({'errors': errors, 'stacktrace': trace})
         return HttpResponse(jsondata, mimetype='application/json')
 
     msg = ('- Result available at %s.' % result.get_absolute_url())
@@ -198,6 +198,12 @@ def calculate(request, save_output=dummy_save):
 
     # json.dumps does not like django users
     output['user'] = calculation.user.username
+    downloads = result.download_links()
+    keys = [x[0] for x in downloads]
+    values = [x[2] for x in downloads]
+    download_dict = dict(zip(keys, values))
+    if 'excel' in keys:
+        output['excel'] = download_dict['excel']
 
     # Keywords do not like caption being there.
     #FIXME: Do proper parsing, don't assume caption is the only keyword.

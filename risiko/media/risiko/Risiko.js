@@ -989,7 +989,9 @@ function exposureSelected(combo){
 }
 
 function showCaption(caption){
-    resultPanel = Ext.getCmp('resultpanel').getEl().update(caption);
+
+    output = '<div style="padding-left: 25px">' + caption + '</div>';
+    resultPanel = Ext.getCmp('resultpanel').getEl().update(output);
 }
 
 function disableLayer(layer_name){
@@ -1008,10 +1010,7 @@ function received(result, request) {
 
     data = Ext.decode( result.responseText );
     if (data.errors !== null){
-        showCaption('Calculation failed with error: ' + data.errors);
-        if (window.console && console.log){
-             console.log(data.stacktrace);
-        }
+        Ext.MessageBox.alert('Calculation Failed:', data.errors);
         return
     }
     //reset_view();
@@ -1024,6 +1023,7 @@ function received(result, request) {
     var run_duration = data.run_duration;
     var bbox = data.bbox;
     var caption = data.caption;
+    var excel = data.excel;
     var exposure = data.exposure_layer;
     var hazard = data.hazard_layer;
     var base_url = layer_uri.split('/')[2];
@@ -1032,8 +1032,10 @@ function received(result, request) {
     var result_label = exposure + ' X ' + hazard + '=' +result_name;
     layer=addLayer(server_url, result_label, result_name, 0.9);
     lastImpactLayer=result_label;
-    
-    showCaption(caption);
+
+    layer_link = '<h1>Result layer: <a target="_blank" href="'+ layer_uri + '">' + result_name + '</a></h1>';
+    excel_link = '<a href="'+ excel + '">View in excel</a>';
+    showCaption(layer_link + excel_link + caption);
 }
 
 function calculate()
@@ -1187,6 +1189,7 @@ function calculate()
                 flex: 2,
                 frame: false,
                 border: false,
+                autoScroll:true,
                 width: '100%',
                 html:"",
                 xtype: "panel",
