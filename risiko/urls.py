@@ -11,9 +11,7 @@ js_info_dict = {
 }
 
 urlpatterns = patterns('',
-    (r'^$', 'django.views.generic.simple.direct_to_template',
-                            {'template': 'risiko/index.html'}),
-    (r'^index/?$', 'geonode.views.index'),
+    (r'^$', 'geonode.views.index'),
     (r'^(?P<page>help)/?$', 'geonode.views.static'),
     (r'^developer/?$', 'geonode.views.developer'),
     (r'^lang\.js$', 'django.views.generic.simple.direct_to_template',
@@ -49,7 +47,7 @@ urlpatterns = patterns('',
     (r'^accounts/', include('registration.urls')),
     (r'^profiles/', include('profiles.urls')),
     (r'^rosetta/', include('rosetta.urls')),
-    (r'^api/v1/calculate', 'impact.views.calculate',
+    (r'^impact/api/calculate', 'impact.views.calculate',
                                          {'save_output': save_to_geonode}),
-    (r'^api/v1/', include('impact.urls')),
+    (r'^impact/', include('impact.urls')),
     ) + staticfiles_urlpatterns()
