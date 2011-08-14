@@ -49,16 +49,13 @@ Ext.onReady(function(){
     <h2> {% trans "Welcome" %} </h2>
     <p>
     {% blocktrans %}
-Risiko - Risk in a Box is a web based tool that models impacts of different hazard events on population or infrastructure. It is Open Source Software, and we encourage you to build new applications using its components and the resources it provides. This page provides links to the source code, the documentation and the online demo server.
+Risiko - Risk in a Box is a web based tool that models impacts of different hazard events on population or infrastructure. It is Open Source Software, and we encourage you to build new applications using its components and the resources it provides.
     {% endblocktrans %} 
       <div id="calculator" class="content-button"></div><br clear='all'>
   </p>
-  </div>
-  <div class="block">
-    <h2> {% trans "Maps" %} </h2>
     <p>
     {% blocktrans %} 
-  GeoNode lets you compose and share maps.  <strong>Create</strong>
+   <strong>Create</strong>
       a map with our cartography tool, or <strong>explore</strong> maps
       shared by others.
     {% endblocktrans %} 
@@ -67,17 +64,14 @@ Risiko - Risk in a Box is a web based tool that models impacts of different haza
       <div id="explore_map" class="content-button"></div>
       <div id="create_map" class="content-button"></div>
     </div>
-  </div>
-  <div id="data_block" class="block">
-    <h2> {% trans "Data" %} </h2>
     <p>
     {% blocktrans %} 
-  GeoNode lets you upload, manage, and browse data.  
+    
       <strong>Search</strong> for data that is valuable to you, or 
       <strong>upload</strong> your own data.
     {% endblocktrans %} 
     </p>
-
+</div>
     <!-- Data search text box and button -->
 
     <form action="{% url search %}" method="POST">

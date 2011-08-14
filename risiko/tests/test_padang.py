@@ -122,7 +122,7 @@ class Test_calculations(unittest.TestCase):
                 warnings.simplefilter('ignore')
 
                 c = Client()
-                rv = c.post('/api/v1/calculate/', data=dict(
+                rv = c.post('/impact/api/calculate/', data=dict(
                             hazard_server=INTERNAL_SERVER_URL,
                             hazard=hazard_name,
                             exposure_server=INTERNAL_SERVER_URL,

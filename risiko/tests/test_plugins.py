@@ -136,7 +136,7 @@ class Test_plugins(unittest.TestCase):
         """
 
         c = Client()
-        rv = c.post('/api/v1/functions/', data={})
+        rv = c.post('/impact/api/functions/', data={})
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
@@ -164,7 +164,7 @@ class Test_plugins(unittest.TestCase):
         assert len(exposure_layer.keywords) > 0, msg
 
         c = Client()
-        rv = c.post('/api/v1/functions/', data={})
+        rv = c.post('/impact/api/functions/', data={})
 
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
