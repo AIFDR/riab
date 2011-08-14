@@ -160,7 +160,7 @@ class Test_calculations(unittest.TestCase):
 
         # Run calculation
         c = Client()
-        rv = c.post('/api/v1/calculate/', data=dict(
+        rv = c.post('/impact/api/calculate/', data=dict(
                 hazard_server=INTERNAL_SERVER_URL,
                 hazard=hazard_name,
                 exposure_server=INTERNAL_SERVER_URL,
@@ -261,7 +261,7 @@ class Test_calculations(unittest.TestCase):
                 warnings.simplefilter('ignore')
 
                 c = Client()
-                rv = c.post('/api/v1/calculate/', data=dict(
+                rv = c.post('/impact/api/calculate/', data=dict(
                         hazard_server=INTERNAL_SERVER_URL,
                         hazard=hazard_name,
                         exposure_server=INTERNAL_SERVER_URL,
@@ -349,7 +349,7 @@ class Test_calculations(unittest.TestCase):
         #with warnings.catch_warnings():
         #    warnings.simplefilter('ignore')
         c = Client()
-        rv = c.post('/api/v1/calculate/', data=dict(
+        rv = c.post('/impact/api/calculate/', data=dict(
                 hazard_server=INTERNAL_SERVER_URL,
                 hazard=hazard_name,
                 exposure_server=INTERNAL_SERVER_URL,
@@ -387,7 +387,7 @@ class Test_calculations(unittest.TestCase):
         # FIXME (Ole): Not finished
 
     def test_exceptions_in_calculate_endpoint(self):
-        """Wrong bbox input is handled nicely by /api/v1/calculate/
+        """Wrong bbox input is handled nicely by /impact/api/calculate/
         """
 
         # Upload input data
@@ -426,12 +426,12 @@ class Test_calculations(unittest.TestCase):
 
         # First do it correctly (twice)
         c = Client()
-        rv = c.post('/api/v1/calculate/', data=data)
-        rv = c.post('/api/v1/calculate/', data=data)
+        rv = c.post('/impact/api/calculate/', data=data)
+        rv = c.post('/impact/api/calculate/', data=data)
 
         # Then check that spaces are dealt with correctly
         data['bbox'] = bbox_with_spaces
-        rv = c.post('/api/v1/calculate/', data=data)
+        rv = c.post('/impact/api/calculate/', data=data)
 
         # Then with a range of wrong bbox inputs
         for bad_bbox in [bbox_list,
@@ -452,7 +452,7 @@ class Test_calculations(unittest.TestCase):
             data['bbox'] = bad_bbox
 
             # FIXME (Ole): Suppress error output from c.post
-            rv = c.post('/api/v1/calculate/', data=data)
+            rv = c.post('/impact/api/calculate/', data=data)
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(rv['Content-Type'], 'application/json')
             data_out = json.loads(rv.content)
