@@ -923,8 +923,8 @@ functionstore = new Ext.data.JsonStore({
      });
 
 function reset_view() {
-    exposure=Ext.getCmp('exposurecombo')
-    hazard=Ext.getCmp('hazardcombo')
+    exposure=Ext.getCmp('exposurecombo');
+    hazard=Ext.getCmp('hazardcombo');
 
     removeLayer(exposure.getValue());
     removeLayer(hazard.getValue());
