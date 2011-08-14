@@ -107,10 +107,11 @@
     </target>
 
     <target name="deploy">
-        <mkdir dir="${build}/../../impact/static/"/>
-        <mkdir dir="${build}/../../impact/static/calculator"/>
-        <copy todir="${build}../../impact/static/calculator">
-            <fileset dir="${build}/${ant.project.name}/WEB-INF/app/static/"/>
+        <mkdir dir="${build}/../../../impact/static/"/>
+        <delete dir="${build}../../../impact/static/calculator"/>
+        <mkdir dir="${build}/../../../impact/static/calculator"/>
+        <copy todir="${build}../../../impact/static/calculator">
+            <fileset dir="${build}/${ant.project.name}/WEB-INF/app/static"/>
         </copy>
     </target>
 
