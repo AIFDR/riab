@@ -991,6 +991,15 @@ function showCaption(caption){
     Ext.MessageBox.alert('Calculation finished successfully', caption);
 }
 
+function disableLayer(layer_name){
+     var map = app.mapPanel.map;
+     layers = map.getLayersByName(layer_name);
+       if (layers.length > 0) {
+            lay = layers[0];
+            lay.display(false);
+      }
+}
+
 function received(result, request) {
     var progressbar = Ext.getCmp('calculateprogress');
     progressbar.reset();
@@ -1004,8 +1013,11 @@ function received(result, request) {
         }
         return
     }
-    reset_view();
-    removeLayer(lastImpactLayer);
+    //reset_view();
+
+    disableLayer(Ext.getCmp('exposurecombo').getValue())
+    disableLayer(Ext.getCmp('hazardcombo').getValue())
+    disableLayer(lastImpactLayer);
     var layer_uri = data.layer;
     var run_date = data.run_date;
     var run_duration = data.run_duration;
