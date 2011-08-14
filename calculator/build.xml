@@ -69,7 +69,7 @@
 
     </target>
     
-    <target name="dist" depends="buildjs, redist"/>
+    <target name="dist" depends="buildjs, redist, deploy"/>
     
     <target name="redist">
 
@@ -103,6 +103,14 @@
         <!-- copy gxp resources -->
         <copy todir="${build}/${ant.project.name}/WEB-INF/app/static/externals/gxp/src/theme">
             <fileset dir="app/static/externals/gxp/src/theme"/>
+        </copy>
+    </target>
+
+    <target name="deploy">
+        <mkdir dir="${build}/../../impact/static/"/>
+        <mkdir dir="${build}/../../impact/static/calculator"/>
+        <copy todir="${build}../../impact/static/calculator">
+            <fileset dir="${build}/${ant.project.name}/WEB-INF/app/static/"/>
         </copy>
     </target>
 
