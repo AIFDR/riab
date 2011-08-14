@@ -990,7 +990,7 @@ function exposureSelected(combo){
 
 function showCaption(caption){
 
-    output = '<div style="padding-left: 25px">' + caption + '</div>';
+    output = '<div>' + caption + '</div>';
     resultPanel = Ext.getCmp('resultpanel').getEl().update(output);
 }
 
@@ -1033,9 +1033,10 @@ function received(result, request) {
     layer=addLayer(server_url, result_label, result_name, 0.9);
     lastImpactLayer=result_label;
 
-    layer_link = '<h1>Result layer: <a target="_blank" href="'+ layer_uri + '">' + result_name + '</a></h1>';
-    excel_link = '<a href="'+ excel + '">View in excel</a>';
-    showCaption(layer_link + excel_link + caption);
+    layer_link = '<a  target="_blank" href="'+ layer_uri + '">Hasil peta</a><br><br>';
+    excel_link = '';
+    if (excel !== undefined){ excel_link = '<a href="'+ excel + '">Hasil table</a>';};
+    showCaption(caption + '<br><br>' +  layer_link + excel_link);
 }
 
 function calculate()
@@ -1109,7 +1110,7 @@ function calculate()
           collapsible: true,
           collapseMode: "mini",
           header: false,
-          border: false,
+          border: true,
           layout: "vbox",
           defaults: {
                     align: 'stretch',
@@ -1124,6 +1125,7 @@ function calculate()
                 labelWidth: 80,
                 height: 200,
                 split: true,
+                border: false,
                 items: [{
                              xtype: 'combo',
                              id: 'hazardcombo',
@@ -1185,24 +1187,28 @@ function calculate()
                            handler: calculate
 			  }]
              },{
-                id: "resultpanel",
+                id: "resultpanelcontainer",
+                title: 'Kalkulasi Hasil',
                 flex: 2,
-                frame: false,
-                border: false,
+                frame: true,
+                border: true,
                 autoScroll:true,
                 width: '100%',
-                html:"",
+                items: [
+                         {id: "resultpanel", html: ""}
+                       ],
                 xtype: "panel",
                 defaults:{hideBorders: true}
                },{
                 id: "logopanel",
-                flex: 2,
+                flex: 3,
+                height: 180,
                 frame: false,
                 border: false,
                 width: '100%',
                 html:"<div>"+
                      "<p>"+
-                       "<img src='/static/theme/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 70px; float: left' />"+
+                       "<a href='http://bnpb.go.id' target='_blank'><img src='/static/theme/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 100px; float: left' /></a>"+
                      "</p></div>",
                 xtype: "panel",
                 defaults:{hideBorders: false}

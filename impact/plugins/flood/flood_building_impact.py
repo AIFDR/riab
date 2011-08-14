@@ -73,7 +73,7 @@ class FloodBuildingImpactFunction(FunctionProvider):
         #           'than 10 cm = %i' % count)
 
         # Create report
-        caption = ('<table border="0" style="padding-left&#58; 30px" width="320px">'
+        caption = ('<table border="0" width="320px">'
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
                     '   <tr></tr>'
                     '   <tr><td>%s&#58;</td><td>%i</td></tr>'
