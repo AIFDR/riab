@@ -11,7 +11,7 @@ js_info_dict = {
 }
 
 urlpatterns = patterns('',
-    (r'^$', 'geonode.views.index'),
+    url(r'^$', 'geonode.views.index', name='index'),
     (r'^(?P<page>help)/?$', 'geonode.views.static'),
     (r'^developer/?$', 'geonode.views.developer'),
     (r'^lang\.js$', 'django.views.generic.simple.direct_to_template',
