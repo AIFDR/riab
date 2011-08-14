@@ -34,7 +34,11 @@ def raster_spline(longitudes, latitudes, values):
     A = numpy.flipud(values)
 
     # Call underlying spline
-    F = RectBivariateSpline(latitudes, longitudes, A)
+    try:
+        F = RectBivariateSpline(latitudes, longitudes, A)
+    except:
+        msg = 'Interpolation failed. Please zoom out a bit and try again'
+        raise Exception(msg)
 
     # Return interpolator
     return Interpolator(F, longitudes, latitudes)
