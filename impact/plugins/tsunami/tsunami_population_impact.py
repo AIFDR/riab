@@ -20,7 +20,7 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
     target_field = 'AFFECTED'
 
     def run(self, layers):
-        """Risk plugin for tsunami population 
+        """Risk plugin for tsunami population
         """
 
         # Extract data
@@ -44,7 +44,7 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
         #print 'Number of population points', N
 
         # Calculate population impact
-        count = 0 
+        count = 0
         population_impact = []
         for i in range(N):
             dep = float(depth[i].values()[0])
@@ -93,11 +93,11 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
         scale_keys = [10000000000,10000000,5000000,1000000,500000,250000,100000]
-        scale_values = [20,20,20,20,20,20,20]
+        scale_values = [8,8,8,8,8,8,8]
 
         class_keys = ['No Damage', '10-25', '25-50', '50-100']
         class_values = [
-                        {'min':0, 'max':10, 'color': '#cccccc', 'opacity': '0'},
+                        {'min':0, 'max':10, 'color': '#cccccc', 'opacity': '0.3'},
                         {'min':10, 'max':25, 'color': '#000004', 'opacity': '0.8'},
                         {'min':25, 'max':50, 'color': '#fd8d3c', 'opacity': '0.8'},
                         {'min':50, 'max':100, 'color': '#e31a1c', 'opacity': '1'},
@@ -106,7 +106,7 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
 
         if self.symbol_field in data.get_attribute_names():
             symbol_field = self.symbol_field
- 
+
             symbol_keys.extend(['Church/Mosque', 'Commercial (office)', 'Hotel',
                                 'Medical facility', 'Other', 'Other industrial',
                                 'Residential', 'Retail', 'School',
