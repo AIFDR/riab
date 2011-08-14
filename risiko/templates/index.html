@@ -13,7 +13,7 @@ Ext.onReady(function(){
   var clientButton = new Ext.Button({
      renderTo: 'calculator', 
      text: '{% trans "Launch Risiko Impact Calculator" %}',
-     handler: function(){ window.location = "{% url calculator %}"; }
+     handler: function(){ window.location = "{% url oldcalculator %}"; }
   });
 
   var exploreMapButton = new Ext.Button({

@@ -825,7 +825,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
      id: 'exposurestore',
      fields: ['name', 'server_url'],
      autoLoad: true,
-     url: '/api/v1/layers/?category=exposure',
+     url: '/impact/api/layers/?category=exposure',
      root: 'objects'
      });
 
@@ -833,7 +833,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
      id: 'hazardstore',
      fields: ['name', 'server_url'],
      autoLoad: true,
-     url: '/api/v1/layers/?category=hazard',
+     url: '/impact/api/layers/?category=hazard',
      root: 'objects'
      });
 
@@ -918,7 +918,7 @@ functionstore = new Ext.data.JsonStore({
      id: 'functionstore',
      fields: ['name','doc', 'layers'],
      autoLoad: true,
-     url: '/api/v1/functions/',
+     url: '/impact/api/functions/',
      root: 'functions'
      });
 
@@ -1051,7 +1051,7 @@ function calculate()
 	      increment:5});
 
   Ext.Ajax.request({
-     url: '/api/v1/calculate/',
+     url: '/impact/api/calculate/',
      loadMask: true,
      params: {
        hazard_server: hazard_server,
