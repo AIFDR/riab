@@ -136,10 +136,7 @@ var Risiko = Ext.extend(gxp.Viewer, {
                         border: false,
                         width: '100%',
                         html: "<div><p>"+
-                                "<img src='theme/app/img/bnpb_logo.jpg' alt='BNPB' title='BNPB' width=120 style='padding-left: 10px; float: left' />"+
-                                "<img src='theme/app/img/bppt_logo.jpg' alt='BPPT' title='BPPT' width=120 style='padding-right: 10px; padding-top: 20px;float: right' />" +
-                                "<img src='theme/app/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=100 style='padding-left: 20px; float: left;' />" +
-                                "<img src='theme/app/img/aifdr.png' alt='AIFDR' title='AIFDR' width=100 style='padding-right: 20px; float: right;' />" +
+                                "<img src='/static/theme/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 10px; float: left' />"+
                               "</p></div>",
                         xtype: "panel",
                         defaults: {
@@ -271,16 +268,16 @@ var Risiko = Ext.extend(gxp.Viewer, {
 
     //TODO i18n from gxp, move Indonesian GeoExplorer translations to gxp
     //Risiko
-    hazardComboLabelText: "Hazard",
-    exposureComboLabelText: "Exposure",
-    functionComboLabelText: "Function",
-    resetButtonText: "Reset",
-    calculateButtonText: "Calculate",
-    calculatingText: "Calculating",
-    calculatorTitleText: "Impact Calculator",
-    hazardSelectText: "Select Hazard ...",
-    exposureSelectText: "Select Exposure ...",
-    functionSelectText: "Select Function ...",
+    hazardComboLabelText: gettext("Hazard"),
+    exposureComboLabelText: gettext("Exposure"),
+    functionComboLabelText: gettext("Function"),
+    resetButtonText: gettext("Reset"),
+    calculateButtonText: gettext("Calculate"),
+    calculatingText: gettext("Calculating"),
+    calculatorTitleText: gettext("Impact Calculator"),
+    hazardSelectText: gettext("Select Hazard ..."),
+    exposureSelectText: gettext("Select Exposure ..."),
+    functionSelectText: gettext("Select Function ..."),
 
     displayXHRTrouble: function(response) {
         response.status && Ext.Msg.show({
@@ -367,7 +364,7 @@ exposurestore = new Ext.data.JsonStore({
     id: 'exposurestore',
     fields: ['name', 'server_url'],
     autoLoad: true,
-    url: '/api/v1/layers/?category=exposure',
+    url: '/impact/api/layers/?category=exposure',
     root: 'objects'
 });
 
@@ -375,7 +372,7 @@ hazardstore = new Ext.data.JsonStore({
     id: 'hazardstore',
     fields: ['name', 'server_url'],
     autoLoad: true,
-    url: '/api/v1/layers/?category=hazard',
+    url: '/impact/api/layers/?category=hazard',
     root: 'objects'
 });
 
@@ -454,7 +451,7 @@ functionstore = new Ext.data.JsonStore({
     id: 'functionstore',
     fields: ['name','doc', 'layers'],
     autoLoad: true,
-    url: '/api/v1/functions/',
+    url: '/impact/api/functions/',
     root: 'functions'
 });
 
@@ -591,7 +588,7 @@ function calculate() {
 	});
 
     Ext.Ajax.request({
-        url: '/api/v1/calculate/',
+        url: '/impact/api/calculate/',
         loadMask: true,
         params: {
             hazard_server: hazard_server,
