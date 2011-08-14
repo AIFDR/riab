@@ -988,7 +988,7 @@ function exposureSelected(combo){
 }
 
 function showCaption(caption){
-    Ext.MessageBox.alert('Calculation finished successfully', caption);
+    resultPanel = Ext.getCmp('resultpanel').getEl().update(caption);
 }
 
 function disableLayer(layer_name){
@@ -1007,7 +1007,7 @@ function received(result, request) {
 
     data = Ext.decode( result.responseText );
     if (data.errors !== null){
-        Ext.MessageBox.alert('Calculation failed with error:', data.errors);
+        showCaption('Calculation failed with error: ' + data.errors);
         if (window.console && console.log){
              console.log(data.stacktrace);
         }
@@ -1184,6 +1184,15 @@ function calculate()
                            handler: calculate
 			  }]
              },{
+                id: "resultpanel",
+                flex: 2,
+                frame: false,
+                border: false,
+                width: '100%',
+                html:"",
+                xtype: "panel",
+                defaults:{hideBorders: true}
+               },{
                 id: "logopanel",
                 flex: 2,
                 frame: false,
@@ -1191,14 +1200,14 @@ function calculate()
                 width: '100%',
                 html:"<div>"+
                      "<p>"+
-                       "<img src='/static/theme/img/bnpb_logo.jpg' alt='BNPB' title='BNPB' width=120 style='padding-left: 10px; float: left' />"+
-                       "<img src='/static/theme/img/bppt_logo.jpg' alt='BPPT' title='BPPT' width=120 style='padding-right: 10px; padding-top: 20px;float: right' />" +
-	               "<img src='/static/theme/img/gfdrr.jpg' alt='GFDRR' title='GFDRR' width=100 style='padding-left: 20px; float: left;' />" +
-                       "<img src='/static/theme/img/aifdr.png' alt='AIFDR' title='AIFDR' width=100 style='padding-right: 20px; float: right;' />" +
+                       "<img src='/static/theme/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 70px; float: left' />"+
                      "</p></div>",
                 xtype: "panel",
-                defaults:{hideBorders: true}
+                defaults:{hideBorders: false}
                }]
+
+
+
         });
 
 
