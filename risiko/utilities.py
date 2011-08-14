@@ -237,6 +237,8 @@ def save_file_to_geonode(filename, user=None, title=None,
                             title=title,
                             keywords=keyword_list,
                             overwrite=overwrite)
+        layer.keywords = ' '.join(keyword_list)
+        layer.save()
     except GeoNodeException, e:
         # Layer did not upload. Convert GeoNodeException to RisikoException
         raise RisikoException(e)

@@ -6,15 +6,15 @@ from impact.plugins.utilities import PointZoomSize, PointClassColor, PointSymbol
 import scipy.stats
 
 
-class TsunamiPopulationImpactFunction(FunctionProvider):
-    """Risk plugin for tsunami impact on population data
+class FloodBuildingImpactFunction(FunctionProvider):
+    """Risk plugin for flood impact on building data
 
     :param requires category=="hazard" and \
-                    subcategory.startswith("tsunami") and \
-                    layer_type=="raster"
+                    subcategory.startswith("flood") and \
+                    layer_type=="raster" and \
+                    unit=="m"
     :param requires category=="exposure" and \
-                    subcategory.startswith("population") and \
-                    layer_type=="feature"
+                    subcategory.startswith("building")
     """
 
     target_field = 'AFFECTED'
@@ -45,17 +45,16 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
 
         # Calculate population impact
         count = 0
-        population_impact = []
+        building_impact = []
         for i in range(N):
             dep = float(depth[i].values()[0])
-            pop = E.get_data('GRID_CODE', i)
 
-            if dep > 1:
+            # Tag and count
+            if dep > 0.1:
                 affected = 99.5
+                count += 1
             else:
                 affected = 0
-
-            print i, dep, pop, affected
 
             # Collect depth and calculated damage
             result_dict = {'AFFECTED': affected,
@@ -66,42 +65,49 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
                 result_dict[key] = E.get_data(key, i)
 
             # Record result for this feature
-            population_impact.append(result_dict)
+            building_impact.append(result_dict)
 
-            # Calculate statistics
-            if affected > 99:
-                count += pop
 
         # Create report
-        caption = ('Number of people affected by tsunami inundation greater '
-                   'than 1 m = %i' % count)
+        #caption = ('Number of buildings affected by flood inundation greater '
+        #           'than 10 cm = %i' % count)
 
-        #print population_impact
+        # Create report
+        caption = ('<table border="0" width="350px">'
+                   '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
+                    '   <tr></tr>'
+                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (> 10 cm) &#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (< 10 cm) &#58;</td><td>%i</td></tr>'
+                    '</table>' % (_('Buildings'),  _('Total'),
+                                  _('All'), N,
+                                  _('Inundated'), count,
+                                  _('Not inundated'), N - count))
+
+
         # Create vector layer and return
-        V = Vector(data=population_impact,
+        V = Vector(data=building_impact,
                    projection=E.get_projection(),
                    geometry=coordinates,
-                   name='Estimated population affected',
+                   name='Estimated buildings affected',
                    keywords={'caption': caption})
         return V
 
     def generate_style(self, data):
         """Generates and SLD file based on the data values
         """
-        DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
+        DEFAULT_SYMBOL = 'circle'
 
         symbol_field = None
         symbol_keys = [None,'']
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
         scale_keys = [10000000000,10000000,5000000,1000000,500000,250000,100000]
-        scale_values = [8,8,8,8,8,8,8]
+        scale_values = [5,5,5,5,5,8,14]
 
-        class_keys = ['No Damage', '90-100']
-        class_values = [
-                        {'min':0, 'max':90, 'color': '#cccccc', 'opacity': '0'},
-                        {'min':90, 'max':100, 'color': '#e31a1c', 'opacity': '1'},
-                       ]
+        class_keys = ['Not affected', 'Greater than 10 cm']
+        class_values = [{'min':0, 'max':90, 'color': '#cccccc', 'opacity': '0.2'},
+                        {'min':90, 'max':100, 'color': '#F31a0c', 'opacity': '1'}]
 
 
         if self.symbol_field in data.get_attribute_names():
