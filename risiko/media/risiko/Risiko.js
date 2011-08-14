@@ -937,6 +937,7 @@ function reset_view() {
     exposure.disable();
     Ext.getCmp('functioncombo').disable();
     Ext.getCmp('functioncombo').setValue("");
+    Ext.getCmp('resultpanel').getEl().update('');
 }
 
 function exposureSelected(combo){
@@ -1031,6 +1032,7 @@ function received(result, request) {
     var result_label = exposure + ' X ' + hazard + '=' +result_name;
     layer=addLayer(server_url, result_label, result_name, 0.9);
     lastImpactLayer=result_label;
+    
     showCaption(caption);
 }
 

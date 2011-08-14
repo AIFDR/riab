@@ -48,10 +48,10 @@ Ext.onReady(function() {
                       "visibility": false, "source": "0", "fixed": true, "type": "OpenLayers.Layer"
                      }, {
                        "opacity": 1, "group": "background", "args": ["OpenStreetMap"],
-                       "visibility": false, "source": "0", "fixed": true, "type": "OpenLayers.Layer.OSM"
+                       "visibility": true, "source": "0", "fixed": true, "type": "OpenLayers.Layer.OSM"
                      }, {
                        "opacity": 1, "group": "background", "args": ["Static", "http://127.0.0.1:8001/geoserver-geonode-dev/wms", {"layers": ["geonode:basemap_300dpi"], "tiled": false, "format": "image/png"}, {"buffer": 0}],
-                       "visibility": true, "source": "0", "fixed": true, "type": "OpenLayers.Layer.WMS"
+                       "visibility": false, "source": "0", "fixed": true, "type": "OpenLayers.Layer.WMS"
                      }, {
                        "opacity": 1, "group": "background", "args": ["bluemarble", "http://maps.opengeo.org/geowebcache/service/wms", {"layers": ["bluemarble"], "tiled": true, "tilesOrigin": [-20037508.34, -20037508.34], "format": "image/png"}, {"buffer": 0}], "visibility": false, "source": "0", "fixed": true, "type": "OpenLayers.Layer.WMS"
                      }, {
