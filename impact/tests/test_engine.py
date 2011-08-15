@@ -223,8 +223,13 @@ class Test_Engine(unittest.TestCase):
             C = calculated_raster.get_data(nan=0)
 
             # Check caption
-            expct = 'Number of people'
-            assert calculated_raster.get_caption().startswith(expct)
+            caption = calculated_raster.get_caption()
+            print
+            print caption
+            expct = 'people'
+            msg = ('Caption %s did not contain expected '
+                   'keyword %s' % (caption, expct))
+            assert expct in caption, msg
 
             # Compare shape and extrema
             msg = ('Shape of calculated raster differs from reference raster: '
