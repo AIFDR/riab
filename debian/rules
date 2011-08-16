@@ -19,6 +19,7 @@ install:
 	mkdir -p $(CURDIR)/debian/risiko/usr/share/risiko
 	cp -rp $(CURDIR)/dist/risiko-*.tar.gz $(CURDIR)/debian/risiko/usr/share/risiko/.
 	cp -rp $(CURDIR)/../temp/geonode-libs.pybundle $(CURDIR)/debian/risiko/usr/share/risiko/.
+	cp -rp $(CURDIR)/../geonode $(CURDIR)/debian/risiko/usr/share/risiko/.
 	cp -rp $(CURDIR)/debian/patches/* $(CURDIR)/debian/risiko/usr/share/risiko/.
 
 binary-indep: build install

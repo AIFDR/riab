@@ -21,10 +21,11 @@ set -e
 
 case "$1" in
     configure)
-	cd /var/lib/geonode; patch -p1 < /usr/share/risiko/geonode_gfdrr.patch
 	#patch ./src/owslib/owslib/feature/wfs100.py wfs100.patch
 
 	source /var/lib/geonode/bin/activate
+        cd /usr/share/risiko/geonode/src
+        pip install -e GeoNodePy
         pip install /usr/share/risiko/geonode-libs.pybundle
         pip install /usr/share/risiko/risiko*.tar.gz
         risiko syncdb --noinput
