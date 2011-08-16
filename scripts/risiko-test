@@ -13,9 +13,9 @@ risiko start
 # Show code quality
 
 if [ $# -eq 0 ];then
-    echo
-else
     risiko-lint
+else
+    echo
 fi
 
 risiko test risiko impact --noinput --with-id $@

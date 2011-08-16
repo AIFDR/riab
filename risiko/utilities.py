@@ -17,6 +17,16 @@ class RisikoException(Exception):
     pass
 
 
+def console_log():
+    """Reconfigure logging to output to the console.
+    """
+    import logging
+    for _module in ["risiko"]:
+       _logger = logging.getLogger(_module)
+       _logger.addHandler(logging.StreamHandler())
+       _logger.setLevel(logging.INFO)
+
+
 def run(cmd, stdout=None, stderr=None):
     """Run command with stdout and stderr optionally redirected
 
@@ -247,6 +257,7 @@ def save_file_to_geonode(filename, user=None, title=None,
         raise
     else:
         time.sleep(1)
+        logger.info('Uploaded "%s" with name "%s"', basename, layer.name)
         return layer
         # Check and return layer object
         # ok = False
