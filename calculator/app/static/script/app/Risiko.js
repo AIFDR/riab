@@ -49,11 +49,11 @@ var Risiko = Ext.extend(gxp.Viewer, {
                 }, {
                     id: "east",
                     region: "east",
-                    width: 290,
+                    width: 350,
                     collapsible: true,
                     collapseMode: "mini",
                     header: false,
-                    border: false,
+                    border: true,
                     layout: "vbox",
                     defaults: {
                         align: 'stretch',
@@ -64,14 +64,14 @@ var Risiko = Ext.extend(gxp.Viewer, {
                         id: "calcform",
                         title: this.calculatorTitleText,
                         xtype: 'form',
-                        labelWidth: 60,
-                        height: 180,
+                        labelWidth: 80,
+                        height: 200,
                         split: true,
+                        border: false,
                         items: [{
                             xtype: 'combo',
                             id: 'hazardcombo',
                             store: hazardstore,
-                            width: '100%',
                             displayField:'name',
                             valueField: 'name',
                             fieldLabel: this.hazardComboLabelText,
@@ -87,7 +87,6 @@ var Risiko = Ext.extend(gxp.Viewer, {
                             xtype: 'combo',
                             id: 'exposurecombo',
                             store: exposurestore,
-                            width: '100%',
                             displayField:'name',
                             valueField:'name',
                             fieldLabel: this.exposureComboLabelText,
@@ -104,7 +103,6 @@ var Risiko = Ext.extend(gxp.Viewer, {
                             xtype: 'combo',
                             id: 'functioncombo',
                             store: combo_functionstore,
-                            width: '100%',
                             displayField:'name',
                             valueField:'name',
                             fieldLabel: this.functionComboLabelText,
@@ -130,17 +128,34 @@ var Risiko = Ext.extend(gxp.Viewer, {
                             handler: calculate
             			}]
                     }, {
-                        id: "logopanel",
+                        id: "resultpanelcontainer",
+                        title: 'Kalkulasi Hasil',
                         flex: 2,
+                        frame: true,
+                        border: true,
+                        autoScroll: true,
+                        width: '100%',
+                        items: [{
+                            id: "resultpanel",
+                            html: ""
+                        }],
+                        xtype: "panel",
+                        defaults: {
+                            hideBorders: true
+                        }
+                    }, {
+                        id: "logopanel",
+                        flex: 3,
+                        height: 180,
                         frame: false,
                         border: false,
                         width: '100%',
                         html: "<div><p>"+
-                                "<img src='/static/theme/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 10px; float: left' />"+
+                                "<a href='http://bnpb.go.id' target='_blank'><img src='theme/app/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 100px; float: left' /></a>"+
                               "</p></div>",
                         xtype: "panel",
                         defaults: {
-                            hideBorders: true
+                            hideBorders: false
                         }
                     }]
                 }]
@@ -371,6 +386,7 @@ function reset_view() {
     exposure.disable();
     Ext.getCmp('functioncombo').disable();
     Ext.getCmp('functioncombo').setValue("");
+    Ext.getCmp('resultpanel').getEl().update('');
 }
 
 function exposureSelected(combo){
@@ -421,7 +437,8 @@ function exposureSelected(combo){
 }
 
 function showCaption(caption){
-    Ext.MessageBox.alert('Calculation finished successfully', caption);
+    var output = '<div>' + caption + '</div>';
+    resultPanel = Ext.getCmp('resultpanel').getEl().update(output);
 }
 
 function received(result, request) {
@@ -431,10 +448,7 @@ function received(result, request) {
 
     data = Ext.decode( result.responseText );
     if (data.errors !== null){
-        Ext.MessageBox.alert('Calculation failed with error:', data.errors);
-        if (window.console && console.log){
-             console.log(data.stacktrace);
-        }
+        Ext.MessageBox.alert('Calculation Failed:', data.errors);
         return;
     }
     reset_view();
@@ -444,6 +458,7 @@ function received(result, request) {
     var run_duration = data.run_duration;
     var bbox = data.bbox;
     var caption = data.caption;
+    var excel = data.excel;
     var exposure = data.exposure_layer;
     var hazard = data.hazard_layer;
     var base_url = layer_uri.split('/')[2];
@@ -454,7 +469,10 @@ function received(result, request) {
         callback: function() {
             addLayer(server_url, result_label, "geonode:"+result_name, 0.9);
             lastImpactLayer = result_label;
-            showCaption(caption);
+            var layer_link = '<a  target="_blank" href="'+ layer_uri + '">Hasil peta</a><br><br>';
+            var excel_link = '';
+            if (excel !== undefined){ excel_link = '<a href="'+ excel + '">Hasil table</a>';};
+            showCaption(caption + '<br><br>' + layer_link + excel_link);
         }
     });
 }
