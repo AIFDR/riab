@@ -214,16 +214,16 @@ var Risiko = Ext.extend(gxp.Viewer, {
 
     //TODO i18n from gxp, move Indonesian GeoExplorer translations to gxp
     //Risiko
-    hazardComboLabelText: gettext("Hazard"),
-    exposureComboLabelText: gettext("Exposure"),
-    functionComboLabelText: gettext("Function"),
-    resetButtonText: gettext("Reset"),
-    calculateButtonText: gettext("Calculate"),
-    calculatingText: gettext("Calculating"),
-    calculatorTitleText: gettext("Impact Calculator"),
-    hazardSelectText: gettext("Select Hazard ..."),
-    exposureSelectText: gettext("Select Exposure ..."),
-    functionSelectText: gettext("Select Function ..."),
+    hazardComboLabelText: "Hazard",
+    exposureComboLabelText: "Exposure",
+    functionComboLabelText: "Function",
+    resetButtonText: "Reset",
+    calculateButtonText: "Calculate",
+    calculatingText: "Calculating",
+    calculatorTitleText: "Impact Calculator",
+    hazardSelectText: "Select Hazard ...",
+    exposureSelectText: "Select Exposure ...",
+    functionSelectText: "Select Function ...",
 
     loadConfig: function(config, callback) {
         Ext.Ajax.request({
