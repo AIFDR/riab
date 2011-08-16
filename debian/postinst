@@ -26,8 +26,10 @@ case "$1" in
         sed -i "s/geonode/risiko/g" /var/www/geonode/wsgi/geonode.wsgi
 
 	source /var/lib/geonode/bin/activate
-        django-admin.py syncdb --noinput --settings=risiko.settings
-        django-admin.py collectstatic -v0 --noinput --settings=risiko.settings
+        pip install /usr/share/risiko/geonode-libs.pybundle
+        pip install /usr/share/risiko/risiko*.tar.gz
+        risiko syncdb --noinput
+        risiko collectstatic -v0 --noinput
 
     ;;
 
