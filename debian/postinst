@@ -21,7 +21,7 @@ set -e
 
 case "$1" in
     configure)
-	cd /var/lib/geonode; patch -p1 < geonode_gfdrr.patch
+	cd /var/lib/geonode; patch -p1 < /usr/share/risiko/geonode_gfdrr.patch
 	#patch ./src/owslib/owslib/feature/wfs100.py wfs100.patch
 
 	source /var/lib/geonode/bin/activate
