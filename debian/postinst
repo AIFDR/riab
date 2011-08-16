@@ -21,12 +21,11 @@ set -e
 
 case "$1" in
     configure)
-	#patch ./src/owslib/owslib/feature/wfs100.py wfs100.patch
+        # Patch wfs in owslib for keywords
+	patch /var/lib/geonode/src/owslib/owslib/feature/wfs100.py /usr/share/risiko/wfs100.patch
 
+        # Activate virtual environment to install risiko
 	source /var/lib/geonode/bin/activate
-        cd /usr/share/risiko/geonode/src
-        pip install -e GeoNodePy
-        pip install /usr/share/risiko/geonode-libs.pybundle
         pip install /usr/share/risiko/risiko*.tar.gz
         risiko syncdb --noinput
         risiko collectstatic -v0 --noinput
