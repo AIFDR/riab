@@ -37,7 +37,7 @@ if (java.lang.System.getProperty("app.debug")) {
         if (geonode.charAt(geonode.length-1) !== "/") {
             geonode = geonode + "/";
         }
-        var endpoints = ["maps", "data", "accounts", "api", "proxy"];
+        var endpoints = ["maps", "data", "accounts", "impact", "proxy"];
         for (var i=endpoints.length-1; i>=0; --i) {            
             urls.push(
                 [new RegExp("^\\/" + endpoints[i] + "\\/(.*)"), require("./proxy").pass({url: geonode + endpoints[i] + "/"})]
