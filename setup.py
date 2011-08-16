@@ -123,25 +123,25 @@ setup(
     packages=packages,
     data_files=data_files,
    #zip_safe=False,
-    install_requires=[
+#    install_requires=[
         # For the core, installed with apt-get
         # 'numpy', 'scipy', 'gdal',
 
         # for the web api
-        'Django==1.3',
+#        'Django==1.3',
 
         # for the storage
-        'owslib',
+#        'owslib',
 
         # for the documentation
-        'sphinx',
+#        'sphinx',
 
         # for testing
-        'nose>=0.11', 'coverage>=3.4', 'unittest2>=0.4.0',
-        'nose-cover3', 'mock', 'django-nose',
+#        'nose>=0.11', 'coverage>=3.4', 'unittest2>=0.4.0',
+#        'nose-cover3', 'mock', 'django-nose',
 
         # for improving source code quality
-        'pylint', 'pep8'],
+#        'pylint', 'pep8'],
     cmdclass = {'test': RunTests},
     scripts = ['scripts/risiko',
                'scripts/risiko-test',
