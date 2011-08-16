@@ -31,7 +31,7 @@
     <div class="wrap selfclear">             
       {% block nav %}
     <ul id="sitenav" class="selfclear">
-        <li class="home"><a href="/">{% trans "Calculator" %}</a></li> 
+        <li class="home"><a href="{% url oldcalculator %}">{% trans "Calculator" %}</a></li> 
         <li class=""><a href="{% url geonode.views.index %}">{% trans "Index" %}</a></li> 
         <li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.browse_data %}">{% trans "Layers" %}</a></li>
         <li class=""><a class="" id="mapsLink" href="{% url geonode.maps.views.maps %}">{% trans "Maps" %}</a></li>
