@@ -836,7 +836,8 @@ class Test_Engine(unittest.TestCase):
             if not numpy.isnan(interpolated_depth):
                 # FIXME (Ole): putting in tolerances for now. Remove when
                 # new interpolation is implemented (issue #19)
-                tol = 0.8
+                # FIXME: Disable test with XTest
+                tol = 1.0e-6
                 assert depth_min - tol <= interpolated_depth <= depth_max, msg
 
 if __name__ == '__main__':
