@@ -1,8 +1,8 @@
 {% extends "lang.js" %}
 
 {% block extra_lang %}
-if (window.GeoExplorer) {
-      Ext.apply(GeoExplorer.prototype, {
+GeoExt.Lang.add("{{ LANGUAGE_CODE }}", {
+    "Risiko.prototype": {
         hazardComboLabelText: gettext("Hazard"),
         exposureComboLabelText: gettext("Exposure"),
         functionComboLabelText: gettext("Function"),
@@ -13,6 +13,6 @@ if (window.GeoExplorer) {
         hazardSelectText: gettext("Select Hazard ..."),
         exposureSelectText: gettext("Select Exposure ..."),
         functionSelectText: gettext("Select Function ...")
-  });
-}
+    }
+});
 {% endblock %}

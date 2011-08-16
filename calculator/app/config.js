@@ -37,10 +37,13 @@ if (java.lang.System.getProperty("app.debug")) {
         if (geonode.charAt(geonode.length-1) !== "/") {
             geonode = geonode + "/";
         }
-        var endpoints = ["maps", "data", "accounts", "impact", "proxy"];
-        for (var i=endpoints.length-1; i>=0; --i) {            
+        var endpoints = ["maps", "data", "accounts", "impact", "proxy", "lang.js", "jsi18n"];
+        var isJS, endpoint;
+        for (var i=endpoints.length-1; i>=0; --i) {
+            endpoint = endpoints[i];
+            isJS = endpoint.indexOf(".js") == endpoint.length-3;
             urls.push(
-                [new RegExp("^\\/" + endpoints[i] + "\\/(.*)"), require("./proxy").pass({url: geonode + endpoints[i] + "/"})]
+                [new RegExp("^\\/" + endpoints[i] + "(\\/(.*))?"), require("./proxy").pass({url: geonode + endpoints[i] + (isJS ? "#" : "/")})]
             );
         }
     }

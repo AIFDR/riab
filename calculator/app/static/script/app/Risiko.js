@@ -24,6 +24,21 @@
  */
 var Risiko = Ext.extend(gxp.Viewer, {
     
+    //TODO i18n from gxp, move Indonesian GeoExplorer translations to gxp
+    //Risiko
+    /* @i18n begin */
+    hazardComboLabelText: "Hazard",
+    exposureComboLabelText: "Exposure",
+    functionComboLabelText: "Function",
+    resetButtonText: "Reset",
+    calculateButtonText: "Calculate",
+    calculatingText: "Calculating",
+    calculatorTitleText: "Impact Calculator",
+    hazardSelectText: "Select Hazard ...",
+    exposureSelectText: "Select Exposure ...",
+    functionSelectText: "Select Function ...",
+    /* @i18n end */
+
     constructor: function(config) {
         config = Ext.applyIf(config || {}, {
             proxy: "/proxy?url=",
@@ -211,19 +226,6 @@ var Risiko = Ext.extend(gxp.Viewer, {
         
         Risiko.superclass.constructor.apply(this, [config]);
     },
-
-    //TODO i18n from gxp, move Indonesian GeoExplorer translations to gxp
-    //Risiko
-    hazardComboLabelText: "Hazard",
-    exposureComboLabelText: "Exposure",
-    functionComboLabelText: "Function",
-    resetButtonText: "Reset",
-    calculateButtonText: "Calculate",
-    calculatingText: "Calculating",
-    calculatorTitleText: "Impact Calculator",
-    hazardSelectText: "Select Hazard ...",
-    exposureSelectText: "Select Exposure ...",
-    functionSelectText: "Select Function ...",
 
     loadConfig: function(config, callback) {
         Ext.Ajax.request({
