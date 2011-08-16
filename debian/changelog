@@ -1,0 +1,5 @@
+risiko (0.4.0) unstable; urgency=low
+
+  * Initial release as a debian package.
+
+ -- ingenieroariel <ingenieroariel@gmail.com>  Tue, 16 Aug 2011 08:13:18 +0700
