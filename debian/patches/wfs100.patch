@@ -1,0 +1,12 @@
+--- /home/nielso/dev_work_2june/riab_env/src/owslib/owslib/feature/wfs100.py	2011-08-09 10:01:47.805514966 +0700
++++ wfs100.py	2011-08-14 15:15:10.247201003 +0700
+@@ -335,6 +335,9 @@
+         # crs options
+         self.crsOptions = [srs.text for srs in elem.findall(nspath('SRS'))]
+ 
++        # GET KEYWORDS
++        self.keywords = [f.text for f in elem.findall(nspath('Keywords'))]
++
+         # verbs
+         self.verbOptions = [op.tag for op \
+             in parent.findall(nspath('Operations/*'))]
