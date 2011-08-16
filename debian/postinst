@@ -25,6 +25,10 @@ case "$1" in
         cp /var/www/geonode/wsgi/geonode.wsgi /var/www/geonode/wsgi/geonode.wsgi.backup
         sed -i "s/geonode/risiko/g" /var/www/geonode/wsgi/geonode.wsgi
 
+	#cd geonode; patch -p1 < geonode_gfdrr.patch
+	#patch ./src/owslib/owslib/feature/wfs100.py wfs100.patch
+patching file /home/nielso/dev_work_2june/riab_env/src/owslib/owslib/feature/wfs100.py
+
 	source /var/lib/geonode/bin/activate
         pip install /usr/share/risiko/geonode-libs.pybundle
         pip install /usr/share/risiko/risiko*.tar.gz
