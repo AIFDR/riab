@@ -197,75 +197,6 @@ var Risiko = Ext.extend(gxp.Viewer, {
         Risiko.superclass.constructor.apply(this, [config]);
     },
 
-    /**
-     * api: config[localGeoServerBaseUrl]
-     * ``String`` url of the local GeoServer instance
-     */
-    localGeoServerBaseUrl: "",
-
-    /**
-     * api: config[fromLayer]
-     * ``Boolean`` true if map view was loaded with layer parameters
-     */
-    fromLayer: false,
-
-    /**
-     * private: property[mapPanel]
-     * the :class:`GeoExt.MapPanel` instance for the main viewport
-     */
-    mapPanel: null,
-
-    /**
-     * Property: legendPanel
-     * {GeoExt.LegendPanel} the legend for the main viewport's map
-     */
-    legendPanel: null,
-
-    /**
-     * Property: toolbar
-     * {Ext.Toolbar} the toolbar for the main viewport
-     */
-    toolbar: null,
-
-    /**
-     * Property: capGrid
-     * {<Ext.Window>} A window which includes a CapabilitiesGrid panel.
-     */
-    capGrid: null,
-
-    /**
-     * Property: modified
-     * ``Number``
-     */
-    modified: 0,
-
-    /**
-     * Property: popupCache
-     * {Object} An object containing references to visible popups so that
-     *     we can insert responses from multiple requests.
-     */
-    popupCache: null,
-
-    /** private: property[propDlgCache]
-     *  ``Object``
-     */
-    propDlgCache: null,
-
-    /** private: property[stylesDlgCache]
-     *  ``Object``
-     */
-    stylesDlgCache: null,
-
-    /** private: property[busyMask]
-     *  ``Ext.LoadMask``
-     */
-    busyMask: null,
-
-    /** private: property[urlPortRegEx]
-     *  ``RegExp``
-     */
-    urlPortRegEx: /^(http[s]?:\/\/[^:]*)(:80|:443)?\//,
-
     //TODO i18n from gxp, move Indonesian GeoExplorer translations to gxp
     //Risiko
     hazardComboLabelText: gettext("Hazard"),
@@ -278,36 +209,6 @@ var Risiko = Ext.extend(gxp.Viewer, {
     hazardSelectText: gettext("Select Hazard ..."),
     exposureSelectText: gettext("Select Exposure ..."),
     functionSelectText: gettext("Select Function ..."),
-
-    displayXHRTrouble: function(response) {
-        response.status && Ext.Msg.show({
-            title: this.connErrorTitleText,
-            msg: this.connErrorText +
-                ": " + response.status + " " + response.statusText,
-            icon: Ext.MessageBox.ERROR,
-            buttons: {ok: this.connErrorDetailsText, cancel: true},
-            fn: function(result) {
-                if(result == "ok") {
-                    var details = new Ext.Window({
-                        title: response.status + " " + response.statusText,
-                        width: 400,
-                        height: 300,
-                        items: {
-                            xtype: "container",
-                            cls: "error-details",
-                            html: response.responseText
-                        },
-                        autoScroll: true,
-                        buttons: [{
-                            text: "OK",
-                            handler: function() { details.close(); }
-                        }]
-                    });
-                    details.show();
-                }
-            }
-        });
-    },
 
     loadConfig: function(config, callback) {
         Ext.Ajax.request({
