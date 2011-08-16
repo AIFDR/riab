@@ -26,12 +26,19 @@ case "$1" in
 
         # Activate virtual environment to install risiko
 	source /var/lib/geonode/bin/activate
+        pip install /usr/share/risiko/Django-1.3.tar.gz
+        pip install /usr/share/risiko/django-rosetta*.tar.gz
         pip install /usr/share/risiko/risiko*.tar.gz
+
+        sitedir=`/var/lib/geonode/bin/python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
+        ln -s /etc/default/geonode $sitedir/risiko/local_settings.py
         risiko syncdb --noinput
         risiko collectstatic -v0 --noinput
 
         cp /var/www/geonode/wsgi/geonode.wsgi /var/www/geonode/wsgi/geonode.wsgi.backup
         sed -i "s/geonode/risiko/g" /var/www/geonode/wsgi/geonode.wsgi
+        chown -R www-data:www-data $sitedir
+        chown -R www-data:www-data /var/www/geonode
         service apache2 restart
 
     ;;
