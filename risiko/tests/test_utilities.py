@@ -13,8 +13,10 @@ import urllib2
 from geonode.maps.utils import get_valid_user
 from risiko.utilities import save_to_geonode, RisikoException
 from risiko.utilities import check_layer, assert_bounding_box_matches
+from impact.storage.io import get_bounding_box_string
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page
+from impact.storage.io import read_layer
 
 #---Jeff
 from owslib.wcs import WebCoverageService
@@ -665,6 +667,45 @@ class Test_utilities(unittest.TestCase):
             msg = ('Subcategory keyword %s did not match expected %s'
                    % (keywords['subcategory'], category))
             assert subcategory == keywords['subcategory'], msg
+
+    # FIXME (Ole): Enable when issue #103 has been resolved
+    def Xtest_raster_upload(self):
+        """Raster layer can be uploaded and downloaded again correctly
+        """
+
+        hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
+                           % TESTDATA)
+
+        # Get reference values
+        H = read_layer(hazard_filename)
+        A_ref = H.get_data()
+        depth_min_ref, depth_max_ref = H.get_extrema()
+
+        # Upload to internal geonode
+        hazard_layer = save_to_geonode(hazard_filename, user=self.user)
+        hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
+
+        # Download data again
+        bbox = get_bounding_box_string(hazard_filename)
+        H = download(INTERNAL_SERVER_URL, hazard_name, bbox)
+        A = H.get_data()
+
+        # Compare shapes
+        msg = ('Shape of downloaded raster was [%i, %i]. '
+               'Expected [%i, %i].' % (A.shape[0], A.shape[1],
+                                       A_ref.shape[0], A_ref.shape[1]))
+        assert numpy.allclose(A_ref.shape, A.shape, rtol=0, atol=0), msg
+
+        # Compare extrema to values reference values (which have also been
+        # verified by QGIS for this layer and tested in test_engine.py)
+        depth_min, depth_max = H.get_extrema()
+        msg = ('Extrema of downloaded file were [%f, %f] but '
+               'expected [%f, %f]' % (depth_min, depth_max, depth_min_ref, depth_max_ref))
+        assert numpy.allclose([depth_min, depth_max], [depth_min_ref, depth_max_ref],
+                              rtol=1.0e-6, atol=1.0e-10), msg
+
+        # FIXME (Ole): Eventually compare number by number
+        #assert numpy.allclose(A, A_ref)
 
 
 if __name__ == '__main__':
