@@ -493,7 +493,6 @@ class Test_calculations(unittest.TestCase):
                    '' % (layer_name, gn_geotransform, ref_geotransform))
             assert numpy.allclose(ref_geotransform, gn_geotransform), msg
 
-
     # FIXME (Ole): work in progress regarding issue #19 and #103.
     # Would eventually do a definitive end-to-end test that interpolated
     # values are good.
@@ -549,21 +548,17 @@ class Test_calculations(unittest.TestCase):
             pointid = attributes[i]['POINTID']
 
             if pointid == 263:
-                print i, pointid, attributes[i], interpolated_depth, coordinates[i]
 
                 # Check that location is correct
                 assert numpy.allclose(coordinates[i],
                                       [122.20367299, -8.61300358])
 
-                # This is known to be outside inundation area so should near zero
+                # This is known to be outside inundation area so should
+                # near zero
                 assert numpy.allclose(interpolated_depth, 0.0,
                                       rtol=1.0e-12, atol=1.0e-12)
 
-
             if pointid == 148:
-
-                print i, pointid, attributes[i], interpolated_depth, coordinates[i]
-
                 # Check that location is correct
                 assert numpy.allclose(coordinates[i],
                                       [122.2045912, -8.608483265])
@@ -571,13 +566,10 @@ class Test_calculations(unittest.TestCase):
                 # This is in an inundated area with a surrounding depths of
                 # 4.531, 3.911
                 # 2.675, 2.583
-
-
                 assert interpolated_depth < 4.531
                 assert interpolated_depth > 2.583
                 assert numpy.allclose(interpolated_depth, 3.553,
                                       rtol=1.0e-5, atol=1.0e-5)
-
 
             # Check that interpolated points are within range
             msg = ('Interpolated depth %f at point %i was outside extrema: '
@@ -591,8 +583,6 @@ class Test_calculations(unittest.TestCase):
                 #    print msg
                 #if interpolated_depth < depth_min:
                 #    print msg
-
-
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

@@ -31,9 +31,8 @@ from geonode.maps.utils import get_valid_user
 
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 
-
-
 DEFAULT_PLUGINS = ('Earthquake Fatality Function',)
+
 
 # FIXME (Ole): Change H, E to layers.
 class BasicFunction(FunctionProvider):
@@ -49,7 +48,6 @@ class BasicFunction(FunctionProvider):
             a=0.97429, b=11.037):
 
         return None
-
 
 
 def padang_check_results(mmi, building_class):
@@ -123,7 +121,6 @@ class Test_plugins(unittest.TestCase):
         """
         self.user = get_valid_user()
 
-
     def test_get_plugins(self):
         """It is possible to retrieve the list of functions
         """
@@ -138,7 +135,6 @@ class Test_plugins(unittest.TestCase):
         plugin_list = plugins.get_plugins(plugin_name)
         msg = ('No plugins were found matching %s' % plugin_name)
         assert len(plugin_list) > 0, msg
-
 
     def test_get_plugins(self):
         """Plugins can be collected
@@ -279,7 +275,6 @@ class Test_plugins(unittest.TestCase):
 
                 exposure_msg = msg_tmpl % (exposure_layer.typename, layers)
                 assert exposure_layer.typename in layers, exposure_msg
-
 
     def test_padang_building_examples(self):
         """Padang building impact calculation works through the API

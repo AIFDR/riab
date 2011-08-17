@@ -490,8 +490,6 @@ def dummy_save(filename, title, user, metadata=''):
     return 'http://dummy/data/geonode:' + filename + '_by_' + user.username
 
 
-
-
 #--------------------------------------------------------------------
 # Functionality to upload layers to GeoNode and check their integrity
 #--------------------------------------------------------------------
@@ -505,9 +503,9 @@ def console_log():
     """
     import logging
     for _module in ["risiko"]:
-       _logger = logging.getLogger(_module)
-       _logger.addHandler(logging.StreamHandler())
-       _logger.setLevel(logging.INFO)
+        _logger = logging.getLogger(_module)
+        _logger.addHandler(logging.StreamHandler())
+        _logger.setLevel(logging.INFO)
 
 
 def run(cmd, stdout=None, stderr=None):
@@ -850,5 +848,3 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=True):
     else:
         msg = 'Argument %s was neither a file or a directory' % incoming
         raise RisikoException(msg)
-
-

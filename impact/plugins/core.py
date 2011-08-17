@@ -51,13 +51,17 @@ class FunctionProvider:
 
         # The paramers are substituted into the sld according the the
         # Django template methodology:
-        #https://docs.djangoproject.com/en/dev/ref/templates/builtins/?from=olddocs
+        #https://docs.djangoproject.com/en/dev/ref/templates/
+        #        builtins/?from=olddocs
+
         params = {'name': data.get_name()}
 
         if data.is_raster:
             colormapentries = [
-                ColorMapEntry(color='#ffffff', opacity='0', quantity='-9999.0'),
-                ColorMapEntry(color='#38A800', opacity='0', quantity='0.1'),
+                ColorMapEntry(color='#ffffff', opacity='0',
+                              quantity='-9999.0'),
+                ColorMapEntry(color='#38A800', opacity='0',
+                              quantity='0.1'),
                 ColorMapEntry(color='#38A800', quantity='0.2'),
                 ColorMapEntry(color='#79C900', quantity='0.5'),
                 ColorMapEntry(color='#CEED00', quantity='1'),

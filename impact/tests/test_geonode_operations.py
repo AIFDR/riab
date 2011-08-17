@@ -700,8 +700,10 @@ class Test_geonode_connection(unittest.TestCase):
         # verified by QGIS for this layer and tested in test_engine.py)
         depth_min, depth_max = H.get_extrema()
         msg = ('Extrema of downloaded file were [%f, %f] but '
-               'expected [%f, %f]' % (depth_min, depth_max, depth_min_ref, depth_max_ref))
-        assert numpy.allclose([depth_min, depth_max], [depth_min_ref, depth_max_ref],
+               'expected [%f, %f]' % (depth_min, depth_max,
+                                      depth_min_ref, depth_max_ref))
+        assert numpy.allclose([depth_min, depth_max],
+                              [depth_min_ref, depth_max_ref],
                               rtol=1.0e-6, atol=1.0e-10), msg
 
         # FIXME (Ole): Eventually compare number by number

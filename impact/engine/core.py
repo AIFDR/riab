@@ -40,7 +40,7 @@ def calculate_impact(layers, impact_fcn,
     # Input checks
     check_data_integrity(layers)
 
-    # Get an instance of the passed impact_fcn 
+    # Get an instance of the passed impact_fcn
     impact_function = impact_fcn()
 
     # Pass input layers to plugin
@@ -86,7 +86,7 @@ def check_data_integrity(layer_files):
         layer = filename
 
         # Ensure that projection is consistent across all layers
-        # FIXME (Ole): Ideally use a library to ascertain this 
+        # FIXME (Ole): Ideally use a library to ascertain this
         if projection is None:
             projection = layer.projection
         else:

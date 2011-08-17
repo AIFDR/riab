@@ -883,21 +883,19 @@ class Test_Engine(unittest.TestCase):
 
             if pointid == 263:
 
-                #print i, pointid, attributes[i], interpolated_depth, coordinates[i]
+                #print i, pointid, attributes[i],
+                #print interpolated_depth, coordinates[i]
 
                 # Check that location is correct
                 assert numpy.allclose(coordinates[i],
                                       [122.20367299, -8.61300358])
 
-
-                # This is known to be outside inundation area so should near zero
+                # This is known to be outside inundation area so should
+                # near zero
                 assert numpy.allclose(interpolated_depth, 0.0,
                                       rtol=1.0e-12, atol=1.0e-12)
 
             if pointid == 148:
-
-                print i, pointid, attributes[i], interpolated_depth, coordinates[i]
-
                 # Check that location is correct
                 assert numpy.allclose(coordinates[i],
                                       [122.2045912, -8.608483265])
@@ -918,7 +916,6 @@ class Test_Engine(unittest.TestCase):
             if not numpy.isnan(interpolated_depth):
                 tol = 1.0e-6
                 assert depth_min - tol <= interpolated_depth <= depth_max, msg
-
 
 
 if __name__ == '__main__':

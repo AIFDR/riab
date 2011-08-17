@@ -2,7 +2,9 @@ from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
-from impact.plugins.utilities import PointZoomSize, PointClassColor, PointSymbol
+from impact.plugins.utilities import PointZoomSize
+from impact.plugins.utilities import PointClassColor
+from impact.plugins.utilities import PointSymbol
 import scipy.stats
 
 
@@ -93,41 +95,42 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
         DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
 
         symbol_field = None
-        symbol_keys = [None,'']
+        symbol_keys = [None, '']
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
-        scale_keys = [10000000000,10000000,5000000,1000000,500000,250000,100000]
-        scale_values = [8,8,8,8,8,8,8]
+        scale_keys = [10000000000, 10000000, 5000000,
+                      1000000, 500000, 250000, 100000]
+        scale_values = [8, 8, 8, 8, 8, 8, 8]
 
         class_keys = ['No Damage', '90-100']
-        class_values = [
-                        {'min':0, 'max':90, 'color': '#cccccc', 'opacity': '0'},
-                        {'min':90, 'max':100, 'color': '#e31a1c', 'opacity': '1'},
-                       ]
-
+        class_values = [{'min': 0, 'max': 90,
+                         'color': '#cccccc', 'opacity': '0'},
+                        {'min': 90, 'max': 100,
+                         'color': '#e31a1c', 'opacity': '1'}]
 
         if self.symbol_field in data.get_attribute_names():
             symbol_field = self.symbol_field
 
-            symbol_keys.extend(['Church/Mosque', 'Commercial (office)', 'Hotel',
-                                'Medical facility', 'Other', 'Other industrial',
+            symbol_keys.extend(['Church/Mosque', 'Commercial (office)',
+                                'Hotel',
+                                'Medical facility', 'Other',
+                                'Other industrial',
                                 'Residential', 'Retail', 'School',
-                                'Unknown', 'Warehouse',
-                               ])
-            symbol_values.extend([DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                'Unknown', 'Warehouse'])
+
+            symbol_values.extend([DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL,
                                   DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                 ])
+                                  DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL])
 
-
-        params = dict(
-                     name = data.get_name(),
-                     damage_field = self.target_field,
-                     symbol_field = symbol_field,
-                     symbols = dict(zip(symbol_keys,symbol_values)),
-                     scales = dict(zip(scale_keys, scale_values)),
-                     classifications = dict(zip(class_keys, class_values)),
-                    )
+        params = dict(name=data.get_name(),
+                      damage_field=self.target_field,
+                      symbol_field=symbol_field,
+                      symbols=dict(zip(symbol_keys, symbol_values)),
+                      scales=dict(zip(scale_keys, scale_values)),
+                      classifications=dict(zip(class_keys, class_values)))
 
         return render_to_string('impact/styles/point_classes.sld', params)

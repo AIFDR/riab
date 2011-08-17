@@ -2,7 +2,9 @@ from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
-from impact.plugins.utilities import PointZoomSize, PointClassColor, PointSymbol
+from impact.plugins.utilities import PointZoomSize
+from impact.plugins.utilities import PointClassColor
+from impact.plugins.utilities import PointSymbol
 import scipy.stats
 
 
@@ -97,12 +99,11 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                     '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
-                    '</table>' % (_('Buildings'),  _('Total'),
+                    '</table>' % (_('Buildings'), _('Total'),
                                   _('All'), N,
                                   _('Low damage'), count10,
                                   _('Medium damage'), count25,
                                   _('High damage'), count50))
-
 
         # Create vector layer and return
         V = Vector(data=building_damage,
@@ -128,16 +129,20 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
         # Predefined scales and corresponding font sizes
-        scale_keys = [10000000000, 10000000, 5000000, 1000000, 500000, 250000, 100000]
+        scale_keys = [10000000000, 10000000, 5000000,
+                      1000000, 500000, 250000, 100000]
         scale_values = [3, 5, 8, 12, 14, 16, 18]
 
         # Predefined colour classes
         class_keys = ['No Damage', '10-25', '25-50', '50-100']
-        class_values = [{'min': 0, 'max': 10, 'color': '#cccccc', 'opacity': '1'},
-                        {'min': 10, 'max': 25, 'color': '#fecc5c', 'opacity': '1'},
-                        {'min': 25, 'max': 50, 'color': '#fd8d3c', 'opacity': '1'},
-                        {'min': 50, 'max': 100, 'color': '#e31a1c', 'opacity': '1'}]
-
+        class_values = [{'min': 0, 'max': 10,
+                         'color': '#cccccc', 'opacity': '1'},
+                        {'min': 10, 'max': 25,
+                         'color': '#fecc5c', 'opacity': '1'},
+                        {'min': 25, 'max': 50,
+                         'color': '#fd8d3c', 'opacity': '1'},
+                        {'min': 50, 'max': 100,
+                         'color': '#e31a1c', 'opacity': '1'}]
 
         # Definition of symbols for each attribute value
         if self.symbol_field in data.get_attribute_names():
@@ -154,7 +159,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                        'Residential': 'ttf://ESRI Cartography#0x00d7',
                        'Retail': 'ttf://Comic Sans MS#0x0024',
                        'School': 'ttf://ESRI Cartography#0x00e5',
-                       'Unknown':'ttf://Comic Sans MS#0x003F',
+                       'Unknown': 'ttf://Comic Sans MS#0x003F',
                        'Warehouse': 'ttf://ESRI US MUTCD 3#0x00B5'}
         else:
             symbols = {None: DEFAULT_SYMBOL, '': DEFAULT_SYMBOL}
