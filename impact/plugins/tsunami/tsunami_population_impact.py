@@ -49,13 +49,15 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
         for i in range(N):
             dep = float(depth[i].values()[0])
             pop = E.get_data('GRID_CODE', i)
+            pointid = E.get_data('POINTID', i)
 
             if dep > 1:
                 affected = 99.5
             else:
                 affected = 0
 
-            print i, dep, pop, affected
+            #if pointid == 263:
+            #    print i, pointid, dep, pop, affected
 
             # Collect depth and calculated damage
             result_dict = {'AFFECTED': affected,
