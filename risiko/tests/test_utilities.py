@@ -29,8 +29,8 @@ def ns(tag):
 #---
 
 
-class Test_utilities(unittest.TestCase):
-    """Tests riab_geonode utilities
+class Test_geonode_connection(unittest.TestCase):
+    """Tests file uploads, metadata etc
     """
 
     def setUp(self):
@@ -442,7 +442,7 @@ class Test_utilities(unittest.TestCase):
         #FIXME: Verify the record does not exist in GS or GN
 
     def test_keywords(self):
-        """Check that keywords are read from the .keywords file
+        """Keywords are read correctly from the .keywords file
         """
 
         for filename in ['Earthquake_Ground_Shaking.asc',
@@ -710,6 +710,6 @@ class Test_utilities(unittest.TestCase):
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
-    suite = unittest.makeSuite(Test_utilities, 'test')
+    suite = unittest.makeSuite(Test_geonode_connection, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

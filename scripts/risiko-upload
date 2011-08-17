@@ -14,13 +14,13 @@ where filename can be either a single file or a directory of files
 
 import sys
 import time
-from risiko.utilities import save_to_geonode, console_log
+from impact.storage.io import save_to_geonode, console_log
 
 def usage():
     print 'risiko-upload {directory|filename}'
 
 if __name__ == '__main__':
-    console_log()     
+    console_log()
 
     if len(sys.argv) != 2:
         usage()
