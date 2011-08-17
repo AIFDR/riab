@@ -27,8 +27,6 @@ case "$1" in
         rm -rf $sitedir/impact
 	rm -rf /var/www/geonode/static
 	rm -rf /usr/bin/risiko*
-	
-	/usr/bin/geonode collectstatic -v0 --noinput
 
 	invoke-rc.d apache2 reload
     ;;
