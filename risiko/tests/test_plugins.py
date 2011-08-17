@@ -14,10 +14,9 @@ from impact.plugins.core import compatible_layers
 from impact.storage.utilities import get_layers_metadata
 
 from impact.models import Calculation, Workspace
-from impact.tests.utilities import TESTDATA
-from risiko.utilities import check_layer
-from risiko.utilities import save_to_geonode
 
+from impact.storage.io import save_to_geonode, check_layer
+from impact.tests.utilities import TESTDATA
 from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json

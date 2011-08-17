@@ -11,8 +11,8 @@ import unittest
 import numpy
 import urllib2
 from geonode.maps.utils import get_valid_user
-from risiko.utilities import save_to_geonode, RisikoException
-from risiko.utilities import check_layer, assert_bounding_box_matches
+from impact.storage.io import save_to_geonode, RisikoException
+from impact.storage.io import check_layer, assert_bounding_box_matches
 from impact.storage.io import get_bounding_box_string
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page

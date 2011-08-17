@@ -1,7 +1,6 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from risiko.utilities import save_to_geonode
 from django.contrib import admin
 
 admin.autodiscover()
@@ -47,10 +46,8 @@ urlpatterns = patterns('',
     (r'^accounts/', include('registration.urls')),
     (r'^profiles/', include('profiles.urls')),
     (r'^rosetta/', include('rosetta.urls')),
-    (r'^impact/api/calculate', 'impact.views.calculate',
-                                         {'save_output': save_to_geonode}),
     url(r'^calculator$', 'django.views.generic.simple.direct_to_template',
                             {'template': 'risiko/index.html'}, name='oldcalculator'),
- 
+
     (r'^impact/', include('impact.urls')),
    ) + staticfiles_urlpatterns()

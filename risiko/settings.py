@@ -53,7 +53,7 @@ NOSE_ARGS = [
       '--with-doctest',
       '--nocapture',
 #      '--with-coverage',
-#      '--cover-package=risiko,impact',
+      '--cover-package=risiko,impact',
 #      '--cover-inclusive',
 #      '--cover-tests',
 #      '--cover-erase',

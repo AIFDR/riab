@@ -9,15 +9,17 @@ from django.conf import settings
 from django.utils import simplejson as json
 
 from geonode.maps.utils import get_valid_user, check_geonode_is_up
-from risiko.utilities import save_to_geonode, check_layer
-from risiko.utilities import assert_bounding_box_matches
 
 from impact.views import calculate
+
+from impact.storage.io import save_to_geonode, check_layer
+from impact.storage.io import assert_bounding_box_matches
 from impact.storage.io import download
 from impact.storage.io import get_bounding_box
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
+
 from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
 from owslib.wcs import WebCoverageService
 

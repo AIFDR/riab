@@ -455,3 +455,4 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
         bbox[3] += dy
 
     return bbox
+

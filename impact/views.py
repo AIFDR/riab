@@ -36,6 +36,7 @@ from impact.storage.io import dummy_save, download, get_layers_metadata
 from impact.storage.io import get_metadata, get_ows_metadata
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.storage.io import check_bbox_string
+from impact.storage.io import save_to_geonode
 from impact.storage.utilities import bbox_intersection
 from impact.storage.utilities import minimal_bounding_box
 from impact.plugins.core import get_plugins, compatible_layers
@@ -44,7 +45,7 @@ from impact.models import Calculation, Workspace
 
 from geonode.maps.utils import get_valid_user
 
-from urlparse import urljoin 
+from urlparse import urljoin
 
 import logging
 logger = logging.getLogger('risiko')
@@ -60,7 +61,7 @@ def exception_format(e):
 
 
 @csrf_exempt
-def calculate(request, save_output=dummy_save):
+def calculate(request, save_output=save_to_geonode):
     start = datetime.datetime.now()
 
     if request.method == 'GET':
