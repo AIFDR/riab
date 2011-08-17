@@ -44,19 +44,7 @@ fi
 
 echo ">>> Downloading bundled pre-requisites"
 
-# Determine data source
-#zone=$(cat /etc/timezone)
-#if [ "$zone" == "Asia/Jakarta" ]; then
-#    export RISIKO_DATASOURCE="http://203.77.224.75/store/risiko_support_data"
-#    echo "Using Indonesian mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
-#else
-#    export RISIKO_DATASOURCE="https://s3.amazonaws.com/geonodeariel"
-#    echo "Using Amazon mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
-#fi
-
-#FIXME: Using Indonesia until everything is back again in the Amazon repo
-export RISIKO_DATASOURCE="http://203.77.224.75/store/risiko_support_data"
-echo "Using Indonesian mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
+export RISIKO_DATASOURCE="https://s3-ap-southeast-1.amazonaws.com/aifdr"
 
 # Install GeoNode and it's pre-requisites
 mkdir -p temp
@@ -70,7 +58,6 @@ wget -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
 wget -c "$RISIKO_DATASOURCE/risiko_demo_data.tgz"
 
 # Needed for the debian package until GeoNode upgrades
-wget -c "$RISIKO_DATASOURCE/Django-1.3.tar.gz"
 wget -c "$RISIKO_DATASOURCE/django-rosetta-0.6.2.tar.gz"
 cd ..
 
