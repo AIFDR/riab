@@ -23,6 +23,9 @@ case "$1" in
     configure)
         # Patch wfs in owslib for keywords
 	patch /var/lib/geonode/src/owslib/owslib/feature/wfs100.py /usr/share/risiko/wfs100.patch
+	cd /var/lib/geonode/
+	patch -p1 < /usr/share/risiko/geonode-1.1-beta2-to-2011-08-16.patch
+	patch /var/lib/geonode/src/owslib/owslib/feature/wfs100.py /usr/share/risiko/wfs100.patch
 
         # Activate virtual environment to install risiko
 	source /var/lib/geonode/bin/activate

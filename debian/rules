@@ -16,6 +16,7 @@ install:
 	dh_testroot
 	dh_prep
 	dh_installdirs
+	cd $(CURDIR)/calculator;ant
 	python setup.py sdist
 	mkdir -p $(CURDIR)/debian/risiko/usr/share/risiko
 	cp -rp $(CURDIR)/dist/risiko-*.tar.gz $(CURDIR)/debian/risiko/usr/share/risiko/.
