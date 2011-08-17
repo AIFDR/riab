@@ -799,7 +799,9 @@ class Test_Engine(unittest.TestCase):
             # as this was calculated using EQRM and thus different.
             assert numpy.allclose(calculated_mmi, MMI[i], rtol=0.02)
 
-    def test_interpolation_tsunami(self):
+    # FIXME (Ole): Disabled until we get onto the
+    # new interpolation scheme (issue #19)
+    def Xtest_interpolation_tsunami(self):
         """Interpolation using tsunami data set
         """
 
@@ -834,9 +836,6 @@ class Test_Engine(unittest.TestCase):
                                    depth_min, depth_max))
 
             if not numpy.isnan(interpolated_depth):
-                # FIXME (Ole): putting in tolerances for now. Remove when
-                # new interpolation is implemented (issue #19)
-                # FIXME: Disable test with XTest
                 tol = 1.0e-6
                 assert depth_min - tol <= interpolated_depth <= depth_max, msg
 
