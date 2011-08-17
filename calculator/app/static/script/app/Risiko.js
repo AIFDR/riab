@@ -12,12 +12,20 @@ if (!window.gettext) { gettext = function(s) { return s; }; }
  */
 var Risiko = Ext.extend(gxp.Viewer, {
     
+    /* @i18n begin */
+    layersText: gettext("Layers"),
+    legendText: gettext("Legend"),
+    /* @i18n end */
+    
     /** private: method[constructor]
      *  :arg config: ``Object``
      */
     constructor: function(config) {
+
         config = Ext.applyIf(config || {}, {
+            
             proxy: "/proxy?url=",
+            
             portalConfig: {
                 layout: "border",
                 region: "center",
@@ -33,10 +41,20 @@ var Risiko = Ext.extend(gxp.Viewer, {
                     items: ["map"]
                 }, {
                     id: "westpanel",
-                    xtype: "container",
-                    layout: "fit",
+                    xtype: "tabpanel",
                     region: "west",
-                    width: 200
+                    split: true,
+                    collapsible: true,
+                    hideCollapseTool: true,
+                    collapseMode: "mini",
+                    width: 200,
+                    defaults: { autoScroll: true },
+                    listeners: {
+                        "add": {
+                            fn: function(cmp) { cmp.setActiveTab(0); },
+                            single: true
+                        }
+                    }
                 }, {
                     id: "east",
                     region: "east",
@@ -59,10 +77,17 @@ var Risiko = Ext.extend(gxp.Viewer, {
                 ptype: "gxp_layertree",
                 outputConfig: {
                     id: "tree",
+                    title: this.layersText,
                     border: true,
-                    tbar: [] // we will add buttons to "tree.bbar" later
+                    tbar: [] // we will add buttons to "tree.tbar" later
                 },
                 outputTarget: "westpanel"
+            }, {
+                ptype: "gxp_legend",
+                outputTarget: "westpanel",
+                outputConfig: {
+                    title: this.legendText
+                }
             }, {
                 ptype: "gxp_addlayers",
                 actionTarget: "tree.tbar"
@@ -102,7 +127,11 @@ var Risiko = Ext.extend(gxp.Viewer, {
                 xtype: "gx_zoomslider",
                 vertical: true,
                 height: 100
-            }]
+            }],
+            
+            map: {
+                id: "map"
+            }
         });
         
         Risiko.superclass.constructor.apply(this, [config]);
@@ -119,8 +148,9 @@ var Risiko = Ext.extend(gxp.Viewer, {
                 //TODO remove the replace call below when
                 // https://github.com/AIFDR/riab/issues/112 is fixed
                 var json = response.responseText.replace(/gxp_wmscsource/g, "gxp_wmssource");
-                Ext.apply(config, Ext.decode(json, true));
-                config.map.id = "map";
+                var loadedConfig = Ext.decode(json, true);
+                Ext.applyIf(loadedConfig.map, config.map);
+                Ext.apply(config, loadedConfig);
                 callback.call(this, config);
             },
             scope: this
