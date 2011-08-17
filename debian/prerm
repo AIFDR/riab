@@ -27,6 +27,9 @@ case "$1" in
         rm -rf $sitedir/impact
 	rm -rf /var/www/geonode/static
 	rm -rf /usr/bin/risiko*
+	cd /var/www/geonode/src/GeoNodePy/geonode
+	python manage.py collectstatic -v0 --noinput
+
 	invoke-rc.d apache2 reload
     ;;
 
