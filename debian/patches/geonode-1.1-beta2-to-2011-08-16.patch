@@ -1324,6 +1324,18 @@ index 0000000..df12709
 +
 +    def items(self):
 +        return Map.objects.all()
+diff --git a/src/GeoNodePy/geonode/templates/lang.js b/src/GeoNodePy/geonode/templates/lang.js
+index 3ea8808..c9c1a39 100644
+--- a/src/GeoNodePy/geonode/templates/lang.js
++++ b/src/GeoNodePy/geonode/templates/lang.js
+@@ -1,5 +1,7 @@
+ {% load i18n %}
+ 
++GeoExt.Lang.set("{{ LANGUAGE_CODE }}");
++
+ if (window.GeoExplorer) {
+     Ext.apply(GeoExplorer.prototype, {
+         addLayersButtonText: gettext("Add Layers"),
 diff --git a/src/GeoNodePy/geonode/templates/maps/csw/full_metadata.xml b/src/GeoNodePy/geonode/templates/maps/csw/full_metadata.xml
 index f695f17..d2ea710 100644
 --- a/src/GeoNodePy/geonode/templates/maps/csw/full_metadata.xml
@@ -1370,6 +1382,19 @@ index f695f17..d2ea710 100644
                 </gmd:linkage>
                 <gmd:protocol>
                   <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+diff --git a/src/GeoNodePy/geonode/templates/maps/layer.html b/src/GeoNodePy/geonode/templates/maps/layer.html
+index afcf948..9c5138e 100644
+--- a/src/GeoNodePy/geonode/templates/maps/layer.html
++++ b/src/GeoNodePy/geonode/templates/maps/layer.html
+@@ -20,6 +20,8 @@
+             var config = {
+                 tools: [{
+                     ptype: "gxp_wmsgetfeatureinfo",
++                    // uncomment the line below if you want feature info in a grid
++                    //format: "grid",
+                     actionTarget: "main.tbar",
+                     outputConfig: {width: 400, height: 200, panIn: false}
+                 }],
 diff --git a/src/GeoNodePy/geonode/templates/maps/layer_upload.html b/src/GeoNodePy/geonode/templates/maps/layer_upload.html
 index 2ba380e..bbcb78d 100644
 --- a/src/GeoNodePy/geonode/templates/maps/layer_upload.html
@@ -1384,10 +1409,19 @@ index 2ba380e..bbcb78d 100644
      permissionsEditor.fireEvent("updated", permissionsEditor);
  });
 diff --git a/src/GeoNodePy/geonode/templates/maps/view.html b/src/GeoNodePy/geonode/templates/maps/view.html
-index 129957b..ad6d535 100644
+index 129957b..c526535 100644
 --- a/src/GeoNodePy/geonode/templates/maps/view.html
 +++ b/src/GeoNodePy/geonode/templates/maps/view.html
-@@ -55,7 +55,7 @@ Ext.onReady(function() {
+@@ -29,6 +29,8 @@ Ext.onReady(function() {
+     var config = Ext.apply({
+         tools: [{
+             ptype: "gxp_wmsgetfeatureinfo",
++            // uncomment the line below if you want feature info in a grid
++            //format: "grid",
+             actionTarget: "main.tbar",
+             outputConfig: {width: 400, height: 300}
+         }],
+@@ -55,7 +57,7 @@ Ext.onReady(function() {
              }) 
          };
  
