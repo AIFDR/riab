@@ -5,28 +5,16 @@
 // define gettext in case we run standalone
 if (!window.gettext) { gettext = function(s) { return s; }; }
 
-/**
- * Constructor: Risiko
- * Create a new Risiko application.
+/** api: constructor
+ *  .. class:: Risiko(config)
  *
- * Parameters:
- * config - {Object} Optional application configuration properties.
- *
- * Valid config properties:
- * map - {Object} Map configuration object.
- * ows - {String} OWS URL
- *
- * Valid map config properties:
- * layers - {Array} A list of layer configuration objects.
- * center - {Array} A two item array with center coordinates.
- * zoom - {Number} An initial zoom level.
- *
- * Valid layer config properties:
- * name - {String} Required WMS layer name.
- * title - {String} Optional title to display for layer.
+ *    Risiko application.
  */
 var Risiko = Ext.extend(gxp.Viewer, {
     
+    /** private: method[constructor]
+     *  :arg config: ``Object``
+     */
     constructor: function(config) {
         config = Ext.applyIf(config || {}, {
             proxy: "/proxy?url=",
@@ -120,6 +108,10 @@ var Risiko = Ext.extend(gxp.Viewer, {
         Risiko.superclass.constructor.apply(this, [config]);
     },
 
+    /** private: method[loadConfig]
+     *  :arg config: ``Object``
+     *  :arc callback: ``Function``
+     */
     loadConfig: function(config, callback) {
         Ext.Ajax.request({
             url: "/maps/new/data",
