@@ -26,7 +26,6 @@ case "$1" in
 
         # Activate virtual environment to install risiko
 	source /var/lib/geonode/bin/activate
-        pip install /usr/share/risiko/Django-1.3.tar.gz
         pip install /usr/share/risiko/django-rosetta*.tar.gz
         pip install /usr/share/risiko/risiko*.tar.gz
 

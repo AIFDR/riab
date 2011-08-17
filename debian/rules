@@ -20,7 +20,6 @@ install:
 	python setup.py sdist
 	mkdir -p $(CURDIR)/debian/risiko/usr/share/risiko
 	cp -rp $(CURDIR)/dist/risiko-*.tar.gz $(CURDIR)/debian/risiko/usr/share/risiko/.
-	cp -rp $(CURDIR)/../temp/Django-1.3.tar.gz $(CURDIR)/debian/risiko/usr/share/risiko/.
 	cp -rp $(CURDIR)/../temp/django-rosetta-0.6.2.tar.gz $(CURDIR)/debian/risiko/usr/share/risiko/.
 	cp -rp $(CURDIR)/debian/patches/* $(CURDIR)/debian/risiko/usr/share/risiko/.
 
