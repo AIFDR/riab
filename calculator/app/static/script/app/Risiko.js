@@ -92,6 +92,9 @@ var Risiko = Ext.extend(gxp.Viewer, {
                 ptype: "gxp_addlayers",
                 actionTarget: "tree.tbar"
             }, {
+                ptype: "gxp_zoomtolayerextent",
+                actionTarget: "tree.contextMenu"
+            }, {
                 ptype: "gxp_removelayer",
                 actionTarget: ["tree.tbar", "tree.contextMenu"]
             }, {
