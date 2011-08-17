@@ -31,44 +31,35 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
     addOutput: function(config) {
         
         var exposurestore, hazardstore, combo_functionstore, popup,
-            functionstore,
+            functionstore, bboxLayer,
             app = this.target,
             lastHazardSelect = "None",
             lastExposureSelect = "None",
             lastImpactSelect = "None",
             lastImpactLayer = "None";
 
-        //FIXME: Implement drawing the polygon with the bounding box at the end
-        //       of the calculation
         function drawBox(bbox) {
+            var map = app.mapPanel.map;
+            
+            if (bboxLayer) {
+                map.removeLayer(bboxLayer);
+                bboxLayer.destroy();
+                bboxLayer = null;
+            }
+            bboxLayer = new OpenLayers.Layer.Vector("Calculation Extent", {
+                styleMap: new OpenLayers.StyleMap({
+                    strokeColor: "#000000",
+                    strokeOpacity: 1,
+                    strokeWidth: 2,
+                    fillColor: "#00FF00",
+                    fillOpacity: 0.6
+                })
+            });
 
-            var polygonLayer = new OpenLayers.Layer.Vector("Polygon Layer");
-            var style_green = {
-                strokeColor: "#000000",
-                strokeOpacity: 1,
-                strokeWidth: 2,
-                fillColor: "#00FF00",
-                fillOpacity: 0.6
-            };
-
-            var p1 = new OpenLayers.Geometry.Point(439000, 114000);
-            var p2 = new OpenLayers.Geometry.Point(440000, 115000);
-            var p3 = new OpenLayers.Geometry.Point(437000, 116000);
-            var p4 = new OpenLayers.Geometry.Point(436000, 115000);
-            var p5 = new OpenLayers.Geometry.Point(436500, 113000);
-
-            var points = [];
-            points.push(p1);
-            points.push(p2);
-            points.push(p3);
-            points.push(p4);
-            points.push(p5);
-
-            // create a polygon feature from a list of points
-            var linearRing = new OpenLayers.Geometry.LinearRing(points);
-            var polygonFeature = new OpenLayers.Feature.Vector(linearRing, null, style_green);
-            drawBox(NaN);
-            polygonLayer.addFeatures([polygonFeature]);
+            var feature = new OpenLayers.Feature.Vector(bbox.toGeometry());
+            bboxLayer.addFeatures([feature]);
+            
+            map.addLayer(bboxLayer);
         };
 
         exposurestore = new Ext.data.JsonStore({
@@ -93,15 +84,19 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             root: 'functions'
         });
 
-        function addLayer(server_url, label, layer_name, opacity_value) {
+        function addLayer(server_url, label, layer_name, opacity_value, callback) {
             var record = app.createLayerRecord({
                 name: layer_name,
                 title: label,
                 opacity: opacity_value,
                 source: "0"
             }, function(rec) {
+                var layer = rec.getLayer();
                 rec.getLayer().attribution = "My attribution";
                 app.mapPanel.layers.add(rec);
+                if (callback) {
+                    callback(rec);
+                }
             });
         }
 
@@ -257,7 +252,9 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             var result_label = exposure + ' X ' + hazard + '=' +result_name;
             app.layerSources["0"].store.reload({
                 callback: function() {
-                    addLayer(server_url, result_label, "geonode:"+result_name, 0.9);
+                    addLayer(server_url, result_label, "geonode:"+result_name, 0.9, function(rec) {
+                        drawBox(rec.getLayer().maxExtent);
+                    });
                     lastImpactLayer = result_label;
                     var layer_link = '<a  target="_blank" href="'+ layer_uri + '">Hasil peta</a><br><br>';
                     var excel_link = '';
