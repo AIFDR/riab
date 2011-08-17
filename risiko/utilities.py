@@ -6,7 +6,7 @@ import numpy
 import time
 import os
 
-import settings
+from django.conf import settings
 INTERNAL_SERVER_URL = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
 import logging
