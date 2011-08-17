@@ -46,8 +46,5 @@ urlpatterns = patterns('',
     (r'^accounts/', include('registration.urls')),
     (r'^profiles/', include('profiles.urls')),
     (r'^rosetta/', include('rosetta.urls')),
-    url(r'^calculator$', 'django.views.generic.simple.direct_to_template',
-                            {'template': 'risiko/index.html'}, name='oldcalculator'),
-
     (r'^impact/', include('impact.urls')),
    ) + staticfiles_urlpatterns()
