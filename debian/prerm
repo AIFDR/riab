@@ -21,8 +21,8 @@ case "$1" in
     remove|upgrade|deconfigure)
 	sitedir=`/var/lib/geonode/bin/python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"`
 	patch -R /var/lib/geonode/src/owslib/owslib/feature/wfs100.py /usr/share/risiko/wfs100.patch
-      
-        sed -i "s/risiko/geonode/g" /var/www/geonode/wsgi/geonode.wsgi
+	patch -R -p1 < /usr/share/risiko/geonode-1.1-beta2-to-2011-08-16.patch      
+	sed -i "s/risiko/geonode/g" /var/www/geonode/wsgi/geonode.wsgi
 	rm -rf $sitedir/risiko
         rm -rf $sitedir/impact
 	rm -rf /var/www/geonode/static
