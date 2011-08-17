@@ -14,7 +14,7 @@ from geonode.maps.utils import get_valid_user
 from impact.storage.io import save_to_geonode, RisikoException
 from impact.storage.io import check_layer, assert_bounding_box_matches
 from impact.storage.io import get_bounding_box_string
-from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
+from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page
 from impact.storage.io import read_layer
 
