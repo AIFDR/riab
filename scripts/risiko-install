@@ -44,7 +44,7 @@ fi
 
 echo ">>> Downloading bundled pre-requisites"
 
-export RISIKO_DATASOURCE="http://aifdr.s3.amazonaws.com/"
+export RISIKO_DATASOURCE="http://aifdr.s3.amazonaws.com"
 
 # Install GeoNode and it's pre-requisites
 mkdir -p temp
@@ -111,9 +111,6 @@ echo ">>> Building and installing the Calculator application"
 pushd .
 cd riab/calculator
 ant init
-ant dist
-mkdir -p ../impact/static
-cp -Rf build/calculator/WEB-INF/app/static ../impact/static/calculator
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"
