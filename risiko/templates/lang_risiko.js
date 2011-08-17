@@ -2,7 +2,7 @@
 
 {% block extra_lang %}
 GeoExt.Lang.add("{{ LANGUAGE_CODE }}", {
-    "Risiko.prototype": {
+    "Risiko.Calculator.prototype": {
         hazardComboLabelText: gettext("Hazard"),
         exposureComboLabelText: gettext("Exposure"),
         functionComboLabelText: gettext("Function"),

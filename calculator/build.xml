@@ -40,17 +40,17 @@
         </exec>
 
         <echo message="pulling in js dependencies"/>
-        <get src="https://github.com/openlayers/openlayers/zipball/2.x" dest="${build}/openlayers.zip"/>
+        <get src="https://github.com/openlayers/openlayers/zipball/4d1ac13a36beecac5bf7d6c97d357be1e17cf7c0" dest="${build}/openlayers.zip"/>
         <unzip src="${build}/openlayers.zip" dest="${externals}"/>
         <exec executable="sh" dir="${externals}" failonerror="true">
           <arg line="-c 'rm -Rf openlayers &amp;&amp; mv openlayers-openlayers-* openlayers'"/>
         </exec>
-        <get src="https://github.com/opengeo/GeoExt/zipball/master" dest="${build}/geoext.zip"/>
+        <get src="https://github.com/opengeo/GeoExt/zipball/deac1664bc9722098b171b0d550b5ba02e2abe2a" dest="${build}/geoext.zip"/>
         <unzip src="${build}/geoext.zip" dest="${externals}"/>
         <exec executable="sh" dir="${externals}" failonerror="true">
           <arg line="-c 'rm -Rf geoext &amp;&amp; mv opengeo-GeoExt-* geoext'"/>
         </exec>
-        <get src="https://github.com/opengeo/gxp/zipball/master" dest="${build}/gxp.zip"/>
+        <get src="https://github.com/opengeo/gxp/zipball/446763cc854d049436c8d677b7b76a4ea490bbef" dest="${build}/gxp.zip"/>
         <unzip src="${build}/gxp.zip" dest="${externals}"/>
         <exec executable="sh" dir="${externals}" failonerror="true">
           <arg line="-c 'rm -Rf gxp &amp;&amp; mv opengeo-gxp-* gxp'"/>
