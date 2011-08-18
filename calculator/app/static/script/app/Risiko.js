@@ -59,14 +59,18 @@ var Risiko = Ext.extend(gxp.Viewer, {
                     id: "east",
                     region: "east",
                     width: 350,
+                    split: true,
                     collapsible: true,
                     collapseMode: "mini",
                     header: false,
                     border: true,
                     layout: "vbox",
-                    defaults: {
+                    layoutConfig: {
                         align: 'stretch',
                         pack: 'start',
+                        defaultMargins: "2 2 0 2"
+                    },
+                    defaults: {
                         padding: 10
                     }
                 }]

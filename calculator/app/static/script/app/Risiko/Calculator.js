@@ -323,8 +323,8 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             title: this.calculatorTitleText,
             xtype: 'form',
             labelWidth: 80,
+            frame: true,
             height: 200,
-            split: true,
             border: false,
             items: [{
                 xtype: 'combo',
@@ -388,11 +388,10 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
         }, {
             id: "resultpanelcontainer",
             title: 'Kalkulasi Hasil',
-            flex: 2,
+            flex: 1,
             frame: true,
             border: true,
             autoScroll: true,
-            width: '100%',
             items: [{
                 id: "resultpanel",
                 html: ""
@@ -403,11 +402,9 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             }
         }, {
             id: "logopanel",
-            flex: 3,
             height: 180,
             frame: false,
             border: false,
-            width: '100%',
             html: "<div><p>"+
                     "<a href='http://bnpb.go.id' target='_blank'><img src='theme/app/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 100px; float: left' /></a>"+
                   "</p></div>",
