@@ -10,7 +10,20 @@
   <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}theme/site.css" media="screen" />
   <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
   <script type="text/javascript" src="{% url lang %}"></script>
+  <style>
+    #header {
+        background: none;
+   }
+  #login-area a {
+       color: #000;
+    }
+  #logo {
+        width: 300px;
+  }
+  </style>
+
   {% endblock %}
+
 </head>
 <body>
   <div id="header">
