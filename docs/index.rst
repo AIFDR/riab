@@ -14,15 +14,15 @@ Having trouble? We'd like to help!
 
 * Looking for specific information? Try the :ref:`genindex` or the :ref:`modindex`.
 
-* Search for information in the `archives of the riab-users mailing list`_, or
+* Search for information in the `archives of the risiko-dev mailing list`_, or
   `post a question`_.
 
 * Ask a question in the `#riab IRC channel`_.
 
 * Report bugs with RiaB in our `ticket tracker`_.
 
-.. _archives of the riab-users mailing list: http://groups.google.com/group/riab/
-.. _post a question: http://groups.google.com/group/riab/
+.. _archives of the risiko-dev mailing list: http://groups.google.com/group/risiko-devb/
+.. _post a question: http://groups.google.com/group/risiko-dev
 .. _#riab IRC channel: irc://irc.freenode.net/riab
 .. _ticket tracker: http://github.com/AIFDR/riab/issues
 
