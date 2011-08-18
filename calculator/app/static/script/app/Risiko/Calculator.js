@@ -49,10 +49,10 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             bboxLayer = new OpenLayers.Layer.Vector("Calculation Extent", {
                 styleMap: new OpenLayers.StyleMap({
                     strokeColor: "#000000",
-                    strokeOpacity: 1,
-                    strokeWidth: 2,
+                    strokeOpacity: 0.6,
+                    strokeWidth: 3,
                     fillColor: "#00FF00",
-                    fillOpacity: 0.6
+                    fillOpacity: 0
                 })
             });
 
