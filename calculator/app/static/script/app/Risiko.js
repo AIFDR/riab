@@ -121,6 +121,10 @@ var Risiko = Ext.extend(gxp.Viewer, {
                 },
                 actionTarget: ["tree.tbar", "tree.contextMenu"]
             }, {
+                ptype: "gxp_styler",
+                requireDescribeLayer: false,
+                actionTarget: ["tree.tbar", "tree.contextMenu"]
+            }, {
                 ptype: "app_calculator",
                 outputTarget: "east"
             }],
@@ -158,5 +162,30 @@ var Risiko = Ext.extend(gxp.Viewer, {
             },
             scope: this
         });
+        
+        // assume that we're not authorized to do anything (especially style
+        // editing), until we get note from /data/acls that we're not anonymous
+        this.isAuthorized = OpenLayers.Function.False;
+        Ext.Ajax.request({
+            url: "/data/acls",
+            success: function(response) {
+                var acls = Ext.decode(response.responseText, true);
+                if (acls.is_anonymous === false) {
+                    this.isAuthorized = OpenLayers.Function.True;
+                }
+            },
+            scope: this
+        });
     }
 });
+
+(function() {
+    // making symbol names available in UPPERCASE, because Risiko slds use
+    // uppercase symbol names.
+    //TODO: check if uppercase symbol names are valid according by the spec.
+    // If so, make this change in OpenLayers. If not, change it in Risiko.
+    var symbol = OpenLayers.Renderer.symbol;
+    for (var s in symbol) {
+        symbol[s.toUpperCase()] = symbol[s];
+    }
+})();
