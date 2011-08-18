@@ -1,46 +1,36 @@
-{% extends "fullscreen.html" %}
-
-{% block title %}Risiko Calculator{% endblock %}
-
-{% block extra_head %}
-        <!-- Ext resources -->
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/externals/ext/resources/css/ext-all.css">
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/externals/ext/resources/css/xtheme-gray.css">
-        <script type="text/javascript" src="{{ STATIC_URL }}calculator/externals/ext/adapter/ext/ext-base.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}calculator/externals/ext/ext-all.js"></script>
-
-        <!-- OpenLayers resources -->
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/externals/openlayers/theme/default/style.css">
-        <script type="text/javascript" src="{{ STATIC_URL }}calculator/script/OpenLayers.js"></script>
-
-        <!-- GeoExt resources -->
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/externals/geoext/resources/css/popup.css">
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/externals/geoext/resources/css/layerlegend.css">
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/externals/geoext/resources/css/gxtheme-gray.css">
-        <script type="text/javascript" src="{{ STATIC_URL }}calculator/script/GeoExt.js"></script> 
-
-        <!-- gxp resources -->
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/externals/gxp/src/theme/all.css">
-        <script type="text/javascript" src="{{ STATIC_URL }}calculator/script/gxp.js"></script> 
-        
-        <!-- ux resources -->
-        <script type="text/javascript" src="{{ STATIC_URL }}calculator/script/ux.js"></script>
-        <!-- proj4js resources -->
-        <!--
-        <script type="text/javascript" src="{{ STATIC_URL}}calculator/externals/proj4js/lib/proj4js-compressed.js"></script>
-        -->
-
-        <!-- app resources -->
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/theme/app/style.css">
-        <!--[if IE]><link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}calculator/theme/app/ie.css"/><![endif]-->        
-        <script type="text/javascript" src="{{ STATIC_URL }}calculator/script/Risiko.js"></script>
-        <script>
-            Ext.BNPB = "{{ STATIC_URL }}theme/img/bnpb_logo.png";
-            Ext.BLANK_IMAGE_URL = "{{ STATIC_URL }}calculator/theme/app/img/blank.gif";
-            OpenLayers.ImgPath = "{{ STATIC_URL }}calculator/externals/openlayers/img/";
-            var app = new Risiko();
-        </script>
+{% extends "page_layout.html" %}
+{% load i18n %}
+{% block title %}{% trans "Risiko Calculator" %}{% endblock %}
+{% block head %}
+{{ block.super }}
+<style>
+html, body {
+    height: 100%;
+    width: 100%;
+    border: none;
+    overflow: hidden;
+    position: absolute;
+}
+.justcontent {
+    border: none;
+    margin: 0px;
+    padding: 0px;
+    position: absolute;
+}
+#content {
+    top: 83px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+iframe {
+    width: 100%;
+    height: 100%;
+}
+</style>
 {% endblock %}
-
-{% block body %}
+{% block pagecontent %}
+<div class="justcontent" id="content">
+<iframe frameborder="no" class="justcontent" src="../static/calculator/index.html"></iframe>
+</div>
 {% endblock %}
