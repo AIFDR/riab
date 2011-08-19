@@ -20,7 +20,7 @@ from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
 
-from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
+from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from owslib.wcs import WebCoverageService
 
 
@@ -125,7 +125,7 @@ class Test_calculations(unittest.TestCase):
 
         # Upload exposure data for this test
         name = 'Population_2010'
-        exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
         exposure_layer = save_to_geonode(exposure_filename,
                                          user=self.user, overwrite=True)
 
@@ -149,7 +149,7 @@ class Test_calculations(unittest.TestCase):
         filename = 'Lembang_Earthquake_Scenario.asc'
 
         # Save
-        hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
+        hazard_filename = '%s/%s' % (TESTDATA, filename)
         hazard_layer = save_to_geonode(hazard_filename,
                                        user=self.user, overwrite=True)
         hazard_name = '%s:%s' % (hazard_layer.workspace,
@@ -200,7 +200,7 @@ class Test_calculations(unittest.TestCase):
         """
         # Upload exposure data for this test
         name = 'Population_2010'
-        exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
         exposure_layer = save_to_geonode(exposure_filename,
                                          user=self.user, overwrite=True)
         layer_name = exposure_layer.typename

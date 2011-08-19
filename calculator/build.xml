@@ -50,7 +50,7 @@
         <exec executable="sh" dir="${externals}" failonerror="true">
           <arg line="-c 'rm -Rf geoext &amp;&amp; mv opengeo-GeoExt-* geoext'"/>
         </exec>
-        <get src="https://github.com/opengeo/gxp/zipball/7a73781317df9f7850041873b9d3fbd1f2fbe7a0" dest="${build}/gxp.zip"/>
+        <get src="https://github.com/opengeo/gxp/zipball/5f0978297ca74d48bb6b5fc33bc3ca26cfda5aad" dest="${build}/gxp.zip"/>
         <unzip src="${build}/gxp.zip" dest="${externals}"/>
         <exec executable="sh" dir="${externals}" failonerror="true">
           <arg line="-c 'rm -Rf gxp &amp;&amp; mv opengeo-gxp-* gxp'"/>

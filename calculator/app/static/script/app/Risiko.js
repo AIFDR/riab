@@ -115,6 +115,10 @@ var Risiko = Ext.extend(gxp.Viewer, {
             }, {
                 ptype: "gxp_wmsgetfeatureinfo",
                 format: "grid",
+                controlOptions: {maxFeatures: 3},
+                outputConfig: {
+                    maximizable: true
+                },
                 actionTarget: "map.tbar"
             }, {
                 ptype: "gxp_layerproperties",

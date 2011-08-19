@@ -11,13 +11,14 @@ risiko clean
 risiko start
 
 # Show code quality
-
 if [ $# -eq 0 ];then
     risiko-lint
 else
     echo
 fi
 
+# FIXME: test suite only works from within $RIAB_HOME/riab
+cd $RIAB_HOME/riab
 risiko test impact --noinput --with-id $@
 
 # Stop GeoNode
