@@ -37,7 +37,7 @@ This is for those who either want to try out the software and/or modify it. For 
 
 To install a RISIKO development environment, start a terminal window, cd to your favorite development area and run the following::
 
- wget http://tinyurl.com/risiko-install
+ wget http://tinyurl.com/riskinabox
  bash risiko-install
 
 This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it.
