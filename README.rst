@@ -33,11 +33,11 @@ System Requirements
 Development installation
 ------------------------
 
-This is for those who either want to try out the software and/or modify it. For installing Risiko as a public web server please see instructions for production installation. 
+This is for those who either want to try out the software and/or modify it. For installing Risiko as a public web server please see instructions for production installation.
 
 To install a RISIKO development environment, start a terminal window, cd to your favorite development area and run the following::
 
- wget https://github.com/AIFDR/riab/raw/master/scripts/risiko-install
+ wget http://tinyurl.com/risiko-install
  bash risiko-install
 
 This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it.
@@ -103,7 +103,7 @@ LIMITATIONS
 
 Risiko is a very new project. The current code development started in earnest in March 2011 and there is still much to be done.
 However, we work on the philosophy that stakeholders should have access to the development and source code from the very beginning and invite comments, suggestions and contributions.
- 
+
 
 As such, Risiko currently has some major limitations, including
 
