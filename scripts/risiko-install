@@ -43,7 +43,7 @@ fi
 
 
 echo ">>> Downloading bundled pre-requisites"
-
+pushd .
 export RISIKO_DATASOURCE="http://data.riskinabox.org"
 
 sudo mkdir -p /usr/share/risiko
@@ -55,10 +55,7 @@ sudo wget -c "$RISIKO_DATASOURCE/geonode-libs.pybundle"
 sudo wget -c "$RISIKO_DATASOURCE/geonode-client.zip"
 sudo wget -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
 sudo wget -c "$RISIKO_DATASOURCE/risiko_demo_data.tgz"
-
-# Needed for the debian package until GeoNode upgrades
-sudo wget -c "$RISIKO_DATASOURCE/django-rosetta-0.6.2.tar.gz"
-cd ..
+popd
 
 
 function checkup() {
@@ -84,6 +81,7 @@ source ~/.bash_aliases
 source riab_env/bin/activate
 
 echo ">>> Installing riab dependencies"
+pushd .
 unzip -o /usr/share/risiko/tomcat.zip > /dev/null
 cp /usr/share/risiko/geoserver-geonode-dev.war tomcat/webapps/
 cp /usr/share/risiko/geonetwork.war tomcat/webapps/
@@ -91,7 +89,8 @@ tar xvfz /usr/share/risiko/risiko_test_data.tgz > /dev/null
 tar xvfz /usr/share/risiko/risiko_demo_data.tgz > /dev/null
 mkdir -p geonode/src/GeoNodePy/geonode/maps/static
 unzip -o /usr/share/risiko/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode > /dev/null
-pip install temp/geonode-libs.pybundle
+pip install /usr/share/risiko/geonode-libs.pybundle
+popd
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pushd .
