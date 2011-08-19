@@ -74,6 +74,11 @@ function checkup() {
 echo ">>> Cloning the repositories"
 # Get riab source code
 checkup GFDRR/geonode.git geonode
+pushd .
+cd geonode
+git fetch origin nocsw
+git checkout nocsw
+popd
 checkup AIFDR/riab.git riab
 
 echo ">>> Activating virtual environment"
@@ -103,6 +108,7 @@ echo ">>> Building and installing the Calculator application"
 pushd .
 cd riab/calculator
 ant init
+ant
 popd
 
 echo ""

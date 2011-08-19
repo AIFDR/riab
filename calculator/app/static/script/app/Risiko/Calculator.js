@@ -42,7 +42,6 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             var map = app.mapPanel.map;
             
             if (bboxLayer) {
-                map.removeLayer(bboxLayer);
                 bboxLayer.destroy();
                 bboxLayer = null;
             }
@@ -163,6 +162,9 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             removeLayer(exposure.getValue());
             removeLayer(hazard.getValue());
             removeLayer(lastImpactLayer);
+            if (bboxLayer && bboxLayer.map) {
+                app.mapPanel.map.removeLayer(bboxLayer);
+            }
             lastImpactSelect = "None";
             lastExposureSelect = "None";
             lastHazardSelect = "None";
