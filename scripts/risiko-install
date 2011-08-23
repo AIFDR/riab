@@ -44,10 +44,10 @@ fi
 
 echo ">>> Downloading bundled pre-requisites"
 pushd .
-#Cloud Front not updating automatically
-#export RISIKO_DATASOURCE="http://data.riskinabox.org"
-export RISIKO_DATASOURCE="http://aifdr.s3.amazonaws.com"
+export RISIKO_DATASOURCE="http://data.riskinabox.org"  # Cloud Front
+#export RISIKO_DATASOURCE="http://aifdr.s3.amazonaws.com"
 
+# FIXME(Ole): We have had to delete these files to force a fresh download
 sudo mkdir -p /usr/share/risiko
 cd /usr/share/risiko
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/tomcat.zip"
