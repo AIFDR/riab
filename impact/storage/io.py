@@ -17,6 +17,7 @@ from impact.storage.raster import Raster
 from impact.storage.utilities import get_layers_metadata, geotransform2bbox
 from impact.storage.utilities import LAYER_TYPES
 from impact.storage.utilities import unique_filename
+from impact.storage.utilities import extract_geotransform
 
 from owslib.wcs import WebCoverageService
 from owslib.wfs import WebFeatureService
@@ -306,6 +307,7 @@ def get_ows_metadata(server_url, layer_name):
     if layer_name in wcs.contents:
         layer = wcs.contents[layer_name]
         metadata['layer_type'] = 'raster'
+        metadata['geotransform'] = extract_geotransform(layer)
     elif layer_name in wfs.contents:
         layer = wfs.contents[layer_name]
         metadata['layer_type'] = 'vector'

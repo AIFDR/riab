@@ -345,6 +345,35 @@ def read_keywords(filename):
     return keywords
 
 
+def extract_geotransform(layer):
+    """Extract geotransform from OWS layer object.
+
+    Input
+        layer: Raster layer object e.g. obtained from WebCoverageService
+
+    Output:
+        geotransform: GDAL geotransform (www.gdal.org/gdal_tutorial.html)
+    """
+
+    grid = layer.grid
+
+    top_left_x = float(grid.origin[0])
+    we_pixel_res = float(grid.offsetvectors[0][0])
+    x_rotation = float(grid.offsetvectors[0][1])
+    top_left_y = float(grid.origin[1])
+    y_rotation = float(grid.offsetvectors[1][0])
+    ns_pixel_res = float(grid.offsetvectors[1][1])
+
+    # There is half a pixel_resolution difference between
+    # what WCS reports and what GDAL reports.
+    # A pixel CENTER vs pixel CORNER difference.
+    adjusted_top_left_x = top_left_x - we_pixel_res / 2
+    adjusted_top_left_y = top_left_y - ns_pixel_res / 2
+
+    return (adjusted_top_left_x, we_pixel_res, x_rotation,
+            adjusted_top_left_y, y_rotation, ns_pixel_res)
+
+
 def geotransform2bbox(geotransform, columns, rows):
     """Convert geotransform to bounding box
 
