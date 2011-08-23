@@ -46,10 +46,10 @@ To run the test suite, you'll need the commands::
 
 To upload the bundled demo data, you'll need to do the following
 
- risiko-activate
- risiko-clean
- risiko-start
- risiko-upload risiko_demo_data
+ risiko-activate 
+ risiko-clean 
+ risiko-start 
+ risiko-upload risiko_demo_data 
 
 when this is finished point the browser to 127.0.0.1:8000, select layers and try the risk calculator.
 
