@@ -44,7 +44,9 @@ fi
 
 echo ">>> Downloading bundled pre-requisites"
 pushd .
-export RISIKO_DATASOURCE="http://data.riskinabox.org"
+#Cloud Front not updating automatically
+#export RISIKO_DATASOURCE="http://data.riskinabox.org"
+export RISIKO_DATASOURCE="http://aifdr.s3.amazonaws.com"
 
 sudo mkdir -p /usr/share/risiko
 cd /usr/share/risiko
