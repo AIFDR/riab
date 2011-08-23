@@ -44,7 +44,7 @@ To run the test suite, you'll need the commands::
  risiko-activate
  risiko-test
 
-To upload the bundled demo data, you'll need to do the following
+To upload the bundled demo data, you'll need to do the following::
 
  risiko-activate 
  risiko-clean 
