@@ -3,10 +3,7 @@ RISIKO - RISK IN A BOX
 ======================
 
 This is the project: "Risiko - Risk in a Box".
-It consists of the following modules:
-
-- https://github.com/AIFDR/riab/tree/master/risiko: The web application
-- https://github.com/AIFDR/riab/tree/master/impact: Module for risk calculations, gis functionality and plugin management
+The latest source code is available in https://github.com/AIFDR/riab/tree/master/impact which contains modules for risk calculations, gis functionality and plugin management.
 
 For more information about Risk In a Box please look at
 our documentation on http://riab.readthedocs.org
@@ -47,17 +44,12 @@ To run the test suite, you'll need the commands::
  risiko-activate
  risiko-test
 
-To upload the bundled demo data, you'll need to do the following
-In one terminal::
+To upload the bundled demo data, you'll need to do the following::
 
- risiko-activate
- risiko-clean
- risiko-start
-
-In another terminal and in the directory referenced by $RIAB_HOME, do::
-
- risiko-activate
- risiko-upload risiko_demo_data
+ risiko-activate 
+ risiko-clean 
+ risiko-start 
+ risiko-upload risiko_demo_data 
 
 when this is finished point the browser to 127.0.0.1:8000, select layers and try the risk calculator.
 
@@ -72,7 +64,7 @@ If you wish to commit changes back to the repository, you must
 
 
 -----------------------
-Production installation
+Production installation (Obsolete!)
 -----------------------
 
 This is for installing Risiko as a public web server.
