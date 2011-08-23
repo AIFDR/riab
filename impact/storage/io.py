@@ -214,36 +214,8 @@ def get_geotransform(server_url, layer_name):
 
     """
 
-    # FIXME (Ole): This should be superseded by new get_metadata
-    #              function which will be entirely based on OWSLib
-    #              Issue #95
-
-    wcs = WebCoverageService(server_url, version='1.0.0')
-
-    if layer_name in wcs.contents:
-        layer = wcs.contents[layer_name]
-        grid = layer.grid
-
-        top_left_x = float(layer.grid.origin[0])
-        we_pixel_res = float(layer.grid.offsetvectors[0][0])
-        x_rotation = float(layer.grid.offsetvectors[0][1])
-        top_left_y = float(layer.grid.origin[1])
-        y_rotation = float(layer.grid.offsetvectors[1][0])
-        ns_pixel_res = float(layer.grid.offsetvectors[1][1])
-
-        # There is half a pixel_resolution difference between
-        # what WCS reports and what GDAL reports.
-        # A pixel CENTER vs pixel CORNER difference.
-        adjusted_top_left_x = top_left_x - we_pixel_res / 2
-        adjusted_top_left_y = top_left_y - ns_pixel_res / 2
-
-        return (adjusted_top_left_x, we_pixel_res, x_rotation,
-                adjusted_top_left_y, y_rotation, ns_pixel_res)
-    else:
-        msg = ('Could not find layer "%s" in the WCS server "%s".'
-               'Available layers were: %s' % (layer_name, server_url,
-                                              wcs.contents.keys()))
-        raise Exception(msg)
+    metadata = get_ows_metadata(server_url, layer_name)
+    return metadata['geotransform']
 
 
 def get_metadata(server_url, layer_name):
