@@ -222,42 +222,17 @@ def get_metadata(server_url, layer_name):
     """Uses OWS services to get the metadata for a given layer
 
     Input
-        server_url:
+        server_url: e.g. http://localhost:8001/geoserver-geonode-dev/ows
         layer_name: must follow the convention workspace:name
     """
 
-    # FIXME (Ole): This should be superseded by new get_metadata
-    #              function which will be entirely based on OWSLib
-    #              Issue #95
+    ows_metadata = get_ows_metadata(server_url, layer_name)
 
-    # Get all metadata
+    # Temporarily expand keywords into main metadata (FIXME: but remove this again as it is dangerous)
+    for key in ows_metadata['keywords']:
+        ows_metadata[key] = ows_metadata['keywords'][key]
 
-    themetadata = get_layers_metadata(server_url, version='1.0.0')
-
-    # Look for specific layer
-    layer_metadata = None
-    for x in themetadata:
-        if x[0] == layer_name:
-            # We expect only one element in this list, if there is more
-            # than one, we will use the first one.
-            layer_metadata = x[1]
-            break
-
-    msg = ('There is no metadata in server %s for layer '
-           '%s. Available metadata is %s' % (server_url, layer_name,
-                                             themetadata))
-    assert layer_metadata is not None, msg
-
-    # FIXME: We need a geotransform attribute in get_metadata
-    # Let's add it here for the time being
-    if layer_metadata['layer_type'] == 'raster':
-        geotransform = get_geotransform(server_url, layer_name)
-
-        layer_metadata['geotransform'] = geotransform
-        #layer_metadata['bbox'] = geotransform2bbox(geotransform,
-        #                                           columns, rows)
-
-    return layer_metadata
+    return ows_metadata
 
 
 def get_ows_metadata(server_url, layer_name):
@@ -432,7 +407,8 @@ def download(server_url, layer_name, bbox):
     layer_metadata = get_metadata(server_url, layer_name)
 
     data_type = layer_metadata['layer_type']
-    if data_type == 'feature':
+    # FIXME(Ole): Clean this up when issue #115 is done. Should use 'vector' only.
+    if data_type == 'feature' or data_type == 'vector':
         template = WFS_TEMPLATE
         suffix = '.zip'
         download_url = template % (server_url, layer_name, bbox_string)

@@ -3,7 +3,7 @@ from geonode.maps.models import Layer
 from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
 from impact.storage.utilities import unique_filename
 from impact.storage.io import get_bounding_box
-from impact.storage.io import download, get_ows_metadata
+from impact.storage.io import download, get_metadata, get_ows_metadata
 from django.conf import settings
 import os
 import time
@@ -345,6 +345,34 @@ class Test_geonode_connection(unittest.TestCase):
         thefile = os.path.join(TESTDATA, 'lembang_mmi_hazmap.asc')
         layer = save_to_geonode(thefile, user=self.user, overwrite=True)
         check_layer(layer, full=True)
+
+        # A little metadata characterisation test
+        layer_name = '%s:%s' % (layer.workspace, layer.name)
+        ows_metadata = get_ows_metadata(INTERNAL_SERVER_URL,
+                                        layer_name)
+        # Verify
+        assert 'id' in ows_metadata
+        assert 'title' in ows_metadata
+        assert 'layer_type' in ows_metadata
+        assert 'keywords' in ows_metadata
+        assert 'bounding_box' in ows_metadata
+        assert 'geotransform' in ows_metadata
+        assert len(ows_metadata['bounding_box']) == 4
+
+        metadata = get_metadata(INTERNAL_SERVER_URL,
+                                layer_name)
+
+        ref = {'layer_type': 'raster',
+               'category': 'hazard',
+               'geotransform': (105.29857, 0.0112, 0.0,
+                                -5.565233000000001, 0.0, -0.0112),
+               'subcategory': 'earthquake',
+               'title': 'lembang_mmi_hazmap'}
+
+        for key in ['layer_type', 'category', 'geotransform',
+                    'subcategory', 'title']:
+            assert metadata[key] == ref[key]
+
 
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
