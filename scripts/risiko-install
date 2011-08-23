@@ -52,7 +52,6 @@ sudo mkdir -p /usr/share/risiko
 cd /usr/share/risiko
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/tomcat.zip"
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/geoserver-geonode-dev.war"
-sudo wget -t 1 -c "$RISIKO_DATASOURCE/geonetwork.war"
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/geonode-libs.pybundle"
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/geonode-client.zip"
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
