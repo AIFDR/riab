@@ -313,12 +313,12 @@ LOGGING = {
             'propagate': False,
         },
         'geonode.maps': {
-            'handlers': ['file',],
+            'handlers': ['file'],
             'propagate': False,
             'level': 'WARNING',
         },
         'risiko': {
-            'handlers': ['file',],
+            'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': False,
        }

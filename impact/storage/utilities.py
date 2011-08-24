@@ -50,6 +50,7 @@ def unique_filename(**kwargs):
 
     return filename
 
+
 # GeoServer utility functions
 def is_server_reachable(url):
     """Make an http connection to url to see if it is accesible.
@@ -62,6 +63,7 @@ def is_server_reachable(url):
         return False
     else:
         return True
+
 
 def write_keywords(keywords, filename):
     """Write keywords dictonary to file

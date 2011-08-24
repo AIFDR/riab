@@ -190,7 +190,7 @@ def requirement_check(params, require_str, verbose=False):
             msg = ('Error in plugin requirements'
                    'Must not use Python keywords as params: %s' % (key))
             logger.error(msg)
-	    return False
+            return False
         if type(params[key]) == type(''):  # is it a string param
             execstr += '  %s = "%s" \n' % (key.strip(), params[key])
         else:

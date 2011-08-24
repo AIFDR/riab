@@ -376,7 +376,6 @@ def get_layer_descriptors(url, version='1.0.0'):
     return x
 
 
-
 def get_file(download_url, suffix):
     """Download a file from an HTTP server.
     """
