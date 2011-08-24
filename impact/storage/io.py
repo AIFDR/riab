@@ -269,12 +269,38 @@ def get_layers_metadata(url, version='1.0.0'):
     #              I have raised this in ticket #126
 
 
-    #ows_metadata = get_ows_metadata(url)
-    #print ows_metadata
-    #import sys; sys.exit()
+    # Get all metadata from owslib
+    ows_metadata = get_ows_metadata(url)
 
-    from utilities import Xget_layers_metadata
-    return Xget_layers_metadata(url)
+    # Create exactly the same structure that was produced by
+    # get_layers_metadata. FIXME: However, this is subject to issue #126
+    x = []
+    for key in ows_metadata:
+        # Get all metadata
+        md = ows_metadata[key]
+
+        # Create new special purpose entry
+        block = {}
+        if md['layer_type'] == 'vector':
+            block['layer_type'] = 'feature'
+        else:
+            block['layer_type'] = 'raster'
+
+        for kw in md['keywords']:
+            block[kw] = md['keywords'][kw]
+
+        block['title'] = md['title']
+
+        x.append([key, block])
+
+    return x
+
+    #from utilities import Xget_layers_metadata
+    #X = Xget_layers_metadata(url)
+    #print
+    #print X
+    #print
+    #return X
 
 def get_ows_metadata_from_layer(layer):
     """Get ows metadata from one layer
