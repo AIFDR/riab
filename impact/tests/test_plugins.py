@@ -242,18 +242,6 @@ class Test_plugins(unittest.TestCase):
         msg = 'No compatible layers returned'
         assert len(annotated_plugins) > 0, msg
 
-#======================================================================
-#FAIL: Performance of the default plugins using internal GeoServer
-#----------------------------------------------------------------------
-#Traceback (most recent call last):
-#  File "/home/nielso/dev/riab/impact/tests/test_plugins.py", line 230, in test_#plugin_compatability
-#    assert name == reference[i][0]
-#AssertionError:
-#>>  assert 'geonode:lembang_schools_percentage_loss' == [['geonode:lembang_scho#ols', {'layer_type': 'feature', 'category': 'exposure', 'subcategory': 'buildin#g', 'title': 'lembang_schools'}], ['geonode:shakemap_padang_20090930', {'layer_#type': 'raster', 'category': 'hazard', 'subcategory': 'earthquake', 'title': 's#hakemap_padang_20090930'}]][1][0]
-
-
-
-
     def test_django_plugins(self):
         """Django plugin functions can be retrieved correctly
         """
