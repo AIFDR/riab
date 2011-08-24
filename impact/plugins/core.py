@@ -9,7 +9,6 @@ using it.
 from django.template.loader import render_to_string
 from impact.plugins.utilities import ColorMapEntry
 import types
-
 import keyword
 
 import logging
@@ -32,8 +31,7 @@ class PluginMount(type):
 
 
 class FunctionProvider:
-    """
-    Mount point for plugins which refer to actions that can be performed.
+    """Mount point for plugins which refer to actions that can be performed.
 
     Plugins implementing this reference should provide the following method:
 
@@ -51,13 +49,12 @@ class FunctionProvider:
 
     def generate_style(self, data):
         """Make a default style for all plugins
-
         """
 
-        # The paramers are substituted into the sld according the the
+        # The parameters are substituted into the sld according the the
         # Django template methodology:
-        #https://docs.djangoproject.com/en/dev/ref/templates/
-        #        builtins/?from=olddocs
+        # https://docs.djangoproject.com/en/dev/ref/templates/
+        #         builtins/?from=olddocs
 
         params = {'name': data.get_name()}
 
@@ -83,7 +80,7 @@ class FunctionProvider:
 
 
 def get_plugins(name=None):
-    """Retrieves a list of plugins that match the name you pass
+    """Retrieve a list of plugins that match the name you pass
 
        Or all of them if no name is passed.
     """
@@ -113,7 +110,7 @@ def get_plugins(name=None):
 
 
 def pretty_function_name(func):
-    """ Return a human readable name for the function
+    """Return a human readable name for the function
     if the function has a func.plugin_name use this
     otherwise turn underscores to spaces and Caps to spaces """
 
@@ -131,7 +128,7 @@ def pretty_function_name(func):
 
 
 def requirements_collect(func):
-    """ Collect the requirements from the plugin function doc
+    """Collect the requirements from the plugin function doc
 
     The requirements need to be specified using
       :param requires <valid pythhon expression>
@@ -245,12 +242,13 @@ def compatible_layers(func, layer_descriptors):
     """Fetches all the layers that match the plugin requirements.
 
     Input
-        func:
+        func: ? (FIXME(Ole): Ted, can you fill in here?
         layer_descriptor: Layer names and meta data (keywords, type, etc)
 
     Output:
         Array of compatible layers, can be an empty list.
     """
+
     layers = []
     requirements = requirements_collect(func)
 

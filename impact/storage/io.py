@@ -14,7 +14,6 @@ from zipfile import ZipFile
 
 from impact.storage.vector import Vector
 from impact.storage.raster import Raster
-from impact.storage.utilities import geotransform2bbox
 from impact.storage.utilities import LAYER_TYPES
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import extract_geotransform
@@ -101,7 +100,6 @@ WCS_TEMPLATE = '%s?version=1.0.0' + \
                       'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
                       '&resx=0.008333333333000&resy=0.008333333333000'
 
-# FIXME (Ole): Why is maxFeatures hard coded?
 WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&request=GetFeature&typeName=%s' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'
@@ -312,7 +310,7 @@ def get_metadata(server_url, layer_name=None):
         return metadata
 
 
-def get_layer_descriptors(url, version='1.0.0'):
+def get_layer_descriptors(url):
     """Get layer information for use with the plugin system
 
     The keywords are parsed and added to the metadata dictionary
@@ -532,7 +530,7 @@ class RisikoException(Exception):
 def console_log():
     """Reconfigure logging to output to the console.
     """
-    import logging
+
     for _module in ["risiko"]:
         _logger = logging.getLogger(_module)
         _logger.addHandler(logging.StreamHandler())
@@ -814,9 +812,9 @@ def save_directory_to_geonode(directory,
     assert os.path.isdir(directory), msg
 
     layers = []
-    for root, dirs, files in os.walk(directory):
+    for root, _, files in os.walk(directory):
         for short_filename in files:
-            basename, extension = os.path.splitext(short_filename)
+            _, extension = os.path.splitext(short_filename)
             filename = os.path.join(root, short_filename)
 
             # Attempt upload only if extension is recognised
@@ -865,14 +863,11 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=True):
 
     if os.path.isdir(incoming):
         # Upload all valid layer files in this dir recursively
-
         layers = save_directory_to_geonode(incoming, title=title, user=user,
                                            overwrite=overwrite)
         return layers
     elif os.path.isfile(incoming):
         # Upload single file (using its name as title)
-        basename, ext = os.path.splitext(incoming)
-
         layer = save_file_to_geonode(incoming, title=title, user=user,
                                      overwrite=overwrite)
         return layer
