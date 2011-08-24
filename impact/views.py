@@ -33,7 +33,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from impact.storage.io import dummy_save, download, get_layers_metadata
-from impact.storage.io import get_metadata, get_ows_metadata
+from impact.storage.io import get_metadata
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.storage.io import check_bbox_string
 from impact.storage.io import save_to_geonode
@@ -104,9 +104,9 @@ def calculate(request, save_output=save_to_geonode):
         # Find the intersection of bounding boxes for viewport,
         # hazard and exposure.
         vpt_bbox = bboxstring2list(bbox)
-        haz_bbox = get_ows_metadata(hazard_server,
+        haz_bbox = get_metadata(hazard_server,
                                 hazard_layer)['bounding_box']
-        exp_bbox = get_ows_metadata(exposure_server,
+        exp_bbox = get_metadata(exposure_server,
                                 exposure_layer)['bounding_box']
 
         # Impose minimum bounding box size (as per issue #101).
@@ -334,6 +334,9 @@ def layers(request):
         If a parameter called 'category' is passed, it will be
         used to filter the list.
     """
+
+    # FIXME (Ole): Why does the word 'category' have a special meaning?
+    #              Someone, please revisit this code!
 
     geoservers = get_servers(request.user)
 

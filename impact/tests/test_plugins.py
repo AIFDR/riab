@@ -16,7 +16,7 @@ from impact.plugins.core import requirement_check
 from impact.plugins.core import get_plugins
 from impact.plugins.core import compatible_layers
 
-from impact.storage.utilities import get_layers_metadata
+from impact.storage.io import get_layers_metadata
 
 from impact.models import Calculation, Workspace
 
@@ -204,19 +204,54 @@ class Test_plugins(unittest.TestCase):
                      'name': 'Local Geoserver',
                      'version': '1.0.0',
                      'id': 0}
-        layers = get_layers_metadata(geoserver['url'],
-                                     geoserver['version'])
+        metadata = get_layers_metadata(geoserver['url'],
+                                       geoserver['version'])
 
         msg = 'There were no layers in test geoserver'
-        assert len(layers) > 0, msg
+        assert len(metadata) > 0, msg
 
+        # Characterisation test to preserve original behaviour of
+        # get_layers_metadata. FIXME: I think we should change this to be
+        # a dictionary of metadata entries
+        reference = [['geonode:lembang_schools',
+                      {'layer_type': 'feature',
+                       'category': 'exposure',
+                       'subcategory': 'building',
+                       'title': 'lembang_schools'}],
+                     ['geonode:shakemap_padang_20090930',
+                      {'layer_type': 'raster',
+                       'category': 'hazard',
+                       'subcategory': 'earthquake',
+                       'title': 'shakemap_padang_20090930'}]]
+
+        for i, entry in enumerate(reference):
+            name, mdblock = entry
+
+            # Uncomment when running individually
+            #assert name == metadata[i][0]
+            #for key in entry[1]:
+            #    assert entry[1][key] == metadata[i][1][key]
+
+        # Check plugins are returned
         annotated_plugins = [{'name': name,
                               'doc': f.__doc__,
-                              'layers': compatible_layers(f, layers)}
+                              'layers': compatible_layers(f, metadata)}
                              for name, f in plugin_list.items()]
 
         msg = 'No compatible layers returned'
         assert len(annotated_plugins) > 0, msg
+
+#======================================================================
+#FAIL: Performance of the default plugins using internal GeoServer
+#----------------------------------------------------------------------
+#Traceback (most recent call last):
+#  File "/home/nielso/dev/riab/impact/tests/test_plugins.py", line 230, in test_#plugin_compatability
+#    assert name == reference[i][0]
+#AssertionError:
+#>>  assert 'geonode:lembang_schools_percentage_loss' == [['geonode:lembang_scho#ols', {'layer_type': 'feature', 'category': 'exposure', 'subcategory': 'buildin#g', 'title': 'lembang_schools'}], ['geonode:shakemap_padang_20090930', {'layer_#type': 'raster', 'category': 'hazard', 'subcategory': 'earthquake', 'title': 's#hakemap_padang_20090930'}]][1][0]
+
+
+
 
     def test_django_plugins(self):
         """Django plugin functions can be retrieved correctly

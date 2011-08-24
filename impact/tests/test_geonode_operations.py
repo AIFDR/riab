@@ -1,7 +1,7 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
-from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
-from impact.storage.utilities import unique_filename
+from impact.storage.io import get_layers_metadata
+from impact.storage.utilities import unique_filename, LAYER_TYPES
 from impact.storage.io import get_bounding_box
 from impact.storage.io import download, get_metadata, get_ows_metadata
 from django.conf import settings

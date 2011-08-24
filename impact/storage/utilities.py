@@ -67,7 +67,7 @@ def is_server_reachable(url):
         return True
 
 
-def get_layers_metadata(url, version='1.0.0'):
+def Xget_layers_metadata(url, version='1.0.0'):
     """Return the metadata for each layer as an dict formed from the keywords
 
     The keywords are parsed and added to the metadata dictionary
@@ -79,8 +79,37 @@ def get_layers_metadata(url, version='1.0.0'):
         version: The version of the wfs xml expected
 
       Returns
-        A list of dictionaries containing the metadata for each layer
+        A list of (lists of) dictionaries containing the metadata for
+        each layer of the following form:
+
+        [['geonode:lembang_schools',
+          {'layer_type': 'feature',
+           'category': 'exposure',
+           'subcategory': 'building',
+           'title': 'lembang_schools'}],
+         ['geonode:shakemap_padang_20090930',
+          {'layer_type': 'raster',
+           'category': 'hazard',
+           'subcategory': 'earthquake',
+           'title': 'shakemap_padang_20090930'}]]
+
     """
+
+    # FIXME (Ole): I don't like the format, but it permeates right
+    #              through to the HTTPResponses in views.py, so
+    #              I am not sure if it can be changed. My problem is
+    #
+    #              1: A dictionary of metadata entries would be simpler
+    #              2: The keywords should have their own dictinary to avoid
+    #                 danger of keywords overwriting other metadata
+    #
+    #              I have raised this in ticket #126
+
+
+    #ows_metadata = get_ows_metadata(url)
+    #print ows_metadata
+    #import sys; sys.exit()
+
 
     # FIXME (Ole): This should be superseded by new get_metadata
     #              function which will be entirely based on OWSLib
@@ -96,6 +125,7 @@ def get_layers_metadata(url, version='1.0.0'):
     layers = []
     layers.extend(wfs_reader.get_metadata())
     layers.extend(wcs_reader.get_metadata())
+
     return layers
 
 

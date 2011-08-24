@@ -14,7 +14,7 @@ from zipfile import ZipFile
 
 from impact.storage.vector import Vector
 from impact.storage.raster import Raster
-from impact.storage.utilities import get_layers_metadata, geotransform2bbox
+from impact.storage.utilities import geotransform2bbox
 from impact.storage.utilities import LAYER_TYPES
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import extract_geotransform
@@ -230,37 +230,66 @@ def get_metadata(server_url, layer_name):
     return ows_metadata
 
 
-def get_ows_metadata(server_url, layer_name=None):
-    """Uses OWSLib to get the metadata for a given layer
+def get_layers_metadata(url, version='1.0.0'):
+    """Return the metadata for each layer as an dict formed from the keywords
 
-    Input
-        server_url: e.g. http://localhost:8001/geoserver-geonode-dev/ows
-        layer_name: Name of layer - must follow the convention workspace:name
-                    If None metadata for all layers will be returned as a
-                    dictionary with one entry per layer
+    The keywords are parsed and added to the metadata dictionary
+    if they conform to the format "identifier:value".
 
-    Output
-        metadata: Dictionary of metadata fields for specified layer or,
-                  if layer_name is None, a dictionary of metadata dictionaries
+    default searches both feature and raster layers by default
+      Input
+        url: The wfs url
+        version: The version of the wfs xml expected
+
+      Returns
+        A list of (lists of) dictionaries containing the metadata for
+        each layer of the following form:
+
+        [['geonode:lembang_schools',
+          {'layer_type': 'feature',
+           'category': 'exposure',
+           'subcategory': 'building',
+           'title': 'lembang_schools'}],
+         ['geonode:shakemap_padang_20090930',
+          {'layer_type': 'raster',
+           'category': 'hazard',
+           'subcategory': 'earthquake',
+           'title': 'shakemap_padang_20090930'}]]
+
     """
 
-    wcs = WebCoverageService(server_url, version='1.0.0')
-    wfs = WebFeatureService(server_url, version='1.0.0')
+    # FIXME (Ole): I don't like the format, but it permeates right
+    #              through to the HTTPResponses in views.py, so
+    #              I am not sure if it can be changed. My problem is
+    #
+    #              1: A dictionary of metadata entries would be simpler
+    #              2: The keywords should have their own dictinary to avoid
+    #                 danger of keywords overwriting other metadata
+    #
+    #              I have raised this in ticket #126
+
+
+    #ows_metadata = get_ows_metadata(url)
+    #print ows_metadata
+    #import sys; sys.exit()
+
+    from utilities import Xget_layers_metadata
+    return Xget_layers_metadata(url)
+
+def get_ows_metadata_from_layer(layer):
+    """Get ows metadata from one layer
+
+    Input
+        layer: Layer object. It is assumed that it has the extra attribute
+               data_type which is either raster or vector
+    """
 
     metadata = {}
-    if layer_name in wcs.contents:
-        layer = wcs.contents[layer_name]
-        metadata['layer_type'] = 'raster'
+    metadata['layer_type'] = layer.datatype
+
+    # Metadata specific to layer types
+    if layer.datatype == 'raster':
         metadata['geotransform'] = extract_geotransform(layer)
-    elif layer_name in wfs.contents:
-        layer = wfs.contents[layer_name]
-        metadata['layer_type'] = 'vector'
-    else:
-        msg = ('Layer %s was not found in WxS contents on server %s.\n'
-               'WCS contents: %s\n'
-               'WFS contents: %s\n' % (layer_name, server_url,
-                                       wcs.contents, wfs.contents))
-        raise Exception(msg)
 
     # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
@@ -290,6 +319,55 @@ def get_ows_metadata(server_url, layer_name=None):
 
     return metadata
 
+
+def get_ows_metadata(server_url, layer_name=None):
+    """Uses OWSLib to get the metadata for a given layer
+
+    Input
+        server_url: e.g. http://localhost:8001/geoserver-geonode-dev/ows
+        layer_name: Name of layer - must follow the convention workspace:name
+                    If None metadata for all layers will be returned as a
+                    dictionary with one entry per layer
+
+    Output
+        metadata: Dictionary of metadata fields for specified layer or,
+                  if layer_name is None, a dictionary of metadata dictionaries
+    """
+
+    # Get all metadata from server
+    wcs = WebCoverageService(server_url, version='1.0.0')
+    wfs = WebFeatureService(server_url, version='1.0.0')
+
+    # Take of input options
+    if layer_name is None:
+        layer_names = wcs.contents.keys() + wfs.contents.keys()
+    else:
+        layer_names = [layer_name]
+
+    # Get metadata for requested layer(s)
+    metadata = {}
+    for name in layer_names:
+
+        if name in wcs.contents:
+            layer = wcs.contents[name]
+            layer.datatype = 'raster'  # Monkey patch type
+        elif name in wfs.contents:
+            layer = wfs.contents[name]
+            layer.datatype = 'vector'  # Monkey patch type
+        else:
+            msg = ('Layer %s was not found in WxS contents on server %s.\n'
+                   'WCS contents: %s\n'
+                   'WFS contents: %s\n' % (name, server_url,
+                                           wcs.contents, wfs.contents))
+            raise Exception(msg)
+
+        metadata[name] = get_ows_metadata_from_layer(layer)
+
+    # Return metadata for one or all layers
+    if layer_name is not None:
+        return metadata[layer_name]
+    else:
+        return metadata
 
 def get_file(download_url, suffix):
     """Download a file from an HTTP server.
