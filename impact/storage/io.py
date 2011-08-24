@@ -228,23 +228,26 @@ def get_metadata(server_url, layer_name):
 
     ows_metadata = get_ows_metadata(server_url, layer_name)
 
-    # Temporarily expand keywords into main metadata (FIXME: but remove this again as it is dangerous)
+    # Temporarily expand keywords into main metadata
+    # (FIXME: but remove this again as it is dangerous)
     for key in ows_metadata['keywords']:
         ows_metadata[key] = ows_metadata['keywords'][key]
 
     return ows_metadata
 
 
-def get_ows_metadata(server_url, layer_name):
+def get_ows_metadata(server_url, layer_name=None):
     """Uses OWSLib to get the metadata for a given layer
 
     Input
         server_url: e.g. http://localhost:8001/geoserver-geonode-dev/ows
-        layer_name: must follow the convention workspace:name
+        layer_name: Name of layer - must follow the convention workspace:name
+                    If None metadata for all layers will be returned as a
+                    dictionary with one entry per layer
 
     Output
-        metadata: Dictionary of metadata fields common to both
-                  raster and vector layers
+        metadata: Dictionary of metadata fields for specified layer or,
+                  if layer_name is None, a dictionary of metadata dictionaries
     """
 
     wcs = WebCoverageService(server_url, version='1.0.0')
@@ -407,8 +410,7 @@ def download(server_url, layer_name, bbox):
     layer_metadata = get_metadata(server_url, layer_name)
 
     data_type = layer_metadata['layer_type']
-    # FIXME(Ole): Clean this up when issue #115 is done. Should use 'vector' only.
-    if data_type == 'feature' or data_type == 'vector':
+    if data_type == 'vector':
         template = WFS_TEMPLATE
         suffix = '.zip'
         download_url = template % (server_url, layer_name, bbox_string)

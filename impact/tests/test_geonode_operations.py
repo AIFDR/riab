@@ -348,19 +348,16 @@ class Test_geonode_connection(unittest.TestCase):
 
         # A little metadata characterisation test
         layer_name = '%s:%s' % (layer.workspace, layer.name)
-        ows_metadata = get_ows_metadata(INTERNAL_SERVER_URL,
+        metadata = get_metadata(INTERNAL_SERVER_URL,
                                         layer_name)
         # Verify
-        assert 'id' in ows_metadata
-        assert 'title' in ows_metadata
-        assert 'layer_type' in ows_metadata
-        assert 'keywords' in ows_metadata
-        assert 'bounding_box' in ows_metadata
-        assert 'geotransform' in ows_metadata
-        assert len(ows_metadata['bounding_box']) == 4
-
-        metadata = get_metadata(INTERNAL_SERVER_URL,
-                                layer_name)
+        assert 'id' in metadata
+        assert 'title' in metadata
+        assert 'layer_type' in metadata
+        assert 'keywords' in metadata
+        assert 'bounding_box' in metadata
+        assert 'geotransform' in metadata
+        assert len(metadata['bounding_box']) == 4
 
         ref = {'layer_type': 'raster',
                'category': 'hazard',
