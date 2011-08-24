@@ -212,7 +212,7 @@ class Test_plugins(unittest.TestCase):
 
         # Characterisation test to preserve original behaviour of
         # get_layers_metadata. FIXME: I think we should change this to be
-        # a dictionary of metadata entries
+        # a dictionary of metadata entries (ticket #126).
         reference = [['geonode:lembang_schools',
                       {'layer_type': 'feature',
                        'category': 'exposure',
@@ -224,13 +224,14 @@ class Test_plugins(unittest.TestCase):
                        'subcategory': 'earthquake',
                        'title': 'shakemap_padang_20090930'}]]
 
-        for i, entry in enumerate(reference):
+        for entry in reference:
             name, mdblock = entry
 
-            # Uncomment when running individually
-            #assert name == metadata[i][0]
-            #for key in entry[1]:
-            #    assert entry[1][key] == metadata[i][1][key]
+            i = [x[0] for x in metadata].index(name)
+
+            assert name == metadata[i][0]
+            for key in entry[1]:
+                assert entry[1][key] == metadata[i][1][key]
 
         # Check plugins are returned
         annotated_plugins = [{'name': name,
