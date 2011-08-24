@@ -2,6 +2,11 @@ from django.template.loader import render_to_string
 from impact.plugins.utilities import ColorMapEntry
 import types
 
+import keyword
+
+import logging
+logger = logging.getLogger('risiko')
+
 ## See http://effbot.org/zone/metaclass-plugins.htm
 ## for a description of plugins
 
@@ -172,7 +177,6 @@ def requirement_check(params, require_str, verbose=False):
     and evaluate to True or False"""
 
     execstr = 'def check():\n'
-
     for key in params.keys():
         if key == '':
             if params[''] != '':
@@ -182,7 +186,11 @@ def requirement_check(params, require_str, verbose=False):
                 raise Exception(msg)
             else:
                 continue
-
+        if key in keyword.kwlist:
+            msg = ('Error in plugin requirements'
+               'Must not use Python keywords as params: %s' % (key))
+            logger.error(msg)
+	    return False
         if type(params[key]) == type(''):  # is it a string param
             execstr += '  %s = "%s" \n' % (key.strip(), params[key])
         else:
@@ -195,14 +203,20 @@ def requirement_check(params, require_str, verbose=False):
     try:
         exec(compile(execstr, '<string>', 'exec'))
         return check()
-    except NameError:
+    except NameError, e:
+        # This condition will happen frequently since the function
+        # is evaled against many params that are not relavent and
+        # hence correctly return False
         pass
-    except SyntaxError:
-        # TODO(Ted and Ole): This exceptions should be handle by the callee
-        #                    as we don't want errors in plugins to
-        #                    crash the system.
-        msg = 'Syntax error in plugin requirements header: %s' % execstr
-        raise SyntaxError(msg)
+    except Exception, e:
+        msg = ('Error in plugin requirements header: %s. '
+               'Original message: %s' % (execstr, e))
+
+        # We don't want errors in plugins to
+        # crash the entire system, so we just log them
+        logger.error(msg)
+        #raise SyntaxError(msg)
+
     return False
 
 
