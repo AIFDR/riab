@@ -227,12 +227,6 @@ def get_metadata(server_url, layer_name):
     """
 
     ows_metadata = get_ows_metadata(server_url, layer_name)
-
-    # Temporarily expand keywords into main metadata
-    # (FIXME: but remove this again as it is dangerous)
-    #for key in ows_metadata['keywords']:
-    #    ows_metadata[key] = ows_metadata['keywords'][key]
-
     return ows_metadata
 
 
