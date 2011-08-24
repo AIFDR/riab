@@ -271,7 +271,7 @@ def functions(request):
     layer_descriptors = []
     for geoserver in geoservers:
         layer_descriptors.extend(
-            get_layer_descriptors(geoserver['url'])
+            get_layer_descriptors(geoserver['url']))
 
     # For each plugin return all layers that meet the requirements
     # an empty layer is returned where the plugin cannot run
