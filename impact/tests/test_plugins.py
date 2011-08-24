@@ -181,8 +181,8 @@ class Test_plugins(unittest.TestCase):
             msg = 'Search should fail'
             raise Exception(msg)
 
-    def test_plugin_compatability(self):
-        """Performance of the default plugins using internal GeoServer
+    def test_plugin_compatibility(self):
+        """Default plugins perform as expected
         """
 
         # Upload a raster and a vector data set
@@ -204,8 +204,7 @@ class Test_plugins(unittest.TestCase):
                      'name': 'Local Geoserver',
                      'version': '1.0.0',
                      'id': 0}
-        metadata = get_layer_descriptors(geoserver['url'],
-                                         geoserver['version'])
+        metadata = get_layer_descriptors(geoserver['url'])
 
         msg = 'There were no layers in test geoserver'
         assert len(metadata) > 0, msg
