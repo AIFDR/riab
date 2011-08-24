@@ -16,7 +16,7 @@ from impact.plugins.core import requirement_check
 from impact.plugins.core import get_plugins
 from impact.plugins.core import compatible_layers
 
-from impact.storage.io import get_layers_metadata
+from impact.storage.io import get_layer_descriptors
 
 from impact.models import Calculation, Workspace
 
@@ -204,14 +204,14 @@ class Test_plugins(unittest.TestCase):
                      'name': 'Local Geoserver',
                      'version': '1.0.0',
                      'id': 0}
-        metadata = get_layers_metadata(geoserver['url'],
-                                       geoserver['version'])
+        metadata = get_layer_descriptors(geoserver['url'],
+                                         geoserver['version'])
 
         msg = 'There were no layers in test geoserver'
         assert len(metadata) > 0, msg
 
-        # Characterisation test to preserve original behaviour of
-        # get_layers_metadata. FIXME: I think we should change this to be
+        # Characterisation test to preserve the behaviour of
+        # get_layer_descriptors. FIXME: I think we should change this to be
         # a dictionary of metadata entries (ticket #126).
         reference = [['geonode:lembang_schools',
                       {'layer_type': 'feature',

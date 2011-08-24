@@ -1,9 +1,8 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
-from impact.storage.io import get_layers_metadata
 from impact.storage.utilities import unique_filename, LAYER_TYPES
 from impact.storage.io import get_bounding_box
-from impact.storage.io import download, get_metadata, get_ows_metadata
+from impact.storage.io import download, get_metadata
 from django.conf import settings
 import os
 import time
@@ -104,8 +103,8 @@ class Test_geonode_connection(unittest.TestCase):
 
         server_url = settings.GEOSERVER_BASE_URL + 'ows?'
 
-        # Verify that the GeoServer GetCapabilities record is accesible:
-        metadata = get_layers_metadata(server_url, '1.0.0')
+        # Verify that the GeoServer GetCapabilities record is accessible:
+        metadata = get_metadata(server_url)
         msg = ('The metadata list should not be empty in server %s'
                 % server_url)
         assert len(metadata) > 0, msg
@@ -151,7 +150,7 @@ class Test_geonode_connection(unittest.TestCase):
 
         # FIXME: A patch was submitted OWSlib 20110808
         # Can delete the following once patch appears
-        # In the future get bboxNative and nativeSRS from get_ows_metadata
+        # In the future get bboxNative and nativeSRS from get_metadata
         descCov = metadata._service.getDescribeCoverage(projected_tif.typename)
         envelope = (descCov.find(ns('CoverageOffering/') + ns('domainSet/') +
                                  ns('spatialDomain/') +
@@ -551,8 +550,8 @@ class Test_geonode_connection(unittest.TestCase):
 
                 # Get metadata
                 layer_name = '%s:%s' % (layer.workspace, layer.name)
-                metadata = get_ows_metadata(INTERNAL_SERVER_URL,
-                                            layer_name)
+                metadata = get_metadata(INTERNAL_SERVER_URL,
+                                        layer_name)
 
                 # Verify
                 assert 'id' in metadata
@@ -642,8 +641,8 @@ class Test_geonode_connection(unittest.TestCase):
                 raise Exception(msg)
 
             layer_name = '%s:%s' % (layer.workspace, layer.name)
-            metadata = get_ows_metadata(INTERNAL_SERVER_URL,
-                                        layer_name)
+            metadata = get_metadata(INTERNAL_SERVER_URL,
+                                    layer_name)
 
             assert 'id' in metadata
             assert 'title' in metadata

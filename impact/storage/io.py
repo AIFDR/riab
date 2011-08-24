@@ -214,88 +214,11 @@ def get_geotransform(server_url, layer_name):
 
     """
 
-    metadata = get_ows_metadata(server_url, layer_name)
+    metadata = get_metadata(server_url, layer_name)
     return metadata['geotransform']
 
 
-def get_metadata(server_url, layer_name):
-    """Uses OWS services to get the metadata for a given layer
-
-    Input
-        server_url: e.g. http://localhost:8001/geoserver-geonode-dev/ows
-        layer_name: must follow the convention workspace:name
-    """
-
-    ows_metadata = get_ows_metadata(server_url, layer_name)
-    return ows_metadata
-
-
-def get_layers_metadata(url, version='1.0.0'):
-    """Return the metadata for each layer as an dict formed from the keywords
-
-    The keywords are parsed and added to the metadata dictionary
-    if they conform to the format "identifier:value".
-
-    default searches both feature and raster layers by default
-      Input
-        url: The wfs url
-        version: The version of the wfs xml expected
-
-      Returns
-        A list of (lists of) dictionaries containing the metadata for
-        each layer of the following form:
-
-        [['geonode:lembang_schools',
-          {'layer_type': 'feature',
-           'category': 'exposure',
-           'subcategory': 'building',
-           'title': 'lembang_schools'}],
-         ['geonode:shakemap_padang_20090930',
-          {'layer_type': 'raster',
-           'category': 'hazard',
-           'subcategory': 'earthquake',
-           'title': 'shakemap_padang_20090930'}]]
-
-    """
-
-    # FIXME (Ole): I don't like the format, but it permeates right
-    #              through to the HTTPResponses in views.py, so
-    #              I am not sure if it can be changed. My problem is
-    #
-    #              1: A dictionary of metadata entries would be simpler
-    #              2: The keywords should have their own dictinary to avoid
-    #                 danger of keywords overwriting other metadata
-    #
-    #              I have raised this in ticket #126
-
-    # Get all metadata from owslib
-    ows_metadata = get_ows_metadata(url)
-
-    # Create exactly the same structure that was produced by
-    # get_layers_metadata. FIXME: However, this is subject to issue #126
-    x = []
-    for key in ows_metadata:
-        # Get all metadata
-        md = ows_metadata[key]
-
-        # Create new special purpose entry
-        block = {}
-        if md['layer_type'] == 'vector':
-            block['layer_type'] = 'feature'
-        else:
-            block['layer_type'] = 'raster'
-
-        for kw in md['keywords']:
-            block[kw] = md['keywords'][kw]
-
-        block['title'] = md['title']
-
-        x.append([key, block])
-
-    return x
-
-
-def get_ows_metadata_from_layer(layer):
+def get_metadata_from_layer(layer):
     """Get ows metadata from one layer
 
     Input
@@ -339,7 +262,7 @@ def get_ows_metadata_from_layer(layer):
     return metadata
 
 
-def get_ows_metadata(server_url, layer_name=None):
+def get_metadata(server_url, layer_name=None):
     """Uses OWSLib to get the metadata for a given layer
 
     Input
@@ -380,13 +303,78 @@ def get_ows_metadata(server_url, layer_name=None):
                                            wcs.contents, wfs.contents))
             raise Exception(msg)
 
-        metadata[name] = get_ows_metadata_from_layer(layer)
+        metadata[name] = get_metadata_from_layer(layer)
 
     # Return metadata for one or all layers
     if layer_name is not None:
         return metadata[layer_name]
     else:
         return metadata
+
+
+def get_layer_descriptors(url, version='1.0.0'):
+    """Get layer information for use with the plugin system
+
+    The keywords are parsed and added to the metadata dictionary
+    if they conform to the format "identifier:value".
+
+    Input
+        url: The wfs url
+        version: The version of the wfs xml expected
+
+    Output
+        A list of (lists of) dictionaries containing the metadata for
+        each layer of the following form:
+
+        [['geonode:lembang_schools',
+          {'layer_type': 'feature',
+           'category': 'exposure',
+           'subcategory': 'building',
+           'title': 'lembang_schools'}],
+         ['geonode:shakemap_padang_20090930',
+          {'layer_type': 'raster',
+           'category': 'hazard',
+           'subcategory': 'earthquake',
+           'title': 'shakemap_padang_20090930'}]]
+
+    """
+
+    # FIXME (Ole): I don't like the format, but it permeates right
+    #              through to the HTTPResponses in views.py, so
+    #              I am not sure if it can be changed. My problem is
+    #
+    #              1: A dictionary of metadata entries would be simpler
+    #              2: The keywords should have their own dictinary to avoid
+    #                 danger of keywords overwriting other metadata
+    #
+    #              I have raised this in ticket #126
+
+    # Get all metadata from owslib
+    metadata = get_metadata(url)
+
+    # Create exactly the same structure that was produced by the now obsolete
+    # get_layers_metadata. FIXME: However, this is subject to issue #126
+    x = []
+    for key in metadata:
+        # Get all metadata
+        md = metadata[key]
+
+        # Create new special purpose entry
+        block = {}
+        if md['layer_type'] == 'vector':
+            block['layer_type'] = 'feature'
+        else:
+            block['layer_type'] = 'raster'
+
+        for kw in md['keywords']:
+            block[kw] = md['keywords'][kw]
+
+        block['title'] = md['title']
+
+        x.append([key, block])
+
+    return x
+
 
 
 def get_file(download_url, suffix):
@@ -648,9 +636,9 @@ def check_layer(layer, full=False):
 
     # Get layer metadata
     layer_name = '%s:%s' % (layer.workspace, layer.name)
-    metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
+    metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
     #try:
-    #    metadata = get_ows_metadata(INTERNAL_SERVER_URL, layer_name)
+    #    metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
     #except:
     #    # Convert any exception to AssertionError for use in retry loop in
     #    # save_file_to_geonode.

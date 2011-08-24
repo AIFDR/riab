@@ -1,3 +1,11 @@
+"""Function to manage self-registering plugins
+
+The design is based on http://effbot.org/zone/metaclass-plugins.htm
+
+To register the plugin, the module must be imported by the Python process
+using it.
+"""
+
 from django.template.loader import render_to_string
 from impact.plugins.utilities import ColorMapEntry
 import types
@@ -6,14 +14,6 @@ import keyword
 
 import logging
 logger = logging.getLogger('risiko')
-
-## See http://effbot.org/zone/metaclass-plugins.htm
-## for a description of plugins
-
-# To register the plugin, the module must be imported by the Python process
-# using it.
-# FIXME (Ole): I think we should pass the module name to get_function to
-#              keep things together
 
 
 class PluginMount(type):
@@ -188,7 +188,7 @@ def requirement_check(params, require_str, verbose=False):
                 continue
         if key in keyword.kwlist:
             msg = ('Error in plugin requirements'
-               'Must not use Python keywords as params: %s' % (key))
+                   'Must not use Python keywords as params: %s' % (key))
             logger.error(msg)
 	    return False
         if type(params[key]) == type(''):  # is it a string param
@@ -241,17 +241,20 @@ def requirements_met(requirements, params, verbose=False):
     return False
 
 
-def compatible_layers(func, layers_data):
+def compatible_layers(func, layer_descriptors):
     """Fetches all the layers that match the plugin requirements.
 
-       Returns:
+    Input
+        func:
+        layer_descriptor: Layer names and meta data (keywords, type, etc)
 
-           Array of compatible layers, can be an empty list.
+    Output:
+        Array of compatible layers, can be an empty list.
     """
     layers = []
     requirements = requirements_collect(func)
 
-    for layer_name, layer_params in layers_data:
+    for layer_name, layer_params in layer_descriptors:
         if requirements_met(requirements, layer_params):
             layers.append(layer_name)
 
