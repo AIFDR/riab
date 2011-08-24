@@ -367,12 +367,14 @@ class Test_geonode_connection(unittest.TestCase):
 
         for key in ['layer_type', 'keywords', 'geotransform',
                     'title']:
-            assert metadata[key] == ref[key]
+            msg = ('Expected metadata for key %s to be %s. '
+                   'Instead got %s' % (key, ref[key], metadata[key]))
+            assert metadata[key] == ref[key], msg
 
             if key == 'keywords':
                 kwds = metadata[key]
                 for k in kwds:
-                    assert kwds[k] == ref['keywords'][k]
+                    assert kwds[k] == ref[key][k]
 
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
