@@ -21,7 +21,7 @@ Process for developers adding a new feature:
      git push origin <name>
 * To keep branch up to date::
      git checkout <name>
-     git merge master
+     git merge origin/master
 * When all tests pass, either
     - Merge into master::
         git checkout master
