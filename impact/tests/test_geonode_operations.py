@@ -367,9 +367,13 @@ class Test_geonode_connection(unittest.TestCase):
 
         for key in ['layer_type', 'keywords', 'geotransform',
                     'title']:
+
             msg = ('Expected metadata for key %s to be %s. '
                    'Instead got %s' % (key, ref[key], metadata[key]))
-            assert metadata[key] == ref[key], msg
+            if key == 'geotransform':
+                assert numpy.allclose(metadata[key], ref[key]), msg
+            else:
+                assert metadata[key] == ref[key], msg
 
             if key == 'keywords':
                 kwds = metadata[key]
