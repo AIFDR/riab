@@ -4,12 +4,10 @@
 import os
 import copy
 import numpy
-from osgeo import ogr, gdal
+from osgeo import ogr
 from tempfile import mkstemp
-import cgi
-from urllib import urlencode
 from urllib2 import urlopen
-from owslib.etree import etree
+
 
 # The projection string depends on the gdal version
 DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
@@ -52,7 +50,6 @@ def unique_filename(**kwargs):
 
     return filename
 
-
 # GeoServer utility functions
 def is_server_reachable(url):
     """Make an http connection to url to see if it is accesible.
@@ -65,211 +62,6 @@ def is_server_reachable(url):
         return False
     else:
         return True
-
-
-def Xget_layers_metadata(url, version='1.0.0'):
-    """Return the metadata for each layer as an dict formed from the keywords
-
-    The keywords are parsed and added to the metadata dictionary
-    if they conform to the format "identifier:value".
-
-    default searches both feature and raster layers by default
-      Input
-        url: The wfs url
-        version: The version of the wfs xml expected
-
-      Returns
-        A list of (lists of) dictionaries containing the metadata for
-        each layer of the following form:
-
-        [['geonode:lembang_schools',
-          {'layer_type': 'feature',
-           'category': 'exposure',
-           'subcategory': 'building',
-           'title': 'lembang_schools'}],
-         ['geonode:shakemap_padang_20090930',
-          {'layer_type': 'raster',
-           'category': 'hazard',
-           'subcategory': 'earthquake',
-           'title': 'shakemap_padang_20090930'}]]
-
-    """
-
-    # FIXME (Ole): I don't like the format, but it permeates right
-    #              through to the HTTPResponses in views.py, so
-    #              I am not sure if it can be changed. My problem is
-    #
-    #              1: A dictionary of metadata entries would be simpler
-    #              2: The keywords should have their own dictinary to avoid
-    #                 danger of keywords overwriting other metadata
-    #
-    #              I have raised this in ticket #126
-
-
-    #ows_metadata = get_ows_metadata(url)
-    #print ows_metadata
-    #import sys; sys.exit()
-
-
-    # FIXME (Ole): This should be superseded by new get_metadata
-    #              function which will be entirely based on OWSLib
-    #              Issue #115
-
-    # Make sure the server is reachable before continuing
-    msg = ('Server %s is not reachable' % url)
-    if not is_server_reachable(url):
-        raise Exception(msg)
-
-    wcs_reader = MetadataReader(url, 'wcs', version)
-    wfs_reader = MetadataReader(url, 'wfs', version)
-    layers = []
-    layers.extend(wfs_reader.get_metadata())
-    layers.extend(wcs_reader.get_metadata())
-
-    return layers
-
-
-class MetadataReader(object):
-    """Read and parse capabilities document into a lxml.etree infoset
-
-       Adapted from:
-       http://trac.gispython.org/lab/browser/OWSLib/trunk/
-              owslib/feature/wfs200.py#L402
-    """
-
-    # FIXME (Ole): Why are we not using WebCoverageService and
-    #              WebFeatureService from OWSLib? See issue #115
-    def __init__(self, server_url, service_type, version):
-        """Initialize"""
-        self.WFS_NAMESPACE = '{http://www.opengis.net/wfs}'
-        self.WCS_NAMESPACE = '{http://www.opengis.net/wcs}'
-        self.url = server_url
-        self.service_type = service_type.lower()
-        self.version = version
-        self.xml = None
-        if self.service_type == 'wcs':
-            self.typelist = 'ContentMetadata'
-            self.typeelms = 'CoverageOfferingBrief'
-            self.namestr = 'name'
-            self.titlestr = 'label'
-            self.NAMESPACE = self.WCS_NAMESPACE
-            self.keywordstr = 'keywords'
-            self.abstractstr = 'description'
-            self.layer_type = 'raster'
-        elif self.service_type == 'wfs':
-            self.typelist = 'FeatureTypeList'
-            self.typeelms = 'FeatureType'
-            self.namestr = 'Name'
-            self.titlestr = 'Title'
-            self.abstractstr = 'Abstract'
-            self.NAMESPACE = self.WFS_NAMESPACE
-            self.keywordstr = 'Keywords'
-            self.layer_type = 'feature'
-        else:
-            msg = 'Unknown service type: "%s"' % self.service_type
-            raise NotImplemented(msg)
-
-    def capabilities_url(self):
-        """Return a capabilities url
-        """
-        qs = []
-        if self.url.find('?') != -1:
-            qs = cgi.parse_qsl(self.url.split('?')[1])
-
-        params = [x[0] for x in qs]
-
-        if 'service' not in params:
-            qs.append(('service', self.service_type))
-        if 'request' not in params:
-            qs.append(('request', 'GetCapabilities'))
-        if 'version' not in params:
-            qs.append(('version', self.version))
-
-        urlqs = urlencode(tuple(qs))
-        return self.url.split('?')[0] + '?' + urlqs
-
-    def read(self):
-        """Get and parse a WFS capabilities document, returning an
-        instance of WFSCapabilitiesInfoset
-
-        Parameters
-        ----------
-        url : string
-            The URL to the WFS capabilities document.
-        """
-        request = self.capabilities_url()
-        try:
-            u = urlopen(request)
-        except Exception, e:
-            msg = ('Can not complete the request to %s, error was %s.'
-                   % (request, str(e)))
-            e.args = (msg,)
-            raise
-        else:
-            response = u.read()
-            # FIXME: Make sure it is not an html page with an error message.
-            self.xml = response
-            return etree.fromstring(self.xml)
-
-    def readString(self, st):
-        """Parse a WFS capabilities document, returning an
-        instance of WFSCapabilitiesInfoset
-
-        string should be an XML capabilities document
-        """
-        if not isinstance(st, str):
-            raise ValueError('String must be of type string, '
-                             'not %s' % type(st))
-        return etree.fromstring(st)
-
-    def get_metadata(self):
-        """Get metadata for all layers of given service_type
-
-        FIXME (Ole): Need all metadata, especially bounding boxes
-                     for both vector and raster data.
-                     See issue https://github.com/AIFDR/riab/issues/95
-        """
-
-        _capabilities = self.read()
-        request_url = self.capabilities_url()
-        serviceidentelem = _capabilities.find(self.NAMESPACE + 'Service')
-        typelistelem = _capabilities.find(self.NAMESPACE + self.typelist)
-
-        msg = ('Could not find element "%s" in namespace %s on %s'
-               % (self.typelist, self.NAMESPACE, self.url))
-        assert typelistelem is not None, msg
-
-        typeelems = typelistelem.findall(self.NAMESPACE + self.typeelms)
-        layers = []
-        for f in typeelems:
-            metadata = {'layer_type': self.layer_type}
-            name = f.findall(self.NAMESPACE + self.namestr)
-            title = f.findall(self.NAMESPACE + self.titlestr)
-            kwds = f.findall(self.NAMESPACE + self.keywordstr)
-            abstract = f.findall(self.NAMESPACE + self.abstractstr)
-
-            layer_name = name[0].text
-            #workspace_name = 'geonode' # FIXME (Ole): This is not used
-
-            metadata['title'] = title[0].text
-
-            # FIXME (Ole): Why only wcs?
-            if self.service_type == 'wcs':
-                kwds = kwds[0].findall(self.NAMESPACE + 'keyword')
-
-            if kwds is not None:
-                for kwd in kwds[:]:
-                    # Split all the keypairs
-                    keypairs = str(kwd.text).split(',')
-                    for val in keypairs:
-                        # Only use keywords containing at least one :
-                        if str(val).find(':') > -1:
-                            k, v = val.split(':')
-                            metadata[k.strip()] = v.strip()
-
-            layers.append([layer_name, metadata])
-        return layers
-
 
 def write_keywords(keywords, filename):
     """Write keywords dictonary to file

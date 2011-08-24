@@ -268,7 +268,6 @@ def get_layers_metadata(url, version='1.0.0'):
     #
     #              I have raised this in ticket #126
 
-
     # Get all metadata from owslib
     ows_metadata = get_ows_metadata(url)
 
@@ -295,12 +294,6 @@ def get_layers_metadata(url, version='1.0.0'):
 
     return x
 
-    #from utilities import Xget_layers_metadata
-    #X = Xget_layers_metadata(url)
-    #print
-    #print X
-    #print
-    #return X
 
 def get_ows_metadata_from_layer(layer):
     """Get ows metadata from one layer
@@ -310,10 +303,11 @@ def get_ows_metadata_from_layer(layer):
                data_type which is either raster or vector
     """
 
+    # Create empty metadata dictionary
     metadata = {}
-    metadata['layer_type'] = layer.datatype
 
     # Metadata specific to layer types
+    metadata['layer_type'] = layer.datatype
     if layer.datatype == 'raster':
         metadata['geotransform'] = extract_geotransform(layer)
 
@@ -334,7 +328,6 @@ def get_ows_metadata_from_layer(layer):
                 # FIXME (Ole): Why would this be None sometimes?
 
                 for keyword_string in keyword.split(','):
-
                     if ':' in keyword_string:
                         key, value = keyword_string.strip().split(':')
                         keyword_dict[key] = value
@@ -394,6 +387,7 @@ def get_ows_metadata(server_url, layer_name=None):
         return metadata[layer_name]
     else:
         return metadata
+
 
 def get_file(download_url, suffix):
     """Download a file from an HTTP server.
