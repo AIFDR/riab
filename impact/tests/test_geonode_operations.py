@@ -346,11 +346,10 @@ class Test_geonode_connection(unittest.TestCase):
         layer = save_to_geonode(thefile, user=self.user, overwrite=True)
         check_layer(layer, full=True)
 
-        # A little metadata characterisation test
+        # Verify metadata
         layer_name = '%s:%s' % (layer.workspace, layer.name)
         metadata = get_metadata(INTERNAL_SERVER_URL,
-                                        layer_name)
-        # Verify
+                                layer_name)
         assert 'id' in metadata
         assert 'title' in metadata
         assert 'layer_type' in metadata
@@ -359,17 +358,22 @@ class Test_geonode_connection(unittest.TestCase):
         assert 'geotransform' in metadata
         assert len(metadata['bounding_box']) == 4
 
+        # A little metadata characterisation test
         ref = {'layer_type': 'raster',
-               'category': 'hazard',
+               'keywords': {'category': 'hazard',
+                            'subcategory': 'earthquake'},
                'geotransform': (105.29857, 0.0112, 0.0,
                                 -5.565233000000001, 0.0, -0.0112),
-               'subcategory': 'earthquake',
                'title': 'lembang_mmi_hazmap'}
 
-        for key in ['layer_type', 'category', 'geotransform',
-                    'subcategory', 'title']:
+        for key in ['layer_type', 'keywords', 'geotransform',
+                    'title']:
             assert metadata[key] == ref[key]
 
+            if key == 'keywords':
+                kwds = metadata[key]
+                for k in kwds:
+                    assert kwds[k] == ref['keywords'][k]
 
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
