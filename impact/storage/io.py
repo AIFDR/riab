@@ -278,7 +278,7 @@ def get_metadata(server_url, layer_name=None):
     wcs = WebCoverageService(server_url, version='1.0.0')
     wfs = WebFeatureService(server_url, version='1.0.0')
 
-    # Take of input options
+    # Take care of input options
     if layer_name is None:
         layer_names = wcs.contents.keys() + wfs.contents.keys()
     else:
