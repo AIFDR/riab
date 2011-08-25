@@ -224,15 +224,24 @@ class Vector:
 
             # Record coordinates
             G = feature.GetGeometryRef()
-            if G is not None and G.GetGeometryType() == ogr.wkbPoint:
-                # Longitude, Latitude
-                geometry.append((G.GetX(), G.GetY()))
-            else:
-                msg = ('Only point geometries are supported. '
-                       'Geometry in filename %s '
-                       'was %s.' % (filename,
-                                    G.GetGeometryType()))
+            if G is None:
+                msg = ('Geometry was None in filename %s ' % filename)
                 raise Exception(msg)
+            else:
+                if G.GetGeometryType() == ogr.wkbPoint:
+                    # Longitude, Latitude
+                    geometry.append((G.GetX(), G.GetY()))
+                elif G.GetGeometryType() == ogr.wkbPolygon:
+
+                    print 'Got Polygon type'
+                    geometry.append((G.GetX(), G.GetY()))
+                    print G.GetX(), G.GetY()
+                else:
+                    msg = ('Only point geometries are supported. '
+                           'Geometry in filename %s '
+                           'was %s.' % (filename,
+                                        G.GetGeometryType()))
+                    raise Exception(msg)
 
             # Record attributes by name
             number_of_fields = feature.GetFieldCount()
