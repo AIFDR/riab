@@ -29,5 +29,7 @@ if __name__ == '__main__':
 
         # FIXME (Ole): Expose overwrite to command line
         t0 = time.time()
-        uploaded = save_to_geonode(thefile, overwrite=True)
+        uploaded = save_to_geonode(thefile,
+                                   overwrite=True,
+                                   check_metadata=False)  # Speeds it up
         print 'Finished uploading in %.f seconds' % (time.time() - t0)

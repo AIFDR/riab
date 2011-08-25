@@ -669,7 +669,7 @@ def check_layer(layer, full=False):
 
 
 def save_file_to_geonode(filename, user=None, title=None,
-                         overwrite=True):
+                         overwrite=True, check_metadata=True):
     """Save a single layer file to local Risiko GeoNode
 
     Input
@@ -679,6 +679,10 @@ def save_file_to_geonode(filename, user=None, title=None,
                If None or '' the filename will be used.
         overwrite: Boolean variable controlling whether existing layers
                    can be overwritten by this operation. Default is True
+        check_metadata: Flag controlling whether metadata is verified.
+                        If True (default), an exception will be raised
+                        if metada is not available after a number of retries.
+                        If False, no check is done making the function faster.
     Output
         layer object
     """
@@ -762,29 +766,38 @@ def save_file_to_geonode(filename, user=None, title=None,
     except GeoNodeException, e:
         # Layer did not upload. Convert GeoNodeException to RisikoException
         raise RisikoException(e)
-    except Exception, e:
+    except Exception:
         # Unknown problem. Re-raise
         raise
     else:
-        time.sleep(1)
-        logger.info('Uploaded "%s" with name "%s"', basename, layer.name)
-        return layer
-        # Check and return layer object
-        # ok = False
-        # for i in range(4):
-        #     try:
-        #         check_layer(layer)
-        #     except AssertionError, e:
-        #         time.sleep(0.3)
-        #     else:
-        #         ok = True
-        #         break
-        # if ok:
-        #     return layer
-        # else:
-        #     msg = ('Could not confirm that layer %s was uploaded '
-        #            'correctly: %s' % (layer, e))
-        #    raise Exception(msg)
+        logmsg = ('Uploaded "%s" with name "%s".'
+                  % (basename, layer.name))
+        if not check_metadata:
+            logmsg += ' Did not explicitly verify metadata.'
+            logger.info(logmsg)
+            return layer
+        else:
+            # Check metadata and return layer object
+            logmsg += ' Metadata veried.'
+            ok = False
+            for i in range(4):
+                try:
+                    check_layer(layer)
+                except Exception, errmsg:
+                    logger.info('Metadata for layer %s not yet ready - '
+                                'trying again. Error message was: %s'
+                                % (layer.name, errmsg))
+                    time.sleep(0.3)
+                else:
+                    ok = True
+                    break
+            if ok:
+                logger.info(logmsg)
+                return layer
+            else:
+                msg = ('Could not confirm that layer %s was uploaded '
+                       'correctly: %s' % (layer, errmsg))
+                raise Exception(msg)
     finally:
         # Clean up generated tif files in either case
         if extension == '.asc':
@@ -795,7 +808,8 @@ def save_file_to_geonode(filename, user=None, title=None,
 def save_directory_to_geonode(directory,
                               user=None,
                               title=None,
-                              overwrite=True):
+                              overwrite=True,
+                              check_metadata=True):
     """Upload a directory of spatial data files to GeoNode
 
     Input
@@ -803,6 +817,7 @@ def save_directory_to_geonode(directory,
         user: Django User object
         overwrite: Boolean variable controlling whether existing layers
                    can be overwritten by this operation. Default is True
+        check_metadata: See save_file_to_geonode
     Output
         list of layer objects
     """
@@ -823,14 +838,13 @@ def save_directory_to_geonode(directory,
                     layer = save_to_geonode(filename,
                                             user=user,
                                             title=title,
-                                            overwrite=overwrite)
+                                            overwrite=overwrite,
+                                            check_metadata=check_metadata)
 
                 except Exception, e:
                     msg = ('Filename "%s" could not be uploaded. '
                            'Error was: %s' % (filename, str(e)))
-                    # FIXME (Ole): Bring back when we can control
-                    #              logging so as not to pollute test output
-                    #logger.info(msg)
+                    logger.info(msg)
                 else:
                     layers.append(layer)
 
@@ -838,7 +852,8 @@ def save_directory_to_geonode(directory,
     return layers
 
 
-def save_to_geonode(incoming, user=None, title=None, overwrite=True):
+def save_to_geonode(incoming, user=None, title=None,
+                    overwrite=True, check_metadata=True):
     """Save a files to local Risiko GeoNode
 
     Input
@@ -848,6 +863,7 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=True):
                filenames will be used to infer titles.
         overwrite: Boolean variable controlling whether existing layers
                    can be overwritten by this operation. Default is True
+        check_metadata: See save_file_to_geonode
 
         FIXME (Ole): WxS contents does not reflect the renaming done
                      when overwrite is False. This should be reported to
@@ -864,12 +880,14 @@ def save_to_geonode(incoming, user=None, title=None, overwrite=True):
     if os.path.isdir(incoming):
         # Upload all valid layer files in this dir recursively
         layers = save_directory_to_geonode(incoming, title=title, user=user,
-                                           overwrite=overwrite)
+                                           overwrite=overwrite,
+                                           check_metadata=check_metadata)
         return layers
     elif os.path.isfile(incoming):
         # Upload single file (using its name as title)
         layer = save_file_to_geonode(incoming, title=title, user=user,
-                                     overwrite=overwrite)
+                                     overwrite=overwrite,
+                                     check_metadata=check_metadata)
         return layer
     else:
         msg = 'Argument %s was neither a file or a directory' % incoming
