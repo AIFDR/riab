@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Scritp to start Risiko server. Can be executed from command shell launcher 
+# using the command:
+# gnome-terminal  --execute bash -i -c "~/riskinabox/riab/extras/launch; bash"
+
 . $RIAB_HOME/riab_env/bin/activate
 risiko-stop
 risiko-start
