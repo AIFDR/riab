@@ -148,12 +148,6 @@ GEOSERVER_BASE_URL = 'http://localhost:8001/geoserver-geonode-dev/'
 # details on GeoServer
 GEOSERVER_CREDENTIALS = 'foo', 'bar'
 
-# The FULLY QUALIFIED url to the GeoNetwork instance for this GeoNode
-GEONETWORK_BASE_URL = 'http://localhost:8001/geonetwork/'
-
-# The username and password for a user with write access to GeoNetwork
-GEONETWORK_CREDENTIALS = 'admin', 'admin'
-
 AUTHENTICATION_BACKENDS = ('geonode.core.auth.GranularBackend',)
 
 GOOGLE_API_KEY = ('ABQIAAAAkofooZxTfcCv9Wi3zzGTVxTnme5EwnLVtEDGnh-'

@@ -91,7 +91,6 @@ echo ">>> Installing riab dependencies"
 pushd .
 unzip -o /usr/share/risiko/tomcat.zip > /dev/null
 cp /usr/share/risiko/geoserver-geonode-dev.war tomcat/webapps/
-cp /usr/share/risiko/geonetwork.war tomcat/webapps/
 tar xvfz /usr/share/risiko/risiko_test_data.tgz > /dev/null
 tar xvfz /usr/share/risiko/risiko_demo_data.tgz > /dev/null
 mkdir -p geonode/src/GeoNodePy/geonode/maps/static
