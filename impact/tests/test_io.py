@@ -49,8 +49,8 @@ class Test_IO(unittest.TestCase):
         r = Raster(None)
         assert r.get_name().startswith('Raster')
 
-    def test_reading_and_writing_of_vector_data(self):
-        """Vector data can be read and written correctly
+    def test_reading_and_writing_of_vector_point_data(self):
+        """Vector point data can be read and written correctly
         """
 
         # First test that some error conditions are caught
@@ -247,6 +247,44 @@ class Test_IO(unittest.TestCase):
         else:
             msg = 'Should have raised TypeError'
             raise Exception(msg)
+
+    def test_reading_and_writing_of_vector_polygon_data(self):
+        """Vector polygon data can be read and written correctly
+        """
+
+        # Read and verify test data
+        vectorname = 'kecamatan_geo.shp'
+
+        filename = '%s/%s' % (TESTDATA, vectorname)
+        layer = read_layer(filename)
+        coords = layer.get_geometry()
+        attributes = layer.get_data()
+
+        # Check basic data integrity
+        N = len(layer)
+        assert coords.shape[0] == N
+        assert coords.shape[1] == 2
+        assert len(layer) == N
+
+        assert isinstance(layer.get_name(), basestring)
+
+        # Check projection
+        wkt = layer.get_projection(proj4=False)
+        assert wkt.startswith('GEOGCS')
+
+        assert layer.projection == Projection(DEFAULT_PROJECTION)
+
+        # Check integrity of each feature
+        field_names = None
+        for i in range(N):
+            # Consistency between of geometry and fields
+
+            x1 = coords[i, 0]
+            x2 = attributes[i]['LONGITUDE']
+            assert x2 is not None
+            msg = 'Inconsistent longitudes: %f != %f' % (x1, x2)
+            assert numpy.allclose(x1, x2), msg
+
 
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays
@@ -976,6 +1014,6 @@ class Test_IO(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test')
+    suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
