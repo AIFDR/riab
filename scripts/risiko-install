@@ -47,7 +47,7 @@ pushd .
 export RISIKO_DATASOURCE="http://data.riskinabox.org"  # Cloud Front
 #export RISIKO_DATASOURCE="http://aifdr.s3.amazonaws.com"
 
-# FIXME(Ole): We have had to delete these files to force a fresh download
+# FIXME(Ole): One must delete these files from /usr/share/risiko to force a fresh download
 sudo mkdir -p /usr/share/risiko
 cd /usr/share/risiko
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/tomcat.zip"
@@ -56,6 +56,7 @@ sudo wget -t 1 -c "$RISIKO_DATASOURCE/geonode-libs.pybundle"
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/geonode-client.zip"
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
 sudo wget -t 1 -c "$RISIKO_DATASOURCE/risiko_demo_data.tgz"
+sudo wget -t 1 -c "$RISIKO_DATASOURCE/fonts.zip"
 popd
 
 
@@ -96,6 +97,7 @@ tar xvfz /usr/share/risiko/risiko_demo_data.tgz > /dev/null
 mkdir -p geonode/src/GeoNodePy/geonode/maps/static
 unzip -o /usr/share/risiko/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode > /dev/null
 pip install /usr/share/risiko/geonode-libs.pybundle
+sudo unzip -o /usr/share/risiko/fonts.zip -d /
 popd
 
 echo ">>> Installing GeoNode and Riab in dev mode"
