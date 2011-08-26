@@ -464,7 +464,7 @@ class Test_Engine(unittest.TestCase):
 
         # Check sanity of calculated attributes
         for i in range(N):
-            lon, lat = icoordinates[i, :]
+            lon, lat = icoordinates[i]
 
             depth = iattributes[i]['DEPTH']
 

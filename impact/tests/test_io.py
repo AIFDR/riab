@@ -78,7 +78,7 @@ class Test_IO(unittest.TestCase):
 
             filename = '%s/%s' % (TESTDATA, vectorname)
             layer = read_layer(filename)
-            coords = layer.get_geometry()
+            coords = numpy.array(layer.get_geometry())
             attributes = layer.get_data()
 
             # Check basic data integrity
@@ -127,7 +127,7 @@ class Test_IO(unittest.TestCase):
 
             # Read again and check
             layer = read_layer(out_filename)
-            coords = layer.get_geometry()
+            coords = numpy.array(layer.get_geometry())
             attributes = layer.get_data()
 
             # Check basic data integrity
@@ -257,14 +257,17 @@ class Test_IO(unittest.TestCase):
 
         filename = '%s/%s' % (TESTDATA, vectorname)
         layer = read_layer(filename)
-        coords = layer.get_geometry()
+        geometry = layer.get_geometry()
         attributes = layer.get_data()
 
         # Check basic data integrity
         N = len(layer)
-        assert coords.shape[0] == N
-        assert coords.shape[1] == 2
-        assert len(layer) == N
+        assert len(geometry) == N
+        assert len(attributes) == N
+
+        for i in range(N):
+            assert geometry[i].shape[0] > 0
+            assert geometry[i].shape[1] == 2
 
         assert isinstance(layer.get_name(), basestring)
 
@@ -274,16 +277,20 @@ class Test_IO(unittest.TestCase):
 
         assert layer.projection == Projection(DEFAULT_PROJECTION)
 
+        #print
+        #print attributes[0]
+
         # Check integrity of each feature
         field_names = None
         for i in range(N):
-            # Consistency between of geometry and fields
+            # Consistency between reported area in attributes and
+            # that calculated by geometry
 
-            x1 = coords[i, 0]
-            x2 = attributes[i]['LONGITUDE']
-            assert x2 is not None
-            msg = 'Inconsistent longitudes: %f != %f' % (x1, x2)
-            assert numpy.allclose(x1, x2), msg
+            # FIXME: Not done yet
+            p1 = geometry[i]
+            a = attributes[i]['AREA']
+
+
 
 
     def test_rasters_and_arrays(self):
@@ -1014,6 +1021,6 @@ class Test_IO(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
+    suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
