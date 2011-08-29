@@ -311,7 +311,8 @@ class Vector:
         # FIXME (Ole): Tempory flagging of GML issue (ticket #18)
         if extension == '.gml':
             msg = ('OGR GML driver does not store geospatial reference.'
-                   'This format is disabled for the time being')
+                   'This format is disabled for the time being. See '
+                   'https://github.com/AIFDR/riab/issues/18')
             raise Exception(msg)
 
         # Derive layername from filename (excluding preceding dirs)
