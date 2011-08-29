@@ -107,6 +107,7 @@ def interpolate_raster_vector(R, V, name=None):
     # Input checks
     assert R.is_raster
     assert V.is_vector
+    assert V.is_point_data
 
     # Get raster data and corresponding x and y axes
 
@@ -119,8 +120,10 @@ def interpolate_raster_vector(R, V, name=None):
     # Create interpolator
     f = raster_spline(longitudes, latitudes, A)
 
-    # Get vector geometry
-    coordinates = V.get_geometry()
+    # Get vector point geometry as Nx2 array
+    coordinates = numpy.array(V.get_geometry(),
+                              dtype='d',
+                              copy=False)
 
     # Interpolate and create new attribute
     N = len(V)
