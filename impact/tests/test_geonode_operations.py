@@ -47,8 +47,13 @@ class Test_geonode_connection(unittest.TestCase):
         expected_layers = []
         not_expected_layers = []
         datadir = TESTDATA
-        BAD_LAYERS = ['grid_without_projection.asc']
-
+        BAD_LAYERS = ['grid_without_projection.asc',
+                      'kecamatan_prj.shp']  # FIXME(Ole): This layer is not
+                                            # 'BAD', just in a different
+                                            # projection (TM3_Zone_48-2) so
+                                            # serves as another test for
+                                            # issue #40
+        print
         for root, dirs, files in os.walk(datadir):
             for filename in files:
                 basename, extension = os.path.splitext(filename)
