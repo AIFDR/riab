@@ -308,3 +308,62 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
         bbox[3] += dy
 
     return bbox
+
+
+def get_geometry_type(geometry):
+    """Determine geometry type based on data
+
+    Input
+        geometry: A list of either point coordinates [lon, lat] or polygons
+                  which are assumed to be numpy arrays of coordinates
+
+    Output
+        geometry_type: Either ogr.wkbPoint or ogr.wkbPolygon
+
+    If geometry type cannot be determined an Exception is raised.
+    There is no consistency check across all entries of the geometry list, only
+    the first element is used in this determination.
+    """
+
+    if len(geometry[0]) == 2:
+        try:
+            float(geometry[0][0])
+            float(geometry[0][1])
+        except:
+            pass
+        else:
+            # This geometry appears to be point data
+            geometry_type = ogr.wkbPoint
+    elif len(geometry[0]) > 2:
+        try:
+            x = numpy.array(geometry[0])
+        except:
+            pass
+        else:
+            # This geometry appears to be polygon data
+            if x.shape[0] > 2 and x.shape[1] == 2:
+                geometry_type = ogr.wkbPolygon
+
+    if geometry_type is None:
+        msg = 'Could not determine geometry type'
+        raise Exception(msg)
+
+
+    return geometry_type
+
+def is_sequence(x):
+    """Determine if x behaves like a true sequence but not a string
+
+    This will for example return True for lists, tuples and numpy arrays
+    but False for strings and dictionaries.
+    """
+
+    if isinstance(x, basestring):
+        return False
+
+    try:
+        x[0]
+    except:
+        return False
+    else:
+        return True

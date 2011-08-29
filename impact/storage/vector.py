@@ -8,6 +8,8 @@ from impact.storage.projection import Projection
 from impact.storage.utilities import DRIVER_MAP, TYPE_MAP
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
+from impact.storage.utilities import get_geometry_type
+from impact.storage.utilities import is_sequence
 
 
 class Vector:
@@ -26,7 +28,7 @@ class Vector:
                 * None
             projection: Geospatial reference in WKT format.
                         Only used if geometry is provide as a numeric array,
-            geometry: A list of point coordinates or polygons
+            geometry: A list of either point coordinates or polygons
             name: Optional name for layer.
                   Only used if geometry is provide as a numeric array
             keywords: Optional dictionary with keywords that describe the
@@ -39,6 +41,10 @@ class Vector:
 
         Note that if data is a filename, all other arguments are ignored
         as they will be inferred from the file.
+
+        The geometry type will be inferred from the dimensions of geometry.
+        If each entry is one set of coordinates the type will be ogr.wkbPoint,
+        if it is an array of coordinates the type will be ogr.wkbPolygon.
         """
 
         if data is None and projection is None and geometry is None:
@@ -56,8 +62,13 @@ class Vector:
         if isinstance(data, basestring):
             self.read_from_file(data)
         else:
-            # Assume that data is provided as an array of points
+            # Assume that data is provided as sequences provided as
+            # arguments to the Vector constructor
             # with extra keyword arguments supplying metadata
+
+            self.name = name
+            self.filename = None
+
             if keywords is None:
                 self.keywords = {}
             else:
@@ -68,20 +79,25 @@ class Vector:
 
             msg = 'Geometry must be specified'
             assert geometry is not None, msg
+
+            msg = 'Geometry must be a sequence'
+            assert is_sequence(geometry), msg
             self.geometry = geometry
 
-            # Derive type
-            #if len(self.geometry[0]) == 2:
-            #    self.geometry_type =
-            self.geometry_type = ogr.wkbPoint
+            self.geometry_type = get_geometry_type(geometry)
 
             msg = 'Projection must be specified'
             assert projection is not None, msg
             self.projection = Projection(projection)
 
             self.data = data
-            self.name = name
-            self.filename = None
+            if data is not None:
+                msg = 'Data must be a sequence'
+                assert is_sequence(data), msg
+
+                msg = ('The number of entries in geometry and data '
+                       'must be the same')
+                assert len(geometry) == len(data), msg
 
             # FIXME: Need to establish extent here
 
@@ -292,7 +308,7 @@ class Vector:
         assert extension == '.shp' or extension == '.gml', msg
         driver = DRIVER_MAP[extension]
 
-        # FIXME (Ole): Tempory flagging of GML issue
+        # FIXME (Ole): Tempory flagging of GML issue (ticket #18)
         if extension == '.gml':
             msg = ('OGR GML driver does not store geospatial reference.'
                    'This format is disabled for the time being')

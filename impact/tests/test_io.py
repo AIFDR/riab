@@ -121,7 +121,7 @@ class Test_IO(unittest.TestCase):
 
             # Write data back to file
             # FIXME (Ole): I would like to use gml here, but OGR does not
-            #              store the spatial reference!
+            #              store the spatial reference! Ticket #18
             out_filename = unique_filename(suffix='.shp')
             write_vector_data(attributes, wkt, coords, out_filename)
 
@@ -317,7 +317,7 @@ class Test_IO(unittest.TestCase):
         return
         # Write data back to file
         # FIXME (Ole): I would like to use gml here, but OGR does not
-        #              store the spatial reference!
+        #              store the spatial reference! Ticket #18
         out_filename = unique_filename(suffix='.shp')
         write_vector_data(attributes, wkt, geometry, out_filename)
 
