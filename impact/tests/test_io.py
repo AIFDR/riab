@@ -7,7 +7,7 @@ from impact.storage.raster import Raster
 from impact.storage.vector import Vector
 from impact.storage.projection import Projection
 from impact.storage.io import read_layer
-from impact.storage.io import write_point_data
+from impact.storage.io import write_vector_data
 from impact.storage.io import write_raster_data
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import write_keywords
@@ -123,7 +123,7 @@ class Test_IO(unittest.TestCase):
             # FIXME (Ole): I would like to use gml here, but OGR does not
             #              store the spatial reference!
             out_filename = unique_filename(suffix='.shp')
-            write_point_data(attributes, wkt, coords, out_filename)
+            write_vector_data(attributes, wkt, coords, out_filename)
 
             # Read again and check
             layer = read_layer(out_filename)
@@ -264,6 +264,7 @@ class Test_IO(unittest.TestCase):
         N = len(layer)
         assert len(geometry) == N
         assert len(attributes) == N
+        assert len(attributes[0]) == 8
 
         for i in range(N):
             assert geometry[i].shape[0] > 0
@@ -295,7 +296,6 @@ class Test_IO(unittest.TestCase):
                                   'KEPADATAN': 246,
                                   'PROPINSI': 'DKI JAKARTA'}}
 
-
         field_names = None
         for i in range(N):
             # Consistency with attributes read manually with qgis
@@ -305,7 +305,6 @@ class Test_IO(unittest.TestCase):
                 exp = expected_features[i]
 
                 for key in exp:
-
                     msg = ('Expected attribute %s was not found in feature %i'
                            % (key, i))
                     assert key in att, msg
@@ -315,23 +314,29 @@ class Test_IO(unittest.TestCase):
                     msg = 'Got %s: "%s" but expected "%s"' % (key, a, e)
                     assert a == e, msg
 
-
-            # FIXME: Not done yet
-            p1 = geometry[i]
-
         return
         # Write data back to file
         # FIXME (Ole): I would like to use gml here, but OGR does not
         #              store the spatial reference!
         out_filename = unique_filename(suffix='.shp')
-        write_point_data(attributes, wkt, geometry, out_filename)
+        write_vector_data(attributes, wkt, geometry, out_filename)
 
         # Read again and check
         layer = read_layer(out_filename)
-        coords = numpy.array(layer.get_geometry())
-        attributes = layer.get_data()
+        geometry_new = layer.get_geometry()
+        attributes_new = layer.get_data()
 
-        # More....
+        N = len(layer)
+        assert len(geometry_new) == N
+        assert len(attributes_new) == N
+
+        for i in range(N):
+            assert numpy.allclose(geometry[i],
+                                  geometry_new[i], rtol=1.0e-12)
+
+            assert len(attributes_new[i]) == 8
+            for key in attributes_new[i]:
+                assert attributes_new[i][key] == attributes[i][key]
 
 
     def test_rasters_and_arrays(self):
@@ -1063,5 +1068,6 @@ class Test_IO(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
+    suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

@@ -26,7 +26,7 @@ class Vector:
                 * None
             projection: Geospatial reference in WKT format.
                         Only used if geometry is provide as a numeric array,
-            geometry: An Nx2 array of point coordinates
+            geometry: A list of point coordinates or polygons
             name: Optional name for layer.
                   Only used if geometry is provide as a numeric array
             keywords: Optional dictionary with keywords that describe the
@@ -68,7 +68,11 @@ class Vector:
 
             msg = 'Geometry must be specified'
             assert geometry is not None, msg
-            self.geometry = numpy.array(geometry, dtype='d', copy=False)
+            self.geometry = geometry
+
+            # Derive type
+            #if len(self.geometry[0]) == 2:
+            #    self.geometry_type =
             self.geometry_type = ogr.wkbPoint
 
             msg = 'Projection must be specified'
@@ -376,8 +380,8 @@ class Vector:
             # FIXME (Ole): Need to assign entire vector if at all possible
 
             # Coordinates
-            x = float(geometry[i, 0])
-            y = float(geometry[i, 1])
+            x = float(geometry[i][0])
+            y = float(geometry[i][1])
 
             pt = ogr.Geometry(ogr.wkbPoint)
             pt.SetPoint_2D(0, x, y)
