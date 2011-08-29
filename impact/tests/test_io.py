@@ -14,6 +14,7 @@ from impact.storage.utilities import write_keywords
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import bbox_intersection
 from impact.storage.utilities import minimal_bounding_box
+from impact.storage.utilities import array2wkt
 from impact.storage.io import get_bounding_box
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.tests.utilities import same_API
@@ -314,7 +315,6 @@ class Test_IO(unittest.TestCase):
                     msg = 'Got %s: "%s" but expected "%s"' % (key, a, e)
                     assert a == e, msg
 
-        return
         # Write data back to file
         # FIXME (Ole): I would like to use gml here, but OGR does not
         #              store the spatial reference! Ticket #18
@@ -332,7 +332,8 @@ class Test_IO(unittest.TestCase):
 
         for i in range(N):
             assert numpy.allclose(geometry[i],
-                                  geometry_new[i], rtol=1.0e-12)
+                                  geometry_new[i],
+                                  rtol=1.0e-6)  # OGR works in single precision
 
             assert len(attributes_new[i]) == 8
             for key in attributes_new[i]:
@@ -1066,8 +1067,41 @@ class Test_IO(unittest.TestCase):
             assert adjusted_bbox is not bbox
 
 
+    def test_array2wkt(self):
+        """Conversion to wkt data works
+
+        It should create something like this 'POLYGON((0 1, 2 3, 4 5, 6 7, 8 9))'
+        """
+
+        # Arrays first
+        A = numpy.arange(10)
+        A = A.reshape(5,2)
+
+        wkt = array2wkt(A, geom_type='POLYGON')
+        assert wkt.startswith('POLYGON((')
+        fields = wkt[9:-2].split(',')
+        for i, field in enumerate(fields):
+            x, y = field.split()
+            assert numpy.allclose(A[i, :], [float(x), float(y)])
+
+        # Then list
+        wkt = array2wkt(A.tolist(), geom_type='POLYGON')
+        assert wkt.startswith('POLYGON((')
+        fields = wkt[9:-2].split(',')
+        for i, field in enumerate(fields):
+            x, y = field.split()
+            assert numpy.allclose(A[i, :], [float(x), float(y)])
+
+        # Then a linestring example (note one less bracket)
+        wkt = array2wkt(A, geom_type='LINESTRING')
+        assert wkt.startswith('LINESTRING(')
+        fields = wkt[11:-1].split(',')
+        for i, field in enumerate(fields):
+            x, y = field.split()
+            assert numpy.allclose(A[i, :], [float(x), float(y)])
+
 if __name__ == '__main__':
-    #suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
-    suite = unittest.makeSuite(Test_IO, 'test')
+    suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
+    #suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

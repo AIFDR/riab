@@ -367,3 +367,36 @@ def is_sequence(x):
         return False
     else:
         return True
+
+def array2wkt(A, geom_type='POLYGON'):
+    """Convert coordinates to wkt format
+
+    Input
+        A: Nx2 Array of coordinates representing either a polygon or a line.
+        geom_type: Determins output keyword 'POLYGON' or 'LINESTRING'
+
+    Output
+        wkt: geometry in the format known to ogr: Examples
+
+        POLYGON((1020 1030,1020 1045,1050 1045,1050 1030,1020 1030))
+        LINESTRING(1000 1000, 1100 1050)
+
+    """
+
+    if geom_type == 'LINESTRING':
+        n = 1
+    elif geom_type == 'POLYGON':
+        n = 2
+    else:
+        msg = 'Unknown geom_type: %s' % geom_type
+        raise Exception(msg)
+
+
+    wkt_string = geom_type + '('*n
+
+    N = len(A)
+    for i in range(N):
+        wkt_string += '%f %f, ' % tuple(A[i])
+
+    return wkt_string[:-2] + ')'*n
+

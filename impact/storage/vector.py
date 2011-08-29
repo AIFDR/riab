@@ -10,6 +10,7 @@ from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
 from impact.storage.utilities import get_geometry_type
 from impact.storage.utilities import is_sequence
+from impact.storage.utilities import array2wkt
 
 
 class Vector:
@@ -342,7 +343,7 @@ class Vector:
 
         lyr = ds.CreateLayer(layername,
                              self.projection.spatial_reference,
-                             ogr.wkbPoint)
+                             self.geometry_type)
         if lyr is None:
             msg = 'Could not create layer %s' % layername
             raise Exception(msg)
@@ -401,9 +402,17 @@ class Vector:
             feature = ogr.Feature(layer_def)
 
             # Store geometry
-            x = float(geometry[i][0])
-            y = float(geometry[i][1])
-            geom.SetPoint_2D(0, x, y)
+            if self.geometry_type == ogr.wkbPoint:
+                x = float(geometry[i][0])
+                y = float(geometry[i][1])
+                geom.SetPoint_2D(0, x, y)
+            elif self.geometry_type == ogr.wkbPolygon:
+                wkt = array2wkt(geometry[i])
+                geom = ogr.CreateGeometryFromWkt(wkt)
+            else:
+                msg = 'Geometry %s not implemented' % self.geometry_type
+                raise Exception(msg)
+
             feature.SetGeometry(geom)
 
             G = feature.GetGeometryRef()
