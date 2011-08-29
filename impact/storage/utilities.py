@@ -375,7 +375,7 @@ def array2wkt(A, geom_type='POLYGON'):
     Input
         A: Nx2 Array of coordinates representing either a polygon or a line.
            A can be either a numpy array or a list of coordinates.
-        geom_type: Determins output keyword 'POLYGON' or 'LINESTRING'
+        geom_type: Determines output keyword 'POLYGON' or 'LINESTRING'
 
     Output
         wkt: geometry in the format known to ogr: Examples
@@ -399,6 +399,6 @@ def array2wkt(A, geom_type='POLYGON'):
 
     N = len(A)
     for i in range(N):
-        wkt_string += '%f %f, ' % tuple(A[i])
+        wkt_string += '%f %f, ' % tuple(A[i])  # Works for both lists and arrays
 
     return wkt_string[:-2] + ')' * n
