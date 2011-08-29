@@ -669,7 +669,8 @@ def check_layer(layer, full=False):
 
 
 def save_file_to_geonode(filename, user=None, title=None,
-                         overwrite=True, check_metadata=True):
+                         overwrite=True, check_metadata=True,
+                         ignore=None):
     """Save a single layer file to local Risiko GeoNode
 
     Input
@@ -686,6 +687,9 @@ def save_file_to_geonode(filename, user=None, title=None,
     Output
         layer object
     """
+
+    if ignore is not None and filename == ignore:
+        return None
 
     # Extract fully qualified basename and extension
     basename, extension = os.path.splitext(filename)
@@ -761,14 +765,13 @@ def save_file_to_geonode(filename, user=None, title=None,
                             title=title,
                             keywords=keyword_list,
                             overwrite=overwrite)
+
+        # FIXME (Ole): This is some kind of hack that should be revisited.
         layer.keywords = ' '.join(keyword_list)
         layer.save()
     except GeoNodeException, e:
         # Layer did not upload. Convert GeoNodeException to RisikoException
         raise RisikoException(e)
-    except Exception:
-        # Unknown problem. Re-raise
-        raise
     else:
         logmsg = ('Uploaded "%s" with name "%s".'
                   % (basename, layer.name))
@@ -809,7 +812,8 @@ def save_directory_to_geonode(directory,
                               user=None,
                               title=None,
                               overwrite=True,
-                              check_metadata=True):
+                              check_metadata=True,
+                              ignore=None):
     """Upload a directory of spatial data files to GeoNode
 
     Input
@@ -818,9 +822,13 @@ def save_directory_to_geonode(directory,
         overwrite: Boolean variable controlling whether existing layers
                    can be overwritten by this operation. Default is True
         check_metadata: See save_file_to_geonode
+        ignore: None or list of filenames to ignore
     Output
         list of layer objects
     """
+
+    if ignore is None:
+        ignore = []
 
     msg = ('Argument %s to save_directory_to_geonode is not a valid directory.'
            % directory)
@@ -829,6 +837,9 @@ def save_directory_to_geonode(directory,
     layers = []
     for root, _, files in os.walk(directory):
         for short_filename in files:
+            if short_filename in ignore:
+                continue
+
             _, extension = os.path.splitext(short_filename)
             filename = os.path.join(root, short_filename)
 
@@ -853,7 +864,8 @@ def save_directory_to_geonode(directory,
 
 
 def save_to_geonode(incoming, user=None, title=None,
-                    overwrite=True, check_metadata=True):
+                    overwrite=True, check_metadata=True,
+                    ignore=None):
     """Save a files to local Risiko GeoNode
 
     Input
@@ -864,6 +876,7 @@ def save_to_geonode(incoming, user=None, title=None,
         overwrite: Boolean variable controlling whether existing layers
                    can be overwritten by this operation. Default is True
         check_metadata: See save_file_to_geonode
+        ignore: None or list of filenames to ignore
 
         FIXME (Ole): WxS contents does not reflect the renaming done
                      when overwrite is False. This should be reported to
@@ -881,13 +894,15 @@ def save_to_geonode(incoming, user=None, title=None,
         # Upload all valid layer files in this dir recursively
         layers = save_directory_to_geonode(incoming, title=title, user=user,
                                            overwrite=overwrite,
-                                           check_metadata=check_metadata)
+                                           check_metadata=check_metadata,
+                                           ignore=ignore)
         return layers
     elif os.path.isfile(incoming):
         # Upload single file (using its name as title)
         layer = save_file_to_geonode(incoming, title=title, user=user,
                                      overwrite=overwrite,
-                                     check_metadata=check_metadata)
+                                     check_metadata=check_metadata,
+                                     ignore=ignore)
         return layer
     else:
         msg = 'Argument %s was neither a file or a directory' % incoming
