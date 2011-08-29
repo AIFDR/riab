@@ -66,7 +66,7 @@ def write_raster_data(data, projection, geotransform, filename, keywords=None):
     R.write_to_file(filename)
 
 
-def write_point_data(data, projection, geometry, filename, keywords=None):
+def write_vector_data(data, projection, geometry, filename, keywords=None):
     """Write point data and any associated attributes to vector file
 
     Input:
@@ -74,8 +74,7 @@ def write_point_data(data, projection, geometry, filename, keywords=None):
               M is the number of attributes.
               A value of None is acceptable.
         projection: WKT projection information
-        geometry: Nx2 Numpy array with longitudes, latitudes
-                  N is the number of points (features).
+        geometry: List of points or polygons.
         filename: Output filename
         keywords: Optional dictionary
 

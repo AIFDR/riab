@@ -8,7 +8,7 @@ from impact.engine.interpolation import raster_spline
 from impact.storage.io import read_layer
 
 from impact.storage.utilities import unique_filename
-from impact.storage.io import write_point_data
+from impact.storage.io import write_vector_data
 from impact.storage.io import write_raster_data
 from impact.plugins import get_plugins
 
@@ -464,7 +464,7 @@ class Test_Engine(unittest.TestCase):
 
         # Check sanity of calculated attributes
         for i in range(N):
-            lon, lat = icoordinates[i, :]
+            lon, lat = icoordinates[i]
 
             depth = iattributes[i]['DEPTH']
 
@@ -702,10 +702,10 @@ class Test_Engine(unittest.TestCase):
                 coordinates.append((xi, eta))
 
         vector_filename = unique_filename(suffix='.shp')
-        write_point_data(data=None,
-                         projection=projection,
-                         geometry=coordinates,
-                         filename=vector_filename)
+        write_vector_data(data=None,
+                          projection=projection,
+                          geometry=coordinates,
+                          filename=vector_filename)
 
         # Read both datasets back in
         R = read_layer(raster_filename)
