@@ -277,20 +277,61 @@ class Test_IO(unittest.TestCase):
 
         assert layer.projection == Projection(DEFAULT_PROJECTION)
 
-        #print
-        #print attributes[0]
 
         # Check integrity of each feature
+        expected_features = {13: {'AREA': 28760732,
+                                  'POP_2007': 255383,
+                                  'KECAMATAN': 'kali deres',
+                                  'KEPADATAN': 60,
+                                  'PROPINSI': 'DKI JAKARTA'},
+                             21: {'AREA': 13155073,
+                                  'POP_2007': 247747,
+                                  'KECAMATAN': 'kramat jati',
+                                  'KEPADATAN': 150,
+                                  'PROPINSI': 'DKI JAKARTA'},
+                             35: {'AREA': 4346540,
+                                  'POP_2007': 108274,
+                                  'KECAMATAN': 'senen',
+                                  'KEPADATAN': 246,
+                                  'PROPINSI': 'DKI JAKARTA'}}
+
+
         field_names = None
         for i in range(N):
-            # Consistency between reported area in attributes and
-            # that calculated by geometry
+            # Consistency with attributes read manually with qgis
+
+            if i in expected_features:
+                att = attributes[i]
+                exp = expected_features[i]
+
+                for key in exp:
+
+                    msg = ('Expected attribute %s was not found in feature %i'
+                           % (key, i))
+                    assert key in att, msg
+
+                    a = att[key]
+                    e = exp[key]
+                    msg = 'Got %s: "%s" but expected "%s"' % (key, a, e)
+                    assert a == e, msg
+
 
             # FIXME: Not done yet
             p1 = geometry[i]
-            a = attributes[i]['AREA']
 
+        return
+        # Write data back to file
+        # FIXME (Ole): I would like to use gml here, but OGR does not
+        #              store the spatial reference!
+        out_filename = unique_filename(suffix='.shp')
+        write_point_data(attributes, wkt, geometry, out_filename)
 
+        # Read again and check
+        layer = read_layer(out_filename)
+        coords = numpy.array(layer.get_geometry())
+        attributes = layer.get_data()
+
+        # More....
 
 
     def test_rasters_and_arrays(self):
@@ -1021,6 +1062,6 @@ class Test_IO(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test')
+    suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
