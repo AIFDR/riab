@@ -392,26 +392,26 @@ class Vector:
                     msg = 'Could not create field %s' % name
                     raise Exception(msg)
 
-        # Store point data
+        # Store geometry
+        geom = ogr.Geometry(self.geometry_type)
+        layer_def = lyr.GetLayerDefn()
         for i in range(N):
-            # FIXME (Ole): Need to assign entire vector if at all possible
 
-            # Coordinates
+            # Create new feature instance
+            feature = ogr.Feature(layer_def)
+
+            # Store geometry
             x = float(geometry[i][0])
             y = float(geometry[i][1])
-
-            pt = ogr.Geometry(ogr.wkbPoint)
-            pt.SetPoint_2D(0, x, y)
-
-            feature = ogr.Feature(lyr.GetLayerDefn())
-            feature.SetGeometry(pt)
+            geom.SetPoint_2D(0, x, y)
+            feature.SetGeometry(geom)
 
             G = feature.GetGeometryRef()
             if G is None:
                 msg = 'Could not create GeometryRef for file %s' % filename
                 raise Exception(msg)
 
-            # Attributes
+            # Store attributes
             if store_attributes:
                 for name in fields:
                     feature.SetField(name, data[i][name])

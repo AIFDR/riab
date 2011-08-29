@@ -1067,7 +1067,7 @@ class Test_IO(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
+    #suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
     suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
