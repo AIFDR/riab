@@ -279,7 +279,6 @@ class Test_IO(unittest.TestCase):
 
         assert layer.projection == Projection(DEFAULT_PROJECTION)
 
-
         # Check integrity of each feature
         expected_features = {13: {'AREA': 28760732,
                                   'POP_2007': 255383,
@@ -338,7 +337,6 @@ class Test_IO(unittest.TestCase):
             assert len(attributes_new[i]) == 8
             for key in attributes_new[i]:
                 assert attributes_new[i][key] == attributes[i][key]
-
 
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays
@@ -1066,16 +1064,16 @@ class Test_IO(unittest.TestCase):
             # Check that input box was not changed
             assert adjusted_bbox is not bbox
 
-
     def test_array2wkt(self):
         """Conversion to wkt data works
 
-        It should create something like this 'POLYGON((0 1, 2 3, 4 5, 6 7, 8 9))'
+        It should create something like this
+            'POLYGON((0 1, 2 3, 4 5, 6 7, 8 9))'
         """
 
         # Arrays first
         A = numpy.arange(10)
-        A = A.reshape(5,2)
+        A = A.reshape(5, 2)
 
         wkt = array2wkt(A, geom_type='POLYGON')
         assert wkt.startswith('POLYGON((')
@@ -1100,8 +1098,8 @@ class Test_IO(unittest.TestCase):
             x, y = field.split()
             assert numpy.allclose(A[i, :], [float(x), float(y)])
 
+
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test_reading_and_writing_of_vector_polygon_data')
-    #suite = unittest.makeSuite(Test_IO, 'test')
+    suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

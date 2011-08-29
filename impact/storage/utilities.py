@@ -348,8 +348,8 @@ def get_geometry_type(geometry):
         msg = 'Could not determine geometry type'
         raise Exception(msg)
 
-
     return geometry_type
+
 
 def is_sequence(x):
     """Determine if x behaves like a true sequence but not a string
@@ -368,11 +368,13 @@ def is_sequence(x):
     else:
         return True
 
+
 def array2wkt(A, geom_type='POLYGON'):
     """Convert coordinates to wkt format
 
     Input
         A: Nx2 Array of coordinates representing either a polygon or a line.
+           A can be either a numpy array or a list of coordinates.
         geom_type: Determins output keyword 'POLYGON' or 'LINESTRING'
 
     Output
@@ -384,19 +386,19 @@ def array2wkt(A, geom_type='POLYGON'):
     """
 
     if geom_type == 'LINESTRING':
+        # One bracket
         n = 1
     elif geom_type == 'POLYGON':
+        # Two brackets (tsk tsk)
         n = 2
     else:
         msg = 'Unknown geom_type: %s' % geom_type
         raise Exception(msg)
 
-
-    wkt_string = geom_type + '('*n
+    wkt_string = geom_type + '(' * n
 
     N = len(A)
     for i in range(N):
         wkt_string += '%f %f, ' % tuple(A[i])
 
-    return wkt_string[:-2] + ')'*n
-
+    return wkt_string[:-2] + ')' * n

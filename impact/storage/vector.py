@@ -401,7 +401,7 @@ class Vector:
             # Create new feature instance
             feature = ogr.Feature(layer_def)
 
-            # Store geometry
+            # Store geometry and check
             if self.geometry_type == ogr.wkbPoint:
                 x = float(geometry[i][0])
                 y = float(geometry[i][1])
@@ -596,4 +596,3 @@ class Vector:
     @property
     def is_polygon_data(self):
         return self.is_vector and self.geometry_type == ogr.wkbPolygon
-
