@@ -29,6 +29,7 @@ Process for developers adding a new feature:
 	(possibly resolve conflict and verify test suite runs)
 	git push
     - Issues a pull request through github
-
+* To delete when branch is no longer needed
+    git push origin :<name>
 
 
