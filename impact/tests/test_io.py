@@ -268,10 +268,6 @@ class Test_IO(unittest.TestCase):
         assert len(attributes) == N
         assert len(attributes[0]) == 8
 
-        for i in range(N):
-            assert geometry[i].shape[0] > 0
-            assert geometry[i].shape[1] == 2
-
         assert isinstance(layer.get_name(), basestring)
 
         # Check projection
@@ -279,6 +275,24 @@ class Test_IO(unittest.TestCase):
         assert wkt.startswith('GEOGCS')
 
         assert layer.projection == Projection(DEFAULT_PROJECTION)
+
+        # Check each polygon
+        for i in range(N):
+            geom = geometry[i]
+            n = geom.shape[0]
+            assert n > 2
+            assert geom.shape[1] == 2
+
+            # Check that polygon is closed
+            assert numpy.allclose(geom[0], geom[-1], rtol=0)
+
+            # But that not all points are the same
+            max_dist = 0
+            for j in range(n):
+                d = numpy.sum((geom[j] - geom[0])**2)/n
+                if d > max_dist:
+                    max_dist = d
+            assert max_dist > 0
 
         # Check integrity of each feature
         expected_features = {13: {'AREA': 28760732,
@@ -374,6 +388,11 @@ class Test_IO(unittest.TestCase):
             for key in p_att:
                 assert key in c_att
                 assert c_att[key] == p_att[key]
+
+        # Write to file
+        out_filename = unique_filename(prefix='centroid', suffix='.shp')
+        print 'Writing to %s' % out_filename
+        c_layer.write_to_file(out_filename)
 
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays

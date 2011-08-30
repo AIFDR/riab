@@ -402,3 +402,34 @@ def array2wkt(A, geom_type='POLYGON'):
         wkt_string += '%f %f, ' % tuple(A[i])  # Works for both lists and arrays
 
     return wkt_string[:-2] + ')' * n
+
+def calculate_polygon_area(polygon):
+    """Calculate the area of non-self-intersecting polygon
+
+    Sources:
+    http://paulbourke.net/geometry/polyarea/
+    http://en.wikipedia.org/wiki/Centroid
+    """
+
+    # Make sure it is numeric
+    P = numpy.array(polygon)
+    N = P.shape[0]  # Number of vertices
+
+    msg = ('Polygon is assumed to consist of coordinate pairs. '
+           'I got second dimension %i instead of 2' % P.shape[i])
+    assert P.shape[1] == 2
+
+
+
+
+def calculate_polygon_centroid(polygon):
+    """Calculate the centroid of non-self-intersecting polygon
+
+    Sources:
+    http://paulbourke.net/geometry/polyarea/
+    http://en.wikipedia.org/wiki/Centroid
+    """
+
+    pass
+
+

@@ -627,6 +627,7 @@ def convert_polygons_to_centroids(V):
         n = geom.shape[0]
 
         c = numpy.sum(geom, axis=0) / n
+        #c = calculate_polygon_centroid(geom)
         centroids.append(c)
 
     # Create new point vector layer and return
