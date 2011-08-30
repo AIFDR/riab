@@ -5,6 +5,7 @@ import impact
 
 from impact.storage.raster import Raster
 from impact.storage.vector import Vector
+from impact.storage.vector import convert_polygons_to_centroids
 from impact.storage.projection import Projection
 from impact.storage.io import read_layer
 from impact.storage.io import write_vector_data
@@ -361,7 +362,7 @@ class Test_IO(unittest.TestCase):
             reference_centroids.append(c)
 
         # Get centroid data from library
-        c_layer = p_layer.get_centroid_data()
+        c_layer = convert_polygons_to_centroids(p_layer)
         assert len(c_layer) == N
         c_geometry = p_layer.get_geometry()
         c_attributes = p_layer.get_data()
@@ -1136,6 +1137,6 @@ class Test_IO(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test_cent')
+    suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
