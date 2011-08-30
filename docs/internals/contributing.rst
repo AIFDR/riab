@@ -26,14 +26,14 @@ To keep branch up to date
     git checkout <name> 
     git merge origin/master 
 
-When all tests pass, either
+When all tests pass, either merge into master
+    git checkout master 
+    git merge <name> 
+    (possibly resolve conflict and verify test suite runs) 
+    git push 
 
-    - Merge into master
-      git checkout master 
-      git merge <name> 
-      (possibly resolve conflict and verify test suite runs) 
-      git push 
-    - Or issue a pull request through github
+Or issue a pull request through github
+    ..
 
 To delete when branch is no longer needed
     git push origin :<name>
