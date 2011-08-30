@@ -78,8 +78,9 @@ class Test_geonode_connection(unittest.TestCase):
             msg = 'Layer %s was uploaded but not expected' % layer.name
             assert layer.name in expected_layers, msg
 
-            # Uncomment to reproduce issue #40
-            # for layer tsunami_max_inundation_depth_bb_utm
+            # Uncomment to reproduce issue #102
+            # This may still also reproduce issue #40 for layer
+            # tsunami_max_inundation_depth_bb_utm
             #check_layer(layer, full=True)
 
         for layer_name in expected_layers:
