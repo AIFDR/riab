@@ -258,7 +258,7 @@ class Vector:
                     M = ring.GetPointCount()
                     coordinates = []
                     for j in range(M):
-                        coordinates.append((ring.GetX(), ring.GetY()))
+                        coordinates.append((ring.GetX(j), ring.GetY(j)))
 
                     # Record entire polygon ring as an Mx2 numpy array
                     geometry.append(numpy.array(coordinates,
