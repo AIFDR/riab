@@ -28,10 +28,10 @@ To keep branch up to date::
 
 When all tests pass, either
     - Merge into master::
-|       git checkout master
-|	git merge <name>
-|	(possibly resolve conflict and verify test suite runs)
-|	git push
+|       git checkout master 
+|       git merge <name> 
+|       (possibly resolve conflict and verify test suite runs) 
+|	    git push 
     - Issue a pull request through github
 To delete when branch is no longer needed
     git push origin :<name>
