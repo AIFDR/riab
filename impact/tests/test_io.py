@@ -338,6 +338,42 @@ class Test_IO(unittest.TestCase):
             for key in attributes_new[i]:
                 assert attributes_new[i][key] == attributes[i][key]
 
+    def test_centroids_from_polygon_data(self):
+        """Centroid point data can be derived from polygon data
+        """
+
+        # Read and verify test data
+        vectorname = 'kecamatan_geo.shp'
+
+        filename = '%s/%s' % (TESTDATA, vectorname)
+        p_layer = read_layer(filename)
+        p_geometry = p_layer.get_geometry()
+        p_attributes = p_layer.get_data()
+        N = len(p_layer)
+
+        # Manually calculate the average of each vertex
+        reference_centroids = []
+        for i in range(N):
+            geom = p_geometry[i]
+            n = geom.shape[0]
+
+            c = numpy.sum(geom, axis=0) / n
+            reference_centroids.append(c)
+
+        # Get centroid data from library
+        c_layer = p_layer.get_centroid_data()
+        assert len(c_layer) == N
+        c_geometry = p_layer.get_geometry()
+        c_attributes = p_layer.get_data()
+
+        # Check that attributes are the same
+        for i in range(N):
+            p_att = p_attributes[i]
+            c_att = c_attributes[i]
+            for key in p_att:
+                assert key in c_att
+                assert c_att[key] == p_att[key]
+
     def test_rasters_and_arrays(self):
         """Consistency of rasters and associated arrays
         """
@@ -1100,6 +1136,6 @@ class Test_IO(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test')
+    suite = unittest.makeSuite(Test_IO, 'test_cent')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
