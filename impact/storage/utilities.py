@@ -417,10 +417,16 @@ def calculate_polygon_area(polygon):
 
     msg = ('Polygon is assumed to consist of coordinate pairs. '
            'I got second dimension %i instead of 2' % P.shape[i])
-    assert P.shape[1] == 2
+    assert P.shape[1] == 2, msg
 
+    x = P[0, :]
+    y = P[1, :]
 
-
+    # Calculate 0.5 sum_{i=0}^{N-1} (x_i y_{i+1} - x_{i+1} y_i)
+    a = x[:-1] * y[1:]
+    b = y[:-1] * x[1:]
+    A = numpy.sum(a - b) / 2
+    return A
 
 def calculate_polygon_centroid(polygon):
     """Calculate the centroid of non-self-intersecting polygon
@@ -430,6 +436,13 @@ def calculate_polygon_centroid(polygon):
     http://en.wikipedia.org/wiki/Centroid
     """
 
-    pass
+    A = calculate_polygon_area(polygon)
 
+    # Calculate sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+    a = x[:-1] * y[1:]
+    b = y[:-1] * x[1:]
+    c = x[:-1] + x[1:]
 
+    C = numpy.sum(c * (a - b)) / (6 * A)
+
+    return C

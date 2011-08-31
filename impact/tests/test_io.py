@@ -1156,6 +1156,6 @@ class Test_IO(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test')
+    suite = unittest.makeSuite(Test_IO, 'test_cent')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
