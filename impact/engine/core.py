@@ -7,8 +7,9 @@ import sys
 import numpy
 
 from impact.storage.projection import Projection
+from impact.storage.projection import DEFAULT_PROJECTION
 from impact.storage.utilities import unique_filename
-from impact.storage.utilities import DEFAULT_PROJECTION
+
 
 
 def calculate_impact(layers, impact_fcn,

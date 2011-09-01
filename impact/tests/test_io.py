@@ -7,6 +7,7 @@ from impact.storage.raster import Raster
 from impact.storage.vector import Vector
 from impact.storage.vector import convert_polygons_to_centroids
 from impact.storage.projection import Projection
+from impact.storage.projection import DEFAULT_PROJECTION
 from impact.storage.io import read_layer
 from impact.storage.io import write_vector_data
 from impact.storage.io import write_raster_data
@@ -16,10 +17,11 @@ from impact.storage.utilities import read_keywords
 from impact.storage.utilities import bbox_intersection
 from impact.storage.utilities import minimal_bounding_box
 from impact.storage.utilities import array2wkt
+from impact.storage.utilities import calculate_polygon_area
+from impact.storage.utilities import calculate_polygon_centroid
 from impact.storage.io import get_bounding_box
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.tests.utilities import same_API
-from impact.storage.utilities import DEFAULT_PROJECTION
 from impact.tests.utilities import TESTDATA
 
 
@@ -1154,8 +1156,102 @@ class Test_IO(unittest.TestCase):
             x, y = field.split()
             assert numpy.allclose(A[i, :], [float(x), float(y)])
 
+    def test_polygon_area(self):
+        """Polygon areas are computed correctly
+        """
+
+        # Create closed simple polygon (counter clock wise)
+        P = numpy.array([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]])
+        A = calculate_polygon_area(P)
+        msg = 'Calculated area was %f, expected 1.0 deg^2' % A
+        assert numpy.allclose(A, 1), msg
+
+        # Create closed simple polygon (clock wise)
+        P = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]])
+        A = calculate_polygon_area(P)
+        msg = 'Calculated area was %f, expected 1.0 deg^2' % A
+        assert numpy.allclose(A, 1), msg
+
+        A = calculate_polygon_area(P, signed=True)
+        msg = 'Calculated signed area was %f, expected -1.0 deg^2' % A
+        assert numpy.allclose(A, -1), msg
+
+        # Not starting at zero
+        # Create closed simple polygon (counter clock wise)
+        P = numpy.array([[168, -2], [169, -2], [169, -1], [168, -1], [168, -2]])
+        A = calculate_polygon_area(P)
+
+        msg = 'Calculated area was %f, expected 1.0 deg^2' % A
+        assert numpy.allclose(A, 1), msg
+
+        # Realistic polygon
+        filename = '%s/%s' % (TESTDATA, 'test_polygon.shp')
+        layer = read_layer(filename)
+        geometry = layer.get_geometry()
+        attributes = layer.get_data()
+
+        P = geometry[0]
+        A = calculate_polygon_area(P)
+
+        # Verify against area reported by qgis (only three decimals)
+        assert numpy.allclose(A, 0.003, atol=1.0e-3)
+
+    def test_polygon_centroids(self):
+        """Polygon centroids are computed correctly
+        """
+
+        # Create closed simple polygon (counter clock wise)
+        P = numpy.array([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]])
+        C = calculate_polygon_centroid(P)
+
+        msg = ('Calculated centroid was (%f, %f), expected '
+               '(0.5, 0.5)' % tuple(C))
+        assert numpy.allclose(C, [0.5, 0.5]), msg
+
+        # Create closed simple polygon (clock wise)
+        # FIXME (Ole): Not sure whether to raise an exception or
+        #              to return absolute value in this case
+        P = numpy.array([[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]])
+        C = calculate_polygon_centroid(P)
+
+        msg = ('Calculated centroid was (%f, %f), expected '
+               '(0.5, 0.5)' % tuple(C))
+        assert numpy.allclose(C, [0.5, 0.5]), msg
+
+        # Not starting at zero
+        # Create closed simple polygon (counter clock wise)
+        P = numpy.array([[168, -2], [169, -2], [169, -1], [168, -1], [168, -2]])
+        C = calculate_polygon_centroid(P)
+
+        msg = ('Calculated centroid was (%f, %f), expected '
+               '(168.5, -1.5)' % tuple(C))
+        assert numpy.allclose(C, [168.5, -1.5]), msg
+
+        # Realistic polygon
+        filename = '%s/%s' % (TESTDATA, 'test_polygon.shp')
+        layer = read_layer(filename)
+        geometry = layer.get_geometry()
+        attributes = layer.get_data()
+
+        P = geometry[0]
+        C = calculate_polygon_centroid(P)
+
+        # Check against qgis centroid
+        assert numpy.allclose(C, [106.7036938, -6.134533855], rtol=1.0e-8)
+
+        # Store centroid to file
+        out_filename = unique_filename(prefix='test_centroid', suffix='.shp')
+        V = Vector(data=None,
+                   projection=DEFAULT_PROJECTION,
+                   geometry=[C],
+                   name='Test centroid')
+        V.write_to_file(out_filename)
+
+
+
+
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_IO, 'test_cent')
+    suite = unittest.makeSuite(Test_IO, 'test_polygon')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
