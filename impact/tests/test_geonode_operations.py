@@ -53,8 +53,9 @@ class Test_geonode_connection(unittest.TestCase):
                                             # projection (TM3_Zone_48-2) so
                                             # serves as another test for
                                             # issue #40
-                      'kecamatan_geo.shp']  # No idea why this one can't
+                      'kecamatan_geo.shp',  # No idea why this one can't
                                             # upload on 11.04. See issue #129
+                      'test_polygon.shp']   # Can't on 10.10 nor 11.04. Why?
 
         for root, dirs, files in os.walk(datadir):
             for filename in files:
