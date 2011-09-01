@@ -81,18 +81,18 @@ def check_data_integrity(layer_files):
     geotransform = None
     coordinates = None
 
+    # FIXME: Rename filename to layer
     for filename in layer_files:
 
         # Extract data
         layer = filename
 
         # Ensure that projection is consistent across all layers
-        # FIXME (Ole): Ideally use a library to ascertain this
         if projection is None:
             projection = layer.projection
         else:
-            refprj = projection.get_projection(proj4=True)
-            lyrprj = layer.projection.get_projection(proj4=True)
+            refprj = projection
+            lyrprj = layer.projection
             msg = ('Projections in input layer %s is not as expected:\n'
                    'projection: %s\n'
                    'default:    %s'
