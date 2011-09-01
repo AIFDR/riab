@@ -318,14 +318,15 @@ def get_geometry_type(geometry):
 
     If geometry type cannot be determined an Exception is raised.
 
-    Note, there is no consistency check across all entries of the geometry list, only
-    the first element is used in this determination.
+    Note, there is no consistency check across all entries of the
+    geometry list, only the first element is used in this determination.
     """
 
     msg = 'Argument geometry must be a sequence. I got %s ' % type(geometry)
     assert is_sequence(geometry), msg
 
-    msg = 'The first element in geometry must be a sequence of length > 2. I got %s ' % geometry[0]
+    msg = ('The first element in geometry must be a sequence of length > 2. '
+           'I got %s ' % str(geometry[0]))
     assert is_sequence(geometry[0]), msg
     assert len(geometry[0]) >= 2, msg
 
