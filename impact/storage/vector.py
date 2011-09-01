@@ -423,10 +423,7 @@ class Vector:
             # Store attributes
             if store_attributes:
                 for name in fields:
-                    print
-                    print name, type(name)
-                    print data[i][name], type(data[i][name])
-                    import sys; sys.exit()
+                    # FIXME (Ole): This line fails for newer versions of OGR
                     feature.SetField(name, data[i][name])
 
             # Save this feature
