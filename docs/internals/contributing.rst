@@ -14,7 +14,7 @@ Process for developers adding a new feature:
 ============================================
 
 Create a feature branch
-    * git checkout -b <name>
+    * git checkout -b <name> [from branch]
 
 Write new code and tests
     ...
@@ -23,14 +23,14 @@ Publish (if unfinished)
     * git push origin <name>
 
 To keep branch up to date
-    * git checkout <name> 
-    * git merge origin/master 
+    * git checkout <name>
+    * git merge origin/master
 
 When all tests pass, either merge into master
-    * git checkout master 
-    * git merge <name> 
-      (possibly resolve conflict and verify test suite runs) 
-    * git push 
+    * git checkout master
+    * git merge --no-ff <name>
+      (possibly resolve conflict and verify test suite runs)
+    * git push
 
 Or issue a pull request through github
     ..
