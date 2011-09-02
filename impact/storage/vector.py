@@ -11,7 +11,7 @@ from impact.storage.utilities import write_keywords
 from impact.storage.utilities import get_geometry_type
 from impact.storage.utilities import is_sequence
 from impact.storage.utilities import array2wkt
-
+from impact.storage.utilities import calculate_polygon_centroid
 
 class Vector:
     """Class for abstraction of vector data
@@ -627,8 +627,8 @@ def convert_polygons_to_centroids(V):
         geom = geometry[i]
         n = geom.shape[0]
 
-        c = numpy.sum(geom, axis=0) / n
-        #c = calculate_polygon_centroid(geom)
+        #c = numpy.sum(geom, axis=0) / n  # Naive average of points
+        c = calculate_polygon_centroid(geom)  # Proper algorithm
         centroids.append(c)
 
     # Create new point vector layer and return
