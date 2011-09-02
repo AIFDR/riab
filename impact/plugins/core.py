@@ -206,13 +206,13 @@ def requirement_check(params, require_str, verbose=False):
         # hence correctly return False
         pass
     except Exception, e:
-        msg = ('Error in plugin requirements header: %s. '
+        msg = ('Non matching plugin requirements header: %s. '
+               'This is perfectly OK (says Ted).'
                'Original message: %s' % (execstr, e))
 
         # We don't want errors in plugins to
         # crash the entire system, so we just log them
-        logger.error(msg)
-        #raise SyntaxError(msg)
+        logger.info(msg)
 
     return False
 
