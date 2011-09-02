@@ -202,16 +202,17 @@ def requirement_check(params, require_str, verbose=False):
         return check()
     except NameError, e:
         # This condition will happen frequently since the function
-        # is evaled against many params that are not relavent and
+        # is evaled against many params that are not relevant and
         # hence correctly return False
         pass
     except Exception, e:
         msg = ('Non matching plugin requirements header: %s. '
-               'This is perfectly OK (says Ted).'
+               'This is perfectly OK (says Ted). '
                'Original message: %s' % (execstr, e))
 
-        # We don't want errors in plugins to
-        # crash the entire system, so we just log them
+        # This will also happen frequently and are expected. However,
+        # the info is useful for debugging individual plugins, so we
+        # log the message.
         logger.info(msg)
 
     return False
