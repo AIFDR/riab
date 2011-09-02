@@ -758,7 +758,9 @@ class Test_IO(unittest.TestCase):
         for filename in ['Earthquake_Ground_Shaking_clip.tif',
                          'tsunami_exposure_BB.shp']:
             bbox = get_bounding_box(os.path.join(TESTDATA, filename))
-            assert numpy.allclose(bbox, ref_bbox[filename])
+            msg = ('Got bbox %s from filename %s, but expected %s '
+                   % (str(bbox), filename, str(ref_bbox[filename])))
+            assert numpy.allclose(bbox, ref_bbox[filename]), msg
 
     def test_layer_API(self):
         """Vector and Raster instances have a similar API
