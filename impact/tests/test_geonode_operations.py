@@ -48,14 +48,11 @@ class Test_geonode_connection(unittest.TestCase):
         not_expected_layers = []
         datadir = TESTDATA
         BAD_LAYERS = ['grid_without_projection.asc',
-                      'kecamatan_prj.shp',  # FIXME(Ole): This layer is not
+                      'kecamatan_prj.shp']  # FIXME(Ole): This layer is not
                                             # 'BAD', just in a different
                                             # projection (TM3_Zone_48-2) so
                                             # serves as another test for
                                             # issue #40
-                      'kecamatan_geo.shp',  # Projection issue #40
-                      'test_polygon.shp']   # No shx file. Is that necessary?
-
 
         for root, dirs, files in os.walk(datadir):
             for filename in files:
