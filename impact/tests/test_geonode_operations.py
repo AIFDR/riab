@@ -48,15 +48,11 @@ class Test_geonode_connection(unittest.TestCase):
         not_expected_layers = []
         datadir = TESTDATA
         BAD_LAYERS = ['grid_without_projection.asc',
-                      'kecamatan_prj.shp',  # FIXME(Ole): This layer is not
+                      'kecamatan_prj.shp']  # FIXME(Ole): This layer is not
                                             # 'BAD', just in a different
                                             # projection (TM3_Zone_48-2) so
                                             # serves as another test for
                                             # issue #40
-                      'kecamatan_geo.shp',  # No idea why this one can't
-                                            # upload on 11.04. See issue #129
-                      'test_polygon.shp']   # Can't on 10.10 nor 11.04. Why?
-
         for root, dirs, files in os.walk(datadir):
             for filename in files:
                 basename, extension = os.path.splitext(filename)
@@ -71,7 +67,7 @@ class Test_geonode_connection(unittest.TestCase):
 
         # Upload
         layers = save_to_geonode(datadir, user=self.user, overwrite=True,
-                                 ignore=['kecamatan_geo.shp'])
+                                 ignore=BAD_LAYERS)
 
         # Check integrity
         layer_names = [l.name for l in layers]

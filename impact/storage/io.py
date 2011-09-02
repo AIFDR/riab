@@ -854,7 +854,7 @@ def save_directory_to_geonode(directory,
                 except Exception, e:
                     msg = ('Filename "%s" could not be uploaded. '
                            'Error was: %s' % (filename, str(e)))
-                    logger.info(msg)
+                    raise RisikoException(msg)
                 else:
                     layers.append(layer)
 
