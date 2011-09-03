@@ -8,6 +8,14 @@ Coding conventions for Risiko:
 * Develop in the spirit of XP/Agile, i.e. frequent releases, continuous integration and iterative development. The master branch should always be assumed to represent a working demo with all tests passing.
 
 
+Branching guide
+===============
+
+Risiko follows the branching model laid out in this paper:
+http://nvie.com/posts/a-successful-git-branching-model
+
+With the develop branch being the backbone default branch with the bleeding edge and master always a stable release.
+
 
 
 Process for developers adding a new feature:
