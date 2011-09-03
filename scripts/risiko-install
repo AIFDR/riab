@@ -63,6 +63,7 @@ popd
 function checkup() {
   REPO="$1"
   WORKING_DIR="$2"
+  BRANCH="$3"
   if [ -d "${WORKING_DIR}" ];
   then
       echo "Updating ${WORKING_DIR} from upstream"
@@ -70,18 +71,19 @@ function checkup() {
   else
       git clone "git@github.com:${REPO}" "${WORKING_DIR}" || git clone "https://github.com/${REPO}" "${WORKING_DIR}" || git clone "http://github.com/${REPO}" "${WORKING_DIR}"
   fi
+
+  pushd .
+  cd $WORKING_DIR
+  git fetch origin $BRANCH
+  git checkout $BRANCH
+  popd
 }
 
 
-echo ">>> Cloning the repositories"
-# Get riab source code
-checkup GFDRR/geonode.git geonode
-pushd .
-cd geonode
-git fetch origin nocsw
-git checkout nocsw
-popd
-checkup AIFDR/riab.git riab
+echo ">>> Cloning the repositories with specific branches"
+checkup GFDRR/geonode.git geonode nocsw
+checkup AIFDR/riab.git riab develop
+
 
 echo ">>> Activating virtual environment"
 source ~/.bash_aliases
