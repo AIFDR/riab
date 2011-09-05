@@ -39,7 +39,7 @@ When all tests pass, either merge into develop
     * git checkout develop
     * git merge --no-ff <featurebranch>
       (possibly resolve conflict and verify test suite runs)
-    * git push
+    * git push origin develop
 
 Or issue a pull request through github
     ..
@@ -62,11 +62,13 @@ When ready, merge release into master effectively making it official
     * git checkout master
     * git merge --no-ff <releasebranch>
     * git tag -a <version number>
+    * git push origin master
 
-Update development branch
+Update development branch as well
     * git checkout develop
     * git merge --no-ff <releasebranch>
     (resolve conflicts)
+    * git push origin develop
 
 Delete development branch
     * git branch -d <releasebranch>
@@ -87,8 +89,10 @@ When fixed, merge fix back into both master and develop
     * git checkout master
     * git merge --no-ff <hotfixbranch>
     * git tag -a <version number>
+    * git push origin master
     * git checkout develop
     * git merge --no-ff <hotfixbranch>
+    * git push origin develop
 
 Delete hotfix branch
     * git branch -d <hotfixbranch>
