@@ -2,8 +2,9 @@ Coding conventions for Risiko:
 ==============================
 
 * Coding must follow a style guide. In case of Python it is http://www.python.org/dev/peps/pep-0008 and using the command line tool pep8 to enforce this
+* Python documentation guide: http://www.python.org/dev/peps/pep-0257
 * Adherence to regression/unit testing wherever possible
-* Use of github for revision control, issue tracking and WIKI
+* Use of github for revision control, issue tracking and management
 * Simple deployment procedure i.e. automatic system configuration and installation of dependencies (at least for Ubuntu)
 * Develop in the spirit of XP/Agile, i.e. frequent releases, continuous integration and iterative development. The master branch should always be assumed to represent a working demo with all tests passing.
 
