@@ -14,7 +14,8 @@ Branching guide
 Risiko follows the branching model laid out in this paper:
 http://nvie.com/posts/a-successful-git-branching-model
 
-With the develop branch being the backbone default branch with the bleeding edge and master always a stable release.
+With the develop branch being the backbone default branch
+with the bleeding edge and master always a stable release.
 
 
 
@@ -22,21 +23,21 @@ Process for developers adding a new feature:
 ============================================
 
 Create a feature branch
-    * git checkout -b <name> [from branch]
+    * git checkout -b <featurebranch> develop
 
 Write new code and tests
     ...
 
 Publish (if unfinished)
-    * git push origin <name>
+    * git push origin <featurebranch>
 
 To keep branch up to date
-    * git checkout <name>
-    * git merge origin/master
+    * git checkout <featurebranch>
+    * git merge origin develop
 
-When all tests pass, either merge into master
-    * git checkout master
-    * git merge --no-ff <name>
+When all tests pass, either merge into develop
+    * git checkout develop
+    * git merge --no-ff <featurebranch>
       (possibly resolve conflict and verify test suite runs)
     * git push
 
@@ -44,6 +45,50 @@ Or issue a pull request through github
     ..
 
 To delete when branch is no longer needed
-    * git push origin :<name>
+    * git push origin :<featurebranch>
 
 
+
+Process for making a new release:
+=================================
+
+Create a release branch from the current development branch
+    * git checkout -b <releasebranch> master
+
+Start working on release specific development (such as bumping version number)
+    ...
+
+When ready, merge release into master effectively making it official
+    * git checkout master
+    * git merge --no-ff <releasebranch>
+    * git tag -a <version number>
+
+Update development branch
+    * git checkout develop
+    * git merge --no-ff <releasebranch>
+    (resolve conflicts)
+
+Delete development branch
+    * git branch -d <releasebranch>
+    or
+    * git push origin :<releasebranch>
+
+
+Process for making a hotfix on master
+=====================================
+
+Create a hotfix branch from master
+    * git checkout -b <hotfixbranch> master
+
+Start working on fix (including bumping minor version number)
+    ...
+
+When fixed, merge fix back into both master and develop
+    * git checkout master
+    * git merge --no-ff <hotfixbranch>
+    * git tag -a <version number>
+    * git checkout develop
+    * git merge --no-ff <hotfixbranch>
+
+Delete hotfix branch
+    * git branch -d <hotfixbranch>

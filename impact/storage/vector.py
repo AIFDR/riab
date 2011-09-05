@@ -11,7 +11,7 @@ from impact.storage.utilities import write_keywords
 from impact.storage.utilities import get_geometry_type
 from impact.storage.utilities import is_sequence
 from impact.storage.utilities import array2wkt
-
+from impact.storage.utilities import calculate_polygon_centroid
 
 class Vector:
     """Class for abstraction of vector data
@@ -423,6 +423,7 @@ class Vector:
             # Store attributes
             if store_attributes:
                 for name in fields:
+                    # FIXME (Ole): This line fails for newer versions of OGR
                     feature.SetField(name, data[i][name])
 
             # Save this feature
@@ -493,7 +494,7 @@ class Vector:
         -----------------------------
         point             coordinates (Nx2 array of longitudes and latitudes)
         line              TODO
-        polygon           TODO
+        polygon           list of arrays of coordinates
 
         """
         return self.geometry
@@ -596,3 +597,44 @@ class Vector:
     @property
     def is_polygon_data(self):
         return self.is_vector and self.geometry_type == ogr.wkbPolygon
+
+
+#----------------------------------
+# Helper functions for class Vector
+#----------------------------------
+
+def convert_polygons_to_centroids(V):
+    """Convert polygon vector data to point vector data
+
+    Input
+        V: Vector layer with polygon data
+
+    Output
+        Vector layer with point data and the same attributes as V
+    """
+
+    msg = 'Input data %s must be polygon vector data' % V
+    assert V.is_polygon_data, msg
+
+    attributes = V.get_data()
+    geometry = V.get_geometry()
+    N = len(V)
+
+    # Calculate centroids as the average of each vertex
+    # FIXME(Ole): Would it be better to use org's centroids?
+    centroids = []
+    for i in range(N):
+        geom = geometry[i]
+        n = geom.shape[0]
+
+        #c = numpy.sum(geom, axis=0) / n  # Naive average of points
+        c = calculate_polygon_centroid(geom)  # Proper algorithm
+        centroids.append(c)
+
+    # Create new point vector layer and return
+    V = Vector(data=V.get_data(),
+               projection=V.get_projection(),
+               geometry=centroids,
+               name='Centroid data derived from %s' % V.get_name(),
+               keywords=V.keywords)
+    return V

@@ -53,7 +53,6 @@ class Test_geonode_connection(unittest.TestCase):
                                             # projection (TM3_Zone_48-2) so
                                             # serves as another test for
                                             # issue #40
-
         for root, dirs, files in os.walk(datadir):
             for filename in files:
                 basename, extension = os.path.splitext(filename)

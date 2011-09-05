@@ -8,10 +8,6 @@ from osgeo import ogr
 from tempfile import mkstemp
 from urllib2 import urlopen
 
-
-# The projection string depends on the gdal version
-DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
-
 # Spatial layer file extensions that are recognised in Risiko
 # FIXME: Perhaps add '.gml', '.zip', ...
 LAYER_TYPES = ['.shp', '.asc', '.tif', '.tiff', '.geotif', '.geotiff']
@@ -321,9 +317,18 @@ def get_geometry_type(geometry):
         geometry_type: Either ogr.wkbPoint or ogr.wkbPolygon
 
     If geometry type cannot be determined an Exception is raised.
-    There is no consistency check across all entries of the geometry list, only
-    the first element is used in this determination.
+
+    Note, there is no consistency check across all entries of the
+    geometry list, only the first element is used in this determination.
     """
+
+    msg = 'Argument geometry must be a sequence. I got %s ' % type(geometry)
+    assert is_sequence(geometry), msg
+
+    msg = ('The first element in geometry must be a sequence of length > 2. '
+           'I got %s ' % str(geometry[0]))
+    assert is_sequence(geometry[0]), msg
+    assert len(geometry[0]) >= 2, msg
 
     if len(geometry[0]) == 2:
         try:
@@ -402,3 +407,77 @@ def array2wkt(A, geom_type='POLYGON'):
         wkt_string += '%f %f, ' % tuple(A[i])  # Works for both lists and arrays
 
     return wkt_string[:-2] + ')' * n
+
+def calculate_polygon_area(polygon, signed=False):
+    """Calculate the signed area of non-self-intersecting polygon
+
+    Input
+        polygon: Numeric array of points (longitude, latitude). It is assumed
+                 to be closed, i.e. first and last points are identical
+        signed: Optional flag deciding whether returned area retains its sign:
+                If points are ordered counter clockwise, the signed area will be positive.
+                If points are ordered clockwise, it will be negative
+                Default is False which means that the area is always positive.
+
+    Output
+        area: Area of polygon (subject to the value of argument signed)
+
+    Sources
+        http://paulbourke.net/geometry/polyarea/
+        http://en.wikipedia.org/wiki/Centroid
+    """
+
+    # Make sure it is numeric
+    P = numpy.array(polygon)
+
+    msg = ('Polygon is assumed to consist of coordinate pairs. '
+           'I got second dimension %i instead of 2' % P.shape[1])
+    assert P.shape[1] == 2, msg
+
+    x = P[:, 0]
+    y = P[:, 1]
+
+    # Calculate 0.5 sum_{i=0}^{N-1} (x_i y_{i+1} - x_{i+1} y_i)
+    a = x[:-1] * y[1:]
+    b = y[:-1] * x[1:]
+
+    A = numpy.sum(a - b) / 2.
+
+    if signed:
+        return A
+    else:
+        return abs(A)
+
+def calculate_polygon_centroid(polygon):
+    """Calculate the centroid of non-self-intersecting polygon
+
+    Input
+        polygon: Numeric array of points (longitude, latitude). It is assumed
+                 to be closed, i.e. first and last points are identical
+
+    Sources
+        http://paulbourke.net/geometry/polyarea/
+        http://en.wikipedia.org/wiki/Centroid
+    """
+
+    # Make sure it is numeric
+    P = numpy.array(polygon)
+
+    # Get area. This calculation could be incorporated to save time
+    # if necessary as the two formulas are very similar.
+    A = calculate_polygon_area(polygon, signed=True)
+
+    x = P[:, 0]
+    y = P[:, 1]
+
+    # Calculate sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+    a = x[:-1] * y[1:]
+    b = y[:-1] * x[1:]
+
+    cx = x[:-1] + x[1:]
+    cy = y[:-1] + y[1:]
+
+    Cx = numpy.sum(cx * (a - b)) / (6. * A)
+    Cy = numpy.sum(cy * (a - b)) / (6. * A)
+
+    return numpy.array([Cx, Cy])
