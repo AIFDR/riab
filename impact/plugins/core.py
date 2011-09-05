@@ -206,14 +206,9 @@ def requirement_check(params, require_str, verbose=False):
         # hence correctly return False
         pass
     except Exception, e:
-        msg = ('Non matching plugin requirements header: %s. '
-               'This is perfectly OK (says Ted). '
+        msg = ('Requirements header could not compiled: %s. '
                'Original message: %s' % (execstr, e))
-
-        # This will also happen frequently and are expected. However,
-        # the info is useful for debugging individual plugins, so we
-        # log the message.
-        logger.info(msg)
+        logger.error(msg)
 
     return False
 
