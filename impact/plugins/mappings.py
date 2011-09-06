@@ -1,0 +1,95 @@
+"""Collection of mappings for standard vulnerability classes
+"""
+import numpy
+from impact.storage.vector import Vector
+
+def osm2padang(E):
+    """Map OSM attributes to Padang vulnerability classes
+
+    This maps attributes collected in the OpenStreetMap exposure data
+    (data.kompetisiosm.org) to 9 vulnerability classes identified by
+    Geoscience Australia and ITB in the post 2009 Padang earthquake
+    survey (http://trove.nla.gov.au/work/38470066).
+    The mapping was developed by Abigail Baca, GFDRR.
+
+    Input
+        E: Vector object representing the OSM data
+
+    Output:
+        Vector object like E, but with one new attribute ('TestBLDGCl')
+        representing the vulnerability class used in the Padang dataset
+
+
+    Algorithm
+
+    1. Class the "levels" field into height bands where 1-3 = low,
+       4-10 = mid, >10 = high
+    2. Where height band = mid then building type = 4
+       "RC medium rise Frame with Masonry in-fill walls"
+    3. Where height band = high then building type = 6
+       "Concrete Shear wall high rise* Hazus C2H"
+    4. Where height band = low and structure = (plastered or
+       reinforced_masonry) then building type = 7
+       "RC low rise Frame with Masonry in-fill walls"
+    5. Where height band = low and structure = confined_masonry then
+       building type = 8 "Confined Masonry"
+    6. Where height band = low and structure = unreinforced_masonry then
+       building type = 2 "URM with Metal Roof"
+    """
+
+    # Input check
+    required = ['levels', 'structure']
+    actual = E.get_attribute_names()
+    msg = ('Input data to osm2padang must have attributes %s. '
+           'It has %s'% (str(required), str(actual)))
+    for attribute in required:
+        assert attribute in actual, msg
+
+    # Start mapping
+    N = len(E)
+    attributes = E.get_data()
+    for i in range(N):
+        levels = E.get_data('levels', i)
+        structure = E.get_data('structure', i)
+
+        if levels >= 10:
+            # High
+            vulnerability_class = 6  # Concrete shear
+        elif 4 <= levels < 10:
+            # Mid
+            vulnerability_class = 4  # RC mid
+        elif 1 <= levels < 4:
+            # Low
+            if structure in ['plastered', 'reinforced masonry', 'reinforced_masonry']:
+                vulnerability_class = 7  # RC low
+            elif structure == 'confined_masonry':
+                vulnerability_class = 8  # Confined
+            elif 'kayu' in structure or 'wood' in structure:
+                vulnerability_class = 9  # Wood
+            else:
+                vulnerability_class = 2  # URM
+        elif numpy.allclose(levels, 0):
+            # A few buildings exist with 0 levels.
+            vulnerability_class = 6
+        else:
+            msg = 'Unknown number of levels: %s' % levels
+            raise Exception(msg)
+
+        # Store new attribute value
+        attributes[i]['VCLASS'] = vulnerability_class
+
+        # Selfcheck for use with osm_080811.shp
+        if E.get_name() == 'osm_080811':
+            if levels > 0:
+                msg = ('Got %s expected %s. levels = %f, structure = %s'
+                       % (vulnerability_class, attributes[i]['TestBLDGCl'], levels, structure))
+                assert numpy.allclose(attributes[i]['TestBLDGCl'], vulnerability_class), msg
+
+    # Create new vector instance and return
+    V = Vector(data=attributes,
+               projection=E.get_projection(),
+               geometry=E.get_geometry(),
+               name=E.get_name() + ' mapped to Padang vulnerability classes',
+               keywords=E.get_keywords())
+    return V
+

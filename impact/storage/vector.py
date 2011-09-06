@@ -175,6 +175,11 @@ class Vector:
     def get_name(self):
         return self.name
 
+    def get_keywords(self):
+        """Return keywords dictionary
+        """
+        return self.keywords
+
     def get_caption(self):
         """Return 'caption' keyword if present. Otherwise ''.
         """
@@ -457,6 +462,7 @@ class Vector:
         If optional argument index is specified on the that value will
         be returned. Any value of index is ignored if attribute is None.
         """
+
         if hasattr(self, 'data'):
             if attribute is None:
                 return self.data
@@ -636,5 +642,5 @@ def convert_polygons_to_centroids(V):
                projection=V.get_projection(),
                geometry=centroids,
                name='Centroid data derived from %s' % V.get_name(),
-               keywords=V.keywords)
+               keywords=V.get_keywords())
     return V

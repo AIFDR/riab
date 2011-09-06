@@ -1,3 +1,24 @@
+"""Impact function based on Padang 2009 post earthquake survey
+
+This impact function estimates percentual damage to buildings as a
+function of ground shaking measured in MMI.
+Buildings are assumed to fall the 9 classes below as described in
+the Geoscience Australia/ITB 2009 Padang earthquake
+survey (http://trove.nla.gov.au/work/38470066).
+
+Class Building Type                              Median (MMI)  Beta (MMI)
+-------------------------------------------------------------------------
+1     URM with river rock walls                        7.5     0.11
+2     URM with Metal Roof                              8.3     0.1
+3     Timber frame with masonry in-fill                8.8     0.11
+4     RC medium rise Frame with Masonry in-fill walls  8.4     0.05
+5     Timber frame with stucco in-fill                 9.2     0.11
+6     Concrete Shear wall  high rise* Hazus C2H        9.7     0.15
+7     RC low rise Frame with Masonry in-fill walls     9       0.08
+8     Confined Masonry                                 8.9     0.07
+9     Timber frame residential                        10.5     0.15
+"""
+
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
@@ -5,7 +26,21 @@ from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
 from impact.plugins.utilities import PointSymbol
+from impact.plugins.mappings import osm2padang
 import scipy.stats
+
+
+# Damage curves for each of the nine classes derived from the Padang survey
+damage_curves = {'1': dict(median=7.5, beta=0.11),
+                 '2': dict(median=8.3, beta=0.1),
+                 '3': dict(median=8.8, beta=0.11),
+                 '4': dict(median=8.4, beta=0.05),
+                 '5': dict(median=9.2, beta=0.11),
+                 '6': dict(median=9.7, beta=0.15),
+                 '7': dict(median=9.0, beta=0.08),
+                 '8': dict(median=8.9, beta=0.07),
+                 '9': dict(median=10.5, beta=0.15)}
+
 
 
 class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
@@ -18,30 +53,22 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                     subcategory.startswith("building")
     """
 
-    target_field = 'DAMAGE'
-    symbol_field = 'USE_MAJOR'
-
     def run(self, layers):
         """Risk plugin for earthquake school damage
         """
-
-        damage_curves = {
-                   '1': dict(median=7.5, beta=0.11),
-                   '2': dict(median=8.3, beta=0.1),
-                   '3': dict(median=8.8, beta=0.11),
-                   '4': dict(median=8.4, beta=0.05),
-                   '5': dict(median=9.2, beta=0.11),
-                   '6': dict(median=9.7, beta=0.15),
-                   '7': dict(median=9, beta=0.08),
-                   '8': dict(median=8.9, beta=0.07),
-                   '9': dict(median=10.5, beta=0.15),
-                  }
 
         # Extract data
         # FIXME (Ole): This will be replaced by a helper function
         #              to separate hazard from exposure using keywords
         H = layers[0]  # Ground shaking
         E = layers[1]  # Building locations
+
+        if E.get_name().lower().startswith('osm'):
+            # Map from OSM attributes to the padang building classes
+            E = osm2padang(E)
+            vclass_tag = 'VCLASS'
+        else:
+            vclass_tag = 'TestBLDGCl'
 
         # Interpolate hazard level to building locations
         H = H.interpolate(E)
@@ -62,13 +89,13 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         for i in range(N):
             mmi = float(shaking[i].values()[0])
 
-            building_class = E.get_data('TestBLDGCl', i)
+            building_class = E.get_data(vclass_tag, i)
+
             building_type = str(int(building_class))
             damage_params = damage_curves[building_type]
-            percent_damage = scipy.stats.lognorm.cdf(
-                                        mmi,
-                                        damage_params['beta'],
-                                        scale=damage_params['median']) * 100
+            percent_damage = scipy.stats.lognorm.cdf(mmi,
+                                                     damage_params['beta'],
+                                                     scale=damage_params['median']) * 100
 
             # Collect shake level and calculated damage
             result_dict = {self.target_field: percent_damage,

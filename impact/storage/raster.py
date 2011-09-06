@@ -136,6 +136,11 @@ class Raster:
     def get_name(self):
         return self.name
 
+    def get_keywords(self):
+        """Return keywords dictionary
+        """
+        return self.keywords
+
     def get_caption(self):
         """Return 'caption' keyword if present. Otherwise ''.
         """
