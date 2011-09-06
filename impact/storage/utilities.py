@@ -68,7 +68,7 @@ def truncate_field_names(data, n=10):
         if len(key) > n:
             need_to_truncate = True
 
-    if no need_to_truncate:
+    if not need_to_truncate:
         return data
 
     # Go ahead and truncate attribute table for every entry
