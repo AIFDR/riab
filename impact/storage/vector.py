@@ -12,6 +12,7 @@ from impact.storage.utilities import get_geometry_type
 from impact.storage.utilities import is_sequence
 from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_centroid
+from impact.storage.utilities import truncate_field_names
 
 class Vector:
     """Class for abstraction of vector data
@@ -270,7 +271,7 @@ class Vector:
                                                 dtype='d',
                                                 copy=False))
                 else:
-                    msg = ('Only point geometries are supported. '
+                    msg = ('Only point and polygon geometries are supported. '
                            'Geometry in filename %s '
                            'was %s.' % (filename,
                                         G.GetGeometryType()))
@@ -304,6 +305,11 @@ class Vector:
 
         Input
             filename: filename with extension .shp or .gml
+
+        Note, if attribute names are longer than 10 characters they will be
+        truncated. This is due to limitations in the shp file driver and has
+        to be done here since gdal v1.7 onwards has changed its handling of
+        this issue: http://www.gdal.org/ogr/drv_shapefile.html
         """
 
         # Check file format
@@ -326,7 +332,7 @@ class Vector:
 
         # Get vector data
         geometry = self.get_geometry()
-        data = self.get_data()
+        data = truncate_field_names(self.get_data(), n=10)
         N = len(geometry)
 
         # Clear any previous file of this name (ogr does not overwrite)
@@ -384,9 +390,7 @@ class Vector:
             # Create attribute fields in layer
             store_attributes = True
             for name in fields:
-
                 fd = ogr.FieldDefn(name, ogrtypes[name])
-
                 # FIXME (Ole): Trying to address issue #16
                 #              But it doesn't work and
                 #              somehow changes the values of MMI in test
@@ -402,7 +406,6 @@ class Vector:
         geom = ogr.Geometry(self.geometry_type)
         layer_def = lyr.GetLayerDefn()
         for i in range(N):
-
             # Create new feature instance
             feature = ogr.Feature(layer_def)
 
@@ -428,8 +431,15 @@ class Vector:
             # Store attributes
             if store_attributes:
                 for name in fields:
-                    # FIXME (Ole): This line fails for newer versions of OGR
-                    feature.SetField(name, data[i][name])
+                    val = data[i][name]
+                    if type(val) == numpy.ndarray:
+                        # A singleton of type <type 'numpy.ndarray'> works
+                        # for gdal version 1.6 but fails for version 1.8
+                        # in SetField with error: NotImplementedError:
+                        # Wrong number of arguments for overloaded function
+                        val = float(val)
+
+                    feature.SetField(name, val)
 
             # Save this feature
             if lyr.CreateFeature(feature) != 0:

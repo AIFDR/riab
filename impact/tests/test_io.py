@@ -3,6 +3,8 @@ import numpy
 import os
 import impact
 
+from osgeo import gdal
+
 from impact.storage.raster import Raster
 from impact.storage.vector import Vector
 from impact.storage.vector import convert_polygons_to_centroids
@@ -808,16 +810,41 @@ class Test_IO(unittest.TestCase):
         Center      ( 100.8026696,  -1.1036806) (100d48'9.61"E,  1d 6'13.25"S)
         Band 1 Block=256x256 Type=Float64, ColorInterp=Gray
 
+
+        Note post gdal 1.8 it is
+        Upper Left  (  99.3600000,   0.0000000) ( 99d21'36.00"E,  0d 0' 0.01"N)
+        Lower Left  (  99.3600000,  -2.1990000) ( 99d21'36.00"E,  2d11'56.40"S)
+        Upper Right ( 102.2370000,   0.0000000) (102d14'13.20"E,  0d 0' 0.01"N)
+        Lower Right ( 102.2370000,  -2.1990000) (102d14'13.20"E,  2d11'56.40"S)
+        Center      ( 100.7985000,  -1.0995000) (100d47'54.60"E,  1d 5'58.20"S)
         """
 
+        # Note there are two possible correct values of bbox depending on
+        # the version of gdal:
+        # http://trac.osgeo.org/gdal/wiki/rfc33_gtiff_pixelispoint
+
+        # Get gdal version number
+        x = gdal.VersionInfo('').split()
+        y = x[1].split('.')
+        z = ''.join(y)[:-1]  # Turn into number and strip trailing comma
+
+        # Reference bbox for vector data
         ref_bbox = {'tsunami_exposure_BB.shp': [150.124,
                                                 -35.7856,
                                                 150.295,
-                                                -35.6546],
-                    'Earthquake_Ground_Shaking_clip.tif': [99.3641696,
-                                                           -2.2031806,
-                                                           102.2411696,
-                                                           -0.0041806]}
+                                                -35.6546]}
+
+        # Select correct reference bbox for rasters
+        if float(z) < 170:
+            ref_bbox['Earthquake_Ground_Shaking_clip.tif'] = [99.3641696,
+                                                              -2.2031806,
+                                                              102.2411696,
+                                                              -0.0041806]
+        else:
+            ref_bbox['Earthquake_Ground_Shaking_clip.tif'] = [99.36,
+                                                              -2.199,
+                                                              102.237,
+                                                              0.0]
 
         for filename in ['Earthquake_Ground_Shaking_clip.tif',
                          'tsunami_exposure_BB.shp']:

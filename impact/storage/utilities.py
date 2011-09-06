@@ -46,6 +46,48 @@ def unique_filename(**kwargs):
 
     return filename
 
+def truncate_field_names(data, n=10):
+    """Truncate field names to fixed width
+
+    Input
+        data: List of dictionary with names as keys. Can also be None.
+        n: Max number of characters allowed
+
+    Output
+        dictionary with same values as data but with keys truncated
+    """
+
+    if data is None:
+        return None
+
+    N = len(data)
+
+    # Check if truncation is needed
+    need_to_truncate = False
+    for key in data[0]:
+        if len(key) > n:
+            need_to_truncate = True
+
+    if not need_to_truncate:
+        return data
+
+    # Go ahead and truncate attribute table for every entry
+    new = []
+    for i in range(N):
+        D = {}  # New dictionary
+        for key in data[i]:
+            x = key[:n]
+            if x in D:
+                msg = ('Truncated attribute name %s is duplicated: %s ' %
+                       (key, str(D.keys())))
+                raise Exception(msg)
+
+            D[x] = data[i][key]
+
+        new.append(D)
+
+    return new
+
 
 # GeoServer utility functions
 def is_server_reachable(url):
