@@ -70,7 +70,10 @@ def osm2padang(E):
                 vulnerability_class = 2  # URM
         elif numpy.allclose(levels, 0):
             # A few buildings exist with 0 levels.
-            vulnerability_class = 6
+            # FIXME (Abby): I would assign class 2 here instead of class 6.
+            # In general, we should be assigning here the most frequent building in the area
+            # the area could be defined by admin boundaries.
+            vulnerability_class = 2
         else:
             msg = 'Unknown number of levels: %s' % levels
             raise Exception(msg)
