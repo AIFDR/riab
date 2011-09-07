@@ -333,6 +333,8 @@ class Vector:
         # Get vector data
         geometry = self.get_geometry()
         data = truncate_field_names(self.get_data(), n=10)
+        #data = self.get_data()
+
         N = len(geometry)
 
         # Clear any previous file of this name (ogr does not overwrite)
