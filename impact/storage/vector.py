@@ -632,7 +632,6 @@ def convert_polygons_to_centroids(V):
     msg = 'Input data %s must be polygon vector data' % V
     assert V.is_polygon_data, msg
 
-    attributes = V.get_data()
     geometry = V.get_geometry()
     N = len(V)
 
@@ -651,6 +650,6 @@ def convert_polygons_to_centroids(V):
     V = Vector(data=V.get_data(),
                projection=V.get_projection(),
                geometry=centroids,
-               name='Centroid data derived from %s' % V.get_name(),
+               name='%s_centroid_data' % V.get_name(),
                keywords=V.get_keywords())
     return V
