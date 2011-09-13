@@ -14,9 +14,11 @@ from zipfile import ZipFile
 
 from impact.storage.vector import Vector
 from impact.storage.raster import Raster
+from impact.storage.utilities import is_sequence
 from impact.storage.utilities import LAYER_TYPES
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import extract_geotransform
+from impact.storage.utilities import geotransform2resolution
 
 from owslib.wcs import WebCoverageService
 from owslib.wfs import WebFeatureService
@@ -229,7 +231,9 @@ def get_metadata_from_layer(layer):
     # Metadata specific to layer types
     metadata['layer_type'] = layer.datatype
     if layer.datatype == 'raster':
-        metadata['geotransform'] = extract_geotransform(layer)
+        geotransform = extract_geotransform(layer)
+        metadata['geotransform'] = geotransform
+        metadata['resolution'] = geotransform2resolution(geotransform)
 
     # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
@@ -289,10 +293,10 @@ def get_metadata(server_url, layer_name=None):
 
         if name in wcs.contents:
             layer = wcs.contents[name]
-            layer.datatype = 'raster'  # Monkey patch type
+            layer.datatype = 'raster'  # Monkey patch layer type
         elif name in wfs.contents:
             layer = wfs.contents[name]
-            layer.datatype = 'vector'  # Monkey patch type
+            layer.datatype = 'vector'  # Monkey patch layer type
         else:
             msg = ('Layer %s was not found in WxS contents on server %s.\n'
                    'WCS contents: %s\n'
@@ -434,7 +438,7 @@ def check_bbox_string(bbox_string):
     assert miny < maxy, msg
 
 
-def download(server_url, layer_name, bbox):
+def download(server_url, layer_name, bbox, resolution=None):
     """Download the source data of a given layer.
 
        Input
@@ -444,11 +448,15 @@ def download(server_url, layer_name, bbox):
            bbox: Bounding box for layer. This can either be a string or a list
                  with format [west, south, east, north], e.g.
                  '87.998242,-8.269822,117.046094,5.097895'
+           resolution: Optional argument specifying resolution in case of raster layers.
+                       Resolution can be either a tuple (resx, resy) signifying the spacing
+                       in decimal degrees in the longitude, latitude direction respectively.
+                       If resolution is just one number it is used for both resx and resy.
+                       If resolution is None, the 'native' resolution of the dataset is
+                       used.
 
        Layer type must be either 'vector' or 'raster'
     """
-
-    # FIXME (Ole): Pass in resolution here
 
     # Input checks
     assert isinstance(server_url, basestring)
@@ -481,12 +489,41 @@ def download(server_url, layer_name, bbox):
     # Check integrity of bounding box
     check_bbox_string(bbox_string)
 
+    # Check resolution
+    if resolution is not None:
+
+        # Make sure it is a list or a tuple
+        if not is_sequence(resolution):
+            # Replicate single value twice
+            resolution = (resolution, resolution)
+
+        # Check length
+        msg = ('Specified resolution must be either a number or a 2-tuple. '
+               'I got %s' % str(resolution))
+        assert len(resolution) == 2, msg
+
+        # Check floating point
+        for res in resolution:
+            try:
+                float(res)
+            except ValueError, e:
+                msg = ('Expecting number for resolution, but got %s: %s'
+                       % (res, str(e)))
+                raise RisikoException(msg)
+
+
     # Create REST request and download file
     template = None
     layer_metadata = get_metadata(server_url, layer_name)
 
     data_type = layer_metadata['layer_type']
     if data_type == 'vector':
+
+        if resolution is not None:
+            msg = ('Resolution was requested for Vector layer %s. '
+                   'This can only be done for raster layers.' % layer_name)
+            raise RisikoException(msg)
+
         template = WFS_TEMPLATE
         suffix = '.zip'
         download_url = template % (server_url, layer_name, bbox_string)
@@ -499,6 +536,13 @@ def download(server_url, layer_name, bbox):
         (shpname,) = [name for name in namelist if '.shp' in name]
         filename = os.path.join(dirname, shpname)
     elif data_type == 'raster':
+
+        if resolution is None:
+            # Get native resolution and use that
+            resolution = layer_metadata['resolution']
+
+        # FIXME (Ole): Ariel, need to do stuff for ticket #103 here
+        # Either fix template or do something more clever using owslib.
         template = WCS_TEMPLATE
         suffix = '.tif'
         download_url = template % (server_url, layer_name, bbox_string)

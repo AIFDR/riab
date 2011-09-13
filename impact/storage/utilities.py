@@ -250,6 +250,11 @@ def geotransform2bbox(geotransform, columns, rows):
     Output
         bbox: Bounding box as a list of geographic coordinates
               [west, south, east, north]
+
+
+    Rows and columns are needed to determine eastern and northern bounds.
+    FIXME: Not sure if the pixel vs gridline registration issue is observed correctly here.
+    Need to check against gdal > v1.7
     """
 
     x_origin = geotransform[0]  # top left x
@@ -265,6 +270,25 @@ def geotransform2bbox(geotransform, columns, rows):
     maxy = y_origin
 
     return [minx, miny, maxx, maxy]
+
+def geotransform2resolution(geotransform):
+    """Convert geotransform to resolution
+
+    Input
+        geotransform: GDAL geotransform (6-tuple).
+                      (top left x, w-e pixel resolution, rotation,
+                      top left y, rotation, n-s pixel resolution).
+                      See e.g. http://www.gdal.org/gdal_tutorial.html
+
+    Output
+        resolution: grid spacing (resx, resy) in (positive) decimal degrees order
+                    as longitude first, then latitude.
+    """
+
+    x_res = geotransform[1]     # w-e pixel resolution
+    y_res = - geotransform[5]   # n-s pixel resolution (always negative)
+
+    return (x_res, y_res)
 
 
 def bbox_intersection(*args):
