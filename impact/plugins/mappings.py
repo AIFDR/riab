@@ -48,35 +48,42 @@ def osm2padang(E):
     # Start mapping
     N = len(E)
     attributes = E.get_data()
+    count = 0
     for i in range(N):
         levels = E.get_data('levels', i)
         structure = E.get_data('structure', i)
-
-        if levels >= 10:
-            # High
-            vulnerability_class = 6  # Concrete shear
-        elif 4 <= levels < 10:
-            # Mid
-            vulnerability_class = 4  # RC mid
-        elif 1 <= levels < 4:
-            # Low
-            if structure in ['plastered', 'reinforced masonry', 'reinforced_masonry']:
-                vulnerability_class = 7  # RC low
-            elif structure == 'confined_masonry':
-                vulnerability_class = 8  # Confined
-            elif 'kayu' in structure or 'wood' in structure:
-                vulnerability_class = 9  # Wood
-            else:
-                vulnerability_class = 2  # URM
-        elif numpy.allclose(levels, 0):
-            # A few buildings exist with 0 levels.
-            # FIXME (Abby): I would assign class 2 here instead of class 6.
-            # In general, we should be assigning here the most frequent building in the area
-            # the area could be defined by admin boundaries.
+        if levels is None or structure is None:
             vulnerability_class = 2
+            count += 1
         else:
-            msg = 'Unknown number of levels: %s' % levels
-            raise Exception(msg)
+            if levels >= 10:
+                # High
+                vulnerability_class = 6  # Concrete shear
+            elif 4 <= levels < 10:
+                # Mid
+                vulnerability_class = 4  # RC mid
+            elif 1 <= levels < 4:
+                # Low
+                if structure in ['plastered',
+                                 'reinforced masonry',
+                                 'reinforced_masonry']:
+                    vulnerability_class = 7  # RC low
+                elif structure == 'confined_masonry':
+                    vulnerability_class = 8  # Confined
+                elif 'kayu' in structure or 'wood' in structure:
+                    vulnerability_class = 9  # Wood
+                else:
+                    vulnerability_class = 2  # URM
+            elif numpy.allclose(levels, 0):
+                # A few buildings exist with 0 levels.
+
+                # In general, we should be assigning here the most
+                # frequent building in the area which could be defined
+                # by admin boundaries.
+                vulnerability_class = 2
+            else:
+                msg = 'Unknown number of levels: %s' % levels
+                raise Exception(msg)
 
         # Store new attribute value
         attributes[i]['VCLASS'] = vulnerability_class
@@ -85,8 +92,14 @@ def osm2padang(E):
         if E.get_name() == 'osm_080811':
             if levels > 0:
                 msg = ('Got %s expected %s. levels = %f, structure = %s'
-                       % (vulnerability_class, attributes[i]['TestBLDGCl'], levels, structure))
-                assert numpy.allclose(attributes[i]['TestBLDGCl'], vulnerability_class), msg
+                       % (vulnerability_class,
+                          attributes[i]['TestBLDGCl'],
+                          levels,
+                          structure))
+                assert numpy.allclose(attributes[i]['TestBLDGCl'],
+                                      vulnerability_class), msg
+
+    #print 'Got %i without levels or structure (out of %i total)' % (count, N)
 
     # Create new vector instance and return
     V = Vector(data=attributes,
