@@ -21,7 +21,7 @@ Class Building Type                              Median (MMI)  Beta (MMI)
 
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
-from impact.storage.vector import Vector
+from impact.storage.vector import Vector, convert_polygons_to_centroids
 from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
@@ -63,6 +63,12 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         H = layers[0]  # Ground shaking
         E = layers[1]  # Building locations
 
+        # Convert polygon data to centroid point data if necessary
+        if E.is_polygon_data:
+            E = convert_polygons_to_centroids(E)
+            #E.write_to_file('OSM_building_centroids.shp')
+
+        # FIXME (Ole): Not very robust way of deciding
         if E.get_name().lower().startswith('osm'):
             # Map from OSM attributes to the padang building classes
             E = osm2padang(E)
