@@ -525,6 +525,12 @@ def calculate_polygon_centroid(polygon):
     # Make sure it is numeric
     P = numpy.array(polygon)
 
+    # Normalise to ensure numerical accurracy.
+    # This requirement in backed by tests in test_io.py and without it
+    # centroids at building footprint level may get shifted outside the polygon!
+    P_origin = numpy.amin(P, axis=0)
+    P = P - P_origin
+
     # Get area. This calculation could be incorporated to save time
     # if necessary as the two formulas are very similar.
     A = calculate_polygon_area(polygon, signed=True)
@@ -532,7 +538,8 @@ def calculate_polygon_centroid(polygon):
     x = P[:, 0]
     y = P[:, 1]
 
-    # Calculate sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+    # Calculate Cx = sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+    # Calculate Cy = sum_{i=0}^{N-1} (y_i + y_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
     a = x[:-1] * y[1:]
     b = y[:-1] * x[1:]
 
@@ -542,4 +549,6 @@ def calculate_polygon_centroid(polygon):
     Cx = numpy.sum(cx * (a - b)) / (6. * A)
     Cy = numpy.sum(cy * (a - b)) / (6. * A)
 
-    return numpy.array([Cx, Cy])
+    # Translate back to real location
+    C = numpy.array([Cx, Cy]) + P_origin
+    return C
