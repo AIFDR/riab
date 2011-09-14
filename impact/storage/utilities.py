@@ -55,6 +55,8 @@ def truncate_field_names(data, n=10):
 
     Output
         dictionary with same values as data but with keys truncated
+
+    THIS IS OBSOLETE AFTER OGR'S OWN FIELD NAME LAUNDERER IS USED
     """
 
     if data is None:

@@ -12,7 +12,6 @@ from impact.storage.utilities import get_geometry_type
 from impact.storage.utilities import is_sequence
 from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_centroid
-from impact.storage.utilities import truncate_field_names
 
 class Vector:
     """Class for abstraction of vector data
