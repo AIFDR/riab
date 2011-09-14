@@ -108,6 +108,16 @@ Warning 6: Normalized/laundered field name: 'A slightly long name' to 'A slightl
 'A slightly'
 """
 
+"""To suppress Warning 6:
+
+Yes, you can surround the CreateField() call with :
+
+gdal.PushErrorHandler('CPLQuietErrorHandler')
+...
+gdal.PopErrorHandler()
+
+
+"""
 
 # GeoServer utility functions
 def is_server_reachable(url):
