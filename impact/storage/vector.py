@@ -636,7 +636,6 @@ def convert_polygons_to_centroids(V):
     N = len(V)
 
     # Calculate centroids as the average of each vertex
-    # FIXME(Ole): Would it be better to use org's centroids?
     centroids = []
     for i in range(N):
         geom = geometry[i]
@@ -653,3 +652,13 @@ def convert_polygons_to_centroids(V):
                name='%s_centroid_data' % V.get_name(),
                keywords=V.get_keywords())
     return V
+
+
+
+
+
+
+
+
+
+
