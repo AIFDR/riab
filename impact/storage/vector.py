@@ -635,17 +635,13 @@ def convert_polygons_to_centroids(V):
     geometry = V.get_geometry()
     N = len(V)
 
-    # Calculate centroids as the average of each vertex
+    # Calculate centroids for each polygon
     centroids = []
     for i in range(N):
-        geom = geometry[i]
-        n = geom.shape[0]
-
-        #c = numpy.sum(geom, axis=0) / n  # Naive average of points
-        c = calculate_polygon_centroid(geom)  # Proper algorithm
+        c = calculate_polygon_centroid(geometry[i])
         centroids.append(c)
 
-    # Create new point vector layer and return
+    # Create new point vector layer with same attributes and return
     V = Vector(data=V.get_data(),
                projection=V.get_projection(),
                geometry=centroids,
