@@ -432,7 +432,9 @@ class Vector:
 
             # Store attributes
             if store_attributes:
-                for name in fields:
+                for j, name in enumerate(fields):
+                    actual_field_name = layer_def.GetFieldDefn(j).GetNameRef()
+
                     val = data[i][name]
                     if type(val) == numpy.ndarray:
                         # A singleton of type <type 'numpy.ndarray'> works
@@ -441,7 +443,7 @@ class Vector:
                         # Wrong number of arguments for overloaded function
                         val = float(val)
 
-                    feature.SetField(name, val)
+                    feature.SetField(actual_field_name, val)
 
             # Save this feature
             if lyr.CreateFeature(feature) != 0:
