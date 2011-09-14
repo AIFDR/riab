@@ -97,7 +97,8 @@ def write_vector_data(data, projection, geometry, filename, keywords=None):
 WCS_TEMPLATE = '%s?version=1.0.0' + \
                       '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
                       'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
-                      '&resx=0.008333333333000&resy=0.008333333333000'
+                      '&resx=0.000045328911678&resy=0.000045328911678'
+#                      '&resx=0.00833&resy=0.00833'
 
 WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&request=GetFeature&typeName=%s' + \
