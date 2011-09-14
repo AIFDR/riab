@@ -3,7 +3,7 @@
 
 import os
 import numpy
-from osgeo import ogr
+from osgeo import ogr, gdal
 from impact.storage.projection import Projection
 from impact.storage.utilities import DRIVER_MAP, TYPE_MAP
 from impact.storage.utilities import read_keywords
@@ -332,8 +332,7 @@ class Vector:
 
         # Get vector data
         geometry = self.get_geometry()
-        data = truncate_field_names(self.get_data(), n=10)
-        #data = self.get_data()
+        data = self.get_data()
 
         N = len(geometry)
 
@@ -400,9 +399,17 @@ class Vector:
                 #print name, width
                 #fd.SetWidth(width)
 
+                # Silent handling of warnings like
+                # Warning 6: Normalized/laundered field name:
+                #'CONTENTS_LOSS_AUD' to 'CONTENTS_L'
+                gdal.PushErrorHandler('CPLQuietErrorHandler')
                 if lyr.CreateField(fd) != 0:
                     msg = 'Could not create field %s' % name
                     raise Exception(msg)
+
+                # Restore error handler
+                gdal.PopErrorHandler()
+
 
         # Store geometry
         geom = ogr.Geometry(self.geometry_type)
