@@ -433,10 +433,6 @@ class Test_IO(unittest.TestCase):
                 c_geom = c_geometry[i]
                 r_geom = r_geometry[i]
 
-                print
-                print c_geom
-
-                print r_geom
                 assert numpy.allclose(c_geom, r_geom,
                                       rtol=0.0, atol=1.0e-9)
 
