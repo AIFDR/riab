@@ -3,7 +3,7 @@
 
 import os
 import numpy
-from osgeo import ogr
+from osgeo import ogr, gdal
 from impact.storage.projection import Projection
 from impact.storage.utilities import DRIVER_MAP, TYPE_MAP
 from impact.storage.utilities import read_keywords
@@ -12,7 +12,6 @@ from impact.storage.utilities import get_geometry_type
 from impact.storage.utilities import is_sequence
 from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_centroid
-from impact.storage.utilities import truncate_field_names
 
 class Vector:
     """Class for abstraction of vector data
@@ -332,7 +331,8 @@ class Vector:
 
         # Get vector data
         geometry = self.get_geometry()
-        data = truncate_field_names(self.get_data(), n=10)
+        data = self.get_data()
+
         N = len(geometry)
 
         # Clear any previous file of this name (ogr does not overwrite)
@@ -398,9 +398,17 @@ class Vector:
                 #print name, width
                 #fd.SetWidth(width)
 
+                # Silent handling of warnings like
+                # Warning 6: Normalized/laundered field name:
+                #'CONTENTS_LOSS_AUD' to 'CONTENTS_L'
+                gdal.PushErrorHandler('CPLQuietErrorHandler')
                 if lyr.CreateField(fd) != 0:
                     msg = 'Could not create field %s' % name
                     raise Exception(msg)
+
+                # Restore error handler
+                gdal.PopErrorHandler()
+
 
         # Store geometry
         geom = ogr.Geometry(self.geometry_type)
@@ -430,7 +438,9 @@ class Vector:
 
             # Store attributes
             if store_attributes:
-                for name in fields:
+                for j, name in enumerate(fields):
+                    actual_field_name = layer_def.GetFieldDefn(j).GetNameRef()
+
                     val = data[i][name]
                     if type(val) == numpy.ndarray:
                         # A singleton of type <type 'numpy.ndarray'> works
@@ -439,7 +449,7 @@ class Vector:
                         # Wrong number of arguments for overloaded function
                         val = float(val)
 
-                    feature.SetField(name, val)
+                    feature.SetField(actual_field_name, val)
 
             # Save this feature
             if lyr.CreateFeature(feature) != 0:

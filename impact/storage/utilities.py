@@ -55,6 +55,8 @@ def truncate_field_names(data, n=10):
 
     Output
         dictionary with same values as data but with keys truncated
+
+    THIS IS OBSOLETE AFTER OGR'S OWN FIELD NAME LAUNDERER IS USED
     """
 
     if data is None:
@@ -88,6 +90,36 @@ def truncate_field_names(data, n=10):
 
     return new
 
+""" FIXME: The truncation method can be replaced with something like this
+
+>>> from osgeo import ogr
+>>> from osgeo import osr
+>>> drv = ogr.GetDriverByName('ESRI Shapefile')
+>>> ds = drv.CreateDataSource('shptest.shp')
+>>> lyr = ds.CreateLayer('mylyr', osr.SpatialReference(), ogr.wkbPolygon)
+>>> fd = ogr.FieldDefn('A slightly long name', ogr.OFTString)
+>>> lyr.CreateField(fd)
+Warning 6: Normalized/laundered field name: 'A slightly long name' to 'A slightly'
+0
+>>> layer_defn = lyr.GetLayerDefn()
+>>> last_field_idx = layer_defn.GetFieldCount() - 1
+>>> real_field_name = layer_defn.GetFieldDefn(last_field_idx).GetNameRef()
+>>> feature = ogr.Feature(layer_defn)
+>>> feature.SetField('A slightly', 'value')
+>>> real_field_name
+'A slightly'
+"""
+
+"""To suppress Warning 6:
+
+Yes, you can surround the CreateField() call with :
+
+gdal.PushErrorHandler('CPLQuietErrorHandler')
+...
+gdal.PopErrorHandler()
+
+
+"""
 
 # GeoServer utility functions
 def is_server_reachable(url):
