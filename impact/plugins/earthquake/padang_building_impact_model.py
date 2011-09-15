@@ -63,11 +63,6 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         H = layers[0]  # Ground shaking
         E = layers[1]  # Building locations
 
-        # Convert polygon data to centroid point data if necessary
-        if E.is_polygon_data:
-            E = convert_polygons_to_centroids(E)
-            #E.write_to_file('OSM_building_centroids.shp')
-
         # FIXME (Ole): Not very robust way of deciding
         # Need keyword identifier for each kind of building dataset.
         if E.get_name().lower().startswith('osm'):
@@ -77,8 +72,15 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         else:
             vclass_tag = 'TestBLDGCl'
 
+        # Convert polygon data to centroid point data if necessary
+        if E.is_polygon_data:
+            Ep = convert_polygons_to_centroids(E)
+            Ep.write_to_file('OSM_building_centroids.shp')
+        else:
+            Ep = E
+
         # Interpolate hazard level to building locations
-        H = H.interpolate(E)
+        H = H.interpolate(Ep)
 
         # Extract relevant numerical data
         coordinates = E.get_geometry()
