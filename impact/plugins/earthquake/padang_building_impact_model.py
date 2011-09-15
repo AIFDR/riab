@@ -69,6 +69,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
             #E.write_to_file('OSM_building_centroids.shp')
 
         # FIXME (Ole): Not very robust way of deciding
+        # Need keyword identifier for each kind of building dataset.
         if E.get_name().lower().startswith('osm'):
             # Map from OSM attributes to the padang building classes
             E = osm2padang(E)
