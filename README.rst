@@ -3,10 +3,7 @@ RISIKO - RISK IN A BOX
 ======================
 
 This is the project: "Risiko - Risk in a Box".
-It consists of the following modules:
-
-- https://github.com/AIFDR/riab/tree/master/risiko: The web application
-- https://github.com/AIFDR/riab/tree/master/impact: Module for risk calculations, gis functionality and plugin management
+The latest source code is available in https://github.com/AIFDR/riab/tree/master/impact which contains modules for risk calculations, gis functionality and plugin management.
 
 For more information about Risk In a Box please look at
 our documentation on http://riab.readthedocs.org
@@ -33,11 +30,11 @@ System Requirements
 Development installation
 ------------------------
 
-This is for those who either want to try out the software and/or modify it. For installing Risiko as a public web server please see instructions for production installation. 
+This is for those who either want to try out the software and/or modify it. For installing Risiko as a public web server please see instructions for production installation.
 
 To install a RISIKO development environment, start a terminal window, cd to your favorite development area and run the following::
 
- wget https://github.com/AIFDR/riab/raw/master/scripts/risiko-install
+ wget http://bit.ly/risiko-install
  bash risiko-install
 
 This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it.
@@ -47,17 +44,12 @@ To run the test suite, you'll need the commands::
  risiko-activate
  risiko-test
 
-To upload the bundled demo data, you'll need to do the following
-In one terminal::
+To upload the bundled demo data, you'll need to do the following::
 
- risiko-activate
- risiko-clean
- risiko-start
-
-In another terminal and in the directory referenced by $RIAB_HOME, do::
-
- risiko-activate
- risiko-upload risiko_demo_data
+ risiko-activate 
+ risiko-clean 
+ risiko-start 
+ risiko-upload risiko_demo_data 
 
 when this is finished point the browser to 127.0.0.1:8000, select layers and try the risk calculator.
 
@@ -72,7 +64,7 @@ If you wish to commit changes back to the repository, you must
 
 
 -----------------------
-Production installation
+Production installation (Obsolete!)
 -----------------------
 
 This is for installing Risiko as a public web server.
@@ -103,7 +95,7 @@ LIMITATIONS
 
 Risiko is a very new project. The current code development started in earnest in March 2011 and there is still much to be done.
 However, we work on the philosophy that stakeholders should have access to the development and source code from the very beginning and invite comments, suggestions and contributions.
- 
+
 
 As such, Risiko currently has some major limitations, including
 

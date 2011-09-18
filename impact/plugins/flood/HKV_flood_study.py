@@ -45,10 +45,9 @@ class FloodImpactFunction(FunctionProvider):
 
         # Generate text with result for this study
         number_of_people_affected = sum(I.flat)
-        caption = ('Number of people affected by flood levels greater '
-                   'than %i cm = '
-                   '%.4f million' % (threshold * 100,
-                                     number_of_people_affected / 1000000))
+        caption = ('%i people affected by flood levels greater '
+                   'than %i cm' % (number_of_people_affected,
+                                   threshold * 100))
 
         # Create raster object and return
         R = Raster(I,

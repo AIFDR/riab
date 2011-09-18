@@ -8,6 +8,9 @@ from impact.storage.projection import Projection
 from impact.storage.utilities import DRIVER_MAP, TYPE_MAP
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
+from impact.storage.utilities import get_geometry_type
+from impact.storage.utilities import is_sequence
+from impact.storage.utilities import array2wkt
 
 
 class Vector:
@@ -26,7 +29,7 @@ class Vector:
                 * None
             projection: Geospatial reference in WKT format.
                         Only used if geometry is provide as a numeric array,
-            geometry: An Nx2 array of point coordinates
+            geometry: A list of either point coordinates or polygons
             name: Optional name for layer.
                   Only used if geometry is provide as a numeric array
             keywords: Optional dictionary with keywords that describe the
@@ -39,6 +42,10 @@ class Vector:
 
         Note that if data is a filename, all other arguments are ignored
         as they will be inferred from the file.
+
+        The geometry type will be inferred from the dimensions of geometry.
+        If each entry is one set of coordinates the type will be ogr.wkbPoint,
+        if it is an array of coordinates the type will be ogr.wkbPolygon.
         """
 
         if data is None and projection is None and geometry is None:
@@ -46,6 +53,7 @@ class Vector:
             self.name = name
             self.projection = None
             self.geometry = None
+            self.geometry_type = None
             self.filename = None
             self.data = None
             self.extent = None
@@ -55,8 +63,13 @@ class Vector:
         if isinstance(data, basestring):
             self.read_from_file(data)
         else:
-            # Assume that data is provided as an array
+            # Assume that data is provided as sequences provided as
+            # arguments to the Vector constructor
             # with extra keyword arguments supplying metadata
+
+            self.name = name
+            self.filename = None
+
             if keywords is None:
                 self.keywords = {}
             else:
@@ -67,15 +80,25 @@ class Vector:
 
             msg = 'Geometry must be specified'
             assert geometry is not None, msg
-            self.geometry = numpy.array(geometry, dtype='d', copy=False)
+
+            msg = 'Geometry must be a sequence'
+            assert is_sequence(geometry), msg
+            self.geometry = geometry
+
+            self.geometry_type = get_geometry_type(geometry)
 
             msg = 'Projection must be specified'
             assert projection is not None, msg
             self.projection = Projection(projection)
 
             self.data = data
-            self.name = name
-            self.filename = None
+            if data is not None:
+                msg = 'Data must be a sequence'
+                assert is_sequence(data), msg
+
+                msg = ('The number of entries in geometry and data '
+                       'must be the same')
+                assert len(geometry) == len(data), msg
 
             # FIXME: Need to establish extent here
 
@@ -86,8 +109,7 @@ class Vector:
         """Size of vector layer defined as number of features
         """
 
-        # FIXME - change to len(self.geometry)
-        return self.geometry.shape[0]
+        return len(self.geometry)
 
     def __eq__(self, other, rtol=1.0e-5, atol=1.0e-8):
         """Override '==' to allow comparison with other vector objecs
@@ -222,17 +244,32 @@ class Vector:
                 msg = 'Could not get feature %i from %s' % (i, filename)
                 raise Exception(msg)
 
-            # Record coordinates
+            # Record coordinates ordered as Longitude, Latitude
             G = feature.GetGeometryRef()
-            if G is not None and G.GetGeometryType() == ogr.wkbPoint:
-                # Longitude, Latitude
-                geometry.append((G.GetX(), G.GetY()))
-            else:
-                msg = ('Only point geometries are supported. '
-                       'Geometry in filename %s '
-                       'was %s.' % (filename,
-                                    G.GetGeometryType()))
+            if G is None:
+                msg = ('Geometry was None in filename %s ' % filename)
                 raise Exception(msg)
+            else:
+                self.geometry_type = G.GetGeometryType()
+                if self.geometry_type == ogr.wkbPoint:
+                    geometry.append((G.GetX(), G.GetY()))
+                elif self.geometry_type == ogr.wkbPolygon:
+                    ring = G.GetGeometryRef(0)
+                    M = ring.GetPointCount()
+                    coordinates = []
+                    for j in range(M):
+                        coordinates.append((ring.GetX(j), ring.GetY(j)))
+
+                    # Record entire polygon ring as an Mx2 numpy array
+                    geometry.append(numpy.array(coordinates,
+                                                dtype='d',
+                                                copy=False))
+                else:
+                    msg = ('Only point geometries are supported. '
+                           'Geometry in filename %s '
+                           'was %s.' % (filename,
+                                        G.GetGeometryType()))
+                    raise Exception(msg)
 
             # Record attributes by name
             number_of_fields = feature.GetFieldCount()
@@ -243,15 +280,14 @@ class Vector:
                 # FIXME (Ole): Ascertain the type of each field?
                 #              We need to cast each appropriately?
                 #              This is issue #66
-                feature_type = feature.GetFieldDefnRef(j).GetType()
+                #feature_type = feature.GetFieldDefnRef(j).GetType()
                 fields[name] = feature.GetField(j)
                 #print 'Field', name, feature_type, j, fields[name]
 
             data.append(fields)
 
-        # FIXME: When we get to more general geometries, we
-        #        should probably just stay with a list of features.
-        self.geometry = numpy.array(geometry, dtype='d', copy=False)
+        # Store geometry coordinates as a compact numeric array
+        self.geometry = geometry
         self.data = data
         self.filename = filename
 
@@ -273,10 +309,11 @@ class Vector:
         assert extension == '.shp' or extension == '.gml', msg
         driver = DRIVER_MAP[extension]
 
-        # FIXME (Ole): Tempory flagging of GML issue
+        # FIXME (Ole): Tempory flagging of GML issue (ticket #18)
         if extension == '.gml':
             msg = ('OGR GML driver does not store geospatial reference.'
-                   'This format is disabled for the time being')
+                   'This format is disabled for the time being. See '
+                   'https://github.com/AIFDR/riab/issues/18')
             raise Exception(msg)
 
         # Derive layername from filename (excluding preceding dirs)
@@ -306,7 +343,7 @@ class Vector:
 
         lyr = ds.CreateLayer(layername,
                              self.projection.spatial_reference,
-                             ogr.wkbPoint)
+                             self.geometry_type)
         if lyr is None:
             msg = 'Could not create layer %s' % layername
             raise Exception(msg)
@@ -356,26 +393,34 @@ class Vector:
                     msg = 'Could not create field %s' % name
                     raise Exception(msg)
 
-        # Store point data
+        # Store geometry
+        geom = ogr.Geometry(self.geometry_type)
+        layer_def = lyr.GetLayerDefn()
         for i in range(N):
-            # FIXME (Ole): Need to assign entire vector if at all possible
 
-            # Coordinates
-            x = float(geometry[i, 0])
-            y = float(geometry[i, 1])
+            # Create new feature instance
+            feature = ogr.Feature(layer_def)
 
-            pt = ogr.Geometry(ogr.wkbPoint)
-            pt.SetPoint_2D(0, x, y)
+            # Store geometry and check
+            if self.geometry_type == ogr.wkbPoint:
+                x = float(geometry[i][0])
+                y = float(geometry[i][1])
+                geom.SetPoint_2D(0, x, y)
+            elif self.geometry_type == ogr.wkbPolygon:
+                wkt = array2wkt(geometry[i])
+                geom = ogr.CreateGeometryFromWkt(wkt)
+            else:
+                msg = 'Geometry %s not implemented' % self.geometry_type
+                raise Exception(msg)
 
-            feature = ogr.Feature(lyr.GetLayerDefn())
-            feature.SetGeometry(pt)
+            feature.SetGeometry(geom)
 
             G = feature.GetGeometryRef()
             if G is None:
                 msg = 'Could not create GeometryRef for file %s' % filename
                 raise Exception(msg)
 
-            # Attributes
+            # Store attributes
             if store_attributes:
                 for name in fields:
                     feature.SetField(name, data[i][name])
@@ -543,3 +588,11 @@ class Vector:
     @property
     def is_vector(self):
         return True
+
+    @property
+    def is_point_data(self):
+        return self.is_vector and self.geometry_type == ogr.wkbPoint
+
+    @property
+    def is_polygon_data(self):
+        return self.is_vector and self.geometry_type == ogr.wkbPolygon

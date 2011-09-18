@@ -3,28 +3,34 @@ import os
 from django.test.client import Client
 from django.utils import simplejson as json
 from django.conf import settings
-
-# FIXME (Ole): Not sure it is good to rely on GeoNode inside
-#              the impact module. It might be better to move
-#              these tests to risiko/tests
+from impact.storage.io import save_to_geonode
 
 from geonode.maps.utils import check_geonode_is_up
 from geonode.maps.models import Layer
-
+from geonode.maps.utils import get_valid_user
+from impact.storage.io import check_layer
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 
 
 class Test_HTTP(unittest.TestCase):
+    """Test suite for API
+    """
 
     def setUp(self):
+        """Check geonode and create valid superuser
+        """
         check_geonode_is_up()
+        self.user = get_valid_user()
+
+    def tearDown(self):
+        pass
 
     def test_functions(self):
         """Functions can be retrieved from the HTTP Rest API
         """
 
         c = Client()
-        rv = c.get('/api/v1/functions/')
+        rv = c.get('/impact/api/functions/')
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         data = json.loads(rv.content)
@@ -43,7 +49,7 @@ class Test_HTTP(unittest.TestCase):
         """
 
         c = Client()
-        rv = c.get('/api/v1/layers/')
+        rv = c.get('/impact/api/layers/')
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv['Content-Type'], 'application/json')
         data = json.loads(rv.content)
@@ -52,8 +58,16 @@ class Test_HTTP(unittest.TestCase):
         """Earthquake fatalities calculation via the HTTP Rest API is correct
         """
 
+        # Upload required data first
+        for filename in ['Earthquake_Ground_Shaking.asc',
+                         'Population_2010_clip.tif']:
+            thefile = os.path.join(TESTDATA, filename)
+            uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
+            check_layer(uploaded, full=True)
+
+        # Run calculation through API
         c = Client()
-        rv = c.post('/api/v1/calculate/', dict(
+        rv = c.post('/impact/api/calculate/', dict(
                    hazard_server=INTERNAL_SERVER_URL,
                    hazard='geonode:earthquake_ground_shaking',
                    exposure='geonode:population_2010_clip',
@@ -88,9 +102,17 @@ class Test_HTTP(unittest.TestCase):
     def test_calculate_school_damage(self):
         """Earthquake school damage calculation works via the HTTP REST API
         """
-        c = Client()
 
-        rv = c.post('/api/v1/calculate/', data=dict(
+        # Upload required data first
+        for filename in ['lembang_mmi_hazmap.asc',
+                         'lembang_schools.shp']:
+            thefile = os.path.join(TESTDATA, filename)
+            uploaded = save_to_geonode(thefile, user=self.user, overwrite=True)
+            check_layer(uploaded, full=True)
+
+        # Run calculation through API
+        c = Client()
+        rv = c.post('/impact/api/calculate/', data=dict(
                    hazard_server=INTERNAL_SERVER_URL,
                    hazard='geonode:lembang_mmi_hazmap',
                    exposure_server=INTERNAL_SERVER_URL,

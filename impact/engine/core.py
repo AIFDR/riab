@@ -40,7 +40,7 @@ def calculate_impact(layers, impact_fcn,
     # Input checks
     check_data_integrity(layers)
 
-    # Get an instance of the passed impact_fcn 
+    # Get an instance of the passed impact_fcn
     impact_function = impact_fcn()
 
     # Pass input layers to plugin
@@ -75,27 +75,23 @@ def check_data_integrity(layer_files):
     """
 
     # Set default values for projection and geotransform.
+    # Enforce DEFAULT (WGS84).
     # Choosing 'None' will use value of first layer.
-    projection = Projection(DEFAULT_PROJECTION)
+    reference_projection = Projection(DEFAULT_PROJECTION)
     geotransform = None
     coordinates = None
 
-    for filename in layer_files:
-
-        # Extract data
-        layer = filename
+    for layer in layer_files:
 
         # Ensure that projection is consistent across all layers
-        if projection is None:
-            projection = layer.projection
+        if reference_projection is None:
+            reference_projection = layer.projection
         else:
             msg = ('Projections in input layer %s is not as expected:\n'
                    'projection: %s\n'
                    'default:    %s'
-                   '' % (filename,
-                         projection.get_projection(proj4=True),
-                         layer.projection.get_projection(proj4=True)))
-            assert projection == layer.projection, msg
+                   '' % (layer, layer.projection, reference_projection))
+            assert reference_projection == layer.projection, msg
 
         # Ensure that geotransform and dimensions is consistent across
         # all *raster* layers

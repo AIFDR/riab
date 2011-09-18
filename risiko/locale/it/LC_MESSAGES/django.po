@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-10 03:20-0500\n"
+"POT-Creation-Date: 2011-08-14 04:29-0500\n"
 "PO-Revision-Date: 2011-06-09 17:09\n"
 "Last-Translator:   <>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,29 +19,90 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Translated-Using: django-rosetta 0.6.0\n"
 
-#: templates/fullscreen.html:20 templates/page_layout.html:21
+#: templates/fullscreen.html:22 templates/page_layout.html:21
 msgid "Change password"
 msgstr "Modificare la password"
 
-#: templates/fullscreen.html:20 templates/page_layout.html:21
+#: templates/fullscreen.html:22 templates/page_layout.html:21
 msgid "Log out"
 msgstr "Log out"
 
-#: templates/fullscreen.html:22 templates/page_layout.html:23
+#: templates/fullscreen.html:24 templates/page_layout.html:23
 msgid "Sign in"
 msgstr "Entra"
 
-#: templates/fullscreen.html:23 templates/page_layout.html:24
+#: templates/fullscreen.html:25 templates/page_layout.html:24
 msgid "or"
 msgstr "o"
 
-#: templates/fullscreen.html:23 templates/page_layout.html:24
+#: templates/fullscreen.html:25 templates/page_layout.html:24
 msgid "Register"
 msgstr "Registrati"
 
-#: templates/fullscreen.html:24 templates/page_layout.html:25
+#: templates/fullscreen.html:26 templates/page_layout.html:25
 msgid "for extra features"
 msgstr "per le funzioni extra"
+
+#: templates/index.html:4
+msgid "Welcome!"
+msgstr ""
+
+#: templates/index.html:15
+#, fuzzy
+msgid "Launch Risiko Impact Calculator"
+msgstr "Risiko Calculator"
+
+#: templates/index.html:21
+msgid "Explore Maps"
+msgstr ""
+
+#: templates/index.html:27
+msgid "Create Map"
+msgstr ""
+
+#: templates/index.html:35
+msgid "Search"
+msgstr ""
+
+#: templates/index.html:49
+msgid "Welcome"
+msgstr ""
+
+#: templates/index.html:51
+msgid ""
+"\n"
+"Risiko - Risk in a Box is a web based tool that models impacts of different "
+"hazard events on population or infrastructure. It is Open Source Software, "
+"and we encourage you to build new applications using its components and the "
+"resources it provides.\n"
+"    "
+msgstr ""
+
+#: templates/index.html:57
+msgid ""
+" \n"
+"   <strong>Create</strong>\n"
+"      a map with our cartography tool, or <strong>explore</strong> maps\n"
+"      shared by others.\n"
+"    "
+msgstr ""
+
+#: templates/index.html:68
+msgid ""
+" \n"
+"    \n"
+"      <strong>Search</strong> for data that is valuable to you, or \n"
+"      <strong>upload</strong> your own data.\n"
+"    "
+msgstr ""
+
+#: templates/index.html:89
+msgid "Advanced Search"
+msgstr ""
+
+#: templates/index.html:94
+msgid "Upload data"
+msgstr ""
 
 #: templates/page_layout.html:34 templates/risiko/index.html:116
 msgid "Calculator"

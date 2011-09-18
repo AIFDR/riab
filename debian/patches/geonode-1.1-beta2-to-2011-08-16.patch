@@ -1,0 +1,1531 @@
+diff --git a/.gitignore b/.gitignore
+index 0d0b618..33d1967 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -23,6 +23,7 @@ target
+ /src/gsconfig.py/
+ /src/owslib/
+ /src/avatar/
++/src/nosexcover/
+ /webapps/
+ /src/GeoNodePy/capra/development.db
+ 
+diff --git a/README.release.rst b/README.release.rst
+new file mode 100644
+index 0000000..9bb7772
+--- /dev/null
++++ b/README.release.rst
+@@ -0,0 +1,21 @@
++Please see the deployment documentation for GeoNode on-line at:
++
++http://docs.geonode.org/stable/deployment.html
++
++
++
++---------------------------------
++
++
++This program is free software: you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation, either version 3 of the License, or
++(at your option) any later version.
++
++This program is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with this program.  If not, see <http://www.gnu.org/licenses/>.
+\ No newline at end of file
+diff --git a/docs/source/deploy/centos.rst b/docs/source/deploy/centos.rst
+index 5df49f0..97a4635 100644
+--- a/docs/source/deploy/centos.rst
++++ b/docs/source/deploy/centos.rst
+@@ -12,8 +12,10 @@ distribution.
+     the GeoNode team know so we can keep it up to date.
+ 
+ .. note::
++
++    SELinux is known to cause issues with the Apache proxy configuration used by GeoNode. Altering its configuration is beyond the scope of this document.
+     
+-    Disabling SELinux http://www.centos.org/docs/5/html/5.2/Deployment_Guide/sec-sel-enable-disable.html
++    Instructions for disabling SELinux http://www.centos.org/docs/5/html/5.2/Deployment_Guide/sec-sel-enable-disable.html
+ 
+ The stack used is:
+ 
+@@ -49,27 +51,29 @@ Install Dependencies
+ 
+ 1. Add Additional Repositories
+ 
+-     The Python interpreter in the CentOS repositories does not support GeoNode;
+-     instead use the python26 package from the `EPEL
+-     <http://fedoraproject.org/wiki/EPEL>`_ project.  Follow the instructions from
+-     the wiki to activate the EPEL repository::
++   .. note::
++
++    The commands below are examples, please adjust based on your exact version of CentOS
+ 
+-     $ # The command below is an example, please adjust based on your exact version of CentOS
+-     $ su -c 'rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-4.noarch.rpm'
++   The Python interpreter in the CentOS repositories does not support GeoNode;
++   instead use the python26 package from the `EPEL
++   <http://fedoraproject.org/wiki/EPEL>`_ project.  Follow the instructions from
++   the wiki to activate the EPEL repository::
++     
++   $ su -c 'rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-4.noarch.rpm'
+ 
+-     Enable the `ELGIS testing repository
+-     <http://wiki.osgeo.org/wiki/Enterprise_Linux_GIS>`_::
++   Enable the `ELGIS testing repository
++   <http://wiki.osgeo.org/wiki/Enterprise_Linux_GIS>`_::
+ 
+-     $ # The command below is an example, please adjust based on your exact version of CentOS
+-     $ su -c 'rpm -Uvh http://elgis.argeo.org/repos/5/elgis-release-5-5_0.noarch.rpm'
++   $ su -c 'rpm -Uvh http://elgis.argeo.org/repos/5/elgis-release-5-5_0.noarch.rpm'
+ 
+ 2. Install Java Runtime
+ 
+-     You will need a Java Runtime Environment (JRE).  We recommend following
+-     the `Oracle installation instructions
+-     <http://www.oracle.com/technetwork/java/javase/downloads/index.html>`_
+-     While other JRE versions will work, Oracle's is recommended for performance
+-     reasons.  
++   You will need a Java Runtime Environment (JRE).  We recommend following
++   the `Oracle installation instructions
++   <http://www.oracle.com/technetwork/java/javase/downloads/index.html>`_
++   While other JRE versions will work, Oracle's is recommended for performance
++   reasons.  
+ 
+ 3. Install Dependencies with yum::
+ 
+@@ -86,14 +90,15 @@ Tomcat Servlet container was already installed with yum in previous step
+ 
+     JAVA_OPTS="-Xmx1024m -XX:MaxPermSize=256m -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
+   
+-    .. note::
++   .. note::
+  
+-      The Java options used are as follows: 
+-      * ``-Xmx1024m`` tells Java to use 1GB of RAM instead of the default value
+-      * ``-XX:MaxPermSize=256M`` increase the amount of space used for
+-        "permgen", needed to run geonetwork/geoserver.
+-      * ``-XX:CompileCommand=...`` is a workaround for a JVM bug that affects
+-        GeoNetwork; see http://trac.osgeo.org/geonetwork/ticket/301
++     The Java options used are as follows: 
++     
++     * ``-Xmx1024m`` tells Java to use 1GB of RAM instead of the default value
++
++     * ``-XX:MaxPermSize=256M`` increase the amount of space used for "permgen", needed to run geonetwork/geoserver.
++
++     * ``-XX:CompileCommand=...`` is a workaround for a JVM bug that affect GeoNetwork; see http://trac.osgeo.org/geonetwork/ticket/301
+ 
+ 2. Set tomcat to start on boot:: 
+    
+@@ -113,8 +118,8 @@ Deploying GeoNetwork
+      $ mv GeoNode-1.0.1/geonetwork.war /var/lib/tomcat5/webapps/ 
+ 
+ 2. The GeoNetwork administrative account will be using the default password.  You
+-   should navigate to `the GeoNetwork web interface
+-   <http://localhost:8080/geonetwork/>` and change the password for this account,
++   should navigate to the `GeoNetwork web interface
++   <http://localhost:8080/geonetwork/>`_ and change the password for this account,
+    taking note of the new password for later use. (Log in with the username
+    ``admin`` and password ``admin``, then use the "Administration" link in the
+    top navigation menu to change the password.)
+@@ -128,7 +133,7 @@ Deploying GeoNetwork
+ .. note::
+ 
+     The GeoNetwork configuration, including metadata documents and password
+-    configuration, is stored inside of [tomcat]/webapps/geonetwork/ .  This
++    configuration, is stored inside of ``[tomcat]/webapps/geonetwork/`` .  This
+     directory can be copied between machines to quickly reproduce a
+     configuration with a given administrative password across multiple
+     machines.
+@@ -161,9 +166,9 @@ Deploying GeoServer
+ 
+ 3. Move the GeoServer "data directory" outside of the servlet container to
+    avoid having it overwritten on later upgrades. Edit the file
+-   :file`/var/lib/tomcat5/webapps/geoserver-geonode-dev/WEB-INF/web.xml`
++   :file:`/var/lib/tomcat5/webapps/geoserver-geonode-dev/WEB-INF/web.xml`
+    by uncommenting the block below and setting the param-value to 
+-   /opt/geoserver_data::
++   ``/opt/geoserver_data``::
+ 
+      <context-param>
+         <param-name>GEOSERVER_DATA_DIR</param-name>
+@@ -375,7 +380,7 @@ Prepare the Django database
+ 
+      host   all         all                               md5
+ 
+-     Then restart postgres in order to pick up the changes::
++   Then restart postgres in order to pick up the changes::
+ 
+      $ service postgresql restart
+ 
+diff --git a/docs/source/deploy/production.rst b/docs/source/deploy/production.rst
+index b3bdec6..8f75e67 100644
+--- a/docs/source/deploy/production.rst
++++ b/docs/source/deploy/production.rst
+@@ -125,3 +125,21 @@ On the WMS Service page
+      * Don't set the "Resource Consumption Limits."
+        This sounds a bit counterintuitive, but these limits are implemented in an inefficient way such that unless resource-intensive requests are common on your server it is more efficient to avoid the limits.
+        A better implementation of this feature is available for GeoServer 2.1 and will be incorporated in GeoNode 1.1.
++
++Sitemaps Configuration
++======================
++
++GeoNode can automatically generate a sitemap suitable for submission to search
++engines which can help them to index your GeoNode site more efficiently and 
++effectively.
++
++In order to generate the sitemap properly, the sites domain name must be set
++within the sites framework. This requires that an admin user login to the
++admin interface and navigate to the sites module and change example.com to the
++actual domain name (and port if applicable). The admin interface can be accessed
++at http://<host>:<port>/admin/sites/site/
++
++It is possible to 'inform' google of changes to your sitemap. This is accomplished
++using the ping_google management command. More information can be found here
++http://docs.djangoproject.com/en/dev/ref/contrib/sitemaps/#django.contrib.sitemaps.ping_google
++It is recommended to put this call into a cron (scheduled) job to update google periodically.
+diff --git a/docs/source/deploy/ubuntu.rst b/docs/source/deploy/ubuntu.rst
+index 4644371..dd7fe3e 100644
+--- a/docs/source/deploy/ubuntu.rst
++++ b/docs/source/deploy/ubuntu.rst
+@@ -27,17 +27,18 @@ Release archives of geonode are produced from the geonode sources using::
+ 
+   paver make_release # from the root of a working dir
+ 
+-If you don't have a checkout, you can get the latest release from
+-http://dev.geonode.org/release/ 
+-
+-  $ tar xvzf GeoNode-1.0.1.tar.gz
+-  GeoNode-1.0.1/geonetwork.war
+-  GeoNode-1.0.1/pavement.py
+-  GeoNode-1.0.1/geonode-webapp.pybundle
+-  GeoNode-1.0.1/geoserver-geonode-dev.war
+-  GeoNode-1.0.1/bootstrap.py
+-  GeoNode-1.0.1/deploy-libs.txt
+-  GeoNode-1.0.1/deploy.ini.ex
++You can also get the latest release from http://dev.geonode.org/release/ or
++the `GeoNode project wiki <http://dev.geonode.org/trac/>`_ .
++You can unpack it like::
++
++   $ tar xvzf GeoNode-1.0.1.tar.gz
++   GeoNode-1.0.1/geonetwork.war
++   GeoNode-1.0.1/pavement.py
++   GeoNode-1.0.1/geonode-webapp.pybundle
++   GeoNode-1.0.1/geoserver-geonode-dev.war
++   GeoNode-1.0.1/bootstrap.py
++   GeoNode-1.0.1/deploy-libs.txt
++   GeoNode-1.0.1/deploy.ini.ex
+ 
+ Runtimes
+ --------
+@@ -49,6 +50,7 @@ Python::
+ Java:
+ 
+ For Sun/Oracle Java (recommended for better rendering performance)::
++
+   # vi /etc/apt/sources.list
+   # <enable partners repository>
+   # apt-get update
+@@ -61,16 +63,27 @@ For OpenJDK (simpler install)::
+ Servlet Container Installation
+ ------------------------------
+ 
+-1. Install tomcat from ubuntu packages
++1. Install tomcat from ubuntu packages::
+ 
+    # apt-get install tomcat6
+ 
+-2. Update JAVA_OPTS
++2. Update JAVA_OPTS::
+ 
+    # vi /etc/init.d/tomcat6
+    # export JAVA_OPTS="-Xmx1024m -XX:MaxPermSize=256m -XX:CompileCommand=exclude,net/sf/saxon/event/ReceivingContentHandler.startElement"
+ 
+-3. Restart tomcat
++   .. note::
++
++     The Java options used are as follows:
++
++     * ``-Xmx1024m`` tells Java to use 1GB of RAM instead of the default value
++
++     * ``-XX:MaxPermSize=256M`` increase the amount of space used for "permgen", needed to run geonetwork/geoserver.
++
++     * ``-XX:CompileCommand=...`` is a workaround for a JVM bug that affect GeoNetwork; see http://trac.osgeo.org/geonetwork/ticket/301
++
++
++3. Restart tomcat::
+    
+    # sudo /etc/init.d/tomcat6 restart
+ 
+@@ -84,8 +97,8 @@ Deploying GeoNetwork
+ 
+ .. note:: 
+ 
+-     The GeoNetwork username and password defaults to admin/admin and
+-     should be changed, but they cannot be changed while the server is not running.
++     The GeoNetwork username and password both default to ``admin`` and
++     should be changed, but they cannot be changed unless the server is running.
+      See the instructions below for starting up Tomcat.
+ 
+ Deploying GeoServer
+@@ -122,7 +135,7 @@ Deploying GeoServer
+      # cp -R /var/lib/tomcat6/webapps/geoserver-geonode-dev/data/ /opt/geoserver_data
+      # chown tomcat6 -R /opt/geoserver_data/
+ 
+-4. Restart tomcat
++4. Restart tomcat::
+ 
+    # sudo /etc/init.d/tomcat6 restart
+ 
+@@ -140,7 +153,7 @@ Changes after Tomcat is Running
+ 
+ 3. The GeoNetwork administrative account will be using the default password.  You
+    should navigate to `the GeoNetwork web interface
+-   <http://localhost:8080/geonetwork/>` and change the password for this account,
++   <http://localhost:8080/geonetwork/>`_ and change the password for this account,
+    taking note of the new password for later use. (Log in with the username
+    ``admin`` and password ``admin``, then use the "Administration" link in the
+    top navigation menu to change the password.)
+@@ -154,7 +167,7 @@ Changes after Tomcat is Running
+ .. note::
+ 
+     The GeoNetwork configuration, including metadata documents and password
+-    configuration, is stored inside of [tomcat]/webapps/geonetwork/ .  This
++    configuration, is stored inside of ``[tomcat]/webapps/geonetwork/`` .  This
+     directory can be copied between machines to quickly reproduce a
+     configuration with a given administrative password across multiple
+     machines.
+@@ -183,8 +196,8 @@ Install GeoNode Django Site
+ 
+      # apt-get install gcc libjpeg-dev libpng-dev python-gdal python-psycopg2 libproj-dev proj-bin proj-data
+ 
+-2. Create new directories in /var/www/ for the geonode static files, uploads,
+-   and python scripts (``htdocs``,``htdocs/media``, ``htdocs/uploads``,``wsgi/geonode``,
++2. Create new directories in ``/var/www/`` for the geonode static files, uploads,
++   and python scripts (``htdocs``, ``htdocs/media``, ``htdocs/uploads``, ``wsgi/geonode``,
+    respectively)::
+ 
+     # mkdir -p /var/www/geonode/{htdocs,htdocs/media,wsgi/geonode/} 
+@@ -255,7 +268,7 @@ Install GeoNode Django Site
+      ADMIN_MEDIA_PREFIX = ("/admin-media/")
+ 
+ 
+-6. Place a wsgi launcher script in /var/www/geonode/wsgi/geonode.wsgi::
++6. Place a wsgi launcher script in ``/var/www/geonode/wsgi/geonode.wsgi``::
+ 
+      import site, os
+ 
+@@ -313,7 +326,7 @@ Install GeoNode Django Site
+         ProxyPassReverse /geonetwork http://localhost:8080/geonetwork
+      </VirtualHost>
+ 
+-9. Set the filesystem ownership to the Apache user for the geonode/ folder::
++9. Set the filesystem ownership to the Apache user for the ``geonode`` folder::
+ 
+       # chown www-data -R /var/www/geonode/
+ 
+@@ -336,3 +349,12 @@ Install GeoNode Django Site
+     prompted for an admin username and account)::
+ 
+       # /var/www/geonode/wsgi/geonode/bin/django-admin.py syncdb --settings=geonode.settings
++
++13. You should now be able to see the GeoNode site at http://localhost/
++
++
++.. note::
++
++ If you have problems uploading files, please enable the verbose logging
++ http://docs.geonode.org/1.0.1/logging.html
++
+diff --git a/docs/source/deployment.rst b/docs/source/deployment.rst
+index bc3b701..e6e5e2d 100644
+--- a/docs/source/deployment.rst
++++ b/docs/source/deployment.rst
+@@ -20,10 +20,11 @@ Recommended Minimum System Requirements
+ 
+ For deployment of GeoNode on a single server, the following are the bare minimum system requirements:
+ 
+-* 2GB of RAM
++* 6GB of RAM, including swap space.
+ * 2.2GHz processor.  (Additional processing power may be required for multiple concurrent styling renderings)
+ * 1 GB software disk usage.
+ * Additional disk space for any data hosted with GeoNode and tiles cached with GeoWebCache.
++  For spatial data, cached tiles, and "scratch space" useful for administration, a decent baseline size for GeoNode deployments is 100GB.
+ * 64-bit hardware recommended.
+ 
+ Java Web Applications (WARs)
+@@ -199,3 +200,14 @@ Some other things that require tweaking:
+ 
+ * Configuring GeoNetwork/Django to use a "real" Postgres database instead of
+   embedded ones.
++
++* In order to generate the sitemap properly, the sites domain name must be set
++  within the sites framework. This requires that an admin user login to the
++  admin interface and navigate to the sites module and change example.com to the
++  actual domain name (and port if applicable). The admin interface can be accessed
++  at http://<host>:<port>/admin/sites/site/
++
++* It is possible to 'inform' google of changes to your sitemap. This is accomplished
++  using the ping_google management command. More information can be found here
++  http://docs.djangoproject.com/en/dev/ref/contrib/sitemaps/#django.contrib.sitemaps.ping_google
++  It is recommended to put this call into a cron (scheduled) job to update google periodically.
+diff --git a/pavement.py b/pavement.py
+index 5394b29..d1eb4bc 100644
+--- a/pavement.py
++++ b/pavement.py
+@@ -440,6 +440,7 @@ def make_release(options):
+         tar = tarfile.open("%s.tar.gz" % out_pkg, "w:gz")
+         for file in out_pkg.walkfiles():
+             tar.add(file)
++        tar.add('../README.release.rst', arcname=('%s/README.rst' % out_pkg))
+         tar.close()
+ 
+         out_pkg.rmtree()
+diff --git a/shared/core-libs.txt b/shared/core-libs.txt
+index ead86c6..ef21bbb 100644
+--- a/shared/core-libs.txt
++++ b/shared/core-libs.txt
+@@ -14,7 +14,7 @@ dj.paste
+ django-nose
+ nose
+ nose-cover3
+-coverage
++coverage==3.4
+ -e git+https://github.com/cmheisel/nose-xcover.git#egg=nosexcover
+ mock
+ django-staticfiles
+diff --git a/src/GeoNodePy/geonode/geonetwork.py b/src/GeoNodePy/geonode/geonetwork.py
+index bc403ea..79549b0 100644
+--- a/src/GeoNodePy/geonode/geonetwork.py
++++ b/src/GeoNodePy/geonode/geonetwork.py
+@@ -1,5 +1,6 @@
+ import urllib, urllib2, cookielib
+ from datetime import date
++from django.conf import settings
+ from django.template import Context
+ from django.template.loader import get_template
+ from owslib.csw import CatalogueServiceWeb, namespaces
+@@ -65,6 +66,7 @@ class Catalog(object):
+         tpl = get_template(template)
+         ctx = Context({
+             'layer': layer,
++            'SITEURL': settings.SITEURL[:-1],
+         })
+         md_doc = tpl.render(ctx)
+         url = "%ssrv/en/csw" % self.base
+diff --git a/src/GeoNodePy/geonode/locale/it/LC_MESSAGES/django.mo b/src/GeoNodePy/geonode/locale/it/LC_MESSAGES/django.mo
+index e16771a..dceed08 100644
+Binary files a/src/GeoNodePy/geonode/locale/it/LC_MESSAGES/django.mo and b/src/GeoNodePy/geonode/locale/it/LC_MESSAGES/django.mo differ
+diff --git a/src/GeoNodePy/geonode/locale/it/LC_MESSAGES/django.po b/src/GeoNodePy/geonode/locale/it/LC_MESSAGES/django.po
+index 7b5d601..e467b3f 100644
+--- a/src/GeoNodePy/geonode/locale/it/LC_MESSAGES/django.po
++++ b/src/GeoNodePy/geonode/locale/it/LC_MESSAGES/django.po
+@@ -8,7 +8,7 @@ msgid ""
+ msgstr ""
+ "Project-Id-Version: PACKAGE VERSION\n"
+ "Report-Msgid-Bugs-To: \n"
+-"POT-Creation-Date: 2011-06-09 13:37-0500\n"
++"POT-Creation-Date: 2011-07-12 09:30+0200\n"
+ "PO-Revision-Date: 2010-12-07 15:33\n"
+ "Last-Translator: <>\n"
+ "Language-Team: LANGUAGE <LL@li.org>\n"
+@@ -22,7 +22,7 @@ msgstr ""
+ msgid "title"
+ msgstr "titolo"
+ 
+-#: core/models.py:25 maps/models.py:1592
++#: core/models.py:25 maps/models.py:1593
+ msgid "permissions"
+ msgstr "permessi"
+ 
+@@ -36,12 +36,12 @@ msgstr ""
+ "Determina l'ordine con cui i ruoli vengono visualizzati nell'interfaccia "
+ "utente"
+ 
+-#: core/models.py:67 maps/views.py:994
++#: core/models.py:67 maps/views.py:1001
+ #: templates/maps/layer_permissions.html:18
+ msgid "Anonymous Users"
+ msgstr "Utente anonimo"
+ 
+-#: core/models.py:68 maps/views.py:998
++#: core/models.py:68 maps/views.py:1005
+ #: templates/maps/layer_permissions.html:19
+ msgid "Registered Users"
+ msgstr "Utente registrato"
+@@ -1171,79 +1171,79 @@ msgstr "KML"
+ msgid "View in Google Earth"
+ msgstr "Visualizza in Google Earth"
+ 
+-#: maps/models.py:1151
++#: maps/models.py:1152
+ msgid "Title"
+ msgstr "Titolo"
+ 
+-#: maps/models.py:1156 templates/maps/layer.html:128
++#: maps/models.py:1157 templates/maps/layer.html:128
+ msgid "Abstract"
+ msgstr "Abstract"
+ 
+-#: maps/models.py:1162
++#: maps/models.py:1163
+ msgid "zoom"
+ msgstr "zoom"
+ 
+-#: maps/models.py:1168
++#: maps/models.py:1169
+ msgid "projection"
+ msgstr "proiezione"
+ 
+-#: maps/models.py:1174
++#: maps/models.py:1175
+ msgid "center X"
+ msgstr "centro X"
+ 
+-#: maps/models.py:1180
++#: maps/models.py:1181
+ msgid "center Y"
+ msgstr "centro Y"
+ 
+-#: maps/models.py:1186
++#: maps/models.py:1187
+ msgid "owner"
+ msgstr "proprietario"
+ 
+-#: maps/models.py:1443
++#: maps/models.py:1444
+ msgid "stack order"
+ msgstr "ordinamento"
+ 
+-#: maps/models.py:1449
++#: maps/models.py:1450
+ msgid "format"
+ msgstr "formato"
+ 
+-#: maps/models.py:1455
++#: maps/models.py:1456
+ msgid "name"
+ msgstr "nome"
+ 
+-#: maps/models.py:1464
++#: maps/models.py:1465
+ msgid "opacity"
+ msgstr "opacità"
+ 
+-#: maps/models.py:1469
++#: maps/models.py:1470
+ msgid "styles"
+ msgstr "stili"
+ 
+-#: maps/models.py:1474
++#: maps/models.py:1475
+ msgid "transparent"
+ msgstr "trasparente"
+ 
+-#: maps/models.py:1479
++#: maps/models.py:1480
+ msgid "fixed"
+ msgstr "fissato"
+ 
+-#: maps/models.py:1485
++#: maps/models.py:1486
+ msgid "group"
+ msgstr "gruppo"
+ 
+-#: maps/models.py:1491
++#: maps/models.py:1492
+ msgid "visibility"
+ msgstr "visibilità"
+ 
+-#: maps/models.py:1496
++#: maps/models.py:1497
+ msgid "ows URL"
+ msgstr "ows URL"
+ 
+-#: maps/models.py:1501
++#: maps/models.py:1502
+ msgid "layer params"
+ msgstr "parametri del layer"
+ 
+-#: maps/models.py:1510
++#: maps/models.py:1511
+ msgid "source params"
+ msgstr "parametri sorgente"
+ 
+@@ -1271,43 +1271,43 @@ msgstr "Devi entrare per salvare questa mappa"
+ msgid "You are not permitted to view or copy this map."
+ msgstr "Non hai i permessi per visualizzare o copiare questa mappa."
+ 
+-#: maps/views.py:310 maps/views.py:655 maps/views.py:671 templates/401.html:10
++#: maps/views.py:317 maps/views.py:662 maps/views.py:678 templates/401.html:10
+ msgid "Not Permitted"
+ msgstr "Non Permesso"
+ 
+-#: maps/views.py:445
++#: maps/views.py:452
+ msgid "You are not permitted to view this map's permissions"
+ msgstr "Non hai i permessi per visualizzare i privilegi su questa mappa"
+ 
+-#: maps/views.py:553
++#: maps/views.py:560
+ msgid "You are not permitted to delete this map."
+ msgstr "Non hai i permessi per eliminare questa mappa."
+ 
+-#: maps/views.py:575 maps/views.py:639
++#: maps/views.py:582 maps/views.py:646
+ msgid "You are not allowed to view this map."
+ msgstr "Non hai i permessi per visualizzare questa mappa."
+ 
+-#: maps/views.py:598
++#: maps/views.py:605
+ msgid "You are not allowed to modify this map's metadata."
+ msgstr "Non hai i permessi per modificare i metadati di questa mappa."
+ 
+-#: maps/views.py:690
++#: maps/views.py:697
+ msgid "You are not permitted to modify this layer's metadata"
+ msgstr "Non hai i permessi per modificare i metadati di questo layer"
+ 
+-#: maps/views.py:752
++#: maps/views.py:759
+ msgid "You are not permitted to delete this layer"
+ msgstr "Non hai i permessi per eliminare questo layer"
+ 
+-#: maps/views.py:772 maps/views.py:883
++#: maps/views.py:779 maps/views.py:890
+ msgid "You are not permitted to modify this layer"
+ msgstr "Non hai i permessi per modificare questo layer"
+ 
+-#: maps/views.py:816
++#: maps/views.py:823
+ msgid "You are not permitted to view this layer"
+ msgstr "Non hai i permessi per visualizzare questo layer"
+ 
+-#: maps/views.py:834
++#: maps/views.py:841
+ msgid ""
+ "There was an error while attempting to upload your data. Please try again, "
+ "or contact and administrator if the problem continues."
+@@ -1315,23 +1315,23 @@ msgstr ""
+ "E' occorso un errore durante l'invio dei tuoi dati. Riprova o contatta un "
+ "amministratore se il problema persiste."
+ 
+-#: maps/views.py:933
++#: maps/views.py:940
+ msgid "You are not permitted to view this layer's permissions"
+ msgstr "Non hai i permessi per visualizzare i privilegi di questo layer"
+ 
+-#: maps/views.py:943
++#: maps/views.py:950
+ msgid "???"
+ msgstr "???"
+ 
+-#: maps/views.py:985
++#: maps/views.py:992
+ msgid "Invalid permission level."
+ msgstr "Livello di permessi non valido."
+ 
+-#: maps/views.py:1007 templates/maps/layer_permissions.html:15
++#: maps/views.py:1014 templates/maps/layer_permissions.html:15
+ msgid "User"
+ msgstr "Utente"
+ 
+-#: maps/views.py:1065
++#: maps/views.py:1072
+ msgid "Bad HTTP Authorization Credentials."
+ msgstr "Credenziali di autorizzazione HTTP errate."
+ 
+@@ -1416,13 +1416,13 @@ msgstr "Carica"
+ 
+ #: templates/data_base.html:59
+ msgid "We support Shapefile and GeoTIFF uploads."
+-msgstr "Supportiamo l'invio di Shapefile e GeoTIFF "
++msgstr "Attualmente è possibile caricare ESRI Shapefile e GeoTIFF "
+ 
+ #: templates/data_base.html:60
+ msgid "Upload a new layer"
+ msgstr "Carica un nuovo layer"
+ 
+-#: templates/data_base.html:65 templates/page_layout.html:62
++#: templates/data_base.html:65 templates/page_layout.html:78
+ msgid "For Developers"
+ msgstr "Per gli sviluppatori"
+ 
+@@ -1448,11 +1448,11 @@ msgstr "OGC Services"
+ 
+ #: templates/developer.html:48
+ msgid "GeoNode's Web Services"
+-msgstr ""
++msgstr "Web Services di GeoNode"
+ 
+ #: templates/developer.html:49
+ msgid "GeoNode's Web Services are available from the following URLs:"
+-msgstr ""
++msgstr "I Web Services di GeoNode sono disponibili ai seguenti indirizzi:"
+ 
+ #: templates/developer.html:51
+ msgid "Dynamic tiles via WMS:"
+@@ -1478,17 +1478,28 @@ msgstr "Cambia password"
+ msgid "Log out"
+ msgstr "Esci"
+ 
++#: templates/fullscreen.html:22 templates/page_layout.html:23
++msgid "Sign in"
++msgstr "Entra"
++
++#: templates/fullscreen.html:23
++msgid "or"
++msgstr "oppure"
++
+ #: templates/fullscreen.html:23 templates/login.html:14
+ #: templates/page_layout.html:24
+ msgid "Register"
+ msgstr "Registrati"
+ 
++#: templates/fullscreen.html:24 templates/page_layout.html:25
++msgid "for extra features"
++msgstr "per l'utilizzo completo"
++
+ #: templates/help.html:3
+ msgid "User Guide"
+ msgstr "Guida per l'utilizzatore"
+ 
+ #: templates/help.html:7
+-#, fuzzy
+ msgid ""
+ "\n"
+ "  <p>The GeoNode provides access to data sets and a map editing application "
+@@ -1717,9 +1728,15 @@ msgid ""
+ "list by emailing <em>geonode@librelist.com</em>.\n"
+ "    "
+ msgstr ""
++"\n"
++" GeoNode è una piattaforma open source per la condivisione di dati "
++"territoriali e mappe. Per qualsiasi domanda relativa al software o al "
++"servizio, iscriviti alla nostra lista di discussione  inviando una mail a "
++"<em>geonode@librelist.com</em>.\n"
++"    "
+ 
+-#: templates/index.html:52 templates/maps/layer.html:209
+-#: templates/maps/view.html:88
++#: templates/index.html:52 templates/page_layout.html:36
++#: templates/maps/layer.html:209 templates/maps/view.html:88
+ msgid "Maps"
+ msgstr "Mappe"
+ 
+@@ -1731,8 +1748,15 @@ msgid ""
+ "      shared by others.\n"
+ "    "
+ msgstr ""
++" \n"
++" GeoNode permette di creare e condividere mappe. <strong>Crea</strong>\n"
++"      una mappa con il nostro strumento cartografico, oppure "
++"<strong>consulta</strong> mappe\n"
++"      condivise da altri.\n"
++"    "
+ 
+-#: templates/index.html:66 templates/maps/layer.html:197
++#: templates/index.html:66 templates/page_layout.html:35
++#: templates/maps/layer.html:197
+ msgid "Data"
+ msgstr "Dati"
+ 
+@@ -1744,6 +1768,11 @@ msgid ""
+ "      <strong>upload</strong> your own data.\n"
+ "    "
+ msgstr ""
++" \n"
++"  GeoNode ti permette di caricare, gestire e ricercare dati geografici. \n"
++"      <strong>Ricercare</strong> dati che sono importanti per te o \n"
++"      <strong>caricare</strong> dati in tuo possesso.\n"
++"   "
+ 
+ #: templates/index.html:94
+ msgid "Upload data"
+@@ -1816,15 +1845,28 @@ msgstr "Per memorizzare la ricerca corrente usa questo"
+ msgid "permalink"
+ msgstr "permalink"
+ 
+-#: templates/page_layout.html:59
++#: templates/page_layout.html:34 templates/maps/change_poc.html:5
++#: templates/registration/logged_out.html:4
++msgid "Home"
++msgstr "Home"
++
++#: templates/page_layout.html:38
++msgid "Profile"
++msgstr "Profilo"
++
++#: templates/page_layout.html:40
++msgid "Admin"
++msgstr "Amministrazione"
++
++#: templates/page_layout.html:75
+ msgid "GeoNode"
+ msgstr "GeoNode"
+ 
+-#: templates/page_layout.html:60
++#: templates/page_layout.html:76
+ msgid "Need Help?"
+ msgstr "Serve aiuto?"
+ 
+-#: templates/page_layout.html:61
++#: templates/page_layout.html:77
+ msgid "Help"
+ msgstr "Aiuto"
+ 
+@@ -1878,10 +1920,6 @@ msgstr "Non hai ancora caricato un avatar. Per favore caricane uno ora."
+ msgid "Upload New Image"
+ msgstr "Carica una nuova immagine"
+ 
+-#: templates/maps/change_poc.html:5 templates/registration/logged_out.html:4
+-msgid "Home"
+-msgstr "Home"
+-
+ #: templates/maps/change_poc.html:5 templates/maps/change_poc.html.py:7
+ msgid "Change point of contact"
+ msgstr "Modifica contatto"
+@@ -2046,7 +2084,6 @@ msgid "Styles"
+ msgstr "Stili"
+ 
+ #: templates/maps/layer.html:223
+-#, fuzzy
+ msgid ""
+ "The following styles are associated with this data set.  Choose a style to "
+ "view it in the preview to the left.  Click on a style name to view or edit "
+@@ -2157,7 +2194,6 @@ msgid "Upload Layer"
+ msgstr "Carica layer"
+ 
+ #: templates/maps/layer_upload.html:20
+-#, fuzzy
+ msgid "Add data"
+ msgstr "Carica dati"
+ 
+@@ -2269,9 +2305,8 @@ msgid "Choose new Default"
+ msgstr "Scegli un nuovo Default"
+ 
+ #: templates/profiles/profile_detail.html:13
+-#, fuzzy
+ msgid "Actions"
+-msgstr "Istruzioni"
++msgstr "Operazioni"
+ 
+ #: templates/profiles/profile_detail.html:15
+ msgid "Upload new data"
+diff --git a/src/GeoNodePy/geonode/maps/models.py b/src/GeoNodePy/geonode/maps/models.py
+index 22ebc7e..464ed5b 100644
+--- a/src/GeoNodePy/geonode/maps/models.py
++++ b/src/GeoNodePy/geonode/maps/models.py
+@@ -739,7 +739,7 @@ class Layer(models.Model, PermissionLevelMixin):
+                         "service": "WCS",
+                         "version": "1.0.0",
+                         "request": "DescribeCoverage",
+-                        "coverages": self.typename
++                        "coverage": self.typename
+                     })
+                 response, content = client.request(description_url)
+                 doc = parse(StringIO(content))
+@@ -766,6 +766,7 @@ class Layer(models.Model, PermissionLevelMixin):
+             except Exception, e:
+                 # if something is wrong with WCS we probably don't want to link
+                 # to it anyway
++                # TODO: This is a bad idea to eat errors like this.
+                 pass 
+ 
+         def wms_link(mime):
+@@ -1061,7 +1062,8 @@ class Layer(models.Model, PermissionLevelMixin):
+             gn.logout()
+         if self.poc and self.poc.user:
+             self.publishing.attribution = str(self.poc.user)
+-            self.publishing.attribution_link = self.poc.user.get_absolute_url()
++            profile = Contact.objects.get(user=self.poc.user)
++            self.publishing.attribution_link = settings.SITEURL[:-1] + profile.get_absolute_url()
+             Layer.objects.gs_catalog.save(self.publishing)
+ 
+     def  _populate_from_gs(self):
+@@ -1111,7 +1113,7 @@ class Layer(models.Model, PermissionLevelMixin):
+         self.geographic_bounding_box = bbox_to_wkt(box[0], box[1], box[2], box[3], srid=srid )
+ 
+     def get_absolute_url(self):
+-        return "%sdata/%s" % (settings.SITEURL,self.typename)
++        return "/data/%s" % (self.typename)
+ 
+     def __str__(self):
+         return "%s Layer" % self.typename
+@@ -1276,7 +1278,7 @@ class Map(models.Model, PermissionLevelMixin):
+             return results
+ 
+         configs = [l.source_config() for l in layers]
+-        configs.append({"ptype":"gxp_wmscsource", "url": "/geoserver/wms"})
++        configs.insert(0, {"ptype":"gxp_wmscsource", "url": "/geoserver/wms"})
+ 
+         i = 0
+         for source in uniqify(configs):
+diff --git a/src/GeoNodePy/geonode/maps/tests.py b/src/GeoNodePy/geonode/maps/tests.py
+index 2b396ca..52f30c8 100644
+--- a/src/GeoNodePy/geonode/maps/tests.py
++++ b/src/GeoNodePy/geonode/maps/tests.py
+@@ -9,7 +9,7 @@ import geonode.maps.views
+ from geonode.maps.models import Map, Layer, User
+ from geonode.maps.utils import get_valid_user, GeoNodeException
+ 
+-from mock import Mock
++from mock import Mock, patch
+ 
+ import json
+ import os
+@@ -381,6 +381,13 @@ community."
+         layernames = [x['name'] for x in cfg['map']['layers'] if is_wms_layer(x)]
+         self.assertEquals(layernames, ['base:CA',])
+ 
++    def test_newmap_to_json(self):
++        """ Make some assertions about the data structure produced for serialization
++            to a new JSON map configuration"""
++        response = Client().get("/maps/new/data")
++        cfg = json.loads(response.content)
++        self.assertEquals(cfg['defaultSourceType'], "gxp_wmscsource")
++
+     def test_map_details(self): 
+         """/maps/1 -> Test accessing the detail view of a map"""
+         map = Map.objects.get(id=1) 
+@@ -656,8 +663,18 @@ community."
+     
+     # Layer Tests
+ 
++    # Test layer upload endpoint
+     def test_upload_layer(self):
+-        pass
++        c = Client()
++
++        # Test redirection to login form when not logged in
++        response = c.get("/data/upload")
++        self.assertEquals(response.status_code,302)
++
++        # Test return of upload form when logged in
++        c.login(username="bobby", password="bob")
++        response = c.get("/data/upload")
++        self.assertEquals(response.status_code,200)
+ 
+     def test_handle_layer_upload(self):
+         pass
+@@ -695,7 +712,24 @@ community."
+         pass
+ 
+     def test_metadata_search(self):
+-        pass
++        c = Client()
++
++        #test around _metadata_search helper
++        with patch.object(geonode.maps.views,'_metadata_search') as mock_ms:
++            result = {
++                'rows' : [{
++                        'uuid' : 1214431  # does not exist
++                        }
++                          ]
++                }
++            mock_ms.return_value = result
++
++            response = c.get("/data/search/api?q=foo&start=5&limit=10")
++
++            call_args = geonode.maps.views._metadata_search.call_args
++            self.assertEqual(call_args[0][0], "foo")
++            self.assertEqual(call_args[0][1], 5)
++            self.assertEqual(call_args[0][2], 10)
+ 
+     def test_search_result_detail(self):
+         pass
+@@ -812,6 +846,34 @@ community."
+         finally:
+             lyr.resource.latlon_bbox = orig_bbox
+ 
++class ViewTest(TestCase):
++    def setUp(self):
++        pass
++
++    def tearDown(self):
++        pass
++
++    fixtures = ['test_data.json', 'map_data.json']
++
++    def test_new_map_without_layers(self):
++        client = Client()
++        response = client.get("/maps/new")
++
++    def test_new_map_with_layer(self):
++        with patch('geonode.maps.models.Layer.objects.gs_catalog') as mock_gs:
++            mock_gs.get_resource.return_value.latlon_bbox = ["0", "1", "0", "1"]
++            client = Client()
++            layer = Layer.objects.all()[0]
++            response = client.get("/maps/new?layer=" + layer.typename)
++
++    def test_new_map_with_empty_bbox_layer(self):
++        with patch('geonode.maps.models.Layer.objects.gs_catalog') as mock_gs:
++            mock_gs.get_resource.return_value.latlon_bbox = ["0", "0", "0", "0"]
++            client = Client()
++            layer = Layer.objects.all()[0]
++            response = client.get("/maps/new?layer=" + layer.typename)
++
++
+ from geonode.maps.forms import JSONField, LayerUploadForm, NewLayerUploadForm
+ from django.core.files.uploadedfile import SimpleUploadedFile
+ 
+@@ -967,6 +1029,7 @@ class UtilsTest(TestCase):
+         import shutil
+         import tempfile
+ 
++        # Check that a well-formed Shapefile has its components all picked up
+         d = None
+         try:
+             d = tempfile.mkdtemp()
+@@ -983,6 +1046,7 @@ class UtilsTest(TestCase):
+             if d is not None:
+                 shutil.rmtree(d)
+ 
++        # Check that a Shapefile missing required components raises an exception
+         d = None
+         try:
+             d = tempfile.mkdtemp()
+@@ -996,6 +1060,7 @@ class UtilsTest(TestCase):
+             if d is not None:
+                 shutil.rmtree(d)
+ 
++        # Check that including an SLD with a valid shapefile results in the SLD getting picked up
+         d = None
+         try:
+             d = tempfile.mkdtemp()
+@@ -1012,6 +1077,7 @@ class UtilsTest(TestCase):
+             if d is not None:
+                 shutil.rmtree(d)
+ 
++        # Check that capitalized extensions are ok
+         d = None
+         try:
+             d = tempfile.mkdtemp()
+@@ -1028,6 +1094,68 @@ class UtilsTest(TestCase):
+             if d is not None:
+                 shutil.rmtree(d)
+ 
++        # Check that mixed capital and lowercase extensions are ok
++        d = None
++        try:
++            d = tempfile.mkdtemp()
++            for f in ("foo.SHP", "foo.shx", "foo.pRJ", "foo.DBF"):
++                path = os.path.join(d, f)
++                # open and immediately close to create empty file
++                open(path, 'w').close()  
++
++            gotten_files = get_files(os.path.join(d, "foo.SHP"))
++            gotten_files = dict((k, v[len(d) + 1:]) for k, v in gotten_files.iteritems())
++            self.assertEquals(gotten_files, dict(base="foo.SHP", shp="foo.SHP", shx="foo.shx",
++                prj="foo.pRJ", dbf="foo.DBF"))
++        finally:
++            if d is not None:
++                shutil.rmtree(d)
++
++        # Check that including both capital and lowercase extensions raises an exception
++        d = None
++        try:
++            d = tempfile.mkdtemp()
++            for f in ("foo.SHP", "foo.SHX", "foo.PRJ", "foo.DBF", "foo.shp", "foo.shx", "foo.prj", "foo.dbf"):
++                path = os.path.join(d, f)
++                # open and immediately close to create empty file
++                open(path, 'w').close()  
++
++            self.assertRaises(GeoNodeException, lambda: get_files(os.path.join(d, "foo.SHP")))
++            self.assertRaises(GeoNodeException, lambda: get_files(os.path.join(d, "foo.shp")))
++        finally:
++            if d is not None:
++                shutil.rmtree(d)
++
++        # Check that including both capital and lowercase PRJ (this is special-cased in the implementation) 
++        d = None
++        try:
++            d = tempfile.mkdtemp()
++            for f in ("foo.SHP", "foo.SHX", "foo.PRJ", "foo.DBF", "foo.prj"):
++                path = os.path.join(d, f)
++                # open and immediately close to create empty file
++                open(path, 'w').close()  
++
++            self.assertRaises(GeoNodeException, lambda: get_files(os.path.join(d, "foo.SHP")))
++            self.assertRaises(GeoNodeException, lambda: get_files(os.path.join(d, "foo.shp")))
++        finally:
++            if d is not None:
++                shutil.rmtree(d)
++
++        # Check that including both capital and lowercase SLD (this is special-cased in the implementation) 
++        d = None
++        try:
++            d = tempfile.mkdtemp()
++            for f in ("foo.SHP", "foo.SHX", "foo.PRJ", "foo.DBF", "foo.SLD", "foo.sld"):
++                path = os.path.join(d, f)
++                # open and immediately close to create empty file
++                open(path, 'w').close()  
++
++            self.assertRaises(GeoNodeException, lambda: get_files(os.path.join(d, "foo.SHP")))
++            self.assertRaises(GeoNodeException, lambda: get_files(os.path.join(d, "foo.shp")))
++        finally:
++            if d is not None:
++                shutil.rmtree(d)
++
+     def test_get_valid_name(self):
+         from geonode.maps.utils import get_valid_name
+         self.assertEquals(get_valid_name("blug"), "blug")
+@@ -1086,3 +1214,88 @@ class UtilsTest(TestCase):
+         with patch('geonode.maps.models.Layer.objects.gs_catalog') as mock_catalog:
+             mock_catalog.delete.side_effect = blowup
+             cleanup("FOO", "1234")
++
++    def test_check_geonode_is_up(self):
++        from contextlib import nested
++        from geonode.maps.utils import check_geonode_is_up
++        from mock import patch
++
++        def blowup():
++            raise Exception("BOOM")
++
++        with patch('geonode.maps.models.Layer.objects.gs_catalog') as mock_gs:
++            mock_gs.get_workspaces.side_effect = blowup
++
++            self.assertRaises(GeoNodeException, check_geonode_is_up)
++
++        with nested(
++                patch('geonode.maps.models.Layer.objects.gs_catalog'),
++                patch('geonode.maps.models.Layer.objects.geonetwork')
++            ) as (mock_gs, mock_gn):
++                mock_gn.login.side_effect = blowup
++                self.assertRaises(GeoNodeException, check_geonode_is_up)
++                self.assertTrue(mock_gs.get_workspaces.called)
++
++        with nested(
++                patch('geonode.maps.models.Layer.objects.gs_catalog'),
++                patch('geonode.maps.models.Layer.objects.geonetwork')
++            ) as (mock_gs, mock_gn):
++                # no assertion, this should just run without error
++                check_geonode_is_up()
++
++
++    def test_save(self):
++        import shutil
++        import tempfile
++        from contextlib import nested
++        from geonode.maps.utils import save
++
++        # Check that including both capital and lowercase SLD (this is special-cased in the implementation) 
++        d = None
++        try:
++            d = tempfile.mkdtemp()
++            for f in ("foo.shp", "foo.shx", "foo.prj", "foo.dbf", "foo.sld", "foo.sld"):
++                path = os.path.join(d, f)
++                # open and immediately close to create empty file
++                open(path, 'w').close()  
++
++            class MockWMS(object):
++
++                def __init__(self):
++                    self.contents = { 'geonode:a_layer': 'geonode:a_layer' }
++
++                def __getitem__(self, idx):
++                    return self.contents[idx]
++
++            with nested(
++                    patch.object(geonode.maps.models, '_wms', new=MockWMS()),
++                    patch('geonode.maps.models.Layer.objects.gs_catalog'),
++                    patch('geonode.maps.models.Layer.objects.geonetwork')
++                ) as (mock_wms, mock_gs, mock_gn):
++                    # Setup
++                    mock_gs.get_store.return_value.get_resources.return_value = []
++                    mock_resource = mock_gs.get_resource.return_value
++                    mock_resource.name = 'a_layer'
++                    mock_resource.title = 'a_layer'
++                    mock_resource.abstract = 'a_layer'
++                    mock_resource.store.name = "a_layer"
++                    mock_resource.store.resource_type = "dataStore"
++                    mock_resource.store.workspace.name = "geonode"
++                    mock_resource.native_bbox = ["0", "0", "0", "0"]
++                    mock_resource.projection = "EPSG:4326"
++                    mock_gn.url_for_uuid.return_value = "http://example.com/metadata"
++
++                    # Exercise
++                    base_file = os.path.join(d, 'foo.shp')
++                    owner = User.objects.get(username="admin")
++                    save('a_layer', base_file, owner)
++
++                    # Assertions
++                    (md_link,) = mock_resource.metadata_links
++                    md_mime, md_spec, md_url = md_link
++                    self.assertEquals(md_mime, "text/xml")
++                    self.assertEquals(md_spec, "TC211")
++                    self.assertEquals(md_url,  "http://example.com/metadata")
++        finally:
++            if d is not None:
++                shutil.rmtree(d)
+diff --git a/src/GeoNodePy/geonode/maps/urls.py b/src/GeoNodePy/geonode/maps/urls.py
+index 1a93886..3e3ed74 100644
+--- a/src/GeoNodePy/geonode/maps/urls.py
++++ b/src/GeoNodePy/geonode/maps/urls.py
+@@ -7,6 +7,7 @@ js_info_dict = {
+ urlpatterns = patterns('geonode.maps.views',
+     (r'^$', 'maps'),
+     url(r'^new$', 'newmap', name="map_new"),
++    url(r'^new/data$', 'newmapJSON'),
+     (r'^(?P<mapid>\d+)$', 'map_controller'),
+     (r'^(?P<mapid>\d+)/view$', 'view'),
+     (r'^(?P<mapid>\d+)/download/$', 'map_download'),
+diff --git a/src/GeoNodePy/geonode/maps/views.py b/src/GeoNodePy/geonode/maps/views.py
+index 925c1bc..67b4aed 100644
+--- a/src/GeoNodePy/geonode/maps/views.py
++++ b/src/GeoNodePy/geonode/maps/views.py
+@@ -190,8 +190,7 @@ def mapJSON(request, mapid):
+                 status=400
+             )
+ 
+-@csrf_exempt            
+-def newmap(request):
++def newmap_config(request):
+     '''
+     View that creates a new map.  
+     
+@@ -240,6 +239,7 @@ def newmap(request):
+                     continue
+                     
+                 layer_bbox = layer.resource.latlon_bbox
++                # assert False, str(layer_bbox)
+                 if bbox is None:
+                     bbox = list(layer_bbox[0:4])
+                 else:
+@@ -263,8 +263,14 @@ def newmap(request):
+                 center = GEOSGeometry(wkt, srid=4326)
+                 center.transform("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs")
+ 
+-                width_zoom = math.log(360 / (maxx - minx), 2)
+-                height_zoom = math.log(360 / (maxy - miny), 2)
++                if maxx == minx:
++                    width_zoom = 15
++                else:
++                    width_zoom = math.log(360 / (maxx - minx), 2)
++                if maxy == miny:
++                    height_zoom = 15
++                else:
++                    height_zoom = math.log(360 / (maxy - miny), 2)
+ 
+                 map.center_x = center.x
+                 map.center_y = center.y
+@@ -275,11 +281,27 @@ def newmap(request):
+             config['fromLayer'] = True
+         else:
+             config = DEFAULT_MAP_CONFIG
+-    return render_to_response('maps/view.html', RequestContext(request, {
+-        'config': json.dumps(config), 
+-        'GOOGLE_API_KEY' : settings.GOOGLE_API_KEY,
+-        'GEOSERVER_BASE_URL' : settings.GEOSERVER_BASE_URL
+-    }))
++    return json.dumps(config)
++
++@csrf_exempt            
++def newmap(request):
++    config = newmap_config(request);
++    if isinstance(config, HttpResponse):
++        return config;
++    else:
++        return render_to_response('maps/view.html', RequestContext(request, {
++            'config': config, 
++            'GOOGLE_API_KEY' : settings.GOOGLE_API_KEY,
++            'GEOSERVER_BASE_URL' : settings.GEOSERVER_BASE_URL
++        }))
++
++@csrf_exempt
++def newmapJSON(request):
++    config = newmap_config(request);
++    if isinstance(config, HttpResponse):
++        return config
++    else:
++        return HttpResponse(config)
+ 
+ h = httplib2.Http()
+ h.add_credentials(_user, _password)
+@@ -1504,9 +1526,6 @@ def maps_search(request):
+ def _maps_search(query, start, limit, sort_field, sort_dir):
+ 
+     keywords = _split_query(query)
+- 
+-    if len(keywords) == 0:
+-        maps = Map.objects.all()
+ 
+     maps = Map.objects
+     for keyword in keywords:
+diff --git a/src/GeoNodePy/geonode/settings.py b/src/GeoNodePy/geonode/settings.py
+old mode 100755
+new mode 100644
+index 626b123..0e9a21e
+--- a/src/GeoNodePy/geonode/settings.py
++++ b/src/GeoNodePy/geonode/settings.py
+@@ -40,7 +40,7 @@ LANGUAGES = (
+     ('en', 'English'),
+     ('es', 'Español'),
+     ('it', 'Italiano'),
+-    ('fr', 'François'),
++    ('fr', 'Français'),
+ )
+ 
+ SITE_ID = 1
+@@ -110,7 +110,8 @@ SECRET_KEY = 'myv-y4#7j-d*p-__@j#*3z@!y24fz8%^z2v6atuy4bo9vqr1_a'
+ TEMPLATE_LOADERS = (
+     'django.template.loaders.filesystem.load_template_source',
+     'django.template.loaders.app_directories.load_template_source',
+-#     'django.template.loaders.eggs.load_template_source',
++    #'django.template.loaders.eggs.load_template_source',
++    'django.template.loaders.app_directories.Loader',
+ )
+ 
+ TEMPLATE_CONTEXT_PROCESSORS = (
+@@ -262,6 +263,7 @@ INSTALLED_APPS = (
+     'django.contrib.sessions',
+     'django.contrib.sites',
+     'django.contrib.admin',
++    'django.contrib.sitemaps',
+     'staticfiles',
+     'django_extensions',
+     'registration',
+@@ -270,6 +272,7 @@ INSTALLED_APPS = (
+     'geonode.core',
+     'geonode.maps',
+     'geonode.proxy',
++    'geonode'
+ )
+ 
+ def get_user_url(u):
+diff --git a/src/GeoNodePy/geonode/sitemap.py b/src/GeoNodePy/geonode/sitemap.py
+new file mode 100644
+index 0000000..df12709
+--- /dev/null
++++ b/src/GeoNodePy/geonode/sitemap.py
+@@ -0,0 +1,19 @@
++from django.contrib.sitemaps import Sitemap
++from geonode.maps.models import Layer, Map 
++
++class LayerSitemap(Sitemap):
++    changefreq = "never"
++    priority = 0.5
++
++    def items(self):
++        return Layer.objects.all()
++
++    def lastmod(self, obj):
++        return obj.date
++
++class MapSitemap(Sitemap):
++    changefreq = "never"
++    priority = 0.5
++
++    def items(self):
++        return Map.objects.all()
+diff --git a/src/GeoNodePy/geonode/templates/lang.js b/src/GeoNodePy/geonode/templates/lang.js
+index 3ea8808..c9c1a39 100644
+--- a/src/GeoNodePy/geonode/templates/lang.js
++++ b/src/GeoNodePy/geonode/templates/lang.js
+@@ -1,5 +1,7 @@
+ {% load i18n %}
+ 
++GeoExt.Lang.set("{{ LANGUAGE_CODE }}");
++
+ if (window.GeoExplorer) {
+     Ext.apply(GeoExplorer.prototype, {
+         addLayersButtonText: gettext("Add Layers"),
+diff --git a/src/GeoNodePy/geonode/templates/maps/csw/full_metadata.xml b/src/GeoNodePy/geonode/templates/maps/csw/full_metadata.xml
+index f695f17..d2ea710 100644
+--- a/src/GeoNodePy/geonode/templates/maps/csw/full_metadata.xml
++++ b/src/GeoNodePy/geonode/templates/maps/csw/full_metadata.xml
+@@ -36,19 +36,19 @@
+            </gmd:phone>
+            {% if poc.user %}
+            <gmd:onlineResource>
+-               <gmd:CI_OnlineResource>
+-                   <gmd:linkage>
+-                       <gmd:URL>{{ poc.get_absolute_url }}</gmd:URL>
+-                   </gmd:linkage>
+-                   <gmd:protocol>
+-                       <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">WWW:LINK-1.0-http--link</gco:CharacterString>
+-                   </gmd:protocol>
+-                   <gmd:description>
+-                       <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">GeoNode profile page</gco:CharacterString>
+-                   </gmd:description>
+-               </gmd:CI_OnlineResource>
+-           </gmd:onlineResource>
+-           {% endif %}
++                <gmd:CI_OnlineResource>
++                    <gmd:linkage>
++                        <gmd:URL>{{ SITEURL }}{{ layer.poc.get_absolute_url }}</gmd:URL>
++                    </gmd:linkage>
++                    <gmd:protocol>
++                        <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">WWW:LINK-1.0-http--link</gco:CharacterString>
++                    </gmd:protocol>
++                    <gmd:description>
++                        <gco:CharacterString xmlns:gco="http://www.isotc211.org/2005/gco">GeoNode profile page</gco:CharacterString>
++                    </gmd:description>
++                </gmd:CI_OnlineResource>
++            </gmd:onlineResource>
++            {% endif %}
+            <gmd:address>
+              <gmd:CI_Address>
+                <gmd:deliveryPoint {% if not poc.delivery %}gco:nilReason="missing"{% endif %}>
+@@ -260,7 +260,7 @@
+            <gmd:onLine>
+              <gmd:CI_OnlineResource>
+                <gmd:linkage>
+-                 <gmd:URL>{{layer.get_absolute_url}}</gmd:URL>
++                   <gmd:URL>{{ SITEURL }}{{layer.get_absolute_url}}</gmd:URL>
+                </gmd:linkage>
+                <gmd:protocol>
+                  <gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
+diff --git a/src/GeoNodePy/geonode/templates/maps/layer.html b/src/GeoNodePy/geonode/templates/maps/layer.html
+index afcf948..9c5138e 100644
+--- a/src/GeoNodePy/geonode/templates/maps/layer.html
++++ b/src/GeoNodePy/geonode/templates/maps/layer.html
+@@ -20,6 +20,8 @@
+             var config = {
+                 tools: [{
+                     ptype: "gxp_wmsgetfeatureinfo",
++                    // uncomment the line below if you want feature info in a grid
++                    //format: "grid",
+                     actionTarget: "main.tbar",
+                     outputConfig: {width: 400, height: 200, panIn: false}
+                 }],
+diff --git a/src/GeoNodePy/geonode/templates/maps/layer_upload.html b/src/GeoNodePy/geonode/templates/maps/layer_upload.html
+index 2ba380e..bbcb78d 100644
+--- a/src/GeoNodePy/geonode/templates/maps/layer_upload.html
++++ b/src/GeoNodePy/geonode/templates/maps/layer_upload.html
+@@ -213,7 +213,7 @@ Ext.onReady(function(){
+             anonymous: 'layer_readonly',
+             authenticated: 'layer_readonly',
+             users:[]
+-        },
++        }
+     });
+     permissionsEditor.fireEvent("updated", permissionsEditor);
+ });
+diff --git a/src/GeoNodePy/geonode/templates/maps/view.html b/src/GeoNodePy/geonode/templates/maps/view.html
+index 129957b..c526535 100644
+--- a/src/GeoNodePy/geonode/templates/maps/view.html
++++ b/src/GeoNodePy/geonode/templates/maps/view.html
+@@ -29,6 +29,8 @@ Ext.onReady(function() {
+     var config = Ext.apply({
+         tools: [{
+             ptype: "gxp_wmsgetfeatureinfo",
++            // uncomment the line below if you want feature info in a grid
++            //format: "grid",
+             actionTarget: "main.tbar",
+             outputConfig: {width: 400, height: 300}
+         }],
+@@ -55,7 +57,7 @@ Ext.onReady(function() {
+             }) 
+         };
+ 
+-    var moreInfoTemplate = new Ext.Template(Ext.get("more-info-tpl").dom.innerHTML);
++	var moreInfoTemplate = new Ext.Template(decodeURIComponent(Ext.get("more-info-tpl").dom.innerHTML));
+     var mapInfoHtml = config.id ? moreInfoTemplate.apply({permalink : permalink(app.mapID)}) : "This map is currently unsaved";
+     Ext.DomHelper.overwrite(Ext.get("more-info"), mapInfoHtml)
+ 
+diff --git a/src/GeoNodePy/geonode/templates/search_base.html b/src/GeoNodePy/geonode/templates/search_base.html
+index f84b596..8440ac4 100644
+--- a/src/GeoNodePy/geonode/templates/search_base.html
++++ b/src/GeoNodePy/geonode/templates/search_base.html
+@@ -74,7 +74,7 @@ Ext.onReady(function(){
+     <div class="search-button">Refine</div>
+   </div>
+   <div class="block">
+-  <h3>Selected Data</h3>
++  <h3>{% trans "Selected Data" %}</h3>
+     <p><span class="explain">{% blocktrans %}Use the checkboxes in the search results to add data to your selection.{% endblocktrans%}</span></p>
+   <div id="selection">
+     <div id="data_cart"></div>
+diff --git a/src/GeoNodePy/geonode/urls.py b/src/GeoNodePy/geonode/urls.py
+index 4da030d..2c22506 100644
+--- a/src/GeoNodePy/geonode/urls.py
++++ b/src/GeoNodePy/geonode/urls.py
+@@ -1,13 +1,20 @@
+ from django.conf.urls.defaults import *
+ from django.conf import settings
+ from staticfiles.urls import staticfiles_urlpatterns
++from geonode.sitemap import LayerSitemap, MapSitemap
+ 
+ # Uncomment the next two lines to enable the admin:
+ from django.contrib import admin
+ admin.autodiscover()
+ 
+ js_info_dict = {
+-    'packages': ('geonode.maps',),
++    'domain': 'djangojs',
++    'packages': ('geonode',)
++}
++
++sitemaps = {
++    "layer": LayerSitemap,
++    "map": MapSitemap
+ }
+ 
+ urlpatterns = patterns('',
+@@ -42,6 +49,7 @@ urlpatterns = patterns('',
+     (r'^avatar/', include('avatar.urls')),
+     (r'^accounts/', include('registration.urls')),
+     (r'^profiles/', include('profiles.urls')),
++    (r'^sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps})
+     )
+ 
+ # Extra static file endpoint for development use
+diff --git a/src/geoserver-geonode-ext/jcs_caching/SpatialFilterCache.data b/src/geoserver-geonode-ext/jcs_caching/SpatialFilterCache.data
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/geoserver-geonode-ext/jcs_caching/SpatialFilterCache.key b/src/geoserver-geonode-ext/jcs_caching/SpatialFilterCache.key
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/geoserver-geonode-ext/jcs_caching/xlink.data b/src/geoserver-geonode-ext/jcs_caching/xlink.data
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/geoserver-geonode-ext/jcs_caching/xlink.key b/src/geoserver-geonode-ext/jcs_caching/xlink.key
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/geoserver-geonode-ext/pom.xml b/src/geoserver-geonode-ext/pom.xml
+index 4799472..e8e4bf3 100644
+--- a/src/geoserver-geonode-ext/pom.xml
++++ b/src/geoserver-geonode-ext/pom.xml
+@@ -154,7 +154,7 @@
+   </dependencies>
+   <properties>
+     <geotools.version>2.7-SNAPSHOT</geotools.version>
+-    <geoserver.version>2.1-GWC</geoserver.version>
++    <geoserver.version>2.1-SNAPSHOT</geoserver.version>
+     <jetty.version>6.1.8</jetty.version>
+     <maven.test.search.classdir>true</maven.test.search.classdir>
+   </properties>
+diff --git a/src/geoserver-geonode-ext/src/main/resources/geonodeApplicationSecurityContext.xml b/src/geoserver-geonode-ext/src/main/resources/geonodeApplicationSecurityContext.xml
+index 049b45d..fc97ad8 100644
+--- a/src/geoserver-geonode-ext/src/main/resources/geonodeApplicationSecurityContext.xml
++++ b/src/geoserver-geonode-ext/src/main/resources/geonodeApplicationSecurityContext.xml
+@@ -48,7 +48,11 @@
+         /**=httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,genodeCookieFilter,gnBasicProcessingFilter,gnAuthenticationProcessingFilter,gnAnonymousProcessingFilter,filterInvocationInterceptor
+         
+         LEGACY NEW:
++        CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
++        PATTERN_TYPE_APACHE_ANT
+         /web/**=httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor
++        /j_spring_security_check/**=httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor
++        /j_spring_security_logout/**=httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor
+         /rest/**=httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilter,anonymousProcessingFilter,owsExceptionTranslationFilter,restFilterInvocationInterceptor
+         /gwc/rest/web/**=anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor
+         /gwc/rest/**=httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilter,anonymousProcessingFilter,owsExceptionTranslationFilter,restFilterInvocationInterceptor
+@@ -58,7 +62,10 @@
+         CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+         PATTERN_TYPE_APACHE_ANT
+         /web/**=httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,genodeCookieFilter,gnBasicProcessingFilter,gnAuthenticationProcessingFilter,securityContextHolderAwareRequestFilter,gnAnonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor
++        /j_spring_security_check/**=httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,gnAuthenticationProcessingFilter,securityContextHolderAwareRequestFilter,gnAnonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor
++        /j_spring_security_logout/**=httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,gnAuthenticationProcessingFilter,securityContextHolderAwareRequestFilter,gnAnonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor
+         /rest/**=httpSessionContextIntegrationFilterWithASCFalse,genodeCookieFilter,gnBasicProcessingFilter,gnAnonymousProcessingFilter,geonodeOwsExceptionTranslationFilter,gnRestFilterInvocationInterceptor
++        /gwc/rest/web/**=gnAnonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor
+         /gwc/rest/**=httpSessionContextIntegrationFilterWithASCFalse,genodeCookieFilter,gnBasicProcessingFilter,gnAnonymousProcessingFilter,geonodeOwsExceptionTranslationFilter,gnRestFilterInvocationInterceptor
+         /**=httpSessionContextIntegrationFilterWithASCFalse,genodeCookieFilter,gnBasicProcessingFilter,gnAnonymousProcessingFilter,geonodeOwsExceptionTranslationFilter,securityContextHolderAwareRequestFilter,filterInvocationInterceptor
+       </value>

@@ -1,3 +1,7 @@
 #!/bin/bash
 risiko start
-echo
+
+# Wait till server has started, then display message and get prompt back
+sleep 1
+echo "Risiko server started. Run risiko-stop to shut down."
+

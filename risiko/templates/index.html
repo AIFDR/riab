@@ -1,0 +1,73 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+
+{% block title %} {% trans "Welcome!" %} - {{ block.super }} {% endblock %}
+{% block indexclass %} class="here" {% endblock %}
+
+{% block head %} 
+{% include "geonode/ext_header.html" %}
+{{ block.super }}
+<script type="text/javascript">
+Ext.onReady(function(){
+{% autoescape off %}
+  var clientButton = new Ext.Button({
+     renderTo: 'calculator', 
+     text: '{% trans "Launch Risiko Impact Calculator" %}',
+     handler: function(){ window.location = "{% url calculator %}"; }
+  });
+
+  var createMapButton = new Ext.Button({
+     renderTo: 'create_map', 
+     text: '{% trans "Create Map" %}',
+     handler: function(){ window.location = "{% url geonode.maps.views.newmap %}"; }
+  });
+
+  var submitForm = function() {
+      Ext.query('#data_block form')[0].submit();
+  };
+
+
+{% endautoescape %}
+});
+</script>
+{% endblock %}
+
+{% block main %} 
+<div class="twocol">
+<!-- TODO: i18n on the text here -->
+  <div class="block">
+    <h2> {% trans "Welcome" %} </h2>
+    <p>
+    {% blocktrans %}
+Risiko - Risk in a Box is a web based tool that models impacts of different hazard events on population or infrastructure. It is Open Source Software, and we encourage you to build new applications using its components and the resources it provides.
+    {% endblocktrans %} 
+      <div id="calculator" class="content-button"></div><br clear='all'>
+  </p>
+    <p>
+    {% blocktrans %} 
+   <strong>Create</strong>
+      a map with our cartography tool, or <strong>explore</strong> maps
+      shared by others.
+    {% endblocktrans %} 
+  </p>
+    <div class="selfclear">
+      <div id="explore_map" class="content-button"></div>
+      <div id="create_map" class="content-button"></div>
+    </div>
+    <p>
+    {% blocktrans %} 
+    
+      <strong>Search</strong> for data that is valuable to you, or 
+      <strong>upload</strong> your own data.
+    {% endblocktrans %} 
+    </p>
+</div>
+  
+    <!-- Links to specialized views of data -->
+    <!-- Upload data button (link?) -->
+    <a class="layer-upload-link" href="{% url geonode.maps.views.upload_layer%}">{% trans "Upload data"  %}</a>
+  </div>
+</div>
+{% endblock %}
+{% block sidebar %}
+{% endblock %}

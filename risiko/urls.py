@@ -1,7 +1,6 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from risiko.utilities import save_to_geonode
 from django.contrib import admin
 
 admin.autodiscover()
@@ -11,9 +10,7 @@ js_info_dict = {
 }
 
 urlpatterns = patterns('',
-    (r'^$', 'django.views.generic.simple.direct_to_template',
-                            {'template': 'risiko/index.html'}),
-    (r'^index/?$', 'geonode.views.index'),
+    url(r'^$', 'geonode.views.index', name='index'),
     (r'^(?P<page>help)/?$', 'geonode.views.static'),
     (r'^developer/?$', 'geonode.views.developer'),
     (r'^lang\.js$', 'django.views.generic.simple.direct_to_template',
@@ -23,12 +20,6 @@ urlpatterns = patterns('',
     (r'^geoserver/', 'geonode.proxy.views.geoserver'),
     url(r'^data/$', 'geonode.maps.views.browse_data', name='data'),
     url(r'^data/acls/?$', 'geonode.maps.views.layer_acls', name='layer_acls'),
-    url(r'^data/search/?$', 'geonode.maps.views.search_page',
-                                                name='search'),
-    url(r'^data/search/api/?$', 'geonode.maps.views.metadata_search',
-                                                    name='search_api'),
-    url(r'^data/search/detail/?$', 'geonode.maps.views.search_result_detail',
-                                               name='search_result_detail'),
     url(r'^data/api/batch_permissions/?$',
                       'geonode.maps.views.batch_permissions'),
     url(r'^data/api/batch_delete/?$', 'geonode.maps.views.batch_delete'),
@@ -49,7 +40,5 @@ urlpatterns = patterns('',
     (r'^accounts/', include('registration.urls')),
     (r'^profiles/', include('profiles.urls')),
     (r'^rosetta/', include('rosetta.urls')),
-    (r'^api/v1/calculate', 'impact.views.calculate',
-                                         {'save_output': save_to_geonode}),
-    (r'^api/v1/', include('impact.urls')),
-    ) + staticfiles_urlpatterns()
+    (r'^impact/', include('impact.urls')),
+   ) + staticfiles_urlpatterns()

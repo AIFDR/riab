@@ -48,17 +48,17 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 NOSE_ARGS = [
 #      '--failed',
-#      '--stop',
+      '--stop',
       '--verbosity=2',
-      '--cover-erase',
       '--with-doctest',
       '--nocapture',
       '--with-coverage',
       '--cover-package=risiko,impact',
       '--cover-inclusive',
       '--cover-tests',
+      '--cover-erase',
       '--detailed-errors',
-      '--with-xunit',
+#      '--with-xunit',
 #      '--with-pdb',
       ]
 
@@ -147,12 +147,6 @@ GEOSERVER_BASE_URL = 'http://localhost:8001/geoserver-geonode-dev/'
 # The username and password for a user that can add and edit layer
 # details on GeoServer
 GEOSERVER_CREDENTIALS = 'foo', 'bar'
-
-# The FULLY QUALIFIED url to the GeoNetwork instance for this GeoNode
-GEONETWORK_BASE_URL = 'http://localhost:8001/geonetwork/'
-
-# The username and password for a user with write access to GeoNetwork
-GEONETWORK_CREDENTIALS = 'admin', 'admin'
 
 AUTHENTICATION_BACKENDS = ('geonode.core.auth.GranularBackend',)
 
@@ -259,7 +253,7 @@ INSTALLED_APPS = (
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+#    'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
@@ -274,7 +268,7 @@ LOGGING = {
             'class': 'django.utils.log.NullHandler',
         },
         'console': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
@@ -282,8 +276,8 @@ LOGGING = {
             'level': 'DEBUG',
             'class' : 'logging.handlers.RotatingFileHandler',
             'formatter': 'verbose',
-            'filename': 'risiko.log',
-            'maxBytes': '1024',
+            'filename': os.path.join(PROJECT_ROOT, 'risiko.log'),
+            'maxBytes': '1024000',
             'backupCount': '3',
          },
         'mail_admins': {
@@ -295,17 +289,17 @@ LOGGING = {
         'django': {
             'handlers': ['null'],
             'propagate': False,
-            'level': 'INFO',
+            'level': 'ERROR',
         },
         'gsconfig': {
-            'handlers': ['null'],
+            'handlers': ['null', 'file'],
             'propagate': False,
-            'level': 'INFO',
+            'level': 'WARNING',
         },
         'owslib': {
             'handlers': ['null'],
             'propagate': False,
-            'level': 'INFO',
+            'level': 'ERROR',
         },
         'django.request': {
             'handlers': ['mail_admins'],
@@ -315,11 +309,11 @@ LOGGING = {
         'geonode.maps': {
             'handlers': ['file'],
             'propagate': False,
-            'level': 'ERROR',
+            'level': 'WARNING',
         },
         'risiko': {
             'handlers': ['file'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False,
        }
     }
@@ -340,6 +334,13 @@ ABSOLUTE_URL_OVERRIDES = {'auth.user': get_user_url}
 AUTH_PROFILE_MODULE = 'maps.Contact'
 REGISTRATION_OPEN = False
 DB_DATASTORE = False
+
+# Get rid of a future warning in elemtree:
+import warnings
+try:
+    warnings.filterwarnings(action='ignore', category=FutureWarning)
+except NameError:
+    del warnings
 
 try:
     from local_settings import *

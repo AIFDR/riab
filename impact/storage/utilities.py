@@ -4,12 +4,10 @@
 import os
 import copy
 import numpy
-from osgeo import ogr, gdal
+from osgeo import ogr
 from tempfile import mkstemp
-import cgi
-from urllib import urlencode
 from urllib2 import urlopen
-from owslib.etree import etree
+
 
 # The projection string depends on the gdal version
 DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
@@ -65,180 +63,6 @@ def is_server_reachable(url):
         return False
     else:
         return True
-
-
-def get_layers_metadata(url, version='1.0.0'):
-    """Return the metadata for each layer as an dict formed from the keywords
-
-    The keywords are parsed and added to the metadata dictionary
-    if they conform to the format "identifier:value".
-
-    default searches both feature and raster layers by default
-      Input
-        url: The wfs url
-        version: The version of the wfs xml expected
-
-      Returns
-        A list of dictionaries containing the metadata for each layer
-    """
-
-    # FIXME (Ole): This should be superseded by new get_metadata
-    #              function which will be entirely based on OWSLib
-    #              Issue #115
-
-    # Make sure the server is reachable before continuing
-    msg = ('Server %s is not reachable' % url)
-    if not is_server_reachable(url):
-        raise Exception(msg)
-
-    wcs_reader = MetadataReader(url, 'wcs', version)
-    wfs_reader = MetadataReader(url, 'wfs', version)
-    layers = []
-    layers.extend(wfs_reader.get_metadata())
-    layers.extend(wcs_reader.get_metadata())
-    return layers
-
-
-class MetadataReader(object):
-    """Read and parse capabilities document into a lxml.etree infoset
-
-       Adapted from:
-       http://trac.gispython.org/lab/browser/OWSLib/trunk/
-              owslib/feature/wfs200.py#L402
-    """
-
-    # FIXME (Ole): Why are we not using WebCoverageService and
-    #              WebFeatureService from OWSLib? See issue #115
-    def __init__(self, server_url, service_type, version):
-        """Initialize"""
-        self.WFS_NAMESPACE = '{http://www.opengis.net/wfs}'
-        self.WCS_NAMESPACE = '{http://www.opengis.net/wcs}'
-        self.url = server_url
-        self.service_type = service_type.lower()
-        self.version = version
-        self.xml = None
-        if self.service_type == 'wcs':
-            self.typelist = 'ContentMetadata'
-            self.typeelms = 'CoverageOfferingBrief'
-            self.namestr = 'name'
-            self.titlestr = 'label'
-            self.NAMESPACE = self.WCS_NAMESPACE
-            self.keywordstr = 'keywords'
-            self.abstractstr = 'description'
-            self.layer_type = 'raster'
-        elif self.service_type == 'wfs':
-            self.typelist = 'FeatureTypeList'
-            self.typeelms = 'FeatureType'
-            self.namestr = 'Name'
-            self.titlestr = 'Title'
-            self.abstractstr = 'Abstract'
-            self.NAMESPACE = self.WFS_NAMESPACE
-            self.keywordstr = 'Keywords'
-            self.layer_type = 'feature'
-        else:
-            msg = 'Unknown service type: "%s"' % self.service_type
-            raise NotImplemented(msg)
-
-    def capabilities_url(self):
-        """Return a capabilities url
-        """
-        qs = []
-        if self.url.find('?') != -1:
-            qs = cgi.parse_qsl(self.url.split('?')[1])
-
-        params = [x[0] for x in qs]
-
-        if 'service' not in params:
-            qs.append(('service', self.service_type))
-        if 'request' not in params:
-            qs.append(('request', 'GetCapabilities'))
-        if 'version' not in params:
-            qs.append(('version', self.version))
-
-        urlqs = urlencode(tuple(qs))
-        return self.url.split('?')[0] + '?' + urlqs
-
-    def read(self):
-        """Get and parse a WFS capabilities document, returning an
-        instance of WFSCapabilitiesInfoset
-
-        Parameters
-        ----------
-        url : string
-            The URL to the WFS capabilities document.
-        """
-        request = self.capabilities_url()
-        try:
-            u = urlopen(request)
-        except Exception, e:
-            msg = ('Can not complete the request to %s, error was %s.'
-                   % (request, str(e)))
-            e.args = (msg,)
-            raise
-        else:
-            response = u.read()
-            # FIXME: Make sure it is not an html page with an error message.
-            self.xml = response
-            return etree.fromstring(self.xml)
-
-    def readString(self, st):
-        """Parse a WFS capabilities document, returning an
-        instance of WFSCapabilitiesInfoset
-
-        string should be an XML capabilities document
-        """
-        if not isinstance(st, str):
-            raise ValueError('String must be of type string, '
-                             'not %s' % type(st))
-        return etree.fromstring(st)
-
-    def get_metadata(self):
-        """Get metadata for all layers of given service_type
-
-        FIXME (Ole): Need all metadata, especially bounding boxes
-                     for both vector and raster data.
-                     See issue https://github.com/AIFDR/riab/issues/95
-        """
-
-        _capabilities = self.read()
-        request_url = self.capabilities_url()
-        serviceidentelem = _capabilities.find(self.NAMESPACE + 'Service')
-        typelistelem = _capabilities.find(self.NAMESPACE + self.typelist)
-
-        msg = ('Could not find element "%s" in namespace %s on %s'
-               % (self.typelist, self.NAMESPACE, self.url))
-        assert typelistelem is not None, msg
-
-        typeelems = typelistelem.findall(self.NAMESPACE + self.typeelms)
-        layers = []
-        for f in typeelems:
-            metadata = {'layer_type': self.layer_type}
-            name = f.findall(self.NAMESPACE + self.namestr)
-            title = f.findall(self.NAMESPACE + self.titlestr)
-            kwds = f.findall(self.NAMESPACE + self.keywordstr)
-            abstract = f.findall(self.NAMESPACE + self.abstractstr)
-
-            layer_name = name[0].text
-            #workspace_name = 'geonode' # FIXME (Ole): This is not used
-
-            metadata['title'] = title[0].text
-
-            # FIXME (Ole): Why only wcs?
-            if self.service_type == 'wcs':
-                kwds = kwds[0].findall(self.NAMESPACE + 'keyword')
-
-            if kwds is not None:
-                for kwd in kwds[:]:
-                    # Split all the keypairs
-                    keypairs = str(kwd.text).split(',')
-                    for val in keypairs:
-                        # Only use keywords containing at least one :
-                        if str(val).find(':') > -1:
-                            k, v = val.split(':')
-                            metadata[k.strip()] = v.strip()
-
-            layers.append([layer_name, metadata])
-        return layers
 
 
 def write_keywords(keywords, filename):
@@ -343,6 +167,35 @@ def read_keywords(filename):
     fid.close()
 
     return keywords
+
+
+def extract_geotransform(layer):
+    """Extract geotransform from OWS layer object.
+
+    Input
+        layer: Raster layer object e.g. obtained from WebCoverageService
+
+    Output:
+        geotransform: GDAL geotransform (www.gdal.org/gdal_tutorial.html)
+    """
+
+    grid = layer.grid
+
+    top_left_x = float(grid.origin[0])
+    we_pixel_res = float(grid.offsetvectors[0][0])
+    x_rotation = float(grid.offsetvectors[0][1])
+    top_left_y = float(grid.origin[1])
+    y_rotation = float(grid.offsetvectors[1][0])
+    ns_pixel_res = float(grid.offsetvectors[1][1])
+
+    # There is half a pixel_resolution difference between
+    # what WCS reports and what GDAL reports.
+    # A pixel CENTER vs pixel CORNER difference.
+    adjusted_top_left_x = top_left_x - we_pixel_res / 2
+    adjusted_top_left_y = top_left_y - ns_pixel_res / 2
+
+    return (adjusted_top_left_x, we_pixel_res, x_rotation,
+            adjusted_top_left_y, y_rotation, ns_pixel_res)
 
 
 def geotransform2bbox(geotransform, columns, rows):
@@ -455,3 +308,97 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
         bbox[3] += dy
 
     return bbox
+
+
+def get_geometry_type(geometry):
+    """Determine geometry type based on data
+
+    Input
+        geometry: A list of either point coordinates [lon, lat] or polygons
+                  which are assumed to be numpy arrays of coordinates
+
+    Output
+        geometry_type: Either ogr.wkbPoint or ogr.wkbPolygon
+
+    If geometry type cannot be determined an Exception is raised.
+    There is no consistency check across all entries of the geometry list, only
+    the first element is used in this determination.
+    """
+
+    if len(geometry[0]) == 2:
+        try:
+            float(geometry[0][0])
+            float(geometry[0][1])
+        except:
+            pass
+        else:
+            # This geometry appears to be point data
+            geometry_type = ogr.wkbPoint
+    elif len(geometry[0]) > 2:
+        try:
+            x = numpy.array(geometry[0])
+        except:
+            pass
+        else:
+            # This geometry appears to be polygon data
+            if x.shape[0] > 2 and x.shape[1] == 2:
+                geometry_type = ogr.wkbPolygon
+
+    if geometry_type is None:
+        msg = 'Could not determine geometry type'
+        raise Exception(msg)
+
+    return geometry_type
+
+
+def is_sequence(x):
+    """Determine if x behaves like a true sequence but not a string
+
+    This will for example return True for lists, tuples and numpy arrays
+    but False for strings and dictionaries.
+    """
+
+    if isinstance(x, basestring):
+        return False
+
+    try:
+        x[0]
+    except:
+        return False
+    else:
+        return True
+
+
+def array2wkt(A, geom_type='POLYGON'):
+    """Convert coordinates to wkt format
+
+    Input
+        A: Nx2 Array of coordinates representing either a polygon or a line.
+           A can be either a numpy array or a list of coordinates.
+        geom_type: Determines output keyword 'POLYGON' or 'LINESTRING'
+
+    Output
+        wkt: geometry in the format known to ogr: Examples
+
+        POLYGON((1020 1030,1020 1045,1050 1045,1050 1030,1020 1030))
+        LINESTRING(1000 1000, 1100 1050)
+
+    """
+
+    if geom_type == 'LINESTRING':
+        # One bracket
+        n = 1
+    elif geom_type == 'POLYGON':
+        # Two brackets (tsk tsk)
+        n = 2
+    else:
+        msg = 'Unknown geom_type: %s' % geom_type
+        raise Exception(msg)
+
+    wkt_string = geom_type + '(' * n
+
+    N = len(A)
+    for i in range(N):
+        wkt_string += '%f %f, ' % tuple(A[i])  # Works for both lists and arrays
+
+    return wkt_string[:-2] + ')' * n

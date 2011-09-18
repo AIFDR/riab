@@ -43,45 +43,27 @@ fi
 
 
 echo ">>> Downloading bundled pre-requisites"
+pushd .
+export RISIKO_DATASOURCE="http://data.riskinabox.org"  # Cloud Front
+#export RISIKO_DATASOURCE="http://aifdr.s3.amazonaws.com"
 
-# Determine data source
-#zone=$(cat /etc/timezone)
-#if [ "$zone" == "Asia/Jakarta" ]; then
-#    export RISIKO_DATASOURCE="http://203.77.224.75/store/risiko_support_data"
-#    echo "Using Indonesian mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
-#else
-#    export RISIKO_DATASOURCE="https://s3.amazonaws.com/geonodeariel"
-#    echo "Using Amazon mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
-#fi
-
-#FIXME: Using Indonesia until everything is back again in the Amazon repo
-export RISIKO_DATASOURCE="http://203.77.224.75/store/risiko_support_data"
-echo "Using Indonesian mirror for bundled pre-requisites: $RISIKO_DATASOURCE"
-
-# Install GeoNode and it's pre-requisites
-mkdir -p temp
-cd temp
-wget -c "$RISIKO_DATASOURCE/tomcat.zip"
-wget -c "$RISIKO_DATASOURCE/geoserver-geonode-dev.war"
-wget -c "$RISIKO_DATASOURCE/geonetwork.war"
-wget -c "$RISIKO_DATASOURCE/geonode-libs.pybundle"
-wget -c "$RISIKO_DATASOURCE/geonode-client.zip"
-wget -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
-wget -c "$RISIKO_DATASOURCE/risiko_demo_data.tgz"
-
-# Getting new calculator dependencies (new version to replace ant init)
-
-wget -c "$RISIKO_DATASOURCE/opengeo-GeoExt-deac166.zip"
-wget -c "$RISIKO_DATASOURCE/opengeo-gxp-a47244a.zip"
-wget -c "$RISIKO_DATASOURCE/openlayers-openlayers-79f0b0a.zip"
-wget -c "$RISIKO_DATASOURCE/tschaub-ringojs-v0.5.0-433-gf058d4d.zip"
-wget -c "$RISIKO_DATASOURCE/tschaub-buildkit-86eacbd.zip"
-cd ..
+# FIXME(Ole): One must delete these files from /usr/share/risiko to force a fresh download
+sudo mkdir -p /usr/share/risiko
+cd /usr/share/risiko
+sudo wget -t 1 -c "$RISIKO_DATASOURCE/tomcat.zip"
+sudo wget -t 1 -c "$RISIKO_DATASOURCE/geoserver-geonode-dev.war"
+sudo wget -t 1 -c "$RISIKO_DATASOURCE/geonode-libs.pybundle"
+sudo wget -t 1 -c "$RISIKO_DATASOURCE/geonode-client.zip"
+sudo wget -t 1 -c "$RISIKO_DATASOURCE/risiko_test_data.tgz"
+sudo wget -t 1 -c "$RISIKO_DATASOURCE/risiko_demo_data.tgz"
+sudo wget -t 1 -c "$RISIKO_DATASOURCE/fonts.zip"
+popd
 
 
 function checkup() {
   REPO="$1"
   WORKING_DIR="$2"
+  BRANCH="$3"
   if [ -d "${WORKING_DIR}" ];
   then
       echo "Updating ${WORKING_DIR} from upstream"
@@ -89,15 +71,18 @@ function checkup() {
   else
       git clone "git@github.com:${REPO}" "${WORKING_DIR}" || git clone "https://github.com/${REPO}" "${WORKING_DIR}" || git clone "http://github.com/${REPO}" "${WORKING_DIR}"
   fi
+
+  pushd .
+  cd $WORKING_DIR
+  git fetch origin $BRANCH
+  git checkout $BRANCH
+  popd
 }
 
 
-
-echo ">>> Cloning the repositories"
-# Get riab source code
-checkup GFDRR/geonode.git geonode
-checkup AIFDR/riab.git riab
-
+echo ">>> Cloning the repositories with specific branches"
+checkup GFDRR/geonode.git geonode nocsw
+checkup AIFDR/riab.git riab develop
 
 
 echo ">>> Activating virtual environment"
@@ -105,17 +90,16 @@ source ~/.bash_aliases
 source riab_env/bin/activate
 
 echo ">>> Installing riab dependencies"
-unzip -o temp/tomcat.zip > /dev/null
-cp temp/geoserver-geonode-dev.war tomcat/webapps/
-cp temp/geonetwork.war tomcat/webapps/
-tar xvfz temp/risiko_test_data.tgz > /dev/null
-#FIXME: We should remove this from the installer, it is too much data
-# and more related to our demo server than riab development.
-tar xvfz temp/risiko_demo_data.tgz > /dev/null
+pushd .
+unzip -o /usr/share/risiko/tomcat.zip > /dev/null
+cp /usr/share/risiko/geoserver-geonode-dev.war tomcat/webapps/
+tar xvfz /usr/share/risiko/risiko_test_data.tgz > /dev/null
+tar xvfz /usr/share/risiko/risiko_demo_data.tgz > /dev/null
 mkdir -p geonode/src/GeoNodePy/geonode/maps/static
-unzip -o temp/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode > /dev/null
-mkdir -p logs
-pip install temp/geonode-libs.pybundle
+unzip -o /usr/share/risiko/geonode-client.zip -d geonode/src/GeoNodePy/geonode/maps/static/geonode > /dev/null
+pip install /usr/share/risiko/geonode-libs.pybundle
+sudo unzip -o /usr/share/risiko/fonts.zip -d /
+popd
 
 echo ">>> Installing GeoNode and Riab in dev mode"
 pushd .
@@ -128,9 +112,8 @@ echo ">>> Building and installing the Calculator application"
 pushd .
 cd riab/calculator
 ant init
-ant dist
-mkdir -p ../impact/static
-cp -Rf build/calculator/WEB-INF/app/static ../impact/static/calculator
+ant
+popd
 
 echo ""
 echo "Congratulations, you have installed Risk in a Box"

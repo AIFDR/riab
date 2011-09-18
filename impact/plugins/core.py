@@ -1,14 +1,18 @@
+"""Function to manage self-registering plugins
+
+The design is based on http://effbot.org/zone/metaclass-plugins.htm
+
+To register the plugin, the module must be imported by the Python process
+using it.
+"""
+
 from django.template.loader import render_to_string
 from impact.plugins.utilities import ColorMapEntry
 import types
+import keyword
 
-## See http://effbot.org/zone/metaclass-plugins.htm
-## for a description of plugins
-
-# To register the plugin, the module must be imported by the Python process
-# using it.
-# FIXME (Ole): I think we should pass the module name to get_function to
-#              keep things together
+import logging
+logger = logging.getLogger('risiko')
 
 
 class PluginMount(type):
@@ -27,8 +31,7 @@ class PluginMount(type):
 
 
 class FunctionProvider:
-    """
-    Mount point for plugins which refer to actions that can be performed.
+    """Mount point for plugins which refer to actions that can be performed.
 
     Plugins implementing this reference should provide the following method:
 
@@ -46,18 +49,21 @@ class FunctionProvider:
 
     def generate_style(self, data):
         """Make a default style for all plugins
-
         """
 
-        # The paramers are substituted into the sld according the the
+        # The parameters are substituted into the sld according the the
         # Django template methodology:
-        #https://docs.djangoproject.com/en/dev/ref/templates/builtins/?from=olddocs
+        # https://docs.djangoproject.com/en/dev/ref/templates/
+        #         builtins/?from=olddocs
+
         params = {'name': data.get_name()}
 
         if data.is_raster:
             colormapentries = [
-                ColorMapEntry(color='#ffffff', opacity='0', quantity='-9999.0'),
-                ColorMapEntry(color='#38A800', opacity='0', quantity='0.1'),
+                ColorMapEntry(color='#ffffff', opacity='0',
+                              quantity='-9999.0'),
+                ColorMapEntry(color='#38A800', opacity='0',
+                              quantity='0.1'),
                 ColorMapEntry(color='#38A800', quantity='0.2'),
                 ColorMapEntry(color='#79C900', quantity='0.5'),
                 ColorMapEntry(color='#CEED00', quantity='1'),
@@ -74,7 +80,7 @@ class FunctionProvider:
 
 
 def get_plugins(name=None):
-    """Retrieves a list of plugins that match the name you pass
+    """Retrieve a list of plugins that match the name you pass
 
        Or all of them if no name is passed.
     """
@@ -104,7 +110,7 @@ def get_plugins(name=None):
 
 
 def pretty_function_name(func):
-    """ Return a human readable name for the function
+    """Return a human readable name for the function
     if the function has a func.plugin_name use this
     otherwise turn underscores to spaces and Caps to spaces """
 
@@ -122,7 +128,7 @@ def pretty_function_name(func):
 
 
 def requirements_collect(func):
-    """ Collect the requirements from the plugin function doc
+    """Collect the requirements from the plugin function doc
 
     The requirements need to be specified using
       :param requires <valid pythhon expression>
@@ -168,7 +174,6 @@ def requirement_check(params, require_str, verbose=False):
     and evaluate to True or False"""
 
     execstr = 'def check():\n'
-
     for key in params.keys():
         if key == '':
             if params[''] != '':
@@ -178,7 +183,11 @@ def requirement_check(params, require_str, verbose=False):
                 raise Exception(msg)
             else:
                 continue
-
+        if key in keyword.kwlist:
+            msg = ('Error in plugin requirements'
+                   'Must not use Python keywords as params: %s' % (key))
+            logger.error(msg)
+            return False
         if type(params[key]) == type(''):  # is it a string param
             execstr += '  %s = "%s" \n' % (key.strip(), params[key])
         else:
@@ -191,14 +200,21 @@ def requirement_check(params, require_str, verbose=False):
     try:
         exec(compile(execstr, '<string>', 'exec'))
         return check()
-    except NameError:
+    except NameError, e:
+        # This condition will happen frequently since the function
+        # is evaled against many params that are not relevant and
+        # hence correctly return False
         pass
-    except SyntaxError:
-        # TODO(Ted and Ole): This exceptions should be handle by the callee
-        #                    as we don't want errors in plugins to
-        #                    crash the system.
-        msg = 'Syntax error in plugin requirements header: %s' % execstr
-        raise SyntaxError(msg)
+    except Exception, e:
+        msg = ('Non matching plugin requirements header: %s. '
+               'This is perfectly OK (says Ted). '
+               'Original message: %s' % (execstr, e))
+
+        # This will also happen frequently and are expected. However,
+        # the info is useful for debugging individual plugins, so we
+        # log the message.
+        logger.info(msg)
+
     return False
 
 
@@ -223,17 +239,21 @@ def requirements_met(requirements, params, verbose=False):
     return False
 
 
-def compatible_layers(func, layers_data):
+def compatible_layers(func, layer_descriptors):
     """Fetches all the layers that match the plugin requirements.
 
-       Returns:
+    Input
+        func: ? (FIXME(Ole): Ted, can you fill in here?
+        layer_descriptor: Layer names and meta data (keywords, type, etc)
 
-           Array of compatible layers, can be an empty list.
+    Output:
+        Array of compatible layers, can be an empty list.
     """
+
     layers = []
     requirements = requirements_collect(func)
 
-    for layer_name, layer_params in layers_data:
+    for layer_name, layer_params in layer_descriptors:
         if requirements_met(requirements, layer_params):
             layers.append(layer_name)
 

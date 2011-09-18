@@ -9,16 +9,18 @@ from django.conf import settings
 from django.utils import simplejson as json
 
 from geonode.maps.utils import get_valid_user, check_geonode_is_up
-from risiko.utilities import save_to_geonode, check_layer
-from risiko.utilities import assert_bounding_box_matches
 
 from impact.views import calculate
+
+from impact.storage.io import save_to_geonode, check_layer
+from impact.storage.io import assert_bounding_box_matches
 from impact.storage.io import download
 from impact.storage.io import get_bounding_box
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
-from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
+
+from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from owslib.wcs import WebCoverageService
 
 
@@ -50,15 +52,8 @@ class Test_calculations(unittest.TestCase):
         # Upload a raster and a vector data set
         for filename in ['population_padang_1.asc', 'lembang_schools.shp']:
             basename, ext = os.path.splitext(filename)
-
             filename = os.path.join(TESTDATA, filename)
 
-            # FIXME (Ole): I set overwrite=True to make this pass.
-            # However, in general there is a problem with get_layers_metadata
-            # that if the layer has been uploaded more than once the code will
-            # look for a layer called geonode:lembang_mmi_hazardmap_1
-            # (the number 1 being appended) but the metadata record still
-            # uses the original name.
             layer = save_to_geonode(filename, user=self.user, overwrite=True)
 
             # Name checking
@@ -123,7 +118,7 @@ class Test_calculations(unittest.TestCase):
 
         # Upload exposure data for this test
         name = 'Population_2010'
-        exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
         exposure_layer = save_to_geonode(exposure_filename,
                                          user=self.user, overwrite=True)
 
@@ -147,7 +142,7 @@ class Test_calculations(unittest.TestCase):
         filename = 'Lembang_Earthquake_Scenario.asc'
 
         # Save
-        hazard_filename = '%s/hazard/%s' % (DEMODATA, filename)
+        hazard_filename = '%s/%s' % (TESTDATA, filename)
         hazard_layer = save_to_geonode(hazard_filename,
                                        user=self.user, overwrite=True)
         hazard_name = '%s:%s' % (hazard_layer.workspace,
@@ -160,7 +155,7 @@ class Test_calculations(unittest.TestCase):
 
         # Run calculation
         c = Client()
-        rv = c.post('/api/v1/calculate/', data=dict(
+        rv = c.post('/impact/api/calculate/', data=dict(
                 hazard_server=INTERNAL_SERVER_URL,
                 hazard=hazard_name,
                 exposure_server=INTERNAL_SERVER_URL,
@@ -198,7 +193,7 @@ class Test_calculations(unittest.TestCase):
         """
         # Upload exposure data for this test
         name = 'Population_2010'
-        exposure_filename = '%s/exposure/%s.asc' % (DEMODATA, name)
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
         exposure_layer = save_to_geonode(exposure_filename,
                                          user=self.user, overwrite=True)
         layer_name = exposure_layer.typename
@@ -261,7 +256,7 @@ class Test_calculations(unittest.TestCase):
                 warnings.simplefilter('ignore')
 
                 c = Client()
-                rv = c.post('/api/v1/calculate/', data=dict(
+                rv = c.post('/impact/api/calculate/', data=dict(
                         hazard_server=INTERNAL_SERVER_URL,
                         hazard=hazard_name,
                         exposure_server=INTERNAL_SERVER_URL,
@@ -349,7 +344,7 @@ class Test_calculations(unittest.TestCase):
         #with warnings.catch_warnings():
         #    warnings.simplefilter('ignore')
         c = Client()
-        rv = c.post('/api/v1/calculate/', data=dict(
+        rv = c.post('/impact/api/calculate/', data=dict(
                 hazard_server=INTERNAL_SERVER_URL,
                 hazard=hazard_name,
                 exposure_server=INTERNAL_SERVER_URL,
@@ -387,7 +382,7 @@ class Test_calculations(unittest.TestCase):
         # FIXME (Ole): Not finished
 
     def test_exceptions_in_calculate_endpoint(self):
-        """Wrong bbox input is handled nicely by /api/v1/calculate/
+        """Wrong bbox input is handled nicely by /impact/api/calculate/
         """
 
         # Upload input data
@@ -426,12 +421,12 @@ class Test_calculations(unittest.TestCase):
 
         # First do it correctly (twice)
         c = Client()
-        rv = c.post('/api/v1/calculate/', data=data)
-        rv = c.post('/api/v1/calculate/', data=data)
+        rv = c.post('/impact/api/calculate/', data=data)
+        rv = c.post('/impact/api/calculate/', data=data)
 
         # Then check that spaces are dealt with correctly
         data['bbox'] = bbox_with_spaces
-        rv = c.post('/api/v1/calculate/', data=data)
+        rv = c.post('/impact/api/calculate/', data=data)
 
         # Then with a range of wrong bbox inputs
         for bad_bbox in [bbox_list,
@@ -452,7 +447,7 @@ class Test_calculations(unittest.TestCase):
             data['bbox'] = bad_bbox
 
             # FIXME (Ole): Suppress error output from c.post
-            rv = c.post('/api/v1/calculate/', data=data)
+            rv = c.post('/impact/api/calculate/', data=data)
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(rv['Content-Type'], 'application/json')
             data_out = json.loads(rv.content)
@@ -491,6 +486,96 @@ class Test_calculations(unittest.TestCase):
                    '' % (layer_name, gn_geotransform, ref_geotransform))
             assert numpy.allclose(ref_geotransform, gn_geotransform), msg
 
+    # FIXME (Ole): work in progress regarding issue #19 and #103.
+    # Would eventually do a definitive end-to-end test that interpolated
+    # values are good.
+    def Xtest_interpolation_example(self):
+        """Interpolation is done correctly with data going through geonode
+
+        This data (Maumere scenaria) showed some very wrong results
+        when first attempted in August 2011 - hence this test
+        """
+
+        # Name file names for hazard level, exposure and expected fatalities
+        hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
+                           % TESTDATA)
+        exposure_filename = ('%s/maumere_pop_prj.shp' % TESTDATA)
+
+        # Upload to internal geonode
+        hazard_layer = save_to_geonode(hazard_filename, user=self.user)
+        hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
+
+        exposure_layer = save_to_geonode(exposure_filename, user=self.user)
+        exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                   exposure_layer.name)
+
+        # Download data again
+        bbox = get_bounding_box_string(hazard_filename)  # The biggest
+        H = download(INTERNAL_SERVER_URL, hazard_name, bbox)
+        E = download(INTERNAL_SERVER_URL, exposure_name, bbox)
+
+        A = H.get_data()
+        depth_min, depth_max = H.get_extrema()
+
+        # Compare extrema to values read off QGIS for this layer
+        print 'E', depth_min, depth_max
+        assert numpy.allclose([depth_min, depth_max], [0.0, 16.68],
+                              rtol=1.0e-6, atol=1.0e-10)
+
+        coordinates = E.get_geometry()
+        attributes = E.get_data()
+
+        # Interpolate
+        I = H.interpolate(E, name='depth')
+        Icoordinates = I.get_geometry()
+        Iattributes = I.get_data()
+        assert numpy.allclose(Icoordinates, coordinates)
+
+        N = len(Icoordinates)
+        assert N == 891
+
+        # Verify interpolated values with test result
+        for i in range(N):
+
+            interpolated_depth = Iattributes[i]['depth']
+            pointid = attributes[i]['POINTID']
+
+            if pointid == 263:
+
+                # Check that location is correct
+                assert numpy.allclose(coordinates[i],
+                                      [122.20367299, -8.61300358])
+
+                # This is known to be outside inundation area so should
+                # near zero
+                assert numpy.allclose(interpolated_depth, 0.0,
+                                      rtol=1.0e-12, atol=1.0e-12)
+
+            if pointid == 148:
+                # Check that location is correct
+                assert numpy.allclose(coordinates[i],
+                                      [122.2045912, -8.608483265])
+
+                # This is in an inundated area with a surrounding depths of
+                # 4.531, 3.911
+                # 2.675, 2.583
+                assert interpolated_depth < 4.531
+                assert interpolated_depth > 2.583
+                assert numpy.allclose(interpolated_depth, 3.553,
+                                      rtol=1.0e-5, atol=1.0e-5)
+
+            # Check that interpolated points are within range
+            msg = ('Interpolated depth %f at point %i was outside extrema: '
+                   '[%f, %f]. ' % (interpolated_depth, i,
+                                   depth_min, depth_max))
+
+            if not numpy.isnan(interpolated_depth):
+                tol = 1.0e-6
+                #assert depth_min - tol <= interpolated_depth <= depth_max, msg
+                #if interpolated_depth > depth_max:
+                #    print msg
+                #if interpolated_depth < depth_min:
+                #    print msg
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

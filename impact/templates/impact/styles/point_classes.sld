@@ -37,6 +37,11 @@
                                         <sld:CssParameter name='fill' >{{ class_value.color }}</sld:CssParameter>
                                         <sld:CssParameter name='fill-opacity' >{{ class_value.opacity }}</sld:CssParameter>
                                     </sld:Fill>
+                                    <sld:Stroke>
+                                        <sld:CssParameter name='stroke' >#000000</sld:CssParameter>
+                                        <sld:CssParameter name='stroke-opacity' >0.3</sld:CssParameter>
+                                        <sld:CssParameter name="stroke-width">1</sld:CssParameter>
+                                    </sld:Stroke>
                                 </sld:Mark>
                                 <sld:Size>{{ scale_value }}</sld:Size>
                             </sld:Graphic>

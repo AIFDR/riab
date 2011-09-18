@@ -1,9 +1,8 @@
 from geonode.maps.utils import upload, GeoNodeException
 from geonode.maps.models import Layer
-from impact.storage.utilities import get_layers_metadata, LAYER_TYPES
-from impact.storage.utilities import unique_filename
+from impact.storage.utilities import unique_filename, LAYER_TYPES
 from impact.storage.io import get_bounding_box
-from impact.storage.io import download, get_ows_metadata
+from impact.storage.io import download, get_metadata
 from django.conf import settings
 import os
 import time
@@ -11,10 +10,12 @@ import unittest
 import numpy
 import urllib2
 from geonode.maps.utils import get_valid_user
-from risiko.utilities import save_to_geonode, RisikoException
-from risiko.utilities import check_layer, assert_bounding_box_matches
-from impact.tests.utilities import TESTDATA, DEMODATA, INTERNAL_SERVER_URL
+from impact.storage.io import save_to_geonode, RisikoException
+from impact.storage.io import check_layer, assert_bounding_box_matches
+from impact.storage.io import get_bounding_box_string
+from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page
+from impact.storage.io import read_layer
 
 #---Jeff
 from owslib.wcs import WebCoverageService
@@ -27,8 +28,8 @@ def ns(tag):
 #---
 
 
-class Test_utilities(unittest.TestCase):
-    """Tests riab_geonode utilities
+class Test_geonode_connection(unittest.TestCase):
+    """Tests file uploads, metadata etc
     """
 
     def setUp(self):
@@ -46,14 +47,18 @@ class Test_utilities(unittest.TestCase):
         expected_layers = []
         not_expected_layers = []
         datadir = TESTDATA
-        BAD_LAYERS = ['grid_without_projection.asc']
+        BAD_LAYERS = ['grid_without_projection.asc',
+                      'kecamatan_prj.shp']  # FIXME(Ole): This layer is not
+                                            # 'BAD', just in a different
+                                            # projection (TM3_Zone_48-2) so
+                                            # serves as another test for
+                                            # issue #40
 
         for root, dirs, files in os.walk(datadir):
             for filename in files:
                 basename, extension = os.path.splitext(filename)
 
                 if extension.lower() in LAYER_TYPES:
-
                     # FIXME(Ole): GeoNode converts names to lower case
                     name = unicode(basename.lower())
                     if filename in BAD_LAYERS:
@@ -62,17 +67,18 @@ class Test_utilities(unittest.TestCase):
                         expected_layers.append(name)
 
         # Upload
-        layers = save_to_geonode(datadir, user=self.user, overwrite=True)
+        layers = save_to_geonode(datadir, user=self.user, overwrite=True,
+                                 ignore=BAD_LAYERS)
 
         # Check integrity
         layer_names = [l.name for l in layers]
-
         for layer in layers:
             msg = 'Layer %s was uploaded but not expected' % layer.name
             assert layer.name in expected_layers, msg
 
-            # Uncomment to reproduce issue #40
-            # for layer tsunami_max_inundation_depth_bb_utm
+            # Uncomment to reproduce issue #102
+            # This may still also reproduce issue #40 for layer
+            # tsunami_max_inundation_depth_bb_utm
             #check_layer(layer, full=True)
 
         for layer_name in expected_layers:
@@ -102,8 +108,8 @@ class Test_utilities(unittest.TestCase):
 
         server_url = settings.GEOSERVER_BASE_URL + 'ows?'
 
-        # Verify that the GeoServer GetCapabilities record is accesible:
-        metadata = get_layers_metadata(server_url, '1.0.0')
+        # Verify that the GeoServer GetCapabilities record is accessible:
+        metadata = get_metadata(server_url)
         msg = ('The metadata list should not be empty in server %s'
                 % server_url)
         assert len(metadata) > 0, msg
@@ -149,7 +155,7 @@ class Test_utilities(unittest.TestCase):
 
         # FIXME: A patch was submitted OWSlib 20110808
         # Can delete the following once patch appears
-        # In the future get bboxNative and nativeSRS from get_ows_metadata
+        # In the future get bboxNative and nativeSRS from get_metadata
         descCov = metadata._service.getDescribeCoverage(projected_tif.typename)
         envelope = (descCov.find(ns('CoverageOffering/') + ns('domainSet/') +
                                  ns('spatialDomain/') +
@@ -344,6 +350,41 @@ class Test_utilities(unittest.TestCase):
         layer = save_to_geonode(thefile, user=self.user, overwrite=True)
         check_layer(layer, full=True)
 
+        # Verify metadata
+        layer_name = '%s:%s' % (layer.workspace, layer.name)
+        metadata = get_metadata(INTERNAL_SERVER_URL,
+                                layer_name)
+        assert 'id' in metadata
+        assert 'title' in metadata
+        assert 'layer_type' in metadata
+        assert 'keywords' in metadata
+        assert 'bounding_box' in metadata
+        assert 'geotransform' in metadata
+        assert len(metadata['bounding_box']) == 4
+
+        # A little metadata characterisation test
+        ref = {'layer_type': 'raster',
+               'keywords': {'category': 'hazard',
+                            'subcategory': 'earthquake'},
+               'geotransform': (105.29857, 0.0112, 0.0,
+                                -5.565233000000001, 0.0, -0.0112),
+               'title': 'lembang_mmi_hazmap'}
+
+        for key in ['layer_type', 'keywords', 'geotransform',
+                    'title']:
+
+            msg = ('Expected metadata for key %s to be %s. '
+                   'Instead got %s' % (key, ref[key], metadata[key]))
+            if key == 'geotransform':
+                assert numpy.allclose(metadata[key], ref[key]), msg
+            else:
+                assert metadata[key] == ref[key], msg
+
+            if key == 'keywords':
+                kwds = metadata[key]
+                for k in kwds:
+                    assert kwds[k] == ref[key][k]
+
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
         """
@@ -440,7 +481,7 @@ class Test_utilities(unittest.TestCase):
         #FIXME: Verify the record does not exist in GS or GN
 
     def test_keywords(self):
-        """Check that keywords are read from the .keywords file
+        """Keywords are read correctly from the .keywords file
         """
 
         for filename in ['Earthquake_Ground_Shaking.asc',
@@ -520,8 +561,8 @@ class Test_utilities(unittest.TestCase):
 
                 # Get metadata
                 layer_name = '%s:%s' % (layer.workspace, layer.name)
-                metadata = get_ows_metadata(INTERNAL_SERVER_URL,
-                                            layer_name)
+                metadata = get_metadata(INTERNAL_SERVER_URL,
+                                        layer_name)
 
                 # Verify
                 assert 'id' in metadata
@@ -611,8 +652,8 @@ class Test_utilities(unittest.TestCase):
                 raise Exception(msg)
 
             layer_name = '%s:%s' % (layer.workspace, layer.name)
-            metadata = get_ows_metadata(INTERNAL_SERVER_URL,
-                                        layer_name)
+            metadata = get_metadata(INTERNAL_SERVER_URL,
+                                    layer_name)
 
             assert 'id' in metadata
             assert 'title' in metadata
@@ -666,9 +707,50 @@ class Test_utilities(unittest.TestCase):
                    % (keywords['subcategory'], category))
             assert subcategory == keywords['subcategory'], msg
 
+    # FIXME (Ole): Enable when issue #103 has been resolved
+    def Xtest_raster_upload(self):
+        """Raster layer can be uploaded and downloaded again correctly
+        """
+
+        hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
+                           % TESTDATA)
+
+        # Get reference values
+        H = read_layer(hazard_filename)
+        A_ref = H.get_data()
+        depth_min_ref, depth_max_ref = H.get_extrema()
+
+        # Upload to internal geonode
+        hazard_layer = save_to_geonode(hazard_filename, user=self.user)
+        hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
+
+        # Download data again
+        bbox = get_bounding_box_string(hazard_filename)
+        H = download(INTERNAL_SERVER_URL, hazard_name, bbox)
+        A = H.get_data()
+
+        # Compare shapes
+        msg = ('Shape of downloaded raster was [%i, %i]. '
+               'Expected [%i, %i].' % (A.shape[0], A.shape[1],
+                                       A_ref.shape[0], A_ref.shape[1]))
+        assert numpy.allclose(A_ref.shape, A.shape, rtol=0, atol=0), msg
+
+        # Compare extrema to values reference values (which have also been
+        # verified by QGIS for this layer and tested in test_engine.py)
+        depth_min, depth_max = H.get_extrema()
+        msg = ('Extrema of downloaded file were [%f, %f] but '
+               'expected [%f, %f]' % (depth_min, depth_max,
+                                      depth_min_ref, depth_max_ref))
+        assert numpy.allclose([depth_min, depth_max],
+                              [depth_min_ref, depth_max_ref],
+                              rtol=1.0e-6, atol=1.0e-10), msg
+
+        # FIXME (Ole): Eventually compare number by number
+        #assert numpy.allclose(A, A_ref)
+
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
-    suite = unittest.makeSuite(Test_utilities, 'test')
+    suite = unittest.makeSuite(Test_geonode_connection, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

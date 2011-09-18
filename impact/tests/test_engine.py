@@ -8,7 +8,7 @@ from impact.engine.interpolation import raster_spline
 from impact.storage.io import read_layer
 
 from impact.storage.utilities import unique_filename
-from impact.storage.io import write_point_data
+from impact.storage.io import write_vector_data
 from impact.storage.io import write_raster_data
 from impact.plugins import get_plugins
 
@@ -223,8 +223,11 @@ class Test_Engine(unittest.TestCase):
             C = calculated_raster.get_data(nan=0)
 
             # Check caption
-            expct = 'Number of people'
-            assert calculated_raster.get_caption().startswith(expct)
+            caption = calculated_raster.get_caption()
+            expct = 'people'
+            msg = ('Caption %s did not contain expected '
+                   'keyword %s' % (caption, expct))
+            assert expct in caption, msg
 
             # Compare shape and extrema
             msg = ('Shape of calculated raster differs from reference raster: '
@@ -461,7 +464,7 @@ class Test_Engine(unittest.TestCase):
 
         # Check sanity of calculated attributes
         for i in range(N):
-            lon, lat = icoordinates[i, :]
+            lon, lat = icoordinates[i]
 
             depth = iattributes[i]['DEPTH']
 
@@ -699,10 +702,10 @@ class Test_Engine(unittest.TestCase):
                 coordinates.append((xi, eta))
 
         vector_filename = unique_filename(suffix='.shp')
-        write_point_data(data=None,
-                         projection=projection,
-                         geometry=coordinates,
-                         filename=vector_filename)
+        write_vector_data(data=None,
+                          projection=projection,
+                          geometry=coordinates,
+                          filename=vector_filename)
 
         # Read both datasets back in
         R = read_layer(raster_filename)
@@ -796,7 +799,9 @@ class Test_Engine(unittest.TestCase):
             # as this was calculated using EQRM and thus different.
             assert numpy.allclose(calculated_mmi, MMI[i], rtol=0.02)
 
-    def test_interpolation_tsunami(self):
+    # FIXME (Ole): Disabled until we get onto the
+    # new interpolation scheme (issue #19)
+    def Xtest_interpolation_tsunami(self):
         """Interpolation using tsunami data set
         """
 
@@ -831,10 +836,87 @@ class Test_Engine(unittest.TestCase):
                                    depth_min, depth_max))
 
             if not numpy.isnan(interpolated_depth):
-                # FIXME (Ole): putting in tolerances for now. Remove when
-                # new interpolation is implemented (issue #19)
-                tol = 0.8
+                tol = 1.0e-6
                 assert depth_min - tol <= interpolated_depth <= depth_max, msg
+
+    # FIXME (Ole): This is another test for interpolation. Work in progress.
+    # Enable when workning on issue #19
+    def Xtest_interpolation_tsunami_maumere(self):
+        """Interpolation using tsunami data set from Maumere
+
+        This data showed some very wrong results from interpolation overshoot
+        when first attempted in August 2011 - hence this test
+        """
+
+        # Name file names for hazard level, exposure and expected fatalities
+        hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
+                           % TESTDATA)
+        exposure_filename = ('%s/maumere_pop_prj.shp' % TESTDATA)
+
+        # Read input data
+        H = read_layer(hazard_filename)
+        A = H.get_data()
+        depth_min, depth_max = H.get_extrema()
+
+        # Compare extrema to values read off QGIS for this layer
+        assert numpy.allclose([depth_min, depth_max], [0.0, 16.68],
+                              rtol=1.0e-6, atol=1.0e-10)
+
+        E = read_layer(exposure_filename)
+        coordinates = E.get_geometry()
+        attributes = E.get_data()
+
+        # Test riab's interpolation function
+        I = H.interpolate(E, name='depth')
+        Icoordinates = I.get_geometry()
+        Iattributes = I.get_data()
+        assert numpy.allclose(Icoordinates, coordinates)
+
+        N = len(Icoordinates)
+        assert N == 891
+
+        # Verify interpolated values with test result
+        for i in range(N):
+
+            interpolated_depth = Iattributes[i]['depth']
+            pointid = attributes[i]['POINTID']
+
+            if pointid == 263:
+
+                #print i, pointid, attributes[i],
+                #print interpolated_depth, coordinates[i]
+
+                # Check that location is correct
+                assert numpy.allclose(coordinates[i],
+                                      [122.20367299, -8.61300358])
+
+                # This is known to be outside inundation area so should
+                # near zero
+                assert numpy.allclose(interpolated_depth, 0.0,
+                                      rtol=1.0e-12, atol=1.0e-12)
+
+            if pointid == 148:
+                # Check that location is correct
+                assert numpy.allclose(coordinates[i],
+                                      [122.2045912, -8.608483265])
+
+                # This is in an inundated area with a surrounding depths of
+                # 4.531, 3.911
+                # 2.675, 2.583
+                assert interpolated_depth < 4.531
+                assert interpolated_depth > 2.583
+                assert numpy.allclose(interpolated_depth, 3.553,
+                                      rtol=1.0e-5, atol=1.0e-5)
+
+            # Check that interpolated points are within range
+            msg = ('Interpolated depth %f at point %i was outside extrema: '
+                   '[%f, %f]. ' % (interpolated_depth, i,
+                                   depth_min, depth_max))
+
+            if not numpy.isnan(interpolated_depth):
+                tol = 1.0e-6
+                assert depth_min - tol <= interpolated_depth <= depth_max, msg
+
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_Engine, 'test')

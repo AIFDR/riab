@@ -1,0 +1,37 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@ 
+install:
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	cd $(CURDIR)/calculator;ant
+	python setup.py sdist
+	mkdir -p $(CURDIR)/debian/risiko/usr/share/risiko
+	cp -rp $(CURDIR)/dist/risiko-*.tar.gz $(CURDIR)/debian/risiko/usr/share/risiko/.
+	cp -rp $(CURDIR)/../temp/django-rosetta-0.6.2.tar.gz $(CURDIR)/debian/risiko/usr/share/risiko/.
+	cp -rp $(CURDIR)/debian/patches/* $(CURDIR)/debian/risiko/usr/share/risiko/.
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installdebconf
+	dh_installdocs
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep

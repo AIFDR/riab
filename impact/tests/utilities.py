@@ -3,7 +3,7 @@ import time
 import types
 import numpy
 from django.conf import settings
-from impact.storage.io import download, get_bounding_box, get_ows_metadata
+from impact.storage.io import download, get_bounding_box, get_metadata
 
 TESTDATA = os.path.join(os.environ['RIAB_HOME'], 'risiko_test_data')
 DEMODATA = os.path.join(os.environ['RIAB_HOME'], 'risiko_demo_data')

@@ -5,18 +5,29 @@
 """
 
 import os
-import urllib2
 import time
-import contextlib
+import numpy
+import urllib2
 import tempfile
+import contextlib
 from zipfile import ZipFile
 
 from impact.storage.vector import Vector
 from impact.storage.raster import Raster
-from impact.storage.utilities import get_layers_metadata, geotransform2bbox
+from impact.storage.utilities import LAYER_TYPES
+from impact.storage.utilities import unique_filename
+from impact.storage.utilities import extract_geotransform
 
 from owslib.wcs import WebCoverageService
 from owslib.wfs import WebFeatureService
+
+from geonode.maps.utils import file_upload, GeoNodeException
+from django.conf import settings
+
+import logging
+logger = logging.getLogger('risiko')
+
+INTERNAL_SERVER_URL = os.path.join(settings.GEOSERVER_BASE_URL, 'ows')
 
 
 def read_layer(filename):
@@ -55,7 +66,7 @@ def write_raster_data(data, projection, geotransform, filename, keywords=None):
     R.write_to_file(filename)
 
 
-def write_point_data(data, projection, geometry, filename, keywords=None):
+def write_vector_data(data, projection, geometry, filename, keywords=None):
     """Write point data and any associated attributes to vector file
 
     Input:
@@ -63,8 +74,7 @@ def write_point_data(data, projection, geometry, filename, keywords=None):
               M is the number of attributes.
               A value of None is acceptable.
         projection: WKT projection information
-        geometry: Nx2 Numpy array with longitudes, latitudes
-                  N is the number of points (features).
+        geometry: List of points or polygons.
         filename: Output filename
         keywords: Optional dictionary
 
@@ -89,7 +99,6 @@ WCS_TEMPLATE = '%s?version=1.0.0' + \
                       'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
                       '&resx=0.008333333333000&resy=0.008333333333000'
 
-# FIXME (Ole): Why is maxFeatures hard coded?
 WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
                '&request=GetFeature&typeName=%s' + \
                '&outputFormat=SHAPE-ZIP&bbox=%s'
@@ -202,108 +211,25 @@ def get_geotransform(server_url, layer_name):
 
     """
 
-    # FIXME (Ole): This should be superseded by new get_metadata
-    #              function which will be entirely based on OWSLib
-    #              Issue #95
-
-    wcs = WebCoverageService(server_url, version='1.0.0')
-
-    if layer_name in wcs.contents:
-        layer = wcs.contents[layer_name]
-        grid = layer.grid
-
-        top_left_x = float(layer.grid.origin[0])
-        we_pixel_res = float(layer.grid.offsetvectors[0][0])
-        x_rotation = float(layer.grid.offsetvectors[0][1])
-        top_left_y = float(layer.grid.origin[1])
-        y_rotation = float(layer.grid.offsetvectors[1][0])
-        ns_pixel_res = float(layer.grid.offsetvectors[1][1])
-
-        # There is half a pixel_resolution difference between
-        # what WCS reports and what GDAL reports.
-        # A pixel CENTER vs pixel CORNER difference.
-        adjusted_top_left_x = top_left_x - we_pixel_res / 2
-        adjusted_top_left_y = top_left_y - ns_pixel_res / 2
-
-        return (adjusted_top_left_x, we_pixel_res, x_rotation,
-                adjusted_top_left_y, y_rotation, ns_pixel_res)
-    else:
-        msg = ('Could not find layer "%s" in the WCS server "%s".'
-               'Available layers were: %s' % (layer_name, server_url,
-                                              wcs.contents.keys()))
-        raise Exception(msg)
+    metadata = get_metadata(server_url, layer_name)
+    return metadata['geotransform']
 
 
-def get_metadata(server_url, layer_name):
-    """Uses OWS services to get the metadata for a given layer
+def get_metadata_from_layer(layer):
+    """Get ows metadata from one layer
 
     Input
-        server_url:
-        layer_name: must follow the convention workspace:name
+        layer: Layer object. It is assumed that it has the extra attribute
+               data_type which is either raster or vector
     """
 
-    # FIXME (Ole): This should be superseded by new get_metadata
-    #              function which will be entirely based on OWSLib
-    #              Issue #95
-
-    # Get all metadata
-
-    themetadata = get_layers_metadata(server_url, version='1.0.0')
-
-    # Look for specific layer
-    layer_metadata = None
-    for x in themetadata:
-        if x[0] == layer_name:
-            # We expect only one element in this list, if there is more
-            # than one, we will use the first one.
-            layer_metadata = x[1]
-            break
-
-    msg = ('There is no metadata in server %s for layer '
-           '%s. Available metadata is %s' % (server_url, layer_name,
-                                             themetadata))
-    assert layer_metadata is not None, msg
-
-    # FIXME: We need a geotransform attribute in get_metadata
-    # Let's add it here for the time being
-    if layer_metadata['layer_type'] == 'raster':
-        geotransform = get_geotransform(server_url, layer_name)
-
-        layer_metadata['geotransform'] = geotransform
-        #layer_metadata['bbox'] = geotransform2bbox(geotransform,
-        #                                           columns, rows)
-
-    return layer_metadata
-
-
-def get_ows_metadata(server_url, layer_name):
-    """Uses OWSLib to get the metadata for a given layer
-
-    Input
-        server_url: e.g. http://localhost:8001/geoserver-geonode-dev/ows
-        layer_name: must follow the convention workspace:name
-
-    Output
-        metadata: Dictionary of metadata fields common to both
-                  raster and vector layers
-    """
-
-    wcs = WebCoverageService(server_url, version='1.0.0')
-    wfs = WebFeatureService(server_url, version='1.0.0')
-
+    # Create empty metadata dictionary
     metadata = {}
-    if layer_name in wcs.contents:
-        layer = wcs.contents[layer_name]
-        metadata['layer_type'] = 'raster'
-    elif layer_name in wfs.contents:
-        layer = wfs.contents[layer_name]
-        metadata['layer_type'] = 'vector'
-    else:
-        msg = ('Layer %s was not found in WxS contents on server %s.\n'
-               'WCS contents: %s\n'
-               'WFS contents: %s\n' % (layer_name, server_url,
-                                       wcs.contents, wfs.contents))
-        raise Exception(msg)
+
+    # Metadata specific to layer types
+    metadata['layer_type'] = layer.datatype
+    if layer.datatype == 'raster':
+        metadata['geotransform'] = extract_geotransform(layer)
 
     # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
@@ -322,7 +248,6 @@ def get_ows_metadata(server_url, layer_name):
                 # FIXME (Ole): Why would this be None sometimes?
 
                 for keyword_string in keyword.split(','):
-
                     if ':' in keyword_string:
                         key, value = keyword_string.strip().split(':')
                         keyword_dict[key] = value
@@ -332,6 +257,120 @@ def get_ows_metadata(server_url, layer_name):
         metadata['keywords'] = keyword_dict
 
     return metadata
+
+
+def get_metadata(server_url, layer_name=None):
+    """Uses OWSLib to get the metadata for a given layer
+
+    Input
+        server_url: e.g. http://localhost:8001/geoserver-geonode-dev/ows
+        layer_name: Name of layer - must follow the convention workspace:name
+                    If None metadata for all layers will be returned as a
+                    dictionary with one entry per layer
+
+    Output
+        metadata: Dictionary of metadata fields for specified layer or,
+                  if layer_name is None, a dictionary of metadata dictionaries
+    """
+
+    # Get all metadata from server
+    wcs = WebCoverageService(server_url, version='1.0.0')
+    wfs = WebFeatureService(server_url, version='1.0.0')
+
+    # Take care of input options
+    if layer_name is None:
+        layer_names = wcs.contents.keys() + wfs.contents.keys()
+    else:
+        layer_names = [layer_name]
+
+    # Get metadata for requested layer(s)
+    metadata = {}
+    for name in layer_names:
+
+        if name in wcs.contents:
+            layer = wcs.contents[name]
+            layer.datatype = 'raster'  # Monkey patch type
+        elif name in wfs.contents:
+            layer = wfs.contents[name]
+            layer.datatype = 'vector'  # Monkey patch type
+        else:
+            msg = ('Layer %s was not found in WxS contents on server %s.\n'
+                   'WCS contents: %s\n'
+                   'WFS contents: %s\n' % (name, server_url,
+                                           wcs.contents, wfs.contents))
+            raise Exception(msg)
+
+        metadata[name] = get_metadata_from_layer(layer)
+
+    # Return metadata for one or all layers
+    if layer_name is not None:
+        return metadata[layer_name]
+    else:
+        return metadata
+
+
+def get_layer_descriptors(url):
+    """Get layer information for use with the plugin system
+
+    The keywords are parsed and added to the metadata dictionary
+    if they conform to the format "identifier:value".
+
+    Input
+        url: The wfs url
+        version: The version of the wfs xml expected
+
+    Output
+        A list of (lists of) dictionaries containing the metadata for
+        each layer of the following form:
+
+        [['geonode:lembang_schools',
+          {'layer_type': 'feature',
+           'category': 'exposure',
+           'subcategory': 'building',
+           'title': 'lembang_schools'}],
+         ['geonode:shakemap_padang_20090930',
+          {'layer_type': 'raster',
+           'category': 'hazard',
+           'subcategory': 'earthquake',
+           'title': 'shakemap_padang_20090930'}]]
+
+    """
+
+    # FIXME (Ole): I don't like the format, but it permeates right
+    #              through to the HTTPResponses in views.py, so
+    #              I am not sure if it can be changed. My problem is
+    #
+    #              1: A dictionary of metadata entries would be simpler
+    #              2: The keywords should have their own dictinary to avoid
+    #                 danger of keywords overwriting other metadata
+    #
+    #              I have raised this in ticket #126
+
+    # Get all metadata from owslib
+    metadata = get_metadata(url)
+
+    # Create exactly the same structure that was produced by the now obsolete
+    # get_layers_metadata. FIXME: However, this is subject to issue #126
+    x = []
+    for key in metadata:
+        # Get all metadata
+        md = metadata[key]
+
+        # Create new special purpose entry
+        block = {}
+        if md['layer_type'] == 'vector':
+            block['layer_type'] = 'feature'
+        else:
+            block['layer_type'] = 'raster'
+
+        for kw in md['keywords']:
+            block[kw] = md['keywords'][kw]
+
+        block['title'] = md['title']
+
+        x.append([key, block])
+
+    return x
 
 
 def get_file(download_url, suffix):
@@ -447,7 +486,7 @@ def download(server_url, layer_name, bbox):
     layer_metadata = get_metadata(server_url, layer_name)
 
     data_type = layer_metadata['layer_type']
-    if data_type == 'feature':
+    if data_type == 'vector':
         template = WFS_TEMPLATE
         suffix = '.zip'
         download_url = template % (server_url, layer_name, bbox_string)
@@ -477,3 +516,393 @@ def dummy_save(filename, title, user, metadata=''):
     """Take a file-like object and uploads it to a GeoNode
     """
     return 'http://dummy/data/geonode:' + filename + '_by_' + user.username
+
+
+#--------------------------------------------------------------------
+# Functionality to upload layers to GeoNode and check their integrity
+#--------------------------------------------------------------------
+
+class RisikoException(Exception):
+    pass
+
+
+def console_log():
+    """Reconfigure logging to output to the console.
+    """
+
+    for _module in ["risiko"]:
+        _logger = logging.getLogger(_module)
+        _logger.addHandler(logging.StreamHandler())
+        _logger.setLevel(logging.INFO)
+
+
+def run(cmd, stdout=None, stderr=None):
+    """Run command with stdout and stderr optionally redirected
+
+    The logfiles are only kept in case the command fails.
+    """
+
+    # Build command
+    msg = 'Argument cmd must be a string. I got %s' % cmd
+    assert isinstance(cmd, basestring), msg
+
+    s = cmd
+    if stdout is not None:
+        msg = 'Argument stdout must be a string or None. I got %s' % stdout
+        assert isinstance(stdout, basestring), msg
+        s += ' > %s' % stdout
+
+    if stderr is not None:
+        msg = 'Argument stderr must be a string or None. I got %s' % stdout
+        assert isinstance(stderr, basestring), msg
+        s += ' 2> %s' % stderr
+
+    # Run command
+    err = os.system(s)
+
+    if err != 0:
+        msg = 'Command "%s" failed with errorcode %i. ' % (cmd, err)
+        if stdout:
+            msg += 'See logfile %s for stdout details' % stdout
+        if stderr is not None:
+            msg += 'See logfile %s for stderr details' % stderr
+        raise Exception(msg)
+    else:
+        # Clean up
+        if stdout is not None:
+            os.remove(stdout)
+        if stderr is not None:
+            os.remove(stderr)
+
+
+def assert_bounding_box_matches(layer, filename):
+    """Verify that GeoNode layer has the same bounding box as filename
+    """
+
+    # Check integrity
+    assert hasattr(layer, 'geographic_bounding_box')
+    assert isinstance(layer.geographic_bounding_box, basestring)
+
+    # Exctract bounding bounding box from layer handle
+    s = 'POLYGON(('
+    i = layer.geographic_bounding_box.find(s) + len(s)
+    assert i > len(s)
+
+    j = layer.geographic_bounding_box.find('))')
+    assert j > i
+
+    bbox_string = str(layer.geographic_bounding_box[i:j])
+    A = numpy.array([[float(x[0]), float(x[1])] for x in
+                     (p.split() for p in bbox_string.split(','))])
+    south = min(A[:, 1])
+    north = max(A[:, 1])
+    west = min(A[:, 0])
+    east = max(A[:, 0])
+    bbox = [west, south, east, north]
+
+    # Check correctness of bounding box against reference
+    ref_bbox = get_bounding_box(filename)
+
+    msg = ('Bounding box from layer handle "%s" was not as expected.\n'
+           'Got %s, expected %s' % (layer.name, bbox, ref_bbox))
+    assert numpy.allclose(bbox, ref_bbox, rtol=1.0e-6, atol=1.0e-8), msg
+
+
+def check_layer(layer, full=False):
+    """Verify if an object is a valid Layer.
+
+    If check fails an exception is raised.
+
+    Input
+        layer: Layer object
+        full: Optional flag controlling whether layer is to be downloaded
+              as part of the check.
+    """
+
+    from geonode.maps.models import Layer
+
+    msg = ('Was expecting layer object, got None')
+    assert layer is not None, msg
+    msg = ('Was expecting layer object, got %s' % (type(layer)))
+    assert type(layer) is Layer, msg
+    msg = ('The layer does not have a valid name: %s' % layer.name)
+    assert len(layer.name) > 0, msg
+    msg = ('The layer does not have a valid workspace: %s' % layer.workspace)
+    assert len(layer.workspace) > 0, msg
+
+    # Get layer metadata
+    layer_name = '%s:%s' % (layer.workspace, layer.name)
+    metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
+    #try:
+    #    metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
+    #except:
+    #    # Convert any exception to AssertionError for use in retry loop in
+    #    # save_file_to_geonode.
+    #    raise AssertionError
+
+    assert 'id' in metadata
+    assert 'title' in metadata
+    assert 'layer_type' in metadata
+    assert 'keywords' in metadata
+    assert 'bounding_box' in metadata
+
+    # Get bounding box and download
+    bbox = metadata['bounding_box']
+    assert len(bbox) == 4
+
+    if full:
+        # Check that layer can be downloaded again
+        downloaded_layer = download(INTERNAL_SERVER_URL, layer_name, bbox)
+        assert os.path.exists(downloaded_layer.filename)
+
+        # Check integrity between Django layer and file
+        assert_bounding_box_matches(layer, downloaded_layer.filename)
+
+        # Read layer and verify
+        L = read_layer(downloaded_layer.filename)
+
+        # Could do more here
+        #print dir(L)
+        #print L.keywords  #FIXME(Ole): I don't think keywords are downloaded!
+        #print metadata['keywords']
+
+
+def save_file_to_geonode(filename, user=None, title=None,
+                         overwrite=True, check_metadata=True,
+                         ignore=None):
+    """Save a single layer file to local Risiko GeoNode
+
+    Input
+        filename: Layer filename of type as defined in LAYER_TYPES
+        user: Django User object
+        title: String describing the layer.
+               If None or '' the filename will be used.
+        overwrite: Boolean variable controlling whether existing layers
+                   can be overwritten by this operation. Default is True
+        check_metadata: Flag controlling whether metadata is verified.
+                        If True (default), an exception will be raised
+                        if metada is not available after a number of retries.
+                        If False, no check is done making the function faster.
+    Output
+        layer object
+    """
+
+    if ignore is not None and filename == ignore:
+        return None
+
+    # Extract fully qualified basename and extension
+    basename, extension = os.path.splitext(filename)
+
+    if extension not in LAYER_TYPES:
+        msg = ('Invalid file extension in file %s. Valid extensions are '
+               '%s' % (filename, str(LAYER_TYPES)))
+        raise RisikoException(msg)
+
+    # Use file name to derive title if not specified
+    if title is None or title == '':
+        title = os.path.split(basename)[-1]
+
+    # Try to find a file with a .keywords extension
+    # and create a keywords list from there.
+    # It is assumed that the keywords are separated
+    # by new lines.
+    # Empty keyword lines are ignored (as this causes issues downstream)
+    keyword_list = []
+    keyword_file = basename + '.keywords'
+    if os.path.exists(keyword_file):
+        f = open(keyword_file, 'r')
+        for line in f.readlines():
+
+            # Ignore blank lines
+            raw_keyword = line.strip()
+            if raw_keyword == '':
+                continue
+
+            # Strip any spaces after or before the colons if present
+            if ':' in raw_keyword:
+                keyword = ':'.join([x.strip() for x in raw_keyword.split(':')])
+
+            # Store keyword
+            keyword_list.append(keyword)
+        f.close()
+
+    # Take care of file types
+    if extension == '.asc':
+        # We assume this is an AAIGrid ASCII file such as those generated by
+        # ESRI and convert it to Geotiff before uploading.
+
+        # Create temporary tif file for upload and check that the road is clear
+        prefix = os.path.split(basename)[-1]
+        upload_filename = unique_filename(prefix=prefix, suffix='.tif')
+        upload_basename, extension = os.path.splitext(upload_filename)
+
+        # Copy any metadata files to unique filename
+        for ext in ['.sld', '.keywords']:
+            if os.path.exists(basename + ext):
+                cmd = 'cp %s%s %s%s' % (basename, ext, upload_basename, ext)
+                run(cmd)
+
+        # Check that projection file exists
+        prjname = basename + '.prj'
+        if not os.path.isfile(prjname):
+            msg = ('File %s must have a projection file named '
+                   '%s' % (filename, prjname))
+            raise RisikoException(msg)
+
+        # Convert ASCII file to GeoTIFF
+        R = read_layer(filename)
+        R.write_to_file(upload_filename)
+    else:
+        # The specified file is the one to upload
+        upload_filename = filename
+
+    # Attempt to upload the layer
+    try:
+        # Upload
+        layer = file_upload(upload_filename,
+                            user=user,
+                            title=title,
+                            keywords=keyword_list,
+                            overwrite=overwrite)
+
+        # FIXME (Ole): This is some kind of hack that should be revisited.
+        layer.keywords = ' '.join(keyword_list)
+        layer.save()
+    except GeoNodeException, e:
+        # Layer did not upload. Convert GeoNodeException to RisikoException
+        raise RisikoException(e)
+    else:
+        logmsg = ('Uploaded "%s" with name "%s".'
+                  % (basename, layer.name))
+        if not check_metadata:
+            logmsg += ' Did not explicitly verify metadata.'
+            logger.info(logmsg)
+            return layer
+        else:
+            # Check metadata and return layer object
+            logmsg += ' Metadata veried.'
+            ok = False
+            for i in range(4):
+                try:
+                    check_layer(layer)
+                except Exception, errmsg:
+                    logger.info('Metadata for layer %s not yet ready - '
+                                'trying again. Error message was: %s'
+                                % (layer.name, errmsg))
+                    time.sleep(0.3)
+                else:
+                    ok = True
+                    break
+            if ok:
+                logger.info(logmsg)
+                return layer
+            else:
+                msg = ('Could not confirm that layer %s was uploaded '
+                       'correctly: %s' % (layer, errmsg))
+                raise Exception(msg)
+    finally:
+        # Clean up generated tif files in either case
+        if extension == '.asc':
+            os.remove(upload_filename)
+            os.remove(upload_filename + '.aux.xml')
+
+
+def save_directory_to_geonode(directory,
+                              user=None,
+                              title=None,
+                              overwrite=True,
+                              check_metadata=True,
+                              ignore=None):
+    """Upload a directory of spatial data files to GeoNode
+
+    Input
+        directory: Valid root directory for layer files
+        user: Django User object
+        overwrite: Boolean variable controlling whether existing layers
+                   can be overwritten by this operation. Default is True
+        check_metadata: See save_file_to_geonode
+        ignore: None or list of filenames to ignore
+    Output
+        list of layer objects
+    """
+
+    if ignore is None:
+        ignore = []
+
+    msg = ('Argument %s to save_directory_to_geonode is not a valid directory.'
+           % directory)
+    assert os.path.isdir(directory), msg
+
+    layers = []
+    for root, _, files in os.walk(directory):
+        for short_filename in files:
+            if short_filename in ignore:
+                continue
+
+            _, extension = os.path.splitext(short_filename)
+            filename = os.path.join(root, short_filename)
+
+            # Attempt upload only if extension is recognised
+            if extension in LAYER_TYPES:
+                try:
+                    layer = save_to_geonode(filename,
+                                            user=user,
+                                            title=title,
+                                            overwrite=overwrite,
+                                            check_metadata=check_metadata)
+
+                except Exception, e:
+                    msg = ('Filename "%s" could not be uploaded. '
+                           'Error was: %s' % (filename, str(e)))
+                    raise RisikoException(msg)
+                else:
+                    layers.append(layer)
+
+    # Return layers that successfully uploaded
+    return layers
+
+
+def save_to_geonode(incoming, user=None, title=None,
+                    overwrite=True, check_metadata=True,
+                    ignore=None):
+    """Save a files to local Risiko GeoNode
+
+    Input
+        incoming: Either layer file or directory
+        user: Django User object
+        title: If specified, it will be applied to all files. If None or ''
+               filenames will be used to infer titles.
+        overwrite: Boolean variable controlling whether existing layers
+                   can be overwritten by this operation. Default is True
+        check_metadata: See save_file_to_geonode
+        ignore: None or list of filenames to ignore
+
+        FIXME (Ole): WxS contents does not reflect the renaming done
+                     when overwrite is False. This should be reported to
+                     the geonode-dev mailing list
+
+    Output
+        layer object or list of layer objects
+    """
+
+    msg = ('First argument to save_to_geonode must be a string. '
+           'I got %s' % incoming)
+    assert isinstance(incoming, basestring), msg
+
+    if os.path.isdir(incoming):
+        # Upload all valid layer files in this dir recursively
+        layers = save_directory_to_geonode(incoming, title=title, user=user,
+                                           overwrite=overwrite,
+                                           check_metadata=check_metadata,
+                                           ignore=ignore)
+        return layers
+    elif os.path.isfile(incoming):
+        # Upload single file (using its name as title)
+        layer = save_file_to_geonode(incoming, title=title, user=user,
+                                     overwrite=overwrite,
+                                     check_metadata=check_metadata,
+                                     ignore=ignore)
+        return layer
+    else:
+        msg = 'Argument %s was neither a file or a directory' % incoming
+        raise RisikoException(msg)

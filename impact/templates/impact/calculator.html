@@ -1,0 +1,36 @@
+{% extends "page_layout.html" %}
+{% load i18n %}
+{% block title %}{% trans "Risiko Calculator" %}{% endblock %}
+{% block head %}
+{{ block.super }}
+<style>
+html, body {
+    height: 100%;
+    width: 100%;
+    border: none;
+    overflow: hidden;
+    position: absolute;
+}
+.justcontent {
+    border: none;
+    margin: 0px;
+    padding: 0px;
+    position: absolute;
+}
+#content {
+    top: 83px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+iframe {
+    width: 100%;
+    height: 100%;
+}
+</style>
+{% endblock %}
+{% block pagecontent %}
+<div class="justcontent" id="content">
+<iframe frameborder="no" class="justcontent" src="../static/calculator/index.html"></iframe>
+</div>
+{% endblock %}

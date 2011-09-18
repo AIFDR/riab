@@ -1,0 +1,1076 @@
+diff -r -u geonode/shared/py-base-libs.txt ../dev/geonode_gfdrr/shared/py-base-libs.txt
+--- geonode/shared/py-base-libs.txt	2011-08-16 08:42:32.447200999 +0700
++++ ../dev/geonode_gfdrr/shared/py-base-libs.txt	2011-08-14 15:14:54.407200999 +0700
+@@ -1,4 +1,4 @@
+-Django==1.2
++Django
+ simplejson # needed for python2.5
+ werkzeug
+ django-extensions
+Only in ../dev/geonode_gfdrr/src/GeoNodePy: extras
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/core: admin.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/core: auth.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/core: __init__.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/core: models.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/core/templatetags: geonode_auth.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/core/templatetags: __init__.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode: geonetwork.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode: __init__.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: admin.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: context_processors.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: forms.pyc
+diff -r -u geonode/src/GeoNodePy/geonode/maps/gs_helpers.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/gs_helpers.py
+--- geonode/src/GeoNodePy/geonode/maps/gs_helpers.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/gs_helpers.py	2011-08-14 15:14:54.407200999 +0700
+@@ -98,7 +98,10 @@
+     # FIXME: GeoServer sometimes fails to associate a style with the data, so
+     # for now we default to using a point style.(it works for lines and
+     # polygons, hope this doesn't happen for rasters  though)
+-    name = layer.default_style.name if layer.default_style is not None else "point"
++    if layer.default_style is not None:
++        name = layer.default_style.name
++    else:
++        name = "point"
+ 
+     # FIXME: When gsconfig.py exposes the default geometry type for vector
+     # layers we should use that rather than guessing based on the autodetected
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: gs_helpers.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: __init__.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands: clean.py
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands: clean.pyc
+diff -r -u geonode/src/GeoNodePy/geonode/maps/management/commands/geonode_import.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands/geonode_import.py
+--- geonode/src/GeoNodePy/geonode/maps/management/commands/geonode_import.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands/geonode_import.py	2011-08-14 15:14:54.417200999 +0700
+@@ -1,5 +1,6 @@
+ from django.core.management.base import BaseCommand
+ from optparse import make_option
++from geonode.maps.utils import upload
+ 
+ class Command(BaseCommand):
+     help = ("Brings a data file or a directory full of data files into a"
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands: __init__.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands: maps_setup.py
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands: start.py
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands: start.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands: stop.py
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management/commands: stop.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/management: __init__.pyc
+diff -r -u geonode/src/GeoNodePy/geonode/maps/models.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/models.py
+--- geonode/src/GeoNodePy/geonode/maps/models.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/models.py	2011-08-14 15:14:54.417200999 +0700
+@@ -24,7 +24,7 @@
+ from gs_helpers import cascading_delete
+ import logging
+ 
+-logger = logging.getLogger("geonode.maps.models")
++logger = logging.getLogger("geonode.maps")
+ 
+ 
+ def bbox_to_wkt(x0, x1, y0, y1, srid="4326"):
+@@ -1156,7 +1156,7 @@
+     A display name suitable for search results and page headers
+     """
+ 
+-    abstract = models.CharField(_('Abstract'),max_length=200)
++    abstract = models.TextField(_('Abstract'))
+     """
+     A longer description of the themes in the map.
+     """
+@@ -1280,6 +1280,13 @@
+         configs = [l.source_config() for l in layers]
+         configs.insert(0, {"ptype":"gxp_wmscsource", "url": "/geoserver/wms"})
+ 
++        """
++        Adds WMS servers to fullscreen map server list.
++        """
++        if hasattr(settings, 'DEFAULT_MAP_WMS'):
++            for wms in settings.DEFAULT_MAP_WMS:
++                configs.append(settings.DEFAULT_MAP_WMS[wms])
++
+         i = 0
+         for source in uniqify(configs):
+             while str(i) in sources: i = i + 1
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: models.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: static
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: urls.pyc
+diff -r -u geonode/src/GeoNodePy/geonode/maps/utils.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/utils.py
+--- geonode/src/GeoNodePy/geonode/maps/utils.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/utils.py	2011-08-14 15:14:54.417200999 +0700
+@@ -1,39 +1,54 @@
+-from itertools import cycle, izip
++"""GeoNode SDK for managing GeoNode layers and users
++"""
++
++# Standard Modules
+ import logging
+ import re
+-from django.db import transaction
+-from django.utils.translation import ugettext as _
+-from django.contrib.auth.models import User
+-from geonode.maps.models import Map, Layer, MapLayer, Contact, ContactRole, Role, get_csw
+-from geonode.maps.gs_helpers import fixup_style, cascading_delete, get_sld_for, delete_from_postgis
+-import geoserver
+-from geoserver.catalog import FailedRequestError
+-from geoserver.resource import FeatureType, Coverage
+ import uuid
+-from django.template.defaultfilters import slugify
+-import datetime
+-from django.conf import settings
+ import sys
+ import os
+-import glob
++import datetime
+ import traceback
+ import inspect
+ import string
+ import urllib2
++import glob
++from itertools import cycle, izip
++
++# Django functionality
++from django.db import transaction
++from django.utils.translation import ugettext as _
++from django.contrib.auth.models import User
++from django.template.defaultfilters import slugify
++from django.conf import settings
++
++# Geonode functionality
++from geonode.maps.models import Map, Layer, MapLayer
++from geonode.maps.models import Contact, ContactRole, Role, get_csw
++from geonode.maps.gs_helpers import fixup_style, cascading_delete, get_sld_for
++
++# Geoserver functionality
++import geoserver
++from geoserver.catalog import FailedRequestError
++from geoserver.resource import FeatureType, Coverage
++
++
++logger = logging.getLogger('geonode.maps')
++_separator = '\n' + ('-' * 100) + '\n'
+ 
+-logger = logging.getLogger("geonode.maps.utils")
+ 
+ class GeoNodeException(Exception):
+     """Base class for exceptions in this module."""
+     pass
+ 
++
+ def layer_type(filename):
+     """Finds out if a filename is a Feature or a Vector
+        returns a gsconfig resource_type string
+        that can be either 'featureType' or 'coverage'
+     """
+     base_name, extension = os.path.splitext(filename)
+-    if extension.lower() in ['.shp',]:
++    if extension.lower() in ['.shp']:
+         return FeatureType.resource_type
+     elif extension.lower() in ['.tif', '.tiff', '.geotiff', '.geotif']:
+         return Coverage.resource_type
+@@ -41,6 +56,7 @@
+         msg = ('Saving of extension [%s] is not implemented' % extension)
+         raise GeoNodeException(msg)
+ 
++
+ def get_files(filename):
+     """Converts the data to Shapefiles or Geotiffs and returns
+        a dictionary with all the required files
+@@ -56,8 +72,9 @@
+             matches = glob.glob(base_name + pattern)
+             if len(matches) == 0:
+                 msg = ('Expected helper file %s does not exist; a Shapefile '
+-                    'requires helper files with the following extensions: %s') % (
+-                    base_name + "." + ext, required_extensions.keys())
++                       'requires helper files with the following extensions: '
++                       '%s') % (base_name + "." + ext,
++                                required_extensions.keys())
+                 raise GeoNodeException(msg)
+             elif len(matches) > 1:
+                 msg = ('Multiple helper files for %s exist; they need to be '
+@@ -84,6 +101,7 @@
+ 
+     return files
+ 
++
+ def get_valid_name(layer_name):
+     """Create a brand new name
+     """
+@@ -94,12 +112,14 @@
+     while Layer.objects.filter(name=proposed_name).count() > 0:
+         proposed_name = "%s_%d" % (name, count)
+         count = count + 1
+-        logger.info("Requested name already used; adjusting name [%s] => [%s]", layer_name, proposed_name)
++        logger.info('Requested name already used; adjusting name '
++                    '[%s] => [%s]', layer_name, proposed_name)
+     else:
+         logger.info("Using name as requested")
+ 
+     return proposed_name
+ 
++
+ ## TODO: Remove default arguments here, they are never used.
+ def get_valid_layer_name(layer=None, overwrite=False):
+     """Checks if the layer is a string and fetches it from the database.
+@@ -120,6 +140,7 @@
+     else:
+         return get_valid_name(layer_name)
+ 
++
+ def cleanup(name, uuid):
+    """Deletes GeoServer and GeoNetwork records for a given name.
+ 
+@@ -132,14 +153,16 @@
+    except Layer.DoesNotExist, e:
+        pass
+    else:
+-       msg = ('Not doing any cleanup because the layer %s exists in the Django db.' % name)
++       msg = ('Not doing any cleanup because the layer %s exists in the '
++              'Django db.' % name)
+        raise GeoNodeException(msg)
+ 
+    cat = Layer.objects.gs_catalog
+    gs_store = None
+    gs_layer = None
+    gs_resource = None
+-   #FIXME: Could this lead to someone deleting for example a postgis db with the same name of the uploaded file?.
++   # FIXME: Could this lead to someone deleting for example a postgis db
++   # with the same name of the uploaded file?.
+    try:
+        gs_store = cat.get_store(name)
+        if gs_store is not None:
+@@ -150,7 +173,9 @@
+            gs_layer = None
+            gs_resource = None
+    except FailedRequestError, e:
+-       logger.error("Couldn't connect to GeoServer while cleaning up layer [%s] !!", str(e))
++       msg = ('Couldn\'t connect to GeoServer while cleaning up layer '
++              '[%s] !!', str(e))
++       logger.error(msg)
+ 
+    if gs_layer is not None:
+        try:
+@@ -161,7 +186,8 @@
+        try:
+            cat.delete(gs_resource)
+        except:
+-           logger.exception("Couldn't delete GeoServer resource during cleanup()")
++           msg = 'Couldn\'t delete GeoServer resource during cleanup()'
++           logger.exception(msg)
+    if gs_store is not None:
+        try:
+            cat.delete(gs_store)
+@@ -171,47 +197,74 @@
+    gn = Layer.objects.geonetwork
+    csw_record = gn.get_by_uuid(uuid)
+    if csw_record is not None:
+-       logger.warning("Deleting dangling GeoNetwork record for [%s] (no Django record to match)", name)
++       logger.warning('Deleting dangling GeoNetwork record for [%s] '
++                      '(no Django record to match)', name)
+        try:
+            # this is a bit hacky, delete_layer expects an instance of the layer
+-           # model but it just passes it to a Django template so a dict works too.
+-           gn.delete_layer({ "uuid": uuid }) 
++           # model but it just passes it to a Django template so a dict works
++           # too.
++           gn.delete_layer({ "uuid": uuid })
+        except:
+-           logger.exception("Couldn't delete GeoNetwork record during cleanup()")
++           logger.exception('Couldn\'t delete GeoNetwork record '
++                            'during cleanup()')
+ 
+-   logger.warning("Finished cleanup after failed GeoNetwork/Django import for layer: %s", name)
++   logger.warning('Finished cleanup after failed GeoNetwork/Django '
++                  'import for layer: %s', name)
+ 
+ 
+-_separator = '\n' + ('-' * 100) + '\n'
+-def save(layer, base_file, user, overwrite = True, title=None, abstract=None, permissions=None, keywords = []):
++def save(layer, base_file, user, overwrite = True, title=None,
++         abstract=None, permissions=None, workspace=None, keywords = []):
+     """Upload layer data to Geoserver and registers it with Geonode.
+ 
+-       If specified, the layer given is overwritten, otherwise a new layer is created.
++       If specified, the layer given is overwritten, otherwise a new layer
++       is created.
+     """
+     logger.info(_separator)
+     logger.info('Uploading layer: [%s], base filename: [%s]', layer, base_file)
+ 
+     # Step 0. Verify the file exists
+-    logger.info('>>> Step 0. Verify if the file %s exists so we can create the layer [%s]' % (base_file, layer))
++    logger.info('>>> Step 0. Verify if the file %s exists so we can create '
++                'the layer [%s]' % (base_file, layer))
+     if not os.path.exists(base_file):
+-        msg = ('Could not open %s to save %s. Make sure you are using a valid file' %(base_file, layer))
++        msg = ('Could not open %s to save %s. Make sure you are using a '
++               'valid file' %(base_file, layer))
+         logger.warn(msg)
+         raise GeoNodeException(msg)
+ 
+-    # Step 1. Figure out a name for the new layer, the one passed might not be valid or being used.
++    # Step 1. Figure out a name for the new layer, the one passed might not
++    # be valid or being used.
+     logger.info('>>> Step 1. Figure out a name for %s', layer)
+     name = get_valid_layer_name(layer, overwrite)
+ 
+-    # Step 2. Check that it is uploading to the same resource type as the existing resource
+-    logger.info('>>> Step 2. Make sure we are not trying to overwrite a existing resource named [%s] with the wrong type', name)
++    # Step 2. Check that it is uploading to the same resource type as
++    # the existing resource
++    logger.info('>>> Step 2. Make sure we are not trying to overwrite a '
++                'existing resource named [%s] with the wrong type', name)
+     the_layer_type = layer_type(base_file)
+ 
+     # Get a short handle to the gsconfig geoserver catalog
+     cat = Layer.objects.gs_catalog
+ 
++    #FIXME: This is the ugliest construct ever to create a workspace
++    # ------------
++    ws = None
++
++    # Even if no workspace was assigned, use the existing one
++    if overwrite == True and isinstance(layer, Layer):
++        workspace = layer.workspace
++
++    if workspace is not None:
++        ws = cat.get_workspace(workspace)
++        if ws is None:
++            ws = cat.create_workspace(workspace, 'http://'+workspace)
++            cat._cache.clear()
++            ws = cat.get_workspace(workspace)
++    # ------------
++
++
+     # Check if the store exists in geoserver
+     try:
+-        store = cat.get_store(name)
++        store = cat.get_store(name, workspace=ws)
+     except geoserver.catalog.FailedRequestError, e:
+         # There is no store, ergo the road is clear
+         pass
+@@ -225,33 +278,46 @@
+                 # We can just delete it and recreate it later.
+                 store.delete()
+             else:
+-                msg = ('The layer exists and the overwrite parameter is %s' % overwrite)
++                msg = ('The layer exists and the overwrite parameter is '
++                       '%s' % overwrite)
+                 raise GeoNodeException(msg)
+         else:
+-            # If our resource is already configured in the store it needs to have the right resource type
++            # If our resource is already configured in the store it needs
++            # to have the right resource type
+             for resource in resources:
+                 if resource.name == name:
+-                    assert overwrite, "Name already in use and overwrite is False"
++                    msg = 'Name already in use and overwrite is False'
++                    assert overwrite, msg
+                     existing_type = resource.resource_type
+                     if existing_type != the_layer_type:
+-                        msg =  ('Type of uploaded file %s (%s) does not match type '
+-                            'of existing resource type %s' % (layer_name, the_layer_type, existing_type))
++                        msg =  ('Type of uploaded file %s (%s) does not match '
++                                'type of existing resource type '
++                                '%s' % (layer_name,
++                                        the_layer_type,
++                                        existing_type))
+                         logger.info(msg)
+                         raise GeoNodeException(msg)
+ 
+-    # Step 3. Identify whether it is vector or raster and which extra files are needed.
+-    logger.info('>>> Step 3. Identifying if [%s] is vector or raster and gathering extra files', name)
++    # Step 3. Identify whether it is vector or raster and which extra files
++    # are needed.
++    logger.info('>>> Step 3. Identifying if [%s] is vector or raster and '
++                'gathering extra files', name)
+     if the_layer_type == FeatureType.resource_type:
+         logger.debug('Uploading vector layer: [%s]', base_file)
+-        create_store = _create_db_featurestore if settings.DB_DATASTORE else cat.create_featurestore
++        if settings.DB_DATASTORE:
++            create_store = _create_db_featurestore
++        else:
++            create_store = cat.create_featurestore
+ 
+     elif the_layer_type == Coverage.resource_type:
+         logger.debug("Uploading raster layer: [%s]", base_file)
+         create_store = cat.create_coveragestore
+     else:
+-        msg = 'The layer type for name %s is %s. It should be %s or %s,' % (layer_name, the_layer_type,
+-                                                                            FeatureType.resource_type,
+-                                                                            Coverage.resource_type)
++        msg = ('The layer type for name %s is %s. It should be '
++               '%s or %s,' % (layer_name,
++                              the_layer_type,
++                              FeatureType.resource_type,
++                              Coverage.resource_type))
+         logger.warn(msg)
+         raise GeoNodeException(msg)
+ 
+@@ -271,28 +337,33 @@
+     # ------------------
+ 
+     try:
+-        create_store(name, data, overwrite=overwrite)
++        create_store(name, data, workspace=ws, overwrite=overwrite)
+     except geoserver.catalog.UploadError, e:
+-        msg = 'Could not save the layer %s, there was an upload error: %s' % (name, str(e))
++        msg = ('Could not save the layer %s, there was an upload '
++               'error: %s' % (name, str(e)))
+         logger.warn(msg)
+         e.args = (msg,)
+         raise
+     except geoserver.catalog.ConflictingDataError, e:
+         # A datastore of this name already exists
+-        msg = ('GeoServer reported a conflict creating a store with name %s: "%s".'
+-               'This should never happen because a brand new name should have been generated. '
+-               'But since it happened, try renaming the file or deleting the store in GeoServer.'  % (name, str(e)))
++        msg = ('GeoServer reported a conflict creating a store with name %s: '
++               '"%s". This should never happen because a brand new name '
++               'should have been generated. But since it happened, '
++               'try renaming the file or deleting the store in '
++               'GeoServer.'  % (name, str(e)))
+         logger.warn(msg)
+         e.args = (msg,)
+         raise
+     else:
+-        logger.debug("Finished upload of [%s] to GeoServer without errors.", name)
++        logger.debug('Finished upload of [%s] to GeoServer without '
++                     'errors.', name)
+ 
+ 
+     # Step 5. Create the resource in GeoServer
+-    logger.info('>>> Step 5. Generating the metadata for [%s] after successful import to GeoSever', name)
+-    store = cat.get_store(name)
+-    gs_resource = cat.get_resource(name=name, store=store)
++    logger.info('>>> Step 5. Generating the metadata for [%s] after '
++                'successful import to GeoSever', name)
++    store = cat.get_store(name, workspace=ws)
++    gs_resource = cat.get_resource(name=name, store=store, workspace=ws)
+ 
+     # Verify the resource was created
+     if gs_resource is not None:
+@@ -311,7 +382,8 @@
+         minx, maxx, miny, maxy = [float(a) for a in box]
+         if -180 <= minx <= 180 and -180 <= maxx <= 180 and \
+            -90  <= miny <= 90  and -90  <= maxy <= 90:
+-            logger.warn('GeoServer failed to detect the projection for layer [%s]. Guessing EPSG:4326', name)
++            logger.warn('GeoServer failed to detect the projection for layer '
++                        '[%s]. Guessing EPSG:4326', name)
+             # If GeoServer couldn't figure out the projection, we just
+             # assume it's lat/lon to avoid a bad GeoServer configuration
+ 
+@@ -319,7 +391,9 @@
+             gs_resource.projection = "EPSG:4326"
+             cat.save(gs_resource)
+         else:
+-            msg = "GeoServer failed to detect the projection for layer [%s]. It doesn't look like EPSG:4326, so backing out the layer."
++            msg = ('GeoServer failed to detect the projection for layer '
++                   '[%s]. It doesn\'t look like EPSG:4326, so backing out '
++                   'the layer.')
+             logger.warn(msg, name)
+             cascading_delete(cat, gs_resource)
+             raise GeoNodeException(msg % name)
+@@ -340,7 +414,8 @@
+         try:
+             cat.create_style(name, sld)
+         except geoserver.catalog.ConflictingDataError, e:
+-            msg = 'There was already a style named %s in GeoServer, cannot overwrite: "%s"' % (name, str(e))
++            msg = ('There was already a style named %s in GeoServer, '
++                   'cannot overwrite: "%s"' % (name, str(e)))
+             style = cat.get_style(name)
+             logger.warn(msg)
+             e.args = (msg,)
+@@ -354,25 +429,31 @@
+     # FIXME: Do this inside the layer object
+     typename = gs_resource.store.workspace.name + ':' + gs_resource.name
+     layer_uuid = str(uuid.uuid1())
+-    saved_layer, created = Layer.objects.get_or_create(name=gs_resource.name, defaults=dict(
+-                                 store=gs_resource.store.name,
+-                                 storeType=gs_resource.store.resource_type,
+-                                 typename=typename,
+-                                 workspace=gs_resource.store.workspace.name,
+-                                 title=title or gs_resource.title,
+-                                 uuid=layer_uuid,
+-                                 keywords=' '.join(keywords),
+-                                 abstract=abstract or gs_resource.abstract or '',
+-                                 owner=user,
+-                                 )
+-    )
++    defaults = dict(store=gs_resource.store.name,
++                    storeType=gs_resource.store.resource_type,
++                    typename=typename,
++                    workspace=gs_resource.store.workspace.name,
++                    title=title or gs_resource.title,
++                    uuid=layer_uuid,
++                    keywords=' '.join(keywords),
++                    abstract=abstract or gs_resource.abstract or '',
++                    owner=user)
++    saved_layer, created = Layer.objects.get_or_create(name=gs_resource.name,
++                                                       defaults=defaults)
++
++
++    if workspace is not None:
++        msg = ('The saved workspace does not match the requested workspace "%s" != "%s"'
++               ' . This should never happen.' % (saved_layer.workspace, workspace))
++        assert saved_layer.workspace == workspace, msg
+ 
+     if created:
+         saved_layer.set_default_permissions()
+ 
+     # Step 9. Create the points of contact records for the layer
+     # A user without a profile might be uploading this
+-    logger.info('>>> Step 9. Creating points of contact records for [%s]', name)
++    logger.info('>>> Step 9. Creating points of contact records for '
++                '[%s]', name)
+     poc_contact, __ = Contact.objects.get_or_create(user=user,
+                                            defaults={"name": user.username })
+     author_contact, __ = Contact.objects.get_or_create(user=user,
+@@ -393,28 +474,34 @@
+         set_layer_permissions(saved_layer, permissions)
+ 
+     # Step 12. Verify the layer was saved correctly and clean up if needed
+-    logger.info('>>> Step 12. Verifying the layer [%s] was created correctly' % name)
++    logger.info('>>> Step 12. Verifying the layer [%s] was created '
++                'correctly' % name)
+ 
+     # Verify the object was saved to the Django database
+     try:
+         Layer.objects.get(name=name)
+     except Layer.DoesNotExist, e:
+-        msg = ('There was a problem saving the layer %s to GeoNetwork/Django. Error is: %s' % (layer, str(e)))
++        msg = ('There was a problem saving the layer %s to GeoNetwork/Django. '
++               'Error is: %s' % (layer, str(e)))
+         logger.exception(msg)
+-        logger.debug('Attempting to clean up after failed save for layer [%s]', name)
++        logger.debug('Attempting to clean up after failed save for layer '
++                     '[%s]', name)
+         # Since the layer creation was not successful, we need to clean up
+         cleanup(name, layer_uuid)
+         raise GeoNodeException(msg)
+ 
+     # Verify it is correctly linked to GeoServer and GeoNetwork
+     try:
+-        #FIXME: Implement a verify method that makes sure it was saved in both GeoNetwork and GeoServer
++        # FIXME: Implement a verify method that makes sure it was
++        # saved in both GeoNetwork and GeoServer
+         saved_layer.verify()
+     except NotImplementedError, e:
+-        logger.exception('>>> FIXME: Please, if you can write python code, implement "verify()"'
++        logger.exception('>>> FIXME: Please, if you can write python code, '
++                         'implement "verify()" '
+                          'method in geonode.maps.models.Layer')
+     except GeoNodeException, e:
+-        msg = ('The layer [%s] was not correctly saved to GeoNetwork/GeoServer. Error is: %s' % (layer, str(e)))
++        msg = ('The layer [%s] was not correctly saved to '
++               'GeoNetwork/GeoServer. Error is: %s' % (layer, str(e)))
+         logger.exception(msg)
+         e.args = (msg,)
+         # Deleting the layer
+@@ -431,9 +518,12 @@
+     try:
+         return User.objects.get(is_superuser=True)
+     except User.DoesNotExist:
+-        raise GeoNodeException("You must have an admin account configured before importing data.  Try: django-admin.py createsuperuser")
++        raise GeoNodeException('You must have an admin account configured '
++                               'before importing data. '
++                               'Try: django-admin.py createsuperuser')
+     except User.MultipleObjectsReturned:
+-        raise GeoNodeException("You have multiple admin accounts, please specify which I should use.")
++        raise GeoNodeException('You have multiple admin accounts, '
++                               'please specify which I should use.')
+ 
+ def get_valid_user(user=None):
+     """Gets the default user or creates it if it does not exist
+@@ -443,7 +533,8 @@
+     elif isinstance(user, basestring):
+         theuser = User.objects.get(username=user)
+     elif user.is_anonymous():
+-        raise GeoNodeException("The user uploading files must not be anonymous")
++        raise GeoNodeException('The user uploading files must not '
++                               'be anonymous')
+     else:
+         theuser = user
+ 
+@@ -471,11 +562,12 @@
+         Layer.objects.gn_catalog.login()
+     except:
+         from django.conf import settings
+-        msg = ("Cannot connect to the GeoNetwork at %s\n"
+-                "Please make sure you have started GeoNetwork." % settings.GEONETWORK_BASE_URL)
++        msg = ('Cannot connect to the GeoNetwork at %s\n'
++               'Please make sure you have started '
++               'GeoNetwork.' % settings.GEONETWORK_BASE_URL)
+         raise GeoNodeException(msg)
+ 
+-def file_upload(filename, user=None, title=None, overwrite=True, keywords = []):
++def file_upload(filename, user=None, title=None, overwrite=True, workspace=None, keywords=[]):
+     """Saves a layer in GeoNode asking as little information as possible.
+        Only filename is required, user and title are optional.
+     """
+@@ -500,24 +592,30 @@
+     except Layer.DoesNotExist, e:
+         layer = name
+ 
+-    new_layer = save(layer, filename, theuser, overwrite, keywords=keywords)
++    new_layer = save(layer, filename, theuser, overwrite, workspace=workspace, keywords=keywords)
+ 
+ 
+     return new_layer
+ 
+ 
+ def upload(incoming, user=None, overwrite=True, keywords = []):
+-    """Upload a directory of spatial data files to GeoNode and verifies each layer is in GeoServer.
++    """Upload a directory of spatial data files to GeoNode
++
++       This function also verifies that each layer is in GeoServer.
+ 
+        Supported extensions are: .shp, .tif, and .zip (of a shapfile).
+        It catches GeoNodeExceptions and gives a report per file
+        >>> batch_upload('/tmp/mydata')
+-           [{'file': 'data1.tiff', 'name': 'geonode:data1' }, {'file': 'data2.shp', 'errors': 'Shapefile requires .prj file'}]
++           [{'file': 'data1.tiff', 'name': 'geonode:data1' },
++           {'file': 'data2.shp', 'errors': 'Shapefile requires .prj file'}]
+     """
+     check_geonode_is_up()
+ 
+     if os.path.isfile(incoming):
+-        layer = file_upload(incoming, user=user, overwrite=overwrite, keywords = keywords)
++        layer = file_upload(incoming,
++                            user=user,
++                            overwrite=overwrite,
++                            keywords = keywords)
+         return [{'file': incoming, 'name': layer.name}]
+     elif not os.path.isdir(incoming):
+         msg = ('Please pass a filename or a directory name as the "incoming" '
+@@ -542,7 +640,8 @@
+                                            )
+ 
+                     except GeoNodeException, e:
+-                        msg = '[%s] could not be uploaded. Error was: %s' % (filename, str(e))
++                        msg = ('[%s] could not be uploaded. Error was: '
++                               '%s' % (filename, str(e)))
+                         logger.info(msg)
+                         results.append({'file': filename, 'errors': msg})
+                     else:
+@@ -551,15 +650,19 @@
+ 
+ 
+ def _create_db_featurestore(name, data, overwrite = False, charset = None):
+-    """
+-        Create a database store then use it to import a shapefile into the database.
+-        If the import fails then delete the store (and delete the PostGIS table for it).
++    """Create a database store then use it to import a shapefile.
++
++    If the import into the database fails then delete the store
++    (and delete the PostGIS table for it).
+     """
+     cat = Layer.objects.gs_catalog
+     ds = cat.create_datastore(name)
+-    ds.connection_parameters.update(
+-            host=settings.DB_DATASTORE_HOST, port=settings.DB_DATASTORE_PORT, database=settings.DB_DATASTORE_NAME, user=settings.DB_DATASTORE_USER,
+-            passwd=settings.DB_DATASTORE_PASSWORD, dbtype=settings.DB_DATASTORE_TYPE)
++    ds.connection_parameters.update(host=settings.DB_DATASTORE_HOST,
++                                    port=settings.DB_DATASTORE_PORT,
++                                    database=settings.DB_DATASTORE_NAME,
++                                    user=settings.DB_DATASTORE_USER,
++                                    passwd=settings.DB_DATASTORE_PASSWORD,
++                                    dbtype=settings.DB_DATASTORE_TYPE)
+     cat.save(ds)
+     ds = cat.get_store(name)
+     try:
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: utils.pyc
+diff -r -u geonode/src/GeoNodePy/geonode/maps/views.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/views.py
+--- geonode/src/GeoNodePy/geonode/maps/views.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps/views.py	2011-08-14 15:14:54.417200999 +0700
+@@ -12,7 +12,6 @@
+ from django.contrib.gis.geos import GEOSGeometry
+ from django.core.exceptions import ObjectDoesNotExist
+ from django.core.urlresolvers import reverse
+-from django.db import transaction
+ from django.http import HttpResponse, HttpResponseRedirect
+ from django.shortcuts import render_to_response, get_object_or_404
+ from django.conf import settings
+@@ -31,9 +30,14 @@
+ from django.views.decorators.csrf import csrf_exempt, csrf_response_exempt
+ from django.forms.models import inlineformset_factory
+ from django.db.models import Q
++from geonode.maps.forms import LayerUploadForm
++from geonode.maps.forms import NewLayerUploadForm
++from geonode.maps.utils import save
++from django.utils.html import escape
++import os, shutil
+ import logging
+ 
+-logger = logging.getLogger("geonode.maps.views")
++logger = logging.getLogger("geonode.maps")
+ 
+ _user, _password = settings.GEOSERVER_CREDENTIALS
+ 
+@@ -132,7 +136,7 @@
+     Layer.LEVEL_ADMIN : _('Administrative')
+ }
+ 
+-@transaction.commit_manually
++@csrf_exempt
+ def maps(request, mapid=None):
+     if request.method == 'GET':
+         return render_to_response('maps.html', RequestContext(request))
+@@ -150,10 +154,8 @@
+             map.update_from_viewer(request.raw_post_data)
+             response = HttpResponse('', status=201)
+             response['Location'] = map.id
+-            transaction.commit()
+             return response
+         except Exception, e:
+-            transaction.rollback()
+             return HttpResponse(
+                 "The server could not understand your request." + str(e),
+                 status=400, 
+@@ -492,6 +494,7 @@
+         user = User.objects.get(username=username)
+         m.set_user_level(user, level)
+ 
++@csrf_exempt
+ def ajax_layer_permissions(request, layername):
+     layer = get_object_or_404(Layer, typename=layername)
+ 
+@@ -518,6 +521,7 @@
+         mimetype='text/plain'
+     )
+ 
++@csrf_exempt
+ def ajax_map_permissions(request, mapid):
+     map = get_object_or_404(Map, pk=mapid)
+ 
+@@ -858,23 +862,21 @@
+ 
+ @login_required
+ @csrf_exempt
+-def upload_layer(request):
++def upload_layer(request, template='maps/layer_upload.html', workspace=None):
+     if request.method == 'GET':
+-        return render_to_response('maps/layer_upload.html',
++        return render_to_response(template,
+                                   RequestContext(request, {}))
+     elif request.method == 'POST':
+-        from geonode.maps.forms import NewLayerUploadForm
+-        from geonode.maps.utils import save
+-        from django.utils.html import escape
+-        import os, shutil
+         form = NewLayerUploadForm(request.POST, request.FILES)
+         tempdir = None
+         if form.is_valid():
+             try:
+                 tempdir, base_file = form.write_files()
+                 name, __ = os.path.splitext(form.cleaned_data["base_file"].name)
++                logger.info('Using workspace "%s"' % workspace) 
+                 saved_layer = save(name, base_file, request.user, 
+-                        overwrite = False,
++                        overwrite = True,
++                        workspace = workspace,
+                         abstract = form.cleaned_data["abstract"],
+                         title = form.cleaned_data["layer_title"],
+                         permissions = form.cleaned_data["permissions"]
+@@ -904,6 +906,7 @@
+             RequestContext(request, {'error_message': 
+                 _("You are not permitted to modify this layer")})), status=401)
+     
++    logger.debug('Updating layer %s with method %s' % (layer, request.method))
+     if request.method == 'GET':
+         cat = Layer.objects.gs_catalog
+         info = cat.get_resource(layer.name)
+@@ -913,11 +916,6 @@
+                                   RequestContext(request, {'layer': layer,
+                                                            'is_featuretype': is_featuretype}))
+     elif request.method == 'POST':
+-        from geonode.maps.forms import LayerUploadForm
+-        from geonode.maps.utils import save
+-        from django.template import escape
+-        import os, shutil
+-
+         form = LayerUploadForm(request.POST, request.FILES)
+         tempdir = None
+ 
+@@ -1284,23 +1282,26 @@
+     uuid = request.GET.get("uuid")
+     csw = get_csw()
+     csw.getrecordbyid([uuid], outputschema=namespaces['gmd'])
+-    rec = csw.records.values()[0]
+-    raw_xml = csw._exml.find(nspath('MD_Metadata', namespaces['gmd']))
+-    extra_links = _extract_links(rec, raw_xml)
+-    
++    records = csw.records.values()
++
++    context = RequestContext(request)
++
++    if len(records) != 0:
++        context['rec'] = csw.records.values()[0]
++        raw_xml = csw._exml.find(nspath('MD_Metadata', namespaces['gmd']))
++        context['extra_links'] = _extract_links(context['rec'], raw_xml)
++
+     try:
+-        layer = Layer.objects.get(uuid=uuid)
++        layer = get_object_or_404(Layer, uuid=uuid)
+         layer_is_remote = False
+-    except:
++    except Layer.DoesNotExist:
+         layer = None
+         layer_is_remote = True
+ 
+-    return render_to_response('maps/search_result_snippet.html', RequestContext(request, {
+-        'rec': rec,
+-        'extra_links': extra_links,
+-        'layer': layer,
+-        'layer_is_remote': layer_is_remote
+-    }))
++    context['layer'] = layer
++    context['layer_is_remote'] = layer_is_remote
++
++    return render_to_response('maps/search_result_snippet.html', context)
+ 
+ def _extract_links(rec, xml):
+     download_links = []
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/maps: views.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/proxy: __init__.pyc
+diff -r -u geonode/src/GeoNodePy/geonode/proxy/views.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/proxy/views.py
+--- geonode/src/GeoNodePy/geonode/proxy/views.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/proxy/views.py	2011-08-14 15:14:54.417200999 +0700
+@@ -41,6 +41,14 @@
+ 
+ @csrf_exempt
+ def geoserver(request):
++    if request.method in ("PUT") and not request.user.is_authenticated():
++        return HttpResponse(
++            "You are not allowed to do this without logging in",
++            mimetype="text/plain",
++            status=405
++        )
++ 
++
+     if not (request.method in ("GET") or request.user.is_authenticated() ):
+         return HttpResponse(
+             "You must be logged in to access GeoServer",
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode/proxy: views.pyc
+diff -r -u geonode/src/GeoNodePy/geonode/settings.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/settings.py
+--- geonode/src/GeoNodePy/geonode/settings.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/settings.py	2011-08-14 15:14:54.417200999 +0700
+@@ -76,35 +76,35 @@
+ 
+ # Absolute path to the directory that holds media.
+ # Example: "/home/media/media.lawrence.com/"
+-MEDIA_ROOT = os.path.join(PROJECT_ROOT, "site_media", "media")
++MEDIA_ROOT = os.path.join(PROJECT_ROOT, "uploads")
+ 
+ # URL that handles the media served from MEDIA_ROOT. Make sure to use a
+ # trailing slash if there is a path component (optional in other cases).
+ # Examples: "http://media.lawrence.com", "http://example.com/media/"
+-MEDIA_URL = "/site_media/media/"
++MEDIA_URL = "/uploads/"
+ 
+ # Absolute path to the directory that holds static files like app media.
+ # Example: "/home/media/media.lawrence.com/apps/"
+-STATIC_ROOT = os.path.join(PROJECT_ROOT, "site_media", "static")
++STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
+ 
+ # URL that handles the static files like app media.
+ # Example: "http://media.lawrence.com"
+-STATIC_URL = "/media/"
++STATIC_URL = "/static/"
+ 
+ # Additional directories which hold static files
+ STATICFILES_DIRS = [
+     os.path.join(PROJECT_ROOT, "media"),
+ ]
+ 
+-GEONODE_UPLOAD_PATH = os.path.join(STATIC_URL, "upload/")
++GEONODE_UPLOAD_PATH = os.path.join(MEDIA_URL, "geonode")
+ 
+ # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
+ # trailing slash.
+ # Examples: "http://foo.com/media/", "/media/".
+-ADMIN_MEDIA_PREFIX = os.path.join(STATIC_URL, "admin/")
++ADMIN_MEDIA_PREFIX = STATIC_URL + "admin/"
+ 
+ # Make this unique, and don't share it with anybody.
+-SECRET_KEY = 'myv-y4#7j-d*p-__@j#*3z@!y24fz8%^z2v6atuy4bo9vqr1_a'
++SECRET_KEY = 'z2v6atuy4bo9vqr1'
+ 
+ # List of callables that know how to import templates from various sources.
+ TEMPLATE_LOADERS = (
+@@ -147,11 +147,8 @@
+ # The FULLY QUALIFIED url to the GeoServer instance for this GeoNode.
+ GEOSERVER_BASE_URL = "http://localhost:8001/geoserver/"
+ 
+-# Default password for the geoserver admin user, autogenerated during bootstrap
+-GEOSERVER_TOKEN = open(os.path.join(PROJECT_ROOT,"..","..", "..","geoserver_token")).readline()[0:-1]
+-
+ # The username and password for a user that can add and edit layer details on GeoServer
+-GEOSERVER_CREDENTIALS = "geoserver_admin", GEOSERVER_TOKEN
++GEOSERVER_CREDENTIALS = "geoserver_admin", SECRET_KEY
+ 
+ # The FULLY QUALIFIED url to the GeoNetwork instance for this GeoNode
+ GEONETWORK_BASE_URL = "http://localhost:8001/geonetwork/"
+@@ -226,36 +223,6 @@
+     "fixed": True,
+ }]
+ 
+-# NAVBAR expects a dict of dicts or a path to an ini file
+-NAVBAR = \
+-{'maps': {'id': '%sLink',
+-               'item_class': '',
+-               'link_class': '',
+-               'text': 'Maps',
+-               'url': 'geonode.maps.views.maps'},
+- 'data': {'id': '%sLink',
+-          'item_class': '',
+-          'link_class': '',
+-          'text': 'Data',
+-          'url': "geonode.maps.views.browse_data"},
+-#  'index': {'id': '%sLink',
+-#            'item_class': '',
+-#            'link_class': '',
+-#            'text': 'Featured Map',
+-#            'url': 'geonode.views.index'},
+- 'master': {'id': '%sLink',
+-            'item_class': '',
+-            'link_class': '',
+-            'text': 'This page has no tab for this navigation'},
+- 'meta': {'active_class': 'here',
+-          'default_id': '%sLink',
+-          'default_item_class': '',
+-          'default_link_class': '',
+-          'end_class': 'last',
+-          'id': '%sLink',
+-          'item_class': '',
+-          'link_class': '',
+-          'visible': 'data\nmaps'}}
+ 
+ INSTALLED_APPS = (
+     'django.contrib.auth',
+@@ -263,8 +230,8 @@
+     'django.contrib.sessions',
+     'django.contrib.sites',
+     'django.contrib.admin',
++    'django.contrib.staticfiles',
+     'django.contrib.sitemaps',
+-    'staticfiles',
+     'django_extensions',
+     'registration',
+     'profiles',
+@@ -290,8 +257,9 @@
+ 
+ SERVE_MEDIA = DEBUG;
+ 
+-#GEONODE_CLIENT_LOCATION = "http://localhost:8001/geonode-client/"
+-GEONODE_CLIENT_LOCATION = "/media/static/"
++GEONODE_CLIENT_LOCATION = STATIC_URL + "/geonode/"
++
++GEONODE_DEPENDENCIES_URL = 'https://s3.amazonaws.com/geonodeariel/'
+ 
+ #Import uploaded shapefiles into a database such as PostGIS?
+ DB_DATASTORE=False
+diff -r -u geonode/src/GeoNodePy/geonode/templates/fullscreen.html ../dev/geonode_gfdrr/src/GeoNodePy/geonode/templates/fullscreen.html
+--- geonode/src/GeoNodePy/geonode/templates/fullscreen.html	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/templates/fullscreen.html	2011-08-14 15:14:54.417200999 +0700
+@@ -14,7 +14,7 @@
+     {% block body %} 
+     <div id="header">
+       <div class="wrap selfclear">
+-        <a id="logo" href="{% url geonode.views.index %}">GeoNode</a>
++        <a id="logo" href="{% url index %}">GeoNode</a>
+         <div id="login-area">
+           {% if user.is_authenticated %}
+           <a href="{% if user.get_profile %}{{ user.get_profile.get_absolute_url }}{% else %}{% url profiles_create_profile %}{% endif %}">{{ user.username}}</a> (<a href="{% url auth_password_change %}">{% trans "Change password" %}</a> | <a href="{% url auth_logout %}">{% trans "Log out" %}</a>)
+diff -r -u geonode/src/GeoNodePy/geonode/templates/maps/layer_upload.html ../dev/geonode_gfdrr/src/GeoNodePy/geonode/templates/maps/layer_upload.html
+--- geonode/src/GeoNodePy/geonode/templates/maps/layer_upload.html	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/templates/maps/layer_upload.html	2011-08-14 15:14:54.417200999 +0700
+@@ -34,7 +34,7 @@
+ Ext.onReady(function(){
+     Ext.QuickTips.init();
+     
+-    var form_target = "{% url geonode.maps.views.upload_layer %}";
++    var form_target = "{% block form-target %}{% url geonode.maps.views.upload_layer %}{% endblock %}";
+     var xml_unsafe = /(^[^a-zA-Z\._]+)|([^a-zA-Z0-9\._])/g;
+     var layer_title = new Ext.form.TextField({
+       id: 'layer_title',
+diff -r -u geonode/src/GeoNodePy/geonode/templates/maps/view.html ../dev/geonode_gfdrr/src/GeoNodePy/geonode/templates/maps/view.html
+--- geonode/src/GeoNodePy/geonode/templates/maps/view.html	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/templates/maps/view.html	2011-08-14 15:14:54.417200999 +0700
+@@ -39,7 +39,7 @@
+          * maps on the server for sharing and editing.
+          */
+         rest: "/maps/",
+-        homeUrl: "{% url geonode.views.index %}",
++        homeUrl: "{% url index %}",
+         localGeoServerBaseUrl: "{{ GEOSERVER_BASE_URL }}",
+         csrfToken: "{{ csrf_token }}"
+     }, {{ config }});
+diff -r -u geonode/src/GeoNodePy/geonode/templates/page_layout.html ../dev/geonode_gfdrr/src/GeoNodePy/geonode/templates/page_layout.html
+--- geonode/src/GeoNodePy/geonode/templates/page_layout.html	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/templates/page_layout.html	2011-08-14 15:14:54.417200999 +0700
+@@ -15,7 +15,7 @@
+ <body>
+   <div id="header">
+     <div class="wrap selfclear">
+-      <a id="logo" href="{% url geonode.views.index %}">GeoNode</a>
++      <a id="logo" href="{% url index %}">GeoNode</a>
+       <div id="login-area">
+         {% if user.is_authenticated %}
+           <a href="{% if user.get_profile %}{{ user.get_profile.get_absolute_url }}{% else %}{% url profiles_create_profile %}{% endif %}">{{ user.username}}</a> (<a href="{% url auth_password_change %}">{% trans "Change password" %}</a> | <a href="{% url auth_logout %}">{% trans "Log out" %}</a>)
+@@ -31,7 +31,7 @@
+     <div class="wrap selfclear">             
+       {% block nav %}
+     <ul id="sitenav" class="selfclear">
+-        <li class="home"><a href="{% url geonode.views.index %}">{% trans "Home" %}</a></li> 
++        <li class="home"><a href="{% url index %}">{% trans "Home" %}</a></li> 
+         <li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.browse_data %}">{% trans "Data" %}</a></li>
+         <li class=""><a class="" id="mapsLink" href="{% url geonode.maps.views.maps %}">{% trans "Maps" %}</a></li>
+     {% if user.is_authenticated %}
+diff -r -u geonode/src/GeoNodePy/geonode/urls.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/urls.py
+--- geonode/src/GeoNodePy/geonode/urls.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/urls.py	2011-08-14 15:14:54.417200999 +0700
+@@ -1,6 +1,6 @@
+ from django.conf.urls.defaults import *
+ from django.conf import settings
+-from staticfiles.urls import staticfiles_urlpatterns
++from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+ from geonode.sitemap import LayerSitemap, MapSitemap
+ 
+ # Uncomment the next two lines to enable the admin:
+diff -r -u geonode/src/GeoNodePy/geonode/views.py ../dev/geonode_gfdrr/src/GeoNodePy/geonode/views.py
+--- geonode/src/GeoNodePy/geonode/views.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/geonode/views.py	2011-08-14 15:14:54.417200999 +0700
+@@ -1,5 +1,5 @@
+ from django.conf import settings
+-from geonode.maps.models import Map
++from geonode.maps.models import Map, Layer
+ from django import forms
+ from django.contrib.auth import authenticate, login
+ from django.contrib.auth.models import User
+@@ -10,7 +10,10 @@
+ import json
+ 
+ def index(request): 
+-    return render_to_response('index.html', RequestContext(request))
++    context = RequestContext(request)
++    context['maps'] = Map.objects.all()
++    context['layers'] = Layer.objects.all()
++    return render_to_response('index.html', context)
+ 
+ def static(request, page):
+     return render_to_response(page + '.html', RequestContext(request, {
+Only in ../dev/geonode_gfdrr/src/GeoNodePy/geonode: views.pyc
+Only in ../dev/geonode_gfdrr/src/GeoNodePy: GeoNodePy.egg-info
+Only in ../dev/geonode_gfdrr/src/GeoNodePy: scripts
+diff -r -u geonode/src/GeoNodePy/setup.py ../dev/geonode_gfdrr/src/GeoNodePy/setup.py
+--- geonode/src/GeoNodePy/setup.py	2011-08-16 08:42:32.457200999 +0700
++++ ../dev/geonode_gfdrr/src/GeoNodePy/setup.py	2011-08-14 15:14:54.417200999 +0700
+@@ -29,6 +29,9 @@
+           "django-extensions",
+           "httplib2"
+       ],
++      scripts = [
++               'scripts/geonode',
++              ],
+       zip_safe=False,
+       entry_points="""
+       # -*- Entry points: -*-

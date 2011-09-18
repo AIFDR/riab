@@ -14,13 +14,14 @@ where filename can be either a single file or a directory of files
 
 import sys
 import time
-from risiko.utilities import save_to_geonode
+from impact.storage.io import save_to_geonode, console_log
 
 def usage():
-    print 'ccccc risiko-upload {directory|filename}'
+    print 'risiko-upload {directory|filename}'
 
 if __name__ == '__main__':
-    print sys.argv
+    console_log()
+
     if len(sys.argv) != 2:
         usage()
     else:
@@ -28,5 +29,7 @@ if __name__ == '__main__':
 
         # FIXME (Ole): Expose overwrite to command line
         t0 = time.time()
-        uploaded = save_to_geonode(thefile, overwrite=True)
+        uploaded = save_to_geonode(thefile,
+                                   overwrite=True,
+                                   check_metadata=False)  # Speeds it up
         print 'Finished uploading in %.f seconds' % (time.time() - t0)

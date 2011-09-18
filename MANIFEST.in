@@ -1,0 +1,7 @@
+recursive-include risiko/templates *
+recursive-include risiko/media *
+recursive-include risiko/locale *
+recursive-include impact/static *
+recursive-include impact/fixtures *
+recursive-include impact/templates *
+recursive-include impact/locale *

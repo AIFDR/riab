@@ -10,7 +10,20 @@
   <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}theme/site.css" media="screen" />
   <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
   <script type="text/javascript" src="{% url lang %}"></script>
+  <style>
+    #header {
+        background: none;
+   }
+  #login-area a {
+       color: #000;
+    }
+  #logo {
+        width: 300px;
+  }
+  </style>
+
   {% endblock %}
+
 </head>
 <body>
   <div id="header">
@@ -31,8 +44,8 @@
     <div class="wrap selfclear">             
       {% block nav %}
     <ul id="sitenav" class="selfclear">
-        <li class="home"><a href="/">{% trans "Calculator" %}</a></li> 
-        <li class=""><a href="{% url geonode.views.index %}">{% trans "Index" %}</a></li> 
+        <li class="home"><a href="{% url geonode.views.index %}">{% trans "Home" %}</a></li> 
+        <li class=""><a href="{% url calculator %}">{% trans "Calculator" %}</a></li> 
         <li class=""><a class="" id="dataLink" href="{% url geonode.maps.views.browse_data %}">{% trans "Layers" %}</a></li>
         <li class=""><a class="" id="mapsLink" href="{% url geonode.maps.views.maps %}">{% trans "Maps" %}</a></li>
     {% if user.is_authenticated %}
@@ -42,10 +55,28 @@
     {% endif %}
 
     {% endif %}
+
+ {% get_current_language as LANGUAGE %}
+    <form class="langbar" id="target" action="/i18n/setlang/" method="post">
+      {% csrf_token %}
+       <div style="display: inline;">
+         <select id="langval" name="language" onchange="javascript:form.submit()">
+           {% for lang in LANGUAGES %}
+            <option value="{{ lang.0 }}"
+                {% ifequal LANGUAGE_CODE lang.0 %} selected="selected"{% endifequal %}>
+                {{ lang.1 }}
+            </option>
+           {% endfor %}
+         </select>
+       </div>
+     </form>
+
+
     </ul>
       {% endblock %}
     </div><!-- /.wrap -->
   </div><!-- /#crossbar -->
+  {% block pagecontent %}
   <div id="main">
     <div class="wrap selfclear"> 
       {% block main %}{% endblock %}
@@ -61,9 +92,15 @@
         | <strong>{% trans "Need Help?" %}</strong>
         <a href="{% url geonode.views.static "help" %}">{% trans "Help" %}</a> 
         | <a href="{% url geonode.views.developer %}">{% trans "For Developers" %}</a>
+        <p>
+        <a href='http://www.bnpb.gov.id/' target="_blank"><img src="{{ STATIC_URL }}theme/img/bnpb_logo.png" border=0 style="margin: 10px 10px 0;"></a>
+        <a href='http://www.aifdr.org/' target="_blank"><img src="{{ STATIC_URL }}theme/img/aifdr.png"  border=0 style="margin: 10px 10px 0;"></a>
+        <a href='http://www.gfdrr.org/' target="_blank"><img src="{{ STATIC_URL }}theme/img/gfdrr.png"  border=0 style="margin: 10px 10px 0;"></a>
+        </p>
       </div>
       {% endblock %}
     </div><!-- /.wrap -->
   </div><!-- /#footer -->
+  {% endblock %}
 </body>
 </html>
