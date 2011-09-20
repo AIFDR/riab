@@ -324,7 +324,7 @@ def get_layer_descriptors(url):
         each layer of the following form:
 
         [['geonode:lembang_schools',
-          {'layer_type': 'feature',
+          {'layer_type': 'vector',
            'category': 'exposure',
            'subcategory': 'building',
            'title': 'lembang_schools'}],
@@ -341,7 +341,7 @@ def get_layer_descriptors(url):
     #              I am not sure if it can be changed. My problem is
     #
     #              1: A dictionary of metadata entries would be simpler
-    #              2: The keywords should have their own dictinary to avoid
+    #              2: The keywords should have their own dictionary to avoid
     #                 danger of keywords overwriting other metadata
     #
     #              I have raised this in ticket #126
@@ -358,15 +358,11 @@ def get_layer_descriptors(url):
 
         # Create new special purpose entry
         block = {}
-        if md['layer_type'] == 'vector':
-            block['layer_type'] = 'feature'
-        else:
-            block['layer_type'] = 'raster'
+        block['layer_type'] = md['layer_type']
+        block['title'] = md['title']
 
         for kw in md['keywords']:
             block[kw] = md['keywords'][kw]
-
-        block['title'] = md['title']
 
         x.append([key, block])
 

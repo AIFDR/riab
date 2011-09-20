@@ -11,12 +11,12 @@ import scipy.stats
 class FloodBuildingImpactFunction(FunctionProvider):
     """Risk plugin for flood impact on building data
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("flood") and \
-                    layer_type=="raster" and \
-                    unit=="m"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building")
+    :param requires category=='hazard' and \
+                    subcategory.startswith('flood') and \
+                    layer_type=='raster' and \
+                    unit=='m'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building')
     """
 
     target_field = 'AFFECTED'

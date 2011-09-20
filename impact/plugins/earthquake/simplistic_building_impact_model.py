@@ -7,11 +7,11 @@ import scipy.stats
 class SimplisticEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for simplistic earthquake damage to buildings
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("earthquake") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building")
+    :param requires category=='hazard' and \
+                    subcategory.startswith('earthquake') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building')
     """
 
     @staticmethod

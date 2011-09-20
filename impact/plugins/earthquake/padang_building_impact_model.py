@@ -46,11 +46,12 @@ damage_curves = {'1': dict(median=7.5, beta=0.11),
 class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for Padang earthquake damage to buildings
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("earthquake") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building")
+    :param requires category=='hazard' and \
+                    subcategory.startswith('earthquake') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building') and \
+                    layer_type=='vector'
     """
 
     def run(self, layers):
