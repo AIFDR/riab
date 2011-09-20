@@ -209,4 +209,5 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                       scales=dict(zip(scale_keys, scale_values)),
                       classifications=dict(zip(class_keys, class_values)))
 
+        # The styles are in $RIAB_HOME/riab/impact/templates/impact/styles
         return render_to_string('impact/styles/point_classes.sld', params)
