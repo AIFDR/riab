@@ -12,6 +12,8 @@ from impact.storage.utilities import get_geometry_type
 from impact.storage.utilities import is_sequence
 from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_centroid
+from impact.storage.utilities import geometrytype2string
+
 
 class Vector:
     """Class for abstraction of vector data
@@ -103,7 +105,11 @@ class Vector:
             # FIXME: Need to establish extent here
 
     def __str__(self):
-        return self.name
+        return ('Vector data set: %s, %i features, geometry type '
+                '%i (%s)' % (self.name,
+                             len(self),
+                             self.geometry_type,
+                             geometrytype2string(self.geometry_type)))
 
     def __len__(self):
         """Size of vector layer defined as number of features
@@ -423,10 +429,10 @@ class Vector:
                 y = float(geometry[i][1])
                 geom.SetPoint_2D(0, x, y)
             elif self.geometry_type == ogr.wkbPolygon:
-                wkt = array2wkt(geometry[i])
+                wkt = array2wkt(geometry[i], geom_type='POLYGON')
                 geom = ogr.CreateGeometryFromWkt(wkt)
             else:
-                msg = 'Geometry %s not implemented' % self.geometry_type
+                msg = 'Geometry type %s not implemented' % self.geometry_type
                 raise Exception(msg)
 
             feature.SetGeometry(geom)

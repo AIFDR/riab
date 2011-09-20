@@ -482,6 +482,41 @@ def array2wkt(A, geom_type='POLYGON'):
 
     return wkt_string[:-2] + ')' * n
 
+# Map of ogr numerical geometry types to their textual representation
+# FIXME (Ole): Some of them don't exist, even though they show up
+# when doing dir(ogr) - Why?:
+geometry_type_map = {ogr.wkbPoint: 'Point',
+                     ogr.wkbPoint25D: 'Point25D',
+                     ogr.wkbPolygon: 'Polygon',
+                     ogr.wkbPolygon25D: 'Polygon25D',
+                     #ogr.wkbLinePoint: 'LinePoint',  # ??
+                     ogr.wkbGeometryCollection: 'GeometryCollection',
+                     ogr.wkbGeometryCollection25D: 'GeometryCollection25D',
+                     ogr.wkbLineString: 'LineString',
+                     ogr.wkbLineString25D: 'LineString25D',
+                     ogr.wkbLinearRing: 'LinearRing',
+                     ogr.wkbMultiLineString: 'MultiLineString',
+                     ogr.wkbMultiLineString25D: 'MultiLineString25D',
+                     ogr.wkbMultiPoint: 'MultiPoint',
+                     ogr.wkbMultiPoint25D: 'MultiPoint25D',
+                     ogr.wkbMultiPolygon: 'MultiPolygon',
+                     ogr.wkbMultiPolygon25D: 'MultiPolygon25D',
+                     ogr.wkbNDR: 'NDR',
+                     ogr.wkbNone: 'None',
+                     ogr.wkbUnknown: 'Unknown'}
+
+def geometrytype2string(g_type):
+    """Provides string representation of numeric geometry types
+
+    FIXME (Ole): I can't find anything like this in ORG. Why?
+    """
+
+    if g_type in geometry_type_map:
+        return geometry_type_map[g_type]
+    else:
+        return 'Unknown geometry type: %i' % g_type
+
+
 def calculate_polygon_area(polygon, signed=False):
     """Calculate the signed area of non-self-intersecting polygon
 
@@ -489,7 +524,8 @@ def calculate_polygon_area(polygon, signed=False):
         polygon: Numeric array of points (longitude, latitude). It is assumed
                  to be closed, i.e. first and last points are identical
         signed: Optional flag deciding whether returned area retains its sign:
-                If points are ordered counter clockwise, the signed area will be positive.
+                If points are ordered counter clockwise, the signed area
+                will be positive.
                 If points are ordered clockwise, it will be negative
                 Default is False which means that the area is always positive.
 
