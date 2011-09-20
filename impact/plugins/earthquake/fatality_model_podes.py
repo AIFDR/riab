@@ -4,8 +4,8 @@ from impact.storage.raster import Raster
 from impact.storage.vector import Vector, convert_polygons_to_centroids
 
 
-class EarthquakeFatalityFunction(FunctionProvider):
-    """Risk plugin for earthquake damage
+class EarthquakeFatalityFunctionPodes(FunctionProvider):
+    """Risk plugin for earthquake fatalities using Podes polygon data
 
     :author Allen
     :rating 1
@@ -26,8 +26,8 @@ class EarthquakeFatalityFunction(FunctionProvider):
 
         Input
           layers: List of layers expected to contain
-              H: Raster layer of MMI ground shaking
-              E: Polygon population data
+                  H: Raster layer of MMI ground shaking
+                  E: Polygon population data
           a: Parameter for Allen impact function
           b: Parameter for Allen impact function
         """
@@ -66,10 +66,7 @@ class EarthquakeFatalityFunction(FunctionProvider):
             population_count = E.get_data('Jumlah_Pen', i)
 
             # Calculate impact
-            if numpy.isnan(mmi):
-                F = 0.0
-            else:
-                F = 10 ** (a * mmi - b) * population_count
+            F = 10 ** (a * mmi - b) * population_count
 
             # Collect shake level and calculated damage
             result_dict = {self.target_field: F,
@@ -83,18 +80,17 @@ class EarthquakeFatalityFunction(FunctionProvider):
             result_feature_set.append(result_dict)
 
             # Calculate statistics
-            count += F
+            if not numpy.isnan(F):
+                count += F
             total += population_count
 
-        print
-        print count, total
 
         # Create report
         caption = ('<table border="0" width="320px">'
                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                    '</table>' % ('Jumlah Penduduk', int(total),
-                                 'Perkiraan meninggal', int(count)))
+                                 'Perkiraan Orang Meninggal', int(count)))
 
 
         # Create vector layer and return
@@ -103,6 +99,8 @@ class EarthquakeFatalityFunction(FunctionProvider):
                    geometry=coordinates,
                    name='Estimated fatalities',
                    keywords={'caption': caption})
+
+        print V
         return V
 
 
