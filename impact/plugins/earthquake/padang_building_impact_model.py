@@ -21,7 +21,7 @@ Class Building Type                              Median (MMI)  Beta (MMI)
 
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
-from impact.storage.vector import Vector
+from impact.storage.vector import Vector, convert_polygons_to_centroids
 from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
@@ -46,11 +46,12 @@ damage_curves = {'1': dict(median=7.5, beta=0.11),
 class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for Padang earthquake damage to buildings
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("earthquake") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building")
+    :param requires category=='hazard' and \
+                    subcategory.startswith('earthquake') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building') and \
+                    layer_type=='vector'
     """
 
     def run(self, layers):
@@ -63,6 +64,8 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         H = layers[0]  # Ground shaking
         E = layers[1]  # Building locations
 
+        # FIXME (Ole): Not very robust way of deciding
+        # Need keyword identifier for each kind of building dataset.
         if E.get_name().lower().startswith('osm'):
             # Map from OSM attributes to the padang building classes
             E = osm2padang(E)
@@ -70,8 +73,15 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         else:
             vclass_tag = 'TestBLDGCl'
 
+        # Convert polygon data to centroid point data if necessary
+        if E.is_polygon_data:
+            Ep = convert_polygons_to_centroids(E)
+            Ep.write_to_file('OSM_building_centroids.shp')
+        else:
+            Ep = E
+
         # Interpolate hazard level to building locations
-        H = H.interpolate(E)
+        H = H.interpolate(Ep)
 
         # Extract relevant numerical data
         coordinates = E.get_geometry()
@@ -199,4 +209,5 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                       scales=dict(zip(scale_keys, scale_values)),
                       classifications=dict(zip(class_keys, class_values)))
 
+        # The styles are in $RIAB_HOME/riab/impact/templates/impact/styles
         return render_to_string('impact/styles/point_classes.sld', params)

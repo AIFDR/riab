@@ -6,11 +6,11 @@ from impact.storage.vector import Vector
 class EarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for earthquake damage to buildings
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("earthquake") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building")
+    :param requires category=='hazard' and \
+                    subcategory.startswith('earthquake') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building')
     """
 
     @staticmethod

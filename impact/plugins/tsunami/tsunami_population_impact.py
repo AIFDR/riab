@@ -11,12 +11,12 @@ import scipy.stats
 class TsunamiPopulationImpactFunction(FunctionProvider):
     """Risk plugin for tsunami impact on population data
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("tsunami") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("population") and \
-                    layer_type=="feature"
+    :param requires category=='hazard' and \
+                    subcategory.startswith('tsunami') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('population') and \
+                    layer_type=='vector'
     """
 
     target_field = 'AFFECTED'

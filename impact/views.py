@@ -145,13 +145,13 @@ def calculate(request, save_output=save_to_geonode):
 
         # Download selected layer objects
         msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
-                                                      hazard_server))
+                                                          hazard_server))
         logger.info(msg)
 
         H = download(hazard_server, hazard_layer, bbox)
 
         msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
-                                                        exposure_server))
+                                                            exposure_server))
         logger.info(msg)
         E = download(exposure_server, exposure_layer, bbox)
 

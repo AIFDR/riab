@@ -55,6 +55,8 @@ def truncate_field_names(data, n=10):
 
     Output
         dictionary with same values as data but with keys truncated
+
+    THIS IS OBSOLETE AFTER OGR'S OWN FIELD NAME LAUNDERER IS USED
     """
 
     if data is None:
@@ -88,6 +90,36 @@ def truncate_field_names(data, n=10):
 
     return new
 
+""" FIXME: The truncation method can be replaced with something like this
+
+>>> from osgeo import ogr
+>>> from osgeo import osr
+>>> drv = ogr.GetDriverByName('ESRI Shapefile')
+>>> ds = drv.CreateDataSource('shptest.shp')
+>>> lyr = ds.CreateLayer('mylyr', osr.SpatialReference(), ogr.wkbPolygon)
+>>> fd = ogr.FieldDefn('A slightly long name', ogr.OFTString)
+>>> lyr.CreateField(fd)
+Warning 6: Normalized/laundered field name: 'A slightly long name' to 'A slightly'
+0
+>>> layer_defn = lyr.GetLayerDefn()
+>>> last_field_idx = layer_defn.GetFieldCount() - 1
+>>> real_field_name = layer_defn.GetFieldDefn(last_field_idx).GetNameRef()
+>>> feature = ogr.Feature(layer_defn)
+>>> feature.SetField('A slightly', 'value')
+>>> real_field_name
+'A slightly'
+"""
+
+"""To suppress Warning 6:
+
+Yes, you can surround the CreateField() call with :
+
+gdal.PushErrorHandler('CPLQuietErrorHandler')
+...
+gdal.PopErrorHandler()
+
+
+"""
 
 # GeoServer utility functions
 def is_server_reachable(url):
@@ -474,6 +506,41 @@ def array2wkt(A, geom_type='POLYGON'):
 
     return wkt_string[:-2] + ')' * n
 
+# Map of ogr numerical geometry types to their textual representation
+# FIXME (Ole): Some of them don't exist, even though they show up
+# when doing dir(ogr) - Why?:
+geometry_type_map = {ogr.wkbPoint: 'Point',
+                     ogr.wkbPoint25D: 'Point25D',
+                     ogr.wkbPolygon: 'Polygon',
+                     ogr.wkbPolygon25D: 'Polygon25D',
+                     #ogr.wkbLinePoint: 'LinePoint',  # ??
+                     ogr.wkbGeometryCollection: 'GeometryCollection',
+                     ogr.wkbGeometryCollection25D: 'GeometryCollection25D',
+                     ogr.wkbLineString: 'LineString',
+                     ogr.wkbLineString25D: 'LineString25D',
+                     ogr.wkbLinearRing: 'LinearRing',
+                     ogr.wkbMultiLineString: 'MultiLineString',
+                     ogr.wkbMultiLineString25D: 'MultiLineString25D',
+                     ogr.wkbMultiPoint: 'MultiPoint',
+                     ogr.wkbMultiPoint25D: 'MultiPoint25D',
+                     ogr.wkbMultiPolygon: 'MultiPolygon',
+                     ogr.wkbMultiPolygon25D: 'MultiPolygon25D',
+                     ogr.wkbNDR: 'NDR',
+                     ogr.wkbNone: 'None',
+                     ogr.wkbUnknown: 'Unknown'}
+
+def geometrytype2string(g_type):
+    """Provides string representation of numeric geometry types
+
+    FIXME (Ole): I can't find anything like this in ORG. Why?
+    """
+
+    if g_type in geometry_type_map:
+        return geometry_type_map[g_type]
+    else:
+        return 'Unknown geometry type: %i' % g_type
+
+
 def calculate_polygon_area(polygon, signed=False):
     """Calculate the signed area of non-self-intersecting polygon
 
@@ -481,7 +548,8 @@ def calculate_polygon_area(polygon, signed=False):
         polygon: Numeric array of points (longitude, latitude). It is assumed
                  to be closed, i.e. first and last points are identical
         signed: Optional flag deciding whether returned area retains its sign:
-                If points are ordered counter clockwise, the signed area will be positive.
+                If points are ordered counter clockwise, the signed area
+                will be positive.
                 If points are ordered clockwise, it will be negative
                 Default is False which means that the area is always positive.
 
@@ -529,6 +597,12 @@ def calculate_polygon_centroid(polygon):
     # Make sure it is numeric
     P = numpy.array(polygon)
 
+    # Normalise to ensure numerical accurracy.
+    # This requirement in backed by tests in test_io.py and without it
+    # centroids at building footprint level may get shifted outside the polygon!
+    P_origin = numpy.amin(P, axis=0)
+    P = P - P_origin
+
     # Get area. This calculation could be incorporated to save time
     # if necessary as the two formulas are very similar.
     A = calculate_polygon_area(polygon, signed=True)
@@ -536,7 +610,8 @@ def calculate_polygon_centroid(polygon):
     x = P[:, 0]
     y = P[:, 1]
 
-    # Calculate sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+    # Calculate Cx = sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+    # Calculate Cy = sum_{i=0}^{N-1} (y_i + y_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
     a = x[:-1] * y[1:]
     b = y[:-1] * x[1:]
 
@@ -546,4 +621,6 @@ def calculate_polygon_centroid(polygon):
     Cx = numpy.sum(cx * (a - b)) / (6. * A)
     Cy = numpy.sum(cy * (a - b)) / (6. * A)
 
-    return numpy.array([Cx, Cy])
+    # Translate back to real location
+    C = numpy.array([Cx, Cy]) + P_origin
+    return C
