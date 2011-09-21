@@ -324,7 +324,7 @@ class Test_IO(unittest.TestCase):
             # But that not all points are the same
             max_dist = 0
             for j in range(n):
-                d = numpy.sum((geom[j] - geom[0])**2)/n
+                d = numpy.sum((geom[j] - geom[0]) ** 2) / n
                 if d > max_dist:
                     max_dist = d
             assert max_dist > 0
@@ -1253,7 +1253,8 @@ class Test_IO(unittest.TestCase):
 
         # Not starting at zero
         # Create closed simple polygon (counter clock wise)
-        P = numpy.array([[168, -2], [169, -2], [169, -1], [168, -1], [168, -2]])
+        P = numpy.array([[168, -2], [169, -2], [169, -1],
+                         [168, -1], [168, -2]])
         A = calculate_polygon_area(P)
 
         msg = 'Calculated area was %f, expected 1.0 deg^2' % A
@@ -1300,7 +1301,8 @@ class Test_IO(unittest.TestCase):
 
         # Not starting at zero
         # Create closed simple polygon (counter clock wise)
-        P = numpy.array([[168, -2], [169, -2], [169, -1], [168, -1], [168, -2]])
+        P = numpy.array([[168, -2], [169, -2], [169, -1],
+                         [168, -1], [168, -2]])
         C = calculate_polygon_centroid(P)
 
         msg = ('Calculated centroid was (%f, %f), expected '
@@ -1337,8 +1339,8 @@ class Test_IO(unittest.TestCase):
 
         C = calculate_polygon_centroid(P)
 
-        # Check against reference centroid
-        reference_centroid = [106.79235602697445, -6.229849764722536]  # From qgis
+        # Check against reference centroid from qgis
+        reference_centroid = [106.79235602697445, -6.229849764722536]
         msg = 'Got %s but expected %s' % (str(C), str(reference_centroid))
         assert numpy.allclose(C, reference_centroid, rtol=1.0e-8), msg
 
@@ -1349,7 +1351,6 @@ class Test_IO(unittest.TestCase):
                    geometry=[C],
                    name='Test centroid')
         V.write_to_file(out_filename)
-
 
     def test_geotransform2bbox(self):
         """Bounding box can be extracted from geotransform
