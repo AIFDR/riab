@@ -106,7 +106,8 @@ def calculate(request, save_output=save_to_geonode):
         exp_metadata = get_metadata(exposure_server, exposure_layer)
 
         # Determine common resolution in case of raster layers
-        if haz_metadata['layer_type'] == 'raster' and exp_metadata['layer_type'] == 'raster':
+        if haz_metadata['layer_type'] == 'raster' and \
+                exp_metadata['layer_type'] == 'raster':
             haz_res = haz_metadata['resolution']
             exp_res = exp_metadata['resolution']
 
@@ -116,8 +117,8 @@ def calculate(request, save_output=save_to_geonode):
 
             raster_resolution = (resx, resy)
         else:
-            raster_resolution = None  # This means native resolution will be used
-
+            # This means native resolution will be used
+            raster_resolution = None
 
         # Find the intersection of bounding boxes for viewport,
         # hazard and exposure.

@@ -11,7 +11,8 @@ https://github.com/AIFDR/riab/blob/develop/extras/swap_gml_coords.py
 
 Finally, it was converted to the .shp format.
 
-Eventually, this will be scripted and eventually work directly with the WFS - see https://github.com/AIFDR/riab/issues/62
+Eventually, this will be scripted and eventually work directly with the WFS
+- see https://github.com/AIFDR/riab/issues/62
 """
 
 import numpy
@@ -100,14 +101,12 @@ class EarthquakeFatalityFunctionPodes(FunctionProvider):
                 count += F
             total += population_count
 
-
         # Create report
         caption = ('<table border="0" width="320px">'
                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                    '</table>' % ('Jumlah Penduduk', int(total),
                                  'Perkiraan Orang Meninggal', int(count)))
-
 
         # Create vector layer and return
         V = Vector(data=result_feature_set,
@@ -247,6 +246,3 @@ class EarthquakeFatalityFunctionPodes(FunctionProvider):
 """
 
         return style
-
-
-

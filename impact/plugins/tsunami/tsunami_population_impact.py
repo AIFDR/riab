@@ -16,7 +16,6 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
                     layer_type=="raster"
     """
 
-
     def run(self, layers):
         """Risk plugin for tsunami population
         """
@@ -45,19 +44,15 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
                    '   <tr></tr>' % ('Ambang batas', 'Jumlah orang terdampak'))
 
-
         counts = []
         for i, threshold in enumerate(thresholds):
             I = numpy.where(D > threshold, P, 0)
             counts.append(sum(I.flat))
 
-            caption += '   <tr><td>%s m</td><td>%i</td></tr>' % (threshold, counts[i])
+            caption += '   <tr><td>%s m</td><td>%i</td></tr>' % (threshold,
+                                                                 counts[i])
 
         caption += '</table>'
-
-        #caption = ('<b>Statistik&#58;</b> Ada %i orang terdampak oleh kedalaman genangan lebih dari '
-        #           '%i m ' % (number_of_people_affected, threshold))
-        #caption = ('<b>Statistik&#58;</b> Ada %i orang meninggal ' % number_of_people_affected)
 
         # Create raster object and return
         R = Raster(I_map,

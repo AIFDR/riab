@@ -3,6 +3,7 @@
 import numpy
 from impact.storage.vector import Vector
 
+
 def osm2padang(E):
     """Map OSM attributes to Padang vulnerability classes
 
@@ -41,7 +42,7 @@ def osm2padang(E):
     required = ['levels', 'structure']
     actual = E.get_attribute_names()
     msg = ('Input data to osm2padang must have attributes %s. '
-           'It has %s'% (str(required), str(actual)))
+           'It has %s' % (str(required), str(actual)))
     for attribute in required:
         assert attribute in actual, msg
 
@@ -108,4 +109,3 @@ def osm2padang(E):
                name=E.get_name() + ' mapped to Padang vulnerability classes',
                keywords=E.get_keywords())
     return V
-

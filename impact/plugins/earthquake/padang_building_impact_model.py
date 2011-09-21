@@ -42,7 +42,6 @@ damage_curves = {'1': dict(median=7.5, beta=0.11),
                  '9': dict(median=10.5, beta=0.15)}
 
 
-
 class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for Padang earthquake damage to buildings
 

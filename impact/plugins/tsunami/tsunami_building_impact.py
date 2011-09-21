@@ -63,7 +63,7 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
             # Classify buildings according to depth
             if dep >= 3:
                 affected = 3  # FIXME: Colour upper bound is 100 but
-                count3 += 1   #       does not catch affected == 100
+                count3 += 1          # does not catch affected == 100
             elif 1 <= dep < 3:
                 affected = 2
                 count1 += 1
@@ -125,7 +125,6 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
                          'color': '#fd8d3c', 'opacity': '1'},
                         {'min': 2.5, 'max': 3.5,
                          'color': '#e31a1c', 'opacity': '1'}]
-
 
         if self.symbol_field in data.get_attribute_names():
             symbol_field = self.symbol_field

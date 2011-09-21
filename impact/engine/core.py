@@ -11,7 +11,6 @@ from impact.storage.projection import DEFAULT_PROJECTION
 from impact.storage.utilities import unique_filename
 
 
-
 def calculate_impact(layers, impact_fcn,
                      comment=''):
     """Calculate impact levels as a function of list of input layers
