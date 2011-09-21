@@ -1,3 +1,19 @@
+"""Fatality model using BNPB Podes data.
+
+This was obtained from the WFS server
+
+http://gisserver.bnpb.go.id:8399/arcgis/rest/services
+http://gisserver.bnpb.go.id:8399/arcgis/rest/services/demografi
+http://gisserver.bnpb.go.id:8399/arcgis/rest/services/demografi/Populasi_Penduduk_Kecamatan/FeatureServer?f=pjson
+
+using wget, followed by processing the gml to swap coordinates using the script
+https://github.com/AIFDR/riab/blob/develop/extras/swap_gml_coords.py
+
+Finally, it was converted to the .shp format.
+
+Eventually, this will be scripted and eventually work directly with the WFS - see https://github.com/AIFDR/riab/issues/62
+"""
+
 import numpy
 from impact.plugins.core import FunctionProvider
 from impact.storage.raster import Raster
