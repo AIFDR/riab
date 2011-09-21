@@ -27,6 +27,17 @@ TYPE_MAP = {type(None): ogr.OFTString,  # What else should this be?
             type(numpy.array([0.0])[0]): ogr.OFTReal,  # numpy.float64
             type(numpy.array([[0.0]])[0]): ogr.OFTReal}  # numpy.ndarray
 
+# Templates for downloading layers through rest
+WCS_TEMPLATE = '%s?version=1.0.0' + \
+    '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
+    'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
+    '&resx=%s&resy=%s'
+
+WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
+    '&request=GetFeature&typeName=%s' + \
+    '&outputFormat=SHAPE-ZIP&bbox=%s'
+
+
 
 # Miscellaneous auxiliary functions
 def unique_filename(**kwargs):
@@ -282,6 +293,11 @@ def geotransform2bbox(geotransform, columns, rows):
     Output
         bbox: Bounding box as a list of geographic coordinates
               [west, south, east, north]
+
+
+    Rows and columns are needed to determine eastern and northern bounds.
+    FIXME: Not sure if the pixel vs gridline registration issue is observed correctly here.
+    Need to check against gdal > v1.7
     """
 
     x_origin = geotransform[0]  # top left x
@@ -297,6 +313,25 @@ def geotransform2bbox(geotransform, columns, rows):
     maxy = y_origin
 
     return [minx, miny, maxx, maxy]
+
+def geotransform2resolution(geotransform):
+    """Convert geotransform to resolution
+
+    Input
+        geotransform: GDAL geotransform (6-tuple).
+                      (top left x, w-e pixel resolution, rotation,
+                      top left y, rotation, n-s pixel resolution).
+                      See e.g. http://www.gdal.org/gdal_tutorial.html
+
+    Output
+        resolution: grid spacing (resx, resy) in (positive) decimal degrees order
+                    as longitude first, then latitude.
+    """
+
+    x_res = geotransform[1]     # w-e pixel resolution
+    y_res = - geotransform[5]   # n-s pixel resolution (always negative)
+
+    return (x_res, y_res)
 
 
 def bbox_intersection(*args):

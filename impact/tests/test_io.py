@@ -21,6 +21,8 @@ from impact.storage.utilities import minimal_bounding_box
 from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_area
 from impact.storage.utilities import calculate_polygon_centroid
+from impact.storage.utilities import geotransform2bbox
+from impact.storage.utilities import geotransform2resolution
 from impact.storage.io import get_bounding_box
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.tests.utilities import same_API
@@ -1348,6 +1350,37 @@ class Test_IO(unittest.TestCase):
         V.write_to_file(out_filename)
 
 
+    def test_geotransform2bbox(self):
+        """Bounding box can be extracted from geotransform
+        """
+
+        M = 5
+        N = 10
+        for gt in [(105.3000035, 0.008333, 0.0, -5.5667785, 0.0, -0.008333),
+                   (105.29857, 0.0112, 0.0, -5.565233000000001, 0.0, -0.0112),
+                   (96.956, 0.030741064, 0.0, 2.2894972560001, 0.0, -0.030741064)]:
+            bbox = geotransform2bbox(gt, M, N)
+
+            # FIXME: Need better tests here, but this is better than nothing
+
+            # Lower bounds
+            assert bbox[0] == gt[0]
+
+            # Upper bounds
+            assert bbox[3] == gt[3]
+
+    def test_geotransform2resolution(self):
+        """Resolution can be extracted from geotransform
+        """
+
+        for gt in [(105.3000035, 0.008333, 0.0, -5.5667785, 0.0, -0.008333),
+                   (105.29857, 0.0112, 0.0, -5.565233000000001, 0.0, -0.0112),
+                   (96.956, 0.030741064, 0.0, 2.2894972560001, 0.0, -0.030741064)]:
+            res = geotransform2resolution(gt)
+
+            assert len(res) == 2
+            assert numpy.allclose(res[0], gt[1], rtol=0, atol=1.0e-12)
+            assert numpy.allclose(res[1], - gt[5], rtol=0, atol=1.0e-12)
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')

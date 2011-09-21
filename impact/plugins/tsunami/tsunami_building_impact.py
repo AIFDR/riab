@@ -1,0 +1,155 @@
+from django.template.loader import render_to_string
+from impact.plugins.core import FunctionProvider
+from impact.storage.vector import Vector, convert_polygons_to_centroids
+from django.utils.translation import ugettext as _
+from impact.plugins.utilities import PointZoomSize
+from impact.plugins.utilities import PointClassColor
+from impact.plugins.utilities import PointSymbol
+import scipy.stats
+
+
+class TsunamiBuildingImpactFunction(FunctionProvider):
+    """Risk plugin for tsunami impact on building data
+
+    :param requires category=="hazard" and \
+                    subcategory.startswith("tsunami") and \
+                    layer_type=="raster"
+    :param requires category=="exposure" and \
+                    subcategory.startswith("building") and \
+                    datatype=='osm'
+    """
+
+    target_field = 'ICLASS'
+
+    def run(self, layers):
+        """Risk plugin for tsunami population
+        """
+
+        # Extract data
+        H = layers[0]  # Depth
+        E = layers[1]  # Building locations
+
+        print 'Number of polygons', len(E)
+
+        # Convert polygon data to centroid point data if necessary
+        if E.is_polygon_data:
+            print 'Converting to centroids'
+            Ec = convert_polygons_to_centroids(E)
+
+        print 'Point', E.is_point_data
+        print 'Number of centroids', len(Ec)
+
+        # Interpolate hazard level to building locations
+        H = H.interpolate(Ec)
+
+        # Extract relevant numerical data
+        coordinates = E.get_geometry()
+        depth = H.get_data()
+        N = len(depth)
+
+        # List attributes to carry forward to result layer
+        attributes = E.get_attribute_names()
+
+        # Calculate building impact according to guidelines
+        count3 = 0
+        count1 = 0
+        count0 = 0
+        population_impact = []
+        for i in range(N):
+
+            # Get depth
+            dep = float(depth[i].values()[0])
+
+            # Classify buildings according to depth
+            if dep >= 3:
+                affected = 3  # FIXME: Colour upper bound is 100 but
+                count3 += 1   #       does not catch affected == 100
+            elif 1 <= dep < 3:
+                affected = 2
+                count1 += 1
+            else:
+                affected = 1
+                count0 += 1
+
+            # Collect depth and calculated damage
+            result_dict = {self.target_field: affected,
+                           'DEPTH': dep}
+
+            # Carry all original attributes forward
+            for key in attributes:
+                result_dict[key] = E.get_data(key, i)
+
+            # Record result for this feature
+            population_impact.append(result_dict)
+
+        # Create report
+        caption = ('<table border="0" width="320px">'
+                   '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
+                    '   <tr></tr>'
+                    '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
+                    '</table>' % ('ketinggian tsunami', 'Jumlah gedung',
+                                  '< 1 m', count0,
+                                  '1 - 3 m', count1,
+                                  '> 3 m', count3))
+
+        # Create vector layer and return
+        V = Vector(data=population_impact,
+                   projection=E.get_projection(),
+                   geometry=coordinates,
+                   name='Estimate of buildings affected',
+                   keywords={'caption': caption})
+        return V
+
+    def generate_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+        #DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
+        DEFAULT_SYMBOL = 'circle'
+
+        symbol_field = None
+        symbol_keys = [None, '']
+        symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
+
+        # Zoom levels (large number means close up)
+        scale_keys = [50000000000, 10000000000, 10000000, 5000000,
+                      1000000, 500000, 250000, 100000]
+        scale_values = [2, 4, 6, 8, 1, 1, 1, 1]
+
+        # Predefined colour classes
+        class_keys = ['< 1 m', '1 - 3 m', '> 3 m']
+        class_values = [{'min': 0.5, 'max': 1.5,
+                         'color': '#cccccc', 'opacity': '1'},
+                        {'min': 1.5, 'max': 2.5,
+                         'color': '#fd8d3c', 'opacity': '1'},
+                        {'min': 2.5, 'max': 3.5,
+                         'color': '#e31a1c', 'opacity': '1'}]
+
+
+        if self.symbol_field in data.get_attribute_names():
+            symbol_field = self.symbol_field
+
+            symbol_keys.extend(['Church/Mosque', 'Commercial (office)',
+                                'Hotel',
+                                'Medical facility', 'Other',
+                                'Other industrial',
+                                'Residential', 'Retail', 'School',
+                                'Unknown', 'Warehouse'])
+
+            symbol_values.extend([DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL,
+                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL])
+
+        params = dict(name=data.get_name(),
+                      damage_field=self.target_field,
+                      symbol_field=symbol_field,
+                      symbols=dict(zip(symbol_keys, symbol_values)),
+                      scales=dict(zip(scale_keys, scale_values)),
+                      classifications=dict(zip(class_keys, class_values)))
+
+        return render_to_string('impact/styles/point_classes.sld', params)
