@@ -145,7 +145,6 @@ class Test_HTTP(unittest.TestCase):
             msg = data['stacktrace']
             raise Exception(msg)
 
-
         assert 'hazard_layer' in data.keys()
         assert 'exposure_layer' in data.keys()
         assert 'run_duration' in data.keys()

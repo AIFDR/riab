@@ -750,7 +750,6 @@ class Test_geonode_connection(unittest.TestCase):
         # Compare data number by number
         assert numpy.allclose(A, A_ref, rtol=1.0e-8)
 
-
     def test_specified_raster_resolution(self):
         """Raster layer can be downloaded with specific resolution
 
@@ -769,8 +768,8 @@ class Test_geonode_connection(unittest.TestCase):
         """
 
         # Test for a range of specified resolutions
-        for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005, # Coarser
-                    0.0002, 0.0001, 0.00006, 0.00003]: # Finer
+        for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
+                    0.0002, 0.0001, 0.00006, 0.00003]:        # Finer
 
             hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
                                % TESTDATA)
@@ -792,8 +791,8 @@ class Test_geonode_connection(unittest.TestCase):
 
             # Determine expected shape from bbox (W, S, E, N)
             bb = bboxstring2list(bbox)
-            ref_rows = int(round((bb[3]-bb[1])/res))
-            ref_cols = int(round((bb[2]-bb[0])/res))
+            ref_rows = int(round((bb[3] - bb[1]) / res))
+            ref_cols = int(round((bb[2] - bb[0]) / res))
 
             # Compare shapes
             msg = ('Shape of downloaded raster was [%i, %i]. '
