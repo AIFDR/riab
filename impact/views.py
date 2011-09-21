@@ -101,13 +101,29 @@ def calculate(request, save_output=save_to_geonode):
 
         check_bbox_string(bbox)
 
+        # Get metadata
+        haz_metadata = get_metadata(hazard_server, hazard_layer)
+        exp_metadata = get_metadata(exposure_server, exposure_layer)
+
+        # Determine common resolution in case of raster layers
+        if haz_metadata['layer_type'] == 'raster' and exp_metadata['layer_type'] == 'raster':
+            haz_res = haz_metadata['resolution']
+            exp_res = exp_metadata['resolution']
+
+            # Take the minimum
+            resx = min(haz_res[0], exp_res[0])
+            resy = min(haz_res[1], exp_res[1])
+
+            raster_resolution = (resx, resy)
+        else:
+            raster_resolution = None  # This means native resolution will be used
+
+
         # Find the intersection of bounding boxes for viewport,
         # hazard and exposure.
         vpt_bbox = bboxstring2list(bbox)
-        haz_bbox = get_metadata(hazard_server,
-                                hazard_layer)['bounding_box']
-        exp_bbox = get_metadata(exposure_server,
-                                exposure_layer)['bounding_box']
+        haz_bbox = haz_metadata['bounding_box']
+        exp_bbox = exp_metadata['bounding_box']
 
         # Impose minimum bounding box size (as per issue #101).
         # FIXME (Ole): This will need to be revisited in conjunction with
@@ -148,12 +164,12 @@ def calculate(request, save_output=save_to_geonode):
                                                           hazard_server))
         logger.info(msg)
 
-        H = download(hazard_server, hazard_layer, bbox)
+        H = download(hazard_server, hazard_layer, bbox, raster_resolution)
 
         msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
                                                             exposure_server))
         logger.info(msg)
-        E = download(exposure_server, exposure_layer, bbox)
+        E = download(exposure_server, exposure_layer, bbox, raster_resolution)
 
         # Calculate result using specified impact function
         msg = ('- Calculating impact using %s' % impact_function)
