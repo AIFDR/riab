@@ -20,6 +20,11 @@ FEATURE_COUNTS = {'lembang_schools.shp': 144,
                   'OSM_building_polygons_20110905.shp': 34960,
                   'OSM_subset.shp': 79}
 
+# For testing
+GEOTRANSFORMS = [(105.3000035, 0.008333, 0.0, -5.5667785, 0.0, -0.008333),
+                 (105.29857, 0.0112, 0.0, -5.565233000000001, 0.0, -0.0112),
+                 (96.956, 0.03074106, 0.0, 2.2894972560001, 0.0, -0.03074106)]
+
 
 def _same_API(X, Y, exclude=None):
     """Check that public methods of X also exist in Y
@@ -117,21 +122,18 @@ def centroid_formula(P):
     # Area: 0.5 sum_{i=0}^{N-1} (x_i y_{i+1} - x_{i+1} y_i)
     A = 0.0
     for i in range(N):
-        A += x[i] * y[i+1] - x[i+1] * y[i]
-    A = A/2
+        A += x[i] * y[i + 1] - x[i + 1] * y[i]
+    A = A / 2
 
     # Centroid: sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
     Cx = 0.0
     for i in range(N):
-        Cx += (x[i] + x[i+1]) * (x[i] * y[i+1] - x[i+1] * y[i])
-    Cx = Cx/6/A
-
+        Cx += (x[i] + x[i + 1]) * (x[i] * y[i + 1] - x[i + 1] * y[i])
+    Cx = Cx / 6 / A
 
     Cy = 0.0
     for i in range(N):
-        Cy += (y[i] + y[i+1]) * (x[i] * y[i+1] - x[i+1] * y[i])
-    Cy = Cy/6/A
-
+        Cy += (y[i] + y[i + 1]) * (x[i] * y[i + 1] - x[i + 1] * y[i])
+    Cy = Cy / 6 / A
 
     return [Cx, Cy]
-

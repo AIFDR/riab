@@ -29,6 +29,7 @@ from impact.tests.utilities import same_API
 from impact.tests.utilities import centroid_formula
 from impact.tests.utilities import TESTDATA
 from impact.tests.utilities import FEATURE_COUNTS
+from impact.tests.utilities import GEOTRANSFORMS
 
 
 # Auxiliary function for raster test
@@ -1356,9 +1357,7 @@ class Test_IO(unittest.TestCase):
 
         M = 5
         N = 10
-        for gt in [(105.3000035, 0.008333, 0.0, -5.5667785, 0.0, -0.008333),
-                   (105.29857, 0.0112, 0.0, -5.565233000000001, 0.0, -0.0112),
-                   (96.956, 0.030741064, 0.0, 2.2894972560001, 0.0, -0.030741064)]:
+        for gt in GEOTRANSFORMS:
             bbox = geotransform2bbox(gt, M, N)
 
             # FIXME: Need better tests here, but this is better than nothing
@@ -1373,9 +1372,7 @@ class Test_IO(unittest.TestCase):
         """Resolution can be extracted from geotransform
         """
 
-        for gt in [(105.3000035, 0.008333, 0.0, -5.5667785, 0.0, -0.008333),
-                   (105.29857, 0.0112, 0.0, -5.565233000000001, 0.0, -0.0112),
-                   (96.956, 0.030741064, 0.0, 2.2894972560001, 0.0, -0.030741064)]:
+        for gt in GEOTRANSFORMS:
             res = geotransform2resolution(gt)
 
             assert len(res) == 2
