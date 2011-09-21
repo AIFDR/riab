@@ -16,6 +16,8 @@ from impact.storage.vector import Vector
 from impact.storage.raster import Raster
 from impact.storage.utilities import is_sequence
 from impact.storage.utilities import LAYER_TYPES
+from impact.storage.utilities import WCS_TEMPLATE
+from impact.storage.utilities import WFS_TEMPLATE
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import extract_geotransform
 from impact.storage.utilities import geotransform2resolution
@@ -95,16 +97,6 @@ def write_vector_data(data, projection, geometry, filename, keywords=None):
     V = Vector(data, projection, geometry, keywords=keywords)
     V.write_to_file(filename)
 
-# FIXME (Ole): Why is the resolution hard coded here (issue #103)
-WCS_TEMPLATE = '%s?version=1.0.0' + \
-                      '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
-                      'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
-                      '&resx=%s&resy=%s'
-
-WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
-               '&request=GetFeature&typeName=%s' + \
-               '&outputFormat=SHAPE-ZIP&bbox=%s'
-
 
 def get_bounding_box(filename):
     """Get bounding box for specified raster or vector file
@@ -113,7 +105,7 @@ def get_bounding_box(filename):
         filename
 
     Output:
-        bounding box as python list [West, South, East, North]
+        bounding box as python list of numbers [West, South, East, North]
     """
 
     layer = read_layer(filename)
@@ -200,16 +192,16 @@ def get_bounding_box_string(filename):
 def get_geotransform(server_url, layer_name):
     """Constructs the geotransform based on the WCS service.
 
-       Should only be called be rasters / WCS layers.
+    Should only be called be rasters / WCS layers.
 
-       Returns:
-            geotransform is a vector of six numbers:
+    Returns:
+        geotransform is a vector of six numbers:
 
-             (top left x, w-e pixel resolution, rotation,
-              top left y, rotation, n-s pixel resolution).
+         (top left x, w-e pixel resolution, rotation,
+          top left y, rotation, n-s pixel resolution).
 
-            We should (at least) use elements 0, 1, 3, 5
-            to uniquely determine if rasters are aligned
+        We should (at least) use elements 0, 1, 3, 5
+        to uniquely determine if rasters are aligned
 
     """
 
@@ -437,21 +429,24 @@ def check_bbox_string(bbox_string):
 def download(server_url, layer_name, bbox, resolution=None):
     """Download the source data of a given layer.
 
-       Input
-           server_url: String such as 'http://www.aifdr.org:8080/geoserver/ows'
-           layer_name: Layer identifier of the form workspace:name,
-                       e.g 'geonode:Earthquake_Ground_Shaking'
-           bbox: Bounding box for layer. This can either be a string or a list
-                 with format [west, south, east, north], e.g.
-                 '87.998242,-8.269822,117.046094,5.097895'
-           resolution: Optional argument specifying resolution in case of raster layers.
-                       Resolution can be either a tuple (resx, resy) signifying the spacing
-                       in decimal degrees in the longitude, latitude direction respectively.
-                       If resolution is just one number it is used for both resx and resy.
-                       If resolution is None, the 'native' resolution of the dataset is
-                       used.
+    Input
+        server_url: String such as 'http://www.aifdr.org:8080/geoserver/ows'
+        layer_name: Layer identifier of the form workspace:name,
+                    e.g 'geonode:Earthquake_Ground_Shaking'
+        bbox: Bounding box for layer. This can either be a string or a list
+              with format [west, south, east, north], e.g.
+              '87.998242,-8.269822,117.046094,5.097895'
+        resolution: Optional argument specifying resolution in case of
+                    raster layers.
+                    Resolution can be a tuple (resx, resy) signifying the
+                    spacing in decimal degrees in the longitude, latitude
+                    direction respectively.
+                    If resolution is just one number it is used for both resx
+                    and resy.
+                    If resolution is None, the 'native' resolution of
+                    the dataset is used.
 
-       Layer type must be either 'vector' or 'raster'
+    Layer geometry type must be either 'vector' or 'raster'
     """
 
     # Input checks
@@ -537,17 +532,17 @@ def download(server_url, layer_name, bbox, resolution=None):
             # Get native resolution and use that
             resolution = layer_metadata['resolution']
 
-        # FIXME (Ole): Ariel, need to do stuff for ticket #103 here
-        # Either fix template or do something more clever using owslib.
+        # Download raster using specified bounding box and resolution
         template = WCS_TEMPLATE
         suffix = '.tif'
-        download_url = template % (server_url, layer_name, bbox_string, resolution[1], resolution[0])
+        download_url = template % (server_url, layer_name, bbox_string,
+                                   resolution[0], resolution[1])
         filename = get_file(download_url, suffix)
 
     # Instantiate layer from file
     lyr = read_layer(filename)
 
-    #FIXME (Ariel) Don't monkeypatch the layer object
+    # FIXME (Ariel) Don't monkeypatch the layer object
     lyr.metadata = layer_metadata
     return lyr
 
