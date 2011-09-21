@@ -1316,9 +1316,8 @@ class Test_IO(unittest.TestCase):
         C = calculate_polygon_centroid(P)
 
         # Check against reference centroid
-        reference_centroid = [106.79235602697445, -6.229849764722536]  # From qgis
-        msg = 'Got %s but expected %s' % (str(C), str(reference_centroid))
-        assert numpy.allclose(C, reference_centroid, rtol=1.0e-8), msg
+        reference_centroid = [106.7036938, -6.134533855]  # From qgis
+        assert numpy.allclose(C, reference_centroid, rtol=1.0e-8)
 
         # Store centroid to file (to e.g. check with qgis)
         out_filename = unique_filename(prefix='test_centroid', suffix='.shp')
@@ -1336,6 +1335,20 @@ class Test_IO(unittest.TestCase):
                          [106.7922547, -6.2297884]])
 
         C = calculate_polygon_centroid(P)
+
+        # Check against reference centroid
+        reference_centroid = [106.79235602697445, -6.229849764722536]  # From qgis
+        msg = 'Got %s but expected %s' % (str(C), str(reference_centroid))
+        assert numpy.allclose(C, reference_centroid, rtol=1.0e-8), msg
+
+        # Store centroid to file (to e.g. check with qgis)
+        out_filename = unique_filename(prefix='test_centroid', suffix='.shp')
+        V = Vector(data=None,
+                   projection=DEFAULT_PROJECTION,
+                   geometry=[C],
+                   name='Test centroid')
+        V.write_to_file(out_filename)
+
 
     def test_geotransform2bbox(self):
         """Bounding box can be extracted from geotransform
