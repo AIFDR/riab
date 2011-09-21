@@ -502,7 +502,6 @@ def download(server_url, layer_name, bbox, resolution=None):
                        % (res, str(e)))
                 raise RisikoException(msg)
 
-
     # Create REST request and download file
     template = None
     layer_metadata = get_metadata(server_url, layer_name)

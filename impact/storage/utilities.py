@@ -38,7 +38,6 @@ WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
     '&outputFormat=SHAPE-ZIP&bbox=%s'
 
 
-
 # Miscellaneous auxiliary functions
 def unique_filename(**kwargs):
     """Create new filename guaranteed not to exist previoously
@@ -56,6 +55,7 @@ def unique_filename(**kwargs):
         pass
 
     return filename
+
 
 def truncate_field_names(data, n=10):
     """Truncate field names to fixed width
@@ -110,7 +110,8 @@ def truncate_field_names(data, n=10):
 >>> lyr = ds.CreateLayer('mylyr', osr.SpatialReference(), ogr.wkbPolygon)
 >>> fd = ogr.FieldDefn('A slightly long name', ogr.OFTString)
 >>> lyr.CreateField(fd)
-Warning 6: Normalized/laundered field name: 'A slightly long name' to 'A slightly'
+Warning 6: Normalized/laundered field name: 'A slightly long name'
+to 'A slightly'
 0
 >>> layer_defn = lyr.GetLayerDefn()
 >>> last_field_idx = layer_defn.GetFieldCount() - 1
@@ -131,6 +132,7 @@ gdal.PopErrorHandler()
 
 
 """
+
 
 # GeoServer utility functions
 def is_server_reachable(url):
@@ -294,10 +296,9 @@ def geotransform2bbox(geotransform, columns, rows):
         bbox: Bounding box as a list of geographic coordinates
               [west, south, east, north]
 
-
     Rows and columns are needed to determine eastern and northern bounds.
-    FIXME: Not sure if the pixel vs gridline registration issue is observed correctly here.
-    Need to check against gdal > v1.7
+    FIXME: Not sure if the pixel vs gridline registration issue is observed
+    correctly here. Need to check against gdal > v1.7
     """
 
     x_origin = geotransform[0]  # top left x
@@ -314,6 +315,7 @@ def geotransform2bbox(geotransform, columns, rows):
 
     return [minx, miny, maxx, maxy]
 
+
 def geotransform2resolution(geotransform):
     """Convert geotransform to resolution
 
@@ -324,8 +326,8 @@ def geotransform2resolution(geotransform):
                       See e.g. http://www.gdal.org/gdal_tutorial.html
 
     Output
-        resolution: grid spacing (resx, resy) in (positive) decimal degrees order
-                    as longitude first, then latitude.
+        resolution: grid spacing (resx, resy) in (positive) decimal
+                    degrees ordered as longitude first, then latitude.
     """
 
     x_res = geotransform[1]     # w-e pixel resolution
@@ -513,7 +515,8 @@ def array2wkt(A, geom_type='POLYGON'):
 
     N = len(A)
     for i in range(N):
-        wkt_string += '%f %f, ' % tuple(A[i])  # Works for both lists and arrays
+        # Works for both lists and arrays
+        wkt_string += '%f %f, ' % tuple(A[i])
 
     return wkt_string[:-2] + ')' * n
 
@@ -539,6 +542,7 @@ geometry_type_map = {ogr.wkbPoint: 'Point',
                      ogr.wkbNDR: 'NDR',
                      ogr.wkbNone: 'None',
                      ogr.wkbUnknown: 'Unknown'}
+
 
 def geometrytype2string(g_type):
     """Provides string representation of numeric geometry types
@@ -593,6 +597,7 @@ def calculate_polygon_area(polygon, signed=False):
     else:
         return abs(A)
 
+
 def calculate_polygon_centroid(polygon):
     """Calculate the centroid of non-self-intersecting polygon
 
@@ -610,7 +615,8 @@ def calculate_polygon_centroid(polygon):
 
     # Normalise to ensure numerical accurracy.
     # This requirement in backed by tests in test_io.py and without it
-    # centroids at building footprint level may get shifted outside the polygon!
+    # centroids at building footprint level may get shifted outside the
+    # polygon!
     P_origin = numpy.amin(P, axis=0)
     P = P - P_origin
 
@@ -621,8 +627,11 @@ def calculate_polygon_centroid(polygon):
     x = P[:, 0]
     y = P[:, 1]
 
-    # Calculate Cx = sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
-    # Calculate Cy = sum_{i=0}^{N-1} (y_i + y_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+    # Calculate
+    #Cx = sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+
+    # Calculate
+    # Cy = sum_{i=0}^{N-1} (y_i + y_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
     a = x[:-1] * y[1:]
     b = y[:-1] * x[1:]
 

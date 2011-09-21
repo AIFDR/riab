@@ -415,7 +415,6 @@ class Vector:
                 # Restore error handler
                 gdal.PopErrorHandler()
 
-
         # Store geometry
         geom = ogr.Geometry(self.geometry_type)
         layer_def = lyr.GetLayerDefn()
@@ -664,13 +663,3 @@ def convert_polygons_to_centroids(V):
                name='%s_centroid_data' % V.get_name(),
                keywords=V.get_keywords())
     return V
-
-
-
-
-
-
-
-
-
-
