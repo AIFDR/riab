@@ -117,7 +117,8 @@ def osm2bnpb(E, target_attribute='VCLASS'):
 
     This maps attributes collected in the OpenStreetMap exposure data
     (data.kompetisiosm.org) to 2 vulnerability classes identified by
-    BNPB in Kajian Risiko Gempabumi VERS 1.0, 2011
+    BNPB in Kajian Risiko Gempabumi VERS 1.0, 2011. They are
+    URM: Unreinforced Masonry and RM: Reinforced Masonry
 
     Input
         E: Vector object representing the OSM data
@@ -146,31 +147,31 @@ def osm2bnpb(E, target_attribute='VCLASS'):
         levels = E.get_data('levels', i)
         structure = E.get_data('structure', i)
         if levels is None or structure is None:
-            vulnerability_class = 1  # URM
+            vulnerability_class = 'URM'
             count += 1
         else:
             if levels >= 4:
                 # High
-                vulnerability_class = 2  # RM
+                vulnerability_class = 'RM'
             elif 1 <= levels < 4:
                 # Low
                 if structure in ['plastered',
                                  'reinforced masonry',
                                  'reinforced_masonry']:
-                    vulnerability_class = 2  # RM
+                    vulnerability_class = 'RM'
                 elif structure == 'confined_masonry':
-                    vulnerability_class = 2  # RM
+                    vulnerability_class = 'RM'
                 elif 'kayu' in structure or 'wood' in structure:
-                    vulnerability_class = 2  # RM
+                    vulnerability_class = 'RM'
                 else:
-                    vulnerability_class = 1  # URM
+                    vulnerability_class = 'URM'
             elif numpy.allclose(levels, 0):
                 # A few buildings exist with 0 levels.
 
                 # In general, we should be assigning here the most
                 # frequent building in the area which could be defined
                 # by admin boundaries.
-                vulnerability_class = 1  # URM
+                vulnerability_class = 'URM'
             else:
                 msg = 'Unknown number of levels: %s' % levels
                 raise Exception(msg)
@@ -178,7 +179,7 @@ def osm2bnpb(E, target_attribute='VCLASS'):
         # Store new attribute value
         attributes[i][target_attribute] = vulnerability_class
 
-    #print 'Got %i without levels or structure (out of %i total)' % (count, N)
+    print 'Got %i without levels or structure (out of %i total)' % (count, N)
 
     # Create new vector instance and return
     V = Vector(data=attributes,

@@ -118,10 +118,10 @@ class EarthquakeFatalityFunctionPodes(FunctionProvider):
         return V
 
     def generate_style(self, data):
-        """Generates and SLD file based on the data values
+        """Generates a polygon SLD file based on the data values
         """
 
-        # FIXME (Ole): Return static style to start with
+        # FIXME (Ole): Return static style to start with: ticket #144
         style = """<?xml version="1.0" encoding="UTF-8"?>
 <sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
   <sld:NamedLayer>

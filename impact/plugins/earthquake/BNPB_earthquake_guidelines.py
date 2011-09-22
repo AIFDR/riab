@@ -20,10 +20,10 @@ from impact.plugins.utilities import PointSymbol
 from impact.plugins.mappings import osm2bnpb
 
 # Damage 'curves' for the two vulnerability classes
-damage_parameters = {1: [6, 7],
-                     2: [6, 8]}
+damage_parameters = {'URM': [6, 7],
+                     'RM': [6, 8]}
 
-class BNPBEarthquakeGuidelinesFunction(FunctionProvider):
+class EarthquakeGuidelinesFunction(FunctionProvider):
     """Risk plugin for BNPB guidelines for earthquake damage to buildings
 
     :param requires category=='hazard' and \
@@ -31,29 +31,38 @@ class BNPBEarthquakeGuidelinesFunction(FunctionProvider):
                     layer_type=='raster'
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
-                    layer_type=='vector' and \
-                    datatype=='osm'
+                    layer_type=='vector'
     """
+
+    # FIXME (Ole): Something like this too
+    # and \
+    #       datatype=='osm'
+
+    vclass_tag = 'VCLASS'
+    target_field = 'DMGLEVEL'
 
     def run(self, layers):
         """Risk plugin for earthquake school damage
         """
-
-        vclass_tag = 'VCLASS'
-        target_field = 'DMGLEVEL'
 
         # Extract data
         H = layers[0]  # Ground shaking
         E = layers[1]  # Building locations
 
         # Map from OSM attributes to the guideline classes (URM and RM)
-        E = osm2bnpb(E, target_attribute=vclass_tag)
+        # FIXME (Ole): Not very robust way of deciding
+        # Need keyword identifier for each kind of building dataset.
+        if E.get_name().lower().startswith('osm'):
+            # Map from OSM attributes to the padang building classes
+            E = osm2bnpb(E, target_attribute=self.vclass_tag)
 
         # Convert polygon data to centroid point data if necessary
         if E.is_polygon_data:
             Ec = convert_polygons_to_centroids(E)
         else:
-            Ec = E
+            msg = ('Expected polygon building footprints '
+                   'in exposure data %s' % E.get_name())
+            raise Exception(msg)
 
         # Interpolate hazard level to building locations
         H = H.interpolate(Ec)
@@ -74,7 +83,7 @@ class BNPBEarthquakeGuidelinesFunction(FunctionProvider):
         for i in range(N):
             mmi = float(shaking[i].values()[0])
 
-            building_class = E.get_data(vclass_tag, i)
+            building_class = E.get_data(self.vclass_tag, i)
             lo, hi = damage_parameters[building_class]
 
             if mmi < lo:
@@ -121,7 +130,90 @@ class BNPBEarthquakeGuidelinesFunction(FunctionProvider):
         return V
 
     def generate_style(self, data):
-        """Generates and SLD file based on the data values
+        """Generates a polygon SLD file based on the data values
+        """
+
+        # FIXME (Ole): Return static style to start with: ticket #144
+        style = """<?xml version="1.0" encoding="UTF-8"?>
+<sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
+  <sld:NamedLayer>
+    <sld:Name>earthquake_impact</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>earthquake_impact</sld:Name>
+      <sld:Title/>
+      <sld:FeatureTypeStyle>
+        <sld:Name>name</sld:Name>
+        <sld:Rule>
+          <sld:Name>1</sld:Name>
+          <sld:Title>Low</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsLessThan>
+              <ogc:PropertyName>DMGLEVEL</ogc:PropertyName>
+              <ogc:Literal>1.5</ogc:Literal>
+            </ogc:PropertyIsLessThan>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#1EFC7C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#0EEC6C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>2</sld:Name>
+          <sld:Title>Medium</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>DMGLEVEL</ogc:PropertyName>
+              <ogc:Literal>1.5</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>DMGLEVEL</ogc:PropertyName>
+                <ogc:Literal>2.5</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FD8D3C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#ED7D2C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>3</sld:Name>
+          <sld:Title>High</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>DMGLEVEL</ogc:PropertyName>
+              <ogc:Literal>2.5</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#F31A1C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#E30A0C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+</sld:StyledLayerDescriptor>
+"""
+
+        return style
+
+
+    def Xgenerate_style(self, data):
+        """Generates a point SLD file based on the data values
         """
 
         # Define default behaviour to be used when
@@ -143,9 +235,9 @@ class BNPBEarthquakeGuidelinesFunction(FunctionProvider):
         # Predefined colour classes
         class_keys = [_('Low damage'), _('Medium damage'), _('High damage')]
         class_values = [{'min': 0.5, 'max': 1.5,
-                         'color': '#cccccc', 'opacity': '1'},
+                         'color': '#0efc7c', 'opacity': '1'},
                         {'min': 1.5, 'max': 2.5,
-                         'color': '#fd8d3c', 'opacity': '1'},
+                         'color': '#fded0c', 'opacity': '1'},
                         {'min': 2.5, 'max': 3.5,
                          'color': '#e31a1c', 'opacity': '1'}]
 
