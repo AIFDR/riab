@@ -17,7 +17,7 @@ def osm2padang(E):
         E: Vector object representing the OSM data
 
     Output:
-        Vector object like E, but with one new attribute ('TestBLDGCl')
+        Vector object like E, but with one new attribute ('VCLASS')
         representing the vulnerability class used in the Padang dataset
 
 
@@ -109,3 +109,82 @@ def osm2padang(E):
                name=E.get_name() + ' mapped to Padang vulnerability classes',
                keywords=E.get_keywords())
     return V
+
+
+
+def osm2bnpb(E, target_attribute='VCLASS'):
+    """Map OSM attributes to BNPB vulnerability classes
+
+    This maps attributes collected in the OpenStreetMap exposure data
+    (data.kompetisiosm.org) to 2 vulnerability classes identified by
+    BNPB in Kajian Risiko Gempabumi VERS 1.0, 2011
+
+    Input
+        E: Vector object representing the OSM data
+        target_attribute: Optional name of the attribute containing
+                          the mapped vulnerability class. Default
+                          value is 'VCLASS'
+
+    Output:
+        Vector object like E, but with one new attribute (e.g. 'VCLASS')
+        representing the vulnerability class used in the guidelines
+    """
+
+    # Input check
+    required = ['levels', 'structure']
+    actual = E.get_attribute_names()
+    msg = ('Input data to osm2bnpb must have attributes %s. '
+           'It has %s' % (str(required), str(actual)))
+    for attribute in required:
+        assert attribute in actual, msg
+
+    # Start mapping
+    N = len(E)
+    attributes = E.get_data()
+    count = 0
+    for i in range(N):
+        levels = E.get_data('levels', i)
+        structure = E.get_data('structure', i)
+        if levels is None or structure is None:
+            vulnerability_class = 1  # URM
+            count += 1
+        else:
+            if levels >= 4:
+                # High
+                vulnerability_class = 2  # RM
+            elif 1 <= levels < 4:
+                # Low
+                if structure in ['plastered',
+                                 'reinforced masonry',
+                                 'reinforced_masonry']:
+                    vulnerability_class = 2  # RM
+                elif structure == 'confined_masonry':
+                    vulnerability_class = 2  # RM
+                elif 'kayu' in structure or 'wood' in structure:
+                    vulnerability_class = 2  # RM
+                else:
+                    vulnerability_class = 1  # URM
+            elif numpy.allclose(levels, 0):
+                # A few buildings exist with 0 levels.
+
+                # In general, we should be assigning here the most
+                # frequent building in the area which could be defined
+                # by admin boundaries.
+                vulnerability_class = 1  # URM
+            else:
+                msg = 'Unknown number of levels: %s' % levels
+                raise Exception(msg)
+
+        # Store new attribute value
+        attributes[i][target_attribute] = vulnerability_class
+
+    #print 'Got %i without levels or structure (out of %i total)' % (count, N)
+
+    # Create new vector instance and return
+    V = Vector(data=attributes,
+               projection=E.get_projection(),
+               geometry=E.get_geometry(),
+               name=E.get_name() + ' mapped to BNPB vulnerability classes',
+               keywords=E.get_keywords())
+    return V
+

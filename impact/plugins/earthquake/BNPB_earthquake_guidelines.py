@@ -1,3 +1,15 @@
+"""Impact function based on Padang 2009 post earthquake survey
+
+This impact function estimates percentual damage to buildings as a
+function of ground shaking measured in MMI.
+Buildings are currently assumed to be represented in OpenStreetMap with
+attributes collected as during the July 2011 Indonesian mapping competition.
+
+This impact function maps the OSM buildings into 2 classes:
+Unreinforced masonry (URM) and reinforced masonry (RM) according to
+the guidelines.
+"""
+
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector, convert_polygons_to_centroids
@@ -5,31 +17,37 @@ from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
 from impact.plugins.utilities import PointSymbol
-import scipy.stats
+from impact.plugins.mappings import osm2bnpb
 
+# Damage 'curves' for the two vulnerability classes
+damage_parameters = {1: [6, 7],
+                     2: [6, 8]}
 
-class TsunamiBuildingImpactFunction(FunctionProvider):
-    """Risk plugin for tsunami impact on building data
+class BNPBEarthquakeGuidelinesFunction(FunctionProvider):
+    """Risk plugin for BNPB guidelines for earthquake damage to buildings
 
     :param requires category=='hazard' and \
-                    subcategory.startswith('tsunami') and \
+                    subcategory.startswith('earthquake') and \
                     layer_type=='raster'
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
+                    layer_type=='vector' and \
                     datatype=='osm'
     """
 
-    target_field = 'ICLASS'
-
     def run(self, layers):
-        """Risk plugin for tsunami population
+        """Risk plugin for earthquake school damage
         """
 
+        vclass_tag = 'VCLASS'
+        target_field = 'DMGLEVEL'
+
         # Extract data
-        H = layers[0]  # Depth
+        H = layers[0]  # Ground shaking
         E = layers[1]  # Building locations
 
-        print 'Number of polygons', len(E)
+        # Map from OSM attributes to the guideline classes (URM and RM)
+        E = osm2bnpb(E, target_attribute=vclass_tag)
 
         # Convert polygon data to centroid point data if necessary
         if E.is_polygon_data:
@@ -42,81 +60,88 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
 
         # Extract relevant numerical data
         coordinates = E.get_geometry()
-        depth = H.get_data()
-        N = len(depth)
+        shaking = H.get_data()
+        N = len(shaking)
 
         # List attributes to carry forward to result layer
         attributes = E.get_attribute_names()
 
-        # Calculate building impact according to guidelines
+        # Calculate building damage
         count3 = 0
+        count2 = 0
         count1 = 0
-        count0 = 0
-        population_impact = []
+        building_damage = []
         for i in range(N):
+            mmi = float(shaking[i].values()[0])
 
-            # Get depth
-            dep = float(depth[i].values()[0])
+            building_class = E.get_data(vclass_tag, i)
+            lo, hi = damage_parameters[building_class]
 
-            # Classify buildings according to depth
-            if dep >= 3:
-                affected = 3  # FIXME: Colour upper bound is 100 but
-                count3 += 1          # does not catch affected == 100
-            elif 1 <= dep < 3:
-                affected = 2
+            if mmi < lo:
+                damage = 1  # Low
                 count1 += 1
+            elif lo <= mmi < hi:
+                damage = 2  # Medium
+                count2 += 1
             else:
-                affected = 1
-                count0 += 1
+                damage = 3  # High
+                count3 += 1
 
-            # Collect depth and calculated damage
-            result_dict = {self.target_field: affected,
-                           'DEPTH': dep}
+            # Collect shake level and calculated damage
+            result_dict = {self.target_field: damage,
+                           'MMI': mmi}
 
-            # Carry all original attributes forward
+            # Carry all orginal attributes forward
             for key in attributes:
                 result_dict[key] = E.get_data(key, i)
 
             # Record result for this feature
-            population_impact.append(result_dict)
+            building_damage.append(result_dict)
 
         # Create report
         caption = ('<table border="0" width="320px">'
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
                     '   <tr></tr>'
+                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
-                    '</table>' % ('ketinggian tsunami', 'Jumlah gedung',
-                                  '< 1 m', count0,
-                                  '1 - 3 m', count1,
-                                  '> 3 m', count3))
+                    '</table>' % (_('Buildings'), _('Total'),
+                                  _('All'), N,
+                                  _('Low damage'), count1,
+                                  _('Medium damage'), count2,
+                                  _('High damage'), count3))
 
         # Create vector layer and return
-        V = Vector(data=population_impact,
+        V = Vector(data=building_damage,
                    projection=E.get_projection(),
                    geometry=coordinates,
-                   name='Estimate of buildings affected',
+                   name='Estimated damage level',
                    keywords={'caption': caption})
         return V
 
     def generate_style(self, data):
         """Generates and SLD file based on the data values
         """
-        #DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
+
+        # Define default behaviour to be used when
+        # - symbol attribute is missing
+        # - attribute value is None or ''
         DEFAULT_SYMBOL = 'circle'
 
         symbol_field = None
+
+        # FIXME: Replace these by dict and extend below
         symbol_keys = [None, '']
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
-        # Zoom levels (large number means close up)
-        scale_keys = [50000000000, 10000000000, 10000000, 5000000,
+        # Predefined scales and corresponding font sizes
+        scale_keys = [10000000000, 10000000, 5000000,
                       1000000, 500000, 250000, 100000]
-        scale_values = [2, 4, 6, 8, 1, 1, 1, 1]
+        scale_values = [3, 5, 8, 12, 14, 16, 18]
 
         # Predefined colour classes
-        class_keys = ['< 1 m', '1 - 3 m', '> 3 m']
+        class_keys = [_('Low damage'), _('Medium damage'), _('High damage')]
         class_values = [{'min': 0.5, 'max': 1.5,
                          'color': '#cccccc', 'opacity': '1'},
                         {'min': 1.5, 'max': 2.5,
@@ -124,29 +149,15 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
                         {'min': 2.5, 'max': 3.5,
                          'color': '#e31a1c', 'opacity': '1'}]
 
-        if self.symbol_field in data.get_attribute_names():
-            symbol_field = self.symbol_field
+        symbols = {None: DEFAULT_SYMBOL, '': DEFAULT_SYMBOL}
 
-            symbol_keys.extend(['Church/Mosque', 'Commercial (office)',
-                                'Hotel',
-                                'Medical facility', 'Other',
-                                'Other industrial',
-                                'Residential', 'Retail', 'School',
-                                'Unknown', 'Warehouse'])
-
-            symbol_values.extend([DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL])
-
+        # Generate sld style file
         params = dict(name=data.get_name(),
                       damage_field=self.target_field,
                       symbol_field=symbol_field,
-                      symbols=dict(zip(symbol_keys, symbol_values)),
+                      symbols=symbols,
                       scales=dict(zip(scale_keys, scale_values)),
                       classifications=dict(zip(class_keys, class_values)))
 
+        # The styles are in $RIAB_HOME/riab/impact/templates/impact/styles
         return render_to_string('impact/styles/point_classes.sld', params)
