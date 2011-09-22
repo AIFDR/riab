@@ -101,6 +101,89 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
         return V
 
     def generate_style(self, data):
+        """Generates a polygon SLD file based on the data values
+        """
+
+        # FIXME (Ole): Return static style to start with: ticket #144
+        style = """<?xml version="1.0" encoding="UTF-8"?>
+<sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
+  <sld:NamedLayer>
+    <sld:Name>earthquake_impact</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>earthquake_impact</sld:Name>
+      <sld:Title/>
+      <sld:FeatureTypeStyle>
+        <sld:Name>name</sld:Name>
+        <sld:Rule>
+          <sld:Name>1</sld:Name>
+          <sld:Title>Low</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsLessThan>
+              <ogc:PropertyName>ICLASS</ogc:PropertyName>
+              <ogc:Literal>1.5</ogc:Literal>
+            </ogc:PropertyIsLessThan>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#1EFC7C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#0EEC6C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>2</sld:Name>
+          <sld:Title>Medium</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>ICLASS</ogc:PropertyName>
+              <ogc:Literal>1.5</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>ICLASS</ogc:PropertyName>
+                <ogc:Literal>2.5</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FD8D3C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#ED7D2C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>3</sld:Name>
+          <sld:Title>High</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>ICLASS</ogc:PropertyName>
+              <ogc:Literal>2.5</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#F31A1C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#E30A0C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+</sld:StyledLayerDescriptor>
+"""
+
+        return style
+
+
+    def Xgenerate_style(self, data):
         """Generates and SLD file based on the data values
         """
         #DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
