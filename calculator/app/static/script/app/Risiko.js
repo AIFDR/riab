@@ -143,7 +143,17 @@ var Risiko = Ext.extend(gxp.Viewer, {
                 vertical: true,
                 height: 100
             }],
-            
+           
+            // layer sources
+            sources: {
+                mapbox: {
+                    ptype: "gxp_mapboxsource"
+                },
+                mapquest: {
+                    ptype: "gxp_mapquestsource"
+                }
+            },   
+ 
             map: {
                 id: "map"
             }

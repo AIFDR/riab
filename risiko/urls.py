@@ -1,7 +1,8 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from staticfiles.urls import staticfiles_urlpatterns
 from django.contrib import admin
+from geonode.proxy.urls import urlpatterns as proxy_urlpatterns
 
 admin.autodiscover()
 
@@ -17,7 +18,7 @@ urlpatterns = patterns('',
      {'template': 'lang_risiko.js', 'mimetype': 'text/javascript'}, 'lang'),
     (r'^maps/', include('geonode.maps.urls')),
     (r'^proxy/', 'geonode.proxy.views.proxy'),
-    (r'^geoserver/', 'geonode.proxy.views.geoserver'),
+    (r'^gs/', 'geonode.proxy.views.geoserver'),
     url(r'^data/$', 'geonode.maps.views.browse_data', name='data'),
     url(r'^data/acls/?$', 'geonode.maps.views.layer_acls', name='layer_acls'),
     url(r'^data/api/batch_permissions/?$',
@@ -39,6 +40,8 @@ urlpatterns = patterns('',
     (r'^avatar/', include('avatar.urls')),
     (r'^accounts/', include('registration.urls')),
     (r'^profiles/', include('profiles.urls')),
-    (r'^rosetta/', include('rosetta.urls')),
+#    (r'^rosetta/', include('rosetta.urls')),
     (r'^impact/', include('impact.urls')),
    ) + staticfiles_urlpatterns()
+
+urlpatterns += proxy_urlpatterns

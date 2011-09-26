@@ -239,7 +239,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    'django.contrib.staticfiles',
+    'staticfiles',
     'django_extensions',
     'registration',
     'profiles',
@@ -249,7 +249,8 @@ INSTALLED_APPS = (
     'geonode.proxy',
     'impact',
     'django_nose',
-    'rosetta')
+#    'rosetta',
+)
 
 LOGGING = {
     'version': 1,
