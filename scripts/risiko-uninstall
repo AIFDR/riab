@@ -36,9 +36,7 @@ echo "Moving .bash_alias to .bash_aliases_copy"
 mv ~/.bash_aliases ~/.bash_aliases_copy
 
 echo "Removing Risiko"
-#/bin/rm -rf $RIAB_HOME
-
-
+/bin/rm -rf $RIAB_HOME
 
 echo
 echo "Success, You have removed Risk in a Box"
