@@ -37,7 +37,7 @@ To install a RISIKO development environment, start a terminal window, cd to your
  wget http://bit.ly/risiko-install
  bash risiko-install
 
-This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it.
+This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it. Note if you want to move the installation you need to run risiko-uninstall and install it again in the new location.
 
 To run the test suite, you'll need the commands::
 
