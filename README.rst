@@ -23,7 +23,7 @@ System Requirements
  - A standard PC with at least 4GB of RAM.
  - The operating system is a recent version of Ubuntu Linux (http://www.ubuntu.com). Risiko has been tested on versions 10.04 and 10.10 (32 and 64 bit).
  - The platform is using the default /etc/sources.list as it comes in a fresh Ubuntu installation. You may want to change this to a local mirror if the internet connection is slow (see e.g. https://help.ubuntu.com/community/Repositories/CommandLine) for details.
- - The user installing and running Risiko has administrator rights (using the sudo)
+ - The user installing and running Risiko has administrator rights (e.g. using sudo)
 
 
 ------------------------
@@ -37,7 +37,7 @@ To install a RISIKO development environment, start a terminal window, cd to your
  wget http://bit.ly/risiko-install
  bash risiko-install
 
-This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it. Note if you want to move the installation you need to run risiko-uninstall and install it again in the new location. It is OK to run risiko-install again on an existing installation to update it.
+This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it. Note if you want to move the installation you need to run risiko-uninstall and install it again in the new location. It is OK to run risiko-install again on an existing installation e.g. to update it.
 
 To run the test suite, you'll need the commands::
 
