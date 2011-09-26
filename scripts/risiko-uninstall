@@ -6,7 +6,7 @@ echo
 echo "This will completely remove Risiko, its datasets,        "
 echo "cached install files, the virtual (python) environment   "
 echo "and .bash_aliases - although a copy will be left in      "
-echo ".bash_aliases_copy                                       "
+echo ".bash_aliases_risiko_copy                                "
 echo
 echo "System wide Risiko dependencies will be left intact      "
 echo
@@ -32,8 +32,8 @@ sudo /bin/rm -rf /usr/share/risiko
 echo "Cleaning up in /tmp"
 sudo /bin/rm -rf /tmp/distribute-0.6.*  # This is so annoying unless deleted
 
-echo "Moving .bash_alias to .bash_aliases_copy"
-mv ~/.bash_aliases ~/.bash_aliases_copy
+echo "Moving .bash_alias to .bash_aliases_risiko_copy"
+sudo mv -f ~/.bash_aliases ~/.bash_aliases_risiko_copy
 
 echo "Removing Risiko"
 /bin/rm -rf $RIAB_HOME
