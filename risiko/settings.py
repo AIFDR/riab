@@ -168,9 +168,9 @@ MAP_BASELAYERSOURCES = {
     'any': {'ptype': 'gxp_olsource'},
     'google': {'ptype': 'gxp_googlesource',
                'apiKey': GOOGLE_API_KEY},
-    'mapbox': {ptype: 'gxp_mapboxsource'},
-    'mapquest': {ptype: 'gxp_mapquestsource'},
-    'bing': {ptype: 'gxp_bingsource'}
+    'mapbox': {'ptype': 'gxp_mapboxsource'},
+    'mapquest': {'ptype': 'gxp_mapquestsource'},
+    'bing': {'ptype': 'gxp_bingsource'}
     }
 
 MAP_BASELAYERS = \
