@@ -10,13 +10,17 @@ import codecs
 
 
 class osx_install_data(install_data):
-    # On MacOS, the platform-specific lib dir is /System/Library/Framework/Python/.../
-    # which is wrong. Python 2.5 supplied with MacOS 10.5 has an Apple-specific fix
-    # for this in distutils.command.install_data#306. It fixes install_lib but not
+    # On MacOS, the platform-specific lib dir is
+    # /System/Library/Framework/Python/.../
+    # which is wrong. Python 2.5 supplied with MacOS 10.5 has an
+    # Apple-specific fix
+    # for this in distutils.command.install_data#306. It fixes install_lib
+    # but not
     # install_data, which is why we roll our own install_data class.
 
     def finalize_options(self):
-        # By the time finalize_options is called, install.install_lib is set to the
+        # By the time finalize_options is called, install.install_lib is
+        # set to the
         # fixed directory, so we set the installdir to install_lib. The
         # install_data class uses ('install_data', 'install_dir') instead.
         self.set_undefined_options('install', ('install_lib', 'install_dir'))
@@ -26,6 +30,7 @@ if sys.platform == 'darwin':
     cmdclasses = {'install_data': osx_install_data}
 else:
     cmdclasses = {'install_data': install_data}
+
 
 def fullsplit(path, result=None):
     """
@@ -40,6 +45,7 @@ def fullsplit(path, result=None):
     if head == path:
         return result
     return fullsplit(head, [tail] + result)
+
 
 # Tell distutils to put the data_files in platform-specific installation
 # locations. See here for an explanation:
@@ -62,7 +68,8 @@ def add_dir(source_dir):
         if '__init__.py' in filenames:
             packages.append('.'.join(fullsplit(dirpath)))
         elif filenames:
-            data_files.append([dirpath, [os.path.join(dirpath, f) for f in filenames]])
+            data_files.append([dirpath,
+                               [os.path.join(dirpath, f) for f in filenames]])
 
 add_dir('risiko')
 add_dir('impact')
@@ -150,6 +157,7 @@ setup(
                'scripts/risiko-clean',
                'scripts/risiko-lint',
                'scripts/risiko-upload',
+               'scripts/risiko-uninstall',
                'scripts/risiko-js',
               ],
     classifiers = [

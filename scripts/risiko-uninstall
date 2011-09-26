@@ -23,7 +23,7 @@ case $answer in
 esac
 
 risiko-clean
-deactivate  # FIXME: This doesn't work
+deactivate  # FIXME (Ole): This doesn't work - Ariel heeeelp
 cd
 
 echo "Removing /usr/share/risiko (cached install files)"
