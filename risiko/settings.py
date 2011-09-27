@@ -166,9 +166,12 @@ DEFAULT_MAP_ZOOM = 5
 
 MAP_BASELAYERSOURCES = {
     'any': {'ptype': 'gxp_olsource'},
-    'capra': {'url': GEOSERVER_BASE_URL + 'wms'},
     'google': {'ptype': 'gxp_googlesource',
-               'apiKey': GOOGLE_API_KEY}}
+               'apiKey': GOOGLE_API_KEY},
+    'mapbox': {'ptype': 'gxp_mapboxsource'},
+    'mapquest': {'ptype': 'gxp_mapquestsource'},
+    'bing': {'ptype': 'gxp_bingsource'}
+    }
 
 MAP_BASELAYERS = \
     [{'source': 'any',
@@ -183,24 +186,20 @@ MAP_BASELAYERS = \
       'visibility': True,
       'fixed': True,
       'group':'background'},
-     {'source': 'any',
-      'type': 'OpenLayers.Layer.WMS',
+     {'source': 'bing',
+      'group': 'background',
+      'name': 'Aerial',
+      'visibility': False,
+      'fixed': True},
+     {'source': 'mapbox',
+      'name': 'blue-marble-topo-bathy-jan',
+      'group': 'background'},
+     {'source': 'mapquest',
+      'name': 'osm',
       'group': 'background',
       'visibility': False,
-      'fixed': True,
-      'args': ['bluemarble',
-               'http://maps.opengeo.org/geowebcache/service/wms',
-               {'layers': ['bluemarble'],
-                'format': 'image/png',
-                'tiled': True,
-                'tilesOrigin': [-20037508.34, -20037508.34]},
-               {'buffer':0}]},
-     {'source': 'google',
-      'group': 'background',
-      'name': 'SATELLITE',
-      'visibility': False,
-      'fixed': True,
-      }]
+      'fixed': True}
+]
 
 # NAVBAR expects a dict of dicts or a path to an ini file
 NAVBAR = \
@@ -239,7 +238,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    'django.contrib.staticfiles',
+    'staticfiles',
     'django_extensions',
     'registration',
     'profiles',
@@ -249,7 +248,8 @@ INSTALLED_APPS = (
     'geonode.proxy',
     'impact',
     'django_nose',
-    'rosetta')
+#    'rosetta',
+)
 
 LOGGING = {
     'version': 1,
