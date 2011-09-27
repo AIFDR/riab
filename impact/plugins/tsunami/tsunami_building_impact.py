@@ -1,6 +1,6 @@
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
-from impact.storage.vector import Vector, convert_polygons_to_centroids
+from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
@@ -31,14 +31,8 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
 
         print 'Number of polygons', len(E)
 
-        # Convert polygon data to centroid point data if necessary
-        if E.is_polygon_data:
-            Ec = convert_polygons_to_centroids(E)
-        else:
-            Ec = E
-
         # Interpolate hazard level to building locations
-        H = H.interpolate(Ec)
+        H = H.interpolate(E)
 
         # Extract relevant numerical data
         coordinates = E.get_geometry()

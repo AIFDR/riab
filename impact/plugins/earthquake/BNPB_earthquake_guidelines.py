@@ -12,7 +12,7 @@ the guidelines.
 
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
-from impact.storage.vector import Vector, convert_polygons_to_centroids
+from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
@@ -56,16 +56,8 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
             # Map from OSM attributes to the padang building classes
             E = osm2bnpb(E, target_attribute=self.vclass_tag)
 
-        # Convert polygon data to centroid point data if necessary
-        if E.is_polygon_data:
-            Ec = convert_polygons_to_centroids(E)
-        else:
-            msg = ('Expected polygon building footprints '
-                   'in exposure data %s' % E.get_name())
-            raise Exception(msg)
-
         # Interpolate hazard level to building locations
-        H = H.interpolate(Ec)
+        H = H.interpolate(E)
 
         # Extract relevant numerical data
         coordinates = E.get_geometry()

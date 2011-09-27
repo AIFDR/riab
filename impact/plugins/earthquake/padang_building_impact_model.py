@@ -21,7 +21,7 @@ Class Building Type                              Median (MMI)  Beta (MMI)
 
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
-from impact.storage.vector import Vector, convert_polygons_to_centroids
+from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
@@ -72,15 +72,8 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         else:
             vclass_tag = 'TestBLDGCl'
 
-        # Convert polygon data to centroid point data if necessary
-        if E.is_polygon_data:
-            Ep = convert_polygons_to_centroids(E)
-            Ep.write_to_file('OSM_building_centroids.shp')
-        else:
-            Ep = E
-
         # Interpolate hazard level to building locations
-        H = H.interpolate(Ep)
+        H = H.interpolate(E)
 
         # Extract relevant numerical data
         coordinates = E.get_geometry()
