@@ -11,7 +11,6 @@ from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
 from impact.storage.utilities import geotransform2bbox
 
-
 class Raster:
     """Internal representation of raster data
     """
@@ -252,6 +251,9 @@ class Raster:
         Output
             Y: Layer object with values of this raster layer interpolated to
                geometry of input layer X
+
+        Note: If target geometry is polygon, data will be interpolated to
+        its centroids and the output is a point data set.
         """
 
         if X.is_raster:

@@ -18,7 +18,7 @@ Eventually, this will be scripted and eventually work directly with the WFS
 import numpy
 from impact.plugins.core import FunctionProvider
 from impact.storage.raster import Raster
-from impact.storage.vector import Vector, convert_polygons_to_centroids
+from impact.storage.vector import Vector
 
 
 class EarthquakeFatalityFunctionPodes(FunctionProvider):
@@ -53,13 +53,8 @@ class EarthquakeFatalityFunctionPodes(FunctionProvider):
         H = layers[0]  # Intensity
         E = layers[1]  # Exposure - population counts
 
-        assert E.is_polygon_data
-
-        P = convert_polygons_to_centroids(E)
-        P.write_to_file('Podes_centroids.shp')
-
         # Interpolate hazard level to building locations
-        H = H.interpolate(P)
+        H = H.interpolate(E)
 
         # Extract relevant numerical data
         coordinates = E.get_geometry()  # Stay with polygons
