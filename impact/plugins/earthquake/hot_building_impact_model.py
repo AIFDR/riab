@@ -49,7 +49,8 @@ class HOTEarthquakeBuildingDamageFunction(FunctionProvider):
                     subcategory.startswith('earthquake') and \
                     layer_type=='raster'
     :param requires category=='exposure' and \
-                    subcategory.startswith('building')
+                    subcategory.startswith('building') and \
+                    never=='nothing'
     """
 
     @staticmethod
