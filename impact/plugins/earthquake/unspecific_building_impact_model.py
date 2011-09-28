@@ -2,6 +2,7 @@ from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
 
+# FIXME: This plugin is required for test_plugins.py
 
 class EarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for earthquake damage to buildings
@@ -10,8 +11,7 @@ class EarthquakeBuildingDamageFunction(FunctionProvider):
                     subcategory.startswith('earthquake') and \
                     layer_type=='raster'
     :param requires category=='exposure' and \
-                    subcategory.startswith('building') and \
-                    nothing=='never'
+                    subcategory.startswith('building')
     """
 
     @staticmethod
