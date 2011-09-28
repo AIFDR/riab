@@ -229,7 +229,7 @@ def get_metadata_from_layer(layer):
 
     # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
-    metadata['title'] = layer.title
+    metadata['title'] = layer.title  # This maybe overwritten by keyword
     metadata['id'] = layer.id
 
     # Extract keywords
@@ -311,6 +311,9 @@ def get_layer_descriptors(url):
     The keywords are parsed and added to the metadata dictionary
     if they conform to the format "identifier:value".
 
+    NOTE: Keywords will overwrite metadata with same keys. A notable
+          example is title which is currently in use.
+
     Input
         url: The wfs url
         version: The version of the wfs xml expected
@@ -357,6 +360,7 @@ def get_layer_descriptors(url):
         block['layer_type'] = md['layer_type']
         block['title'] = md['title']
 
+        # Copy keyword data into this block possibly overwriting data
         for kw in md['keywords']:
             block[kw] = md['keywords'][kw]
 
@@ -756,8 +760,9 @@ def save_file_to_geonode(filename, user=None, title=None,
             if ':' in raw_keyword:
                 keyword = ':'.join([x.strip() for x in raw_keyword.split(':')])
 
-            # Store keyword
-            keyword_list.append(keyword)
+            # FIXME (Ole): Replace spaces by underscores and store keyword.
+            # See issue #148
+            keyword_list.append(keyword.replace(' ', '_'))
         f.close()
 
     # Take care of file types
@@ -799,7 +804,10 @@ def save_file_to_geonode(filename, user=None, title=None,
                             keywords=keyword_list,
                             overwrite=overwrite)
 
-        # FIXME (Ole): This is some kind of hack that should be revisited.
+        # FIXME (Ole): This workaround should be revisited.
+        #              This fx means that keywords can't have spaces
+        #              Really need a generic way of getting this kind of
+        #              info in and out of GeoNode
         layer.keywords = ' '.join(keyword_list)
         layer.save()
     except GeoNodeException, e:
