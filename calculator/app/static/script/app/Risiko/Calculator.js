@@ -63,7 +63,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
 
         exposurestore = new Ext.data.JsonStore({
             id: 'exposurestore',
-            fields: ['name', 'server_url'],
+            fields: ['name', 'title', 'server_url'],
             autoLoad: true,
             url: '/impact/api/layers/?category=exposure',
             root: 'objects'
@@ -71,7 +71,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
 
         hazardstore = new Ext.data.JsonStore({
             id: 'hazardstore',
-            fields: ['name', 'server_url'],
+            fields: ['name', 'title', 'server_url'],
             autoLoad: true,
             url: '/impact/api/layers/?category=hazard',
             root: 'objects'
@@ -332,7 +332,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
                 xtype: 'combo',
                 id: 'hazardcombo',
                 store: hazardstore,
-                displayField: 'name',
+                displayField: 'title',
                 valueField: 'name',
                 fieldLabel: this.hazardComboLabelText,
                 typeAhead: true,
@@ -347,7 +347,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
                 xtype: 'combo',
                 id: 'exposurecombo',
                 store: exposurestore,
-                displayField: 'name',
+                displayField: 'title',
                 valueField: 'name',
                 fieldLabel: this.exposureComboLabelText,
                 typeAhead: true,

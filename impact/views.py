@@ -364,6 +364,7 @@ def layers(request):
         ld = get_layer_descriptors(geoserver['url'])
         for layer in ld:
             out = {'name': layer[0],
+                   'title': layer[1]['title'],
                    'server_url': geoserver['url']}
             metadata = layer[1]
             name_category = out['name'].split('_')
