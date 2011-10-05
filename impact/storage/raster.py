@@ -175,11 +175,15 @@ class Raster:
         # Look for any keywords
         self.keywords = read_keywords(basename + '.keywords')
 
-        # Always use basename without leading directories as name
-        rastername = os.path.split(basename)[-1]
+        # Determine name
+        if 'title' in self.keywords:
+            rastername = self.keywords['title']
+        else:
+            # Use basename without leading directories as name
+            rastername = os.path.split(basename)[-1]
 
-        self.filename = filename
         self.name = rastername
+        self.filename = filename
 
         self.projection = Projection(self.fid.GetProjection())
         self.geotransform = self.fid.GetGeoTransform()
