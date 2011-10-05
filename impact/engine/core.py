@@ -118,29 +118,45 @@ def check_data_integrity(layer_files):
                 assert numpy.allclose(coordinates,
                                       layer.get_geometry()), msg
 
-    # FIXME (Ole): Hack due to Geoserver resolution changes,
-    #              This will ensure alignment of arrays to the first
-    #              encountered
-    #              This is truly horrible!!!!!!!!!!
+    # Check that arrays are aligned.
+    #
+    # We have observerd Geoserver resolution changes - see ticket:102
+    # https://github.com/AIFDR/riab/issues/102
+    #
+    # However, both rasters are now downloaded with exactly the same
+    # parameters since we have made bbox and resolution variable in ticket:103
+    # https://github.com/AIFDR/riab/issues/103
+    #
+    # So if they are still not aligned, we raise an Exception
 
     # First find the minimum dimensions
-    dimensions = [sys.maxint, sys.maxint]
+    M = N = sys.maxint
+    refname = ''
     for layer in layer_files:
-
         if layer.is_raster:
-            if layer.rows < dimensions[0]:
-                dimensions[0] = layer.rows
-            if layer.columns < dimensions[1]:
-                dimensions[1] = layer.columns
+            if layer.rows < M:
+                refname = layer.get_name()
+                M = layer.rows
+            if layer.columns < N:
+                refname = layer.get_name()
+                N = layer.columns
 
-    # Make sure all rasters are clipped to the same box
+    # Then check for alignment
     for layer in layer_files:
-
         if layer.is_raster:
             data = layer.get_data()
 
-            layer.rows = dimensions[0]
-            layer.columns = dimensions[1]
+            msg = ('Rasters are not aligned!\n'
+                   'Raster %s has %i rows but raster %s has %i rows\n'
+                   'Refer to issue #102' % (layer.get_name(),
+                                            layer.rows,
+                                            refname, M))
+            assert layer.rows == M, msg
 
-            # XTreme Monkey Patching!
-            layer.data = data[0:layer.rows, 0:layer.columns]
+            msg = ('Rasters are not aligned!\n'
+                   'Raster %s has %i columns but raster %s has %i columns\n'
+                   'Refer to issue #102' % (layer.get_name(),
+                                            layer.columns,
+                                            refname, N))
+            assert layer.columns == N, msg
+
