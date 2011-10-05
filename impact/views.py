@@ -184,10 +184,10 @@ def calculate(request, save_output=save_to_geonode):
         msg = ('- Uploading impact layer %s' % impact_filename)
         logger.info(msg)
         result = save_output(impact_filename,
-                         title='output_%s' % start.isoformat(),
-                         user=theuser)
+                             title='output_%s' % start.isoformat(),
+                             user=theuser)
     except Exception, e:
-        #FIXME: Reimplement error saving for calculation
+        # FIXME: Reimplement error saving for calculation
         logger.error(e)
         errors = e.__str__()
         trace = exception_format(e)
@@ -210,7 +210,7 @@ def calculate(request, save_output=save_to_geonode):
     # let's make it a json string ourselves
     output['run_date'] = 'new Date("%s")' % calculation.run_date
 
-    # FIXME:This should not be needed in an ideal world
+    # FIXME: This should not be needed in an ideal world
     ows_server_url = settings.GEOSERVER_BASE_URL + 'ows',
     output['ows_server_url'] = ows_server_url
 
@@ -224,7 +224,7 @@ def calculate(request, save_output=save_to_geonode):
         output['excel'] = download_dict['excel']
 
     # Keywords do not like caption being there.
-    #FIXME: Do proper parsing, don't assume caption is the only keyword.
+    # FIXME: Do proper parsing, don't assume caption is the only keyword.
     if 'caption' in result.keywords:
         caption = result.keywords.split('caption:')[1]
         # FIXME: Hack to return underscores to spaces that was put in place
