@@ -11,6 +11,7 @@ from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
 from impact.storage.utilities import geotransform2bbox
 
+
 class Raster:
     """Internal representation of raster data
     """

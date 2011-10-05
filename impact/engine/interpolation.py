@@ -165,7 +165,6 @@ def interpolate_raster_vector(R, V, name=None):
     assert R.is_raster
     assert V.is_vector
 
-
     if V.is_polygon_data:
         # Use centroids, in case of polygons
         P = convert_polygons_to_centroids(V)
@@ -173,4 +172,3 @@ def interpolate_raster_vector(R, V, name=None):
         P = V
 
     return interpolate_raster_vector_points(R, P, name=name)
-

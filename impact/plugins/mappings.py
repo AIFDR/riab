@@ -111,7 +111,6 @@ def osm2padang(E):
     return V
 
 
-
 def osm2bnpb(E, target_attribute='VCLASS'):
     """Map OSM attributes to BNPB vulnerability classes
 
@@ -187,4 +186,3 @@ def osm2bnpb(E, target_attribute='VCLASS'):
                name=E.get_name() + ' mapped to BNPB vulnerability classes',
                keywords=E.get_keywords())
     return V
-

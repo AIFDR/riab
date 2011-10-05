@@ -101,7 +101,7 @@ class FloodBuildingImpactFunction(FunctionProvider):
 
         scale_keys = [10000000000, 10000000, 5000000, 1000000,
                       500000, 250000, 100000]
-        scale_values = [5, 5 , 5 , 5, 5, 8, 14]
+        scale_values = [5, 5, 5, 5, 5, 8, 14]
 
         class_keys = ['Not affected', 'Greater than 10 cm']
         class_values = [{'min': 0, 'max': 90,

@@ -176,7 +176,6 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
 
         return style
 
-
     def Xgenerate_style(self, data):
         """Generates and SLD file based on the data values
         """

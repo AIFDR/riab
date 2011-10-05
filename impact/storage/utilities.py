@@ -247,7 +247,7 @@ def read_keywords(filename):
         else:
             val = None
 
-        keywords[key] = val  #.replace(' ', '_')
+        keywords[key] = val  # .replace(' ', '_')
     fid.close()
 
     return keywords

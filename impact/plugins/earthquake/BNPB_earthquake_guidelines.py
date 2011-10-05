@@ -23,6 +23,7 @@ from impact.plugins.mappings import osm2bnpb
 damage_parameters = {'URM': [6, 7],
                      'RM': [6, 8]}
 
+
 class EarthquakeGuidelinesFunction(FunctionProvider):
     """Risk plugin for BNPB guidelines for earthquake damage to buildings
 
@@ -202,7 +203,6 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
 """
 
         return style
-
 
     def Xgenerate_style(self, data):
         """Generates a point SLD file based on the data values

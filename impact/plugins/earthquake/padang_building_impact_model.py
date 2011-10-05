@@ -142,7 +142,6 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                    keywords={'caption': caption})
         return V
 
-
     def generate_style(self, data):
         """Generates and SLD file based on the data values
         """
@@ -154,8 +153,6 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         else:
             msg = 'Unknown style %s' % str(data)
             raise Exception(msg)
-
-
 
     def generate_point_style(self, data):
         """Generates and SLD file based on the data values
@@ -218,7 +215,6 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
 
         # The styles are in $RIAB_HOME/riab/impact/templates/impact/styles
         return render_to_string('impact/styles/point_classes.sld', params)
-
 
     def generate_polygon_style(self, data):
         """Generates and SLD file based on the data values
@@ -298,7 +294,6 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     </sld:UserStyle>
   </sld:NamedLayer>
 </sld:StyledLayerDescriptor>
-""" % ((self.target_field,)*4)
+""" % ((self.target_field,) * 4)
 
         return style
-
