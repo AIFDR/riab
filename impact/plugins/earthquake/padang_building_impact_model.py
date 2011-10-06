@@ -87,6 +87,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         count50 = 0
         count25 = 0
         count10 = 0
+        count0 = 0
         building_damage = []
         for i in range(N):
             mmi = float(shaking[i].values()[0])
@@ -111,6 +112,9 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
             building_damage.append(result_dict)
 
             # Calculate statistics
+            if percent_damage < 10:
+                count0 += 1
+
             if 10 <= percent_damage < 25:
                 count10 += 1
 
@@ -126,10 +130,12 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                     '   <tr></tr>'
                     '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
                     '</table>' % (_('Buildings'), _('Total'),
                                   _('All'), N,
+                                  _('No damage'), count0,
                                   _('Low damage'), count10,
                                   _('Medium damage'), count25,
                                   _('High damage'), count50))
@@ -236,20 +242,44 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
           <ogc:Filter>
             <ogc:PropertyIsLessThan>
               <ogc:PropertyName>%s</ogc:PropertyName>
-              <ogc:Literal>25</ogc:Literal>
+              <ogc:Literal>10</ogc:Literal>
             </ogc:PropertyIsLessThan>
           </ogc:Filter>
           <sld:PolygonSymbolizer>
             <sld:Fill>
-              <sld:CssParameter name="fill">#1EFC7C</sld:CssParameter>
+              <sld:CssParameter name="fill">#CCCCCC</sld:CssParameter>
             </sld:Fill>
             <sld:Stroke>
-              <sld:CssParameter name="stroke">#0EEC6C</sld:CssParameter>
+              <sld:CssParameter name="stroke">#BCBCBC</sld:CssParameter>
             </sld:Stroke>
           </sld:PolygonSymbolizer>
         </sld:Rule>
         <sld:Rule>
           <sld:Name>2</sld:Name>
+          <sld:Title>Medium</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>10</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>%s</ogc:PropertyName>
+                <ogc:Literal>25</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FECC5C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#EEBC4C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>3</sld:Name>
           <sld:Title>Medium</sld:Title>
           <ogc:Filter>
             <ogc:And>
@@ -273,7 +303,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
           </sld:PolygonSymbolizer>
         </sld:Rule>
         <sld:Rule>
-          <sld:Name>3</sld:Name>
+          <sld:Name>4</sld:Name>
           <sld:Title>High</sld:Title>
           <ogc:Filter>
             <ogc:PropertyIsGreaterThanOrEqualTo>
@@ -294,6 +324,6 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     </sld:UserStyle>
   </sld:NamedLayer>
 </sld:StyledLayerDescriptor>
-""" % ((self.target_field,) * 4)
+""" % ((self.target_field,) * 6)
 
         return style
