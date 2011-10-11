@@ -1,8 +1,7 @@
-
 .. _index:
 
 =============================
-Risk In a Box's documentation 2
+Risk In a Box's documentation 2.1
 =============================
 
 .. rubric:: Everything you need to know about RiaB (well almost).
