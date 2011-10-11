@@ -334,7 +334,7 @@ def geotransform2resolution(geotransform):
     x_res = geotransform[1]     # w-e pixel resolution
     y_res = - geotransform[5]   # n-s pixel resolution (always negative)
 
-    return (x_res, y_res)
+    return x_res, y_res
 
 
 def bbox_intersection(*args):

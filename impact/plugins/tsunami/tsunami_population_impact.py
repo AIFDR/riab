@@ -25,7 +25,10 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
 
         # Identify hazard and exposure layers
         inundation = layers[0]  # Tsunami inundation [m]
-        population = layers[1]  # Population count (per 5x5m cells)
+        population = layers[1]  # Population density
+
+        # Get actual resolution
+        resolution = population.get_resolution(isotropic=True)
 
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth
