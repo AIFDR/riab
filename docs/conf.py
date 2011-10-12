@@ -153,7 +153,7 @@ html_static_path = ['.static']
 #html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = False
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -197,7 +197,7 @@ latex_logo = 'images/logo-bg.png'
 #latex_show_urls = False
 
 # Additional stuff for the LaTeX preamble.
-#latex_preamble = ''
+latex_preamble = '\setcounter{tocdepth}{3}'
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []

@@ -27,6 +27,7 @@ Introduction and Installation
 
    intro/basic_install
    intro/faq
+   intro/glossary
    
 ===========
 Usage Guide
