@@ -1,40 +1,74 @@
 .. _index:
 
+.. image:: http://riskinabox.org/media/riab-logo.png
+	:scale: 50 %
+	:align: center
+
+======================
+Risiko's documentation
+======================
+
+.. rubric:: Risiko is a web based tool that models impacts of different hazard events on population or infrastructure. It is part of a set of Open Source Software tools called Risk in a Box, and we encourage you to build new applications using its components and the resources it provides. The project home page can be found at http://riskinabox.org/
+
+
+.. figure:: images/screenshot.png
+	:scale: 76 %
+        
+        Risiko Screenshot showing earthquake hazard in Indonesia
+
+
 =============================
-Risk In a Box's documentation 2.2
+Introduction and Installation
 =============================
 
-.. rubric:: Everything you need to know about RiaB (well almost).
+.. toctree::
+   :maxdepth: 3
+   :numbered:
 
-Getting help
-============
+   intro/basic_install
+   intro/faq
+   
+===========
+Usage Guide
+===========
 
-Having trouble? We'd like to help!
+.. toctree::
+   :maxdepth: 3
+   :numbered:
 
-* Looking for specific information? Try the :ref:`genindex` or the :ref:`modindex`.
+   usage/overview
+   usage/risiko_calculator
+   usage/plugins/development
+   
+   
+===============
+Developer Guide
+===============
 
-* Search for information in the `archives of the risiko-dev mailing list`_, or
-  `post a question`_.
+.. toctree::
+   :maxdepth: 3
+   :numbered:
 
-* Ask a question in the `#riab IRC channel`_.
+   development/overview
+   development/architecture
+   development/pluginmanager
+   development/documentation
+   development/contributing
+   development/release-process
+   development/git
+   development/dev_help
 
-* Report bugs with RiaB in our `ticket tracker`_.
 
-.. _archives of the risiko-dev mailing list: http://groups.google.com/group/risiko-dev/
-.. _post a question: http://groups.google.com/group/risiko-dev
-.. _#riab IRC channel: irc://irc.freenode.net/riab
-.. _ticket tracker: http://github.com/AIFDR/riab/issues
+===========================
+Production Deployment Guide
+===========================
 
-Introducing RiaB
-================
+.. toctree::
+   :maxdepth: 3
+   :numbered:
 
-    * **From scratch:**
-      :doc:`Overview <intro/overview>` |
-      :doc:`Installation <intro/install>`
-
-    * **Design Documents:**
-       :doc:`Project Plan <intro/plan>` |
-       :doc:`Software Architecture <intro/architecture>`
+   deployment/production_install
+   
 
 
 The code
@@ -63,27 +97,4 @@ The code
       :doc:`Overview <code/testing>`
 
 
-Deployment
-==========
 
-    * **For managers/non-technical:**
-      :doc:`RiaB deployment terms of reference <deploy/tor>`
-
-    * **For sysadmin/programmers:**
-      :doc:`RiaB deployment guide <deploy/guide>` |
-      :doc:`Running RiaB on the cloud (AWS) <deploy/cloud>` |
-      :doc:`Ubuntu <deploy/ubuntu>` |
-      :doc:`Centos <deploy/centos>`
-
-
-The RiaB open-source project
-==============================
-
-    * **Community:**
-      :doc:`How to get involved <internals/contributing>` |
-      :doc:`The release process <internals/release-process>` |
-      :doc:`Team of committers <internals/committers>` |
-      :doc:`The RiaB source code repository <internals/git>`
-
-    * **Documentation:**
-      :doc:`About this documentation <internals/documentation>`
