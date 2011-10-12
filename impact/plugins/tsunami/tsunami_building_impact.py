@@ -78,9 +78,9 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
         caption = ('<table border="0" width="320px">'
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
                     '   <tr></tr>'
-                    '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
-                    '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
-                    '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                     '</table>' % ('ketinggian tsunami', 'Jumlah gedung',
                                   '< 1 m', count0,
                                   '1 - 3 m', count1,
