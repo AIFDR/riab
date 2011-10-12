@@ -71,30 +71,6 @@ Production Deployment Guide
    
 
 
-The code
-========
-
-    * **Core Module:**
-      :doc:`Calculation Engine  <code/core/engine>` |
-      :doc:`Working with raster data <code/core/raster>` |
-      :doc:`Working with vector data <code/core/vector>` |
-      :doc:`Interpolation <code/core/interpolation>` |
-      :doc:`Projections <code/core/projections>`
-
-    * **HTTP REST API (RiaB Server):**
-      :doc:`API Description <code/http/api>` |
-      :doc:`GeoNode/GeoServer upload/download <code/http/geonode>` |
-      :doc:`Debugging and extending tips and tricks <code/http/tips>`
-
-    * **Impact functions plugins:**
-      :doc:`Plugin system <code/function/plugins>` |
-      :doc:`Creating and registering new functions <code/function/extending>`
-
-    * **Exceptions:**
-      :doc:`Overview <code/exceptions>`
-
-    * **Testing:**
-      :doc:`Overview <code/testing>`
 
 
 
