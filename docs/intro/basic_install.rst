@@ -1,6 +1,5 @@
 
 
-
 ============
 Installation
 ============
@@ -9,7 +8,8 @@ This is the project: "Risiko - Risk in a Box".
 The latest source code is available in https://github.com/AIFDR/riab/tree/master/impact which contains modules for risk calculations, gis functionality and plugin management.
 
 For more information about Risk In a Box please look at
-our documentation on http://riab.readthedocs.org
+our documentation on http://risiko.readthedocs.org (for the current stable release) or http://risiko_dev.readthedocs.org (for the most recent development version)
+.. FIXME: Make ole link http://riab.readthedocs.org obsolete
 
 These are the instructions for installation of Risiko in development mode (for changing the software) and production mode (for deploying on a server).
 
