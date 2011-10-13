@@ -15,7 +15,7 @@ The documentation for this project is automatically made by the service Read-the
 
 .. note::
 
-    if Read-the-docs does not update this can be done manually from the dashboard at [http://readthedocs.org/dashboard/risiko/ or http://readthedocs.org/dashboard/risiko_dev/]. Click on the bottom button "Build Latest Version".
+    if Read-the-docs does not update this can be done manually from the dashboard at [http://readthedocs.org/projects/risiko or http://readthedocs.org/projects/risiko_dev]. Click on the bottom button "Build Latest Version".
 
 Development Documentation
 -------------------------
