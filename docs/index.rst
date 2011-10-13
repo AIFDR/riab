@@ -40,6 +40,10 @@ Usage Guide
    usage/overview
    usage/risiko_calculator
    usage/plugins/development
+   usage/plugins/examples_intro
+   usage/plugins/earthquake_plugins
+   usage/plugins/tsunami_plugins
+   usage/plugins/flood_plugins
    
    
 ===============

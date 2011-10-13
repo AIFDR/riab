@@ -47,9 +47,9 @@ This tells the Risiko plugin manager that this plugin requires at a minimum inpu
 * category of 'hazard', with a subcategory of 'earthquake' and it must be a layerType of 'Raster'
 * category of 'exposure', with a subcategory of 'earthquake' and it must be a layerType of 'Raster'
 
-.. note:: Lines can be broken using the line continuation character '\\' at the end of a line
-
-.. note:: If any one of the conditions is not met the plugin will not be visible from the impact selection box.
+.. note:: 
+	1. Lines can be broken using the line continuation character '\\' at the end of a line
+	2. If any one of the conditions is not met the plugin will not be visible from the impact selection box.
 
 
 Each plugin must define a `run` method which is the plugin execution code::
@@ -76,7 +76,7 @@ The parameters are passed in as a dictionary. It is up to the framework to popul
 
 At the end of the function the calculated impact is returned. This can be any object and it is up to the application to know what to do with the results returned
 
-.. warning:: One major gotcha with the plugins is that the files they are in must be imported as part of the module hierarchy consideration. This can be done in the __init__ file. Support may be provided in the future to import all python files under a given directory (i.e. force_import_plugins(dir))
+.. warning:: One major gotcha with the plugins is that the files they are in must be imported as part of the module hierarchy consideration. This is done automatically on restart so you will need to restart Risiko to see any new plugins added.
 
 .. note:: As the doc string is exec'ed as part of the requirements check it could be that security issues would be exposed. However it should be noted that if one can change the docstring, then any other malicious code injection would also be possible. The only objection then is that it is less noticeable in the doc string.
 
