@@ -1,4 +1,3 @@
-
 ============
 Installation
 ============
@@ -19,7 +18,7 @@ System Requirements
 -------------------
 
  - A standard PC with at least 4GB of RAM.
- - The operating system is a recent version of Ubuntu Linux (http://www.ubuntu.com). Risiko has been tested on versions 10.04 and 10.10 (32 and 64 bit).
+ - The operating system is a recent version of Ubuntu Linux (http://www.ubuntu.com). Risiko has been tested on versions 10.04, 10.10 and 11.04 (32 and 64 bit).
  - The platform is using the default /etc/sources.list as it comes in a fresh Ubuntu installation. You may want to change this to a local mirror if the internet connection is slow (see e.g. https://help.ubuntu.com/community/Repositories/CommandLine) for details.
  - The user installing and running Risiko has administrator rights (using the sudo)
 
