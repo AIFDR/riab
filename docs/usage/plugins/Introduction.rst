@@ -2,16 +2,6 @@
 Introduction
 ============
 
-.. topic:: PyLightPlug
-
-  A light weight python plugin system for scientific applications 
-
---------
-Rational
---------
-
-Many python projects require plug-in functionality. This is particularly true of scientific applications where it is expected that the user will want to extend the out-of-the box abilities of an application for instance adding new graph types or customized functions.
-
 There are a number of different plugin systems avaliable, however many suffer from being either inflexible or too heavy weight. There are however some good plug-in patterns avaliable and developers frequently 'roll-there-own'
 to suit the application requirements. It is the aim of this module to provide the basis for a flexible plugin-system that can be used for a wide variety of different applications and allow the developer to focus on the app not on the plugin system, and the user to be able to simply build plugins.
 
