@@ -25,7 +25,7 @@ Our first plugin we want to calculate a simple impact by multiplying the severit
 
 As the first step we need to define the plugin class.::
 
-    class EarthquakeFatalityFunction(FunctionProvider):
+    class SimpleImpactFunction(FunctionProvider):
           pass
 
 Every plugin must be subclassed from FunctionProvider. This is the 
@@ -33,8 +33,8 @@ method of registration for the plugin and allows the Plugin Manager to know what
 
 The parameters required to run the plugin, and indeed all parameters specific to the plugin, are defined in the doc string of the class::
 
-    class EarthquakeFatalityFunction(FunctionProvider):
-    	"""Risk plugin for earthquake damage
+    class SimpleImpactFunction(FunctionProvider):
+    	"""Risk plugin for simple impact calculation
 
     	:author Ted
 
@@ -42,12 +42,15 @@ The parameters required to run the plugin, and indeed all parameters specific to
     	:param requires category=="exposure" and subcategory.startswith("population") and layerType=="raster"
     	"""
 
-This tells the PyLightPlug manager that this plugin requires inputs of
+This tells the Risiko plugin manager that this plugin requires at a minimum inputs of
 
 * category of 'hazard', with a subcategory of 'earthquake' and it must be a layerType of 'Raster'
 * category of 'exposure', with a subcategory of 'earthquake' and it must be a layerType of 'Raster'
 
 .. note:: Lines can be broken using the line continuation character '\\' at the end of a line
+
+.. note:: If any one of the conditions is not met the plugin will not be visible from the impact selection box.
+
 
 Each plugin must define a `run` method which is the plugin execution code::
 
