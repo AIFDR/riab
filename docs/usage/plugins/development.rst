@@ -6,14 +6,14 @@ Plugin Development
 Introduction
 ------------
 
-There are many ways of developing plugin systems, and every project has different requirements. Some requirements that are common, particularly for scientific apps, include: 
+Riskio contains a plugin system that allows complex impact functions to be implemented (ideally) minimizing 
+the need to understand all the complexity of the handling the hazard and exposure layers. The Risiko plugin system has:
 
-* Auto registration of new plugins and the automatic update during development
+* Auto registration of new plugins after restart
 * Derivation of more complex plugins from simpler ones
-* Specifying parameters that can be passed to the plugin
-* Have the plugin manager determine which plugins can be used at any time
+* Auto hiding for plugins that could not be run (depending on the requirements)
 * Allow for additional functionality to be added easily
-* Provide good documentation on functionality
+* Provide uptodate documentation on plugin functionality
 
 -----------------------
 Writing a Simple Plugin
