@@ -164,13 +164,13 @@ html_show_copyright = False
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'riabdoc'
+htmlhelp_basename = 'risikodoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
 
 # The paper size ('letter' or 'a4').
-#latex_paper_size = 'a4'
+latex_paper_size = 'a4'
 
 # The font size ('10pt', '11pt' or '12pt').
 #latex_font_size = '10pt'
@@ -178,8 +178,8 @@ htmlhelp_basename = 'riabdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'riab.tex', u'Risiko Documentation',
-   u'AIFDR', 'manual'),
+  ('index', 'risiko.tex', 'Risiko Documentation',
+   'AIFDR', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -211,5 +211,5 @@ latex_preamble = '\setcounter{tocdepth}{3}'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'riab', u'Risiko Documentation',
-     [u'AIFDR'], 1)]
+    ('index', 'risiko', 'Risiko Documentation',
+     ['AIFDR'], 1)]
