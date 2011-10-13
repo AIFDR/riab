@@ -79,3 +79,5 @@ At the end of the function the calculated impact is returned. This can be any ob
 
 .. [#metaclass_link] This link has a good decription of a metaclass plugin implemtation http://effbot.org/zone/metaclass-plugins.htm
  
+
+[https://github.com/AIFDR/riab/blob/develop/docs/usage/plugins/development.rst]
