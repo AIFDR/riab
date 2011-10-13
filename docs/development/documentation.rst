@@ -22,7 +22,7 @@ Development Documentation
 
 You can edit the docs straight from the git repository or after checking the repository out, making changes and pushing these changes back to github.
 
-Changes reflected in the development branch [http://readthedocs.org/projects/risiko_dev]can be found at http://risiko_dev.readthedocs.org.
+Changes reflected in the development branch [http://readthedocs.org/projects/risiko_dev] can be found at http://risiko_dev.readthedocs.org.
 
 Current Stable Version 
 ----------------------
