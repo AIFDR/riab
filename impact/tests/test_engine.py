@@ -13,7 +13,7 @@ from impact.storage.io import write_raster_data
 from impact.plugins import get_plugins
 
 from impact.tests.utilities import TESTDATA
-
+from impact.tests.plugins import empirical_fatality_model
 
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
