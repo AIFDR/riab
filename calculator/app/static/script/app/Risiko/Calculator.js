@@ -12,9 +12,9 @@
  *    Risiko Calculator plugin.
  */
 Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
-    
+
     ptype: "app_calculator",
-    
+
     /* @i18n begin */
     hazardComboLabelText: gettext("Hazard"),
     exposureComboLabelText: gettext("Exposure"),
@@ -29,7 +29,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
     /* @i18n end */
 
     addOutput: function(config) {
-        
+
         var exposurestore, hazardstore, combo_functionstore, popup,
             functionstore, bboxLayer,
             app = this.target,
@@ -40,7 +40,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
 
         function drawBox(bbox) {
             var map = app.mapPanel.map;
-            
+
             if (bboxLayer) {
                 bboxLayer.destroy();
                 bboxLayer = null;
@@ -57,13 +57,13 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
 
             var feature = new OpenLayers.Feature.Vector(bbox.toGeometry());
             bboxLayer.addFeatures([feature]);
-            
+
             map.addLayer(bboxLayer);
         };
 
         exposurestore = new Ext.data.JsonStore({
             id: 'exposurestore',
-            fields: ['name', 'server_url'],
+            fields: ['name', 'title', 'server_url'],
             autoLoad: true,
             url: '/impact/api/layers/?category=exposure',
             root: 'objects'
@@ -71,7 +71,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
 
         hazardstore = new Ext.data.JsonStore({
             id: 'hazardstore',
-            fields: ['name', 'server_url'],
+            fields: ['name', 'title', 'server_url'],
             autoLoad: true,
             url: '/impact/api/layers/?category=hazard',
             root: 'objects'
@@ -79,7 +79,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
 
         combo_functionstore = new Ext.data.JsonStore({
             id: 'combo_functionstore',
-            fields: ['name','doc', 'layers'],
+            fields: ['name', 'doc', 'layers'],
             root: 'functions'
         });
 
@@ -149,7 +149,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
         // since the combo box is rebuilt depending on the selection
         functionstore = new Ext.data.JsonStore({
             id: 'functionstore',
-            fields: ['name','doc', 'layers'],
+            fields: ['name', 'doc', 'layers'],
             autoLoad: true,
             url: '/impact/api/functions/',
             root: 'functions'
@@ -319,7 +319,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
                 }
             });
         }
-        
+
         return Risiko.Calculator.superclass.addOutput.apply(this, [[{
             id: "calcform",
             title: this.calculatorTitleText,
@@ -332,7 +332,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
                 xtype: 'combo',
                 id: 'hazardcombo',
                 store: hazardstore,
-                displayField:'name',
+                displayField: 'title',
                 valueField: 'name',
                 fieldLabel: this.hazardComboLabelText,
                 typeAhead: true,
@@ -347,8 +347,8 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
                 xtype: 'combo',
                 id: 'exposurecombo',
                 store: exposurestore,
-                displayField:'name',
-                valueField:'name',
+                displayField: 'title',
+                valueField: 'name',
                 fieldLabel: this.exposureComboLabelText,
                 typeAhead: true,
                 mode: 'local',
@@ -363,8 +363,8 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
                 xtype: 'combo',
                 id: 'functioncombo',
                 store: combo_functionstore,
-                displayField:'name',
-                valueField:'name',
+                displayField: 'name',
+                valueField: 'name',
                 fieldLabel: this.functionComboLabelText,
                 typeAhead: true,
                 mode: 'local',
@@ -416,7 +416,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             }
         }]]);
     }
-    
+
 });
 
 

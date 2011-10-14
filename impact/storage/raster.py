@@ -9,7 +9,7 @@ from impact.storage.utilities import DRIVER_MAP
 from impact.engine.interpolation import interpolate_raster_vector
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
-from impact.storage.utilities import geotransform2bbox
+from impact.storage.utilities import geotransform2bbox, geotransform2resolution
 
 
 class Raster:
@@ -136,6 +136,11 @@ class Raster:
     def get_name(self):
         return self.name
 
+    def get_keywords(self):
+        """Return keywords dictionary
+        """
+        return self.keywords
+
     def get_caption(self):
         """Return 'caption' keyword if present. Otherwise ''.
         """
@@ -170,11 +175,15 @@ class Raster:
         # Look for any keywords
         self.keywords = read_keywords(basename + '.keywords')
 
-        # Always use basename without leading directories as name
-        rastername = os.path.split(basename)[-1]
+        # Determine name
+        if 'title' in self.keywords:
+            rastername = self.keywords['title']
+        else:
+            # Use basename without leading directories as name
+            rastername = os.path.split(basename)[-1]
 
-        self.filename = filename
         self.name = rastername
+        self.filename = filename
 
         self.projection = Projection(self.fid.GetProjection())
         self.geotransform = self.fid.GetGeoTransform()
@@ -247,6 +256,9 @@ class Raster:
         Output
             Y: Layer object with values of this raster layer interpolated to
                geometry of input layer X
+
+        Note: If target geometry is polygon, data will be interpolated to
+        its centroids and the output is a point data set.
         """
 
         if X.is_raster:
@@ -445,6 +457,28 @@ class Raster:
         """
 
         return geotransform2bbox(self.geotransform, self.columns, self.rows)
+
+    def get_resolution(self, isotropic=False):
+        """Get raster resolution as a 2-tuple (resx, resy)
+
+        Input
+            isotropic:
+        """
+
+        resx, resy = geotransform2resolution(self.geotransform)
+
+        if isotropic:
+            msg = ('Resolution for layer %s requested with '
+                   'isotropic=True, but '
+                   'resolutions in the horizontal and vertical '
+                   'are different: resx = %.12f, resy = %.12f. '
+                   % (self.get_name(), resx, resy))
+            assert numpy.allclose(resx, resy,
+                                  rtol=1.0e-6, atol=1.0e-8), msg
+            return resx
+        else:
+            return resx, resy
+
 
     @property
     def is_raster(self):

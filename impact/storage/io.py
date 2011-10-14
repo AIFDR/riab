@@ -14,9 +14,13 @@ from zipfile import ZipFile
 
 from impact.storage.vector import Vector
 from impact.storage.raster import Raster
+from impact.storage.utilities import is_sequence
 from impact.storage.utilities import LAYER_TYPES
+from impact.storage.utilities import WCS_TEMPLATE
+from impact.storage.utilities import WFS_TEMPLATE
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import extract_geotransform
+from impact.storage.utilities import geotransform2resolution
 
 from owslib.wcs import WebCoverageService
 from owslib.wfs import WebFeatureService
@@ -93,16 +97,6 @@ def write_vector_data(data, projection, geometry, filename, keywords=None):
     V = Vector(data, projection, geometry, keywords=keywords)
     V.write_to_file(filename)
 
-# FIXME (Ole): Why is the resolution hard coded here (issue #103)
-WCS_TEMPLATE = '%s?version=1.0.0' + \
-                      '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
-                      'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
-                      '&resx=0.008333333333000&resy=0.008333333333000'
-
-WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
-               '&request=GetFeature&typeName=%s' + \
-               '&outputFormat=SHAPE-ZIP&bbox=%s'
-
 
 def get_bounding_box(filename):
     """Get bounding box for specified raster or vector file
@@ -111,7 +105,7 @@ def get_bounding_box(filename):
         filename
 
     Output:
-        bounding box as python list [West, South, East, North]
+        bounding box as python list of numbers [West, South, East, North]
     """
 
     layer = read_layer(filename)
@@ -198,16 +192,16 @@ def get_bounding_box_string(filename):
 def get_geotransform(server_url, layer_name):
     """Constructs the geotransform based on the WCS service.
 
-       Should only be called be rasters / WCS layers.
+    Should only be called be rasters / WCS layers.
 
-       Returns:
-            geotransform is a vector of six numbers:
+    Returns:
+        geotransform is a vector of six numbers:
 
-             (top left x, w-e pixel resolution, rotation,
-              top left y, rotation, n-s pixel resolution).
+         (top left x, w-e pixel resolution, rotation,
+          top left y, rotation, n-s pixel resolution).
 
-            We should (at least) use elements 0, 1, 3, 5
-            to uniquely determine if rasters are aligned
+        We should (at least) use elements 0, 1, 3, 5
+        to uniquely determine if rasters are aligned
 
     """
 
@@ -229,11 +223,13 @@ def get_metadata_from_layer(layer):
     # Metadata specific to layer types
     metadata['layer_type'] = layer.datatype
     if layer.datatype == 'raster':
-        metadata['geotransform'] = extract_geotransform(layer)
+        geotransform = extract_geotransform(layer)
+        metadata['geotransform'] = geotransform
+        metadata['resolution'] = geotransform2resolution(geotransform)
 
     # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
-    metadata['title'] = layer.title
+    metadata['title'] = layer.title  # This maybe overwritten by keyword
     metadata['id'] = layer.id
 
     # Extract keywords
@@ -289,10 +285,10 @@ def get_metadata(server_url, layer_name=None):
 
         if name in wcs.contents:
             layer = wcs.contents[name]
-            layer.datatype = 'raster'  # Monkey patch type
+            layer.datatype = 'raster'  # Monkey patch layer type
         elif name in wfs.contents:
             layer = wfs.contents[name]
-            layer.datatype = 'vector'  # Monkey patch type
+            layer.datatype = 'vector'  # Monkey patch layer type
         else:
             msg = ('Layer %s was not found in WxS contents on server %s.\n'
                    'WCS contents: %s\n'
@@ -315,6 +311,9 @@ def get_layer_descriptors(url):
     The keywords are parsed and added to the metadata dictionary
     if they conform to the format "identifier:value".
 
+    NOTE: Keywords will overwrite metadata with same keys. A notable
+          example is title which is currently in use.
+
     Input
         url: The wfs url
         version: The version of the wfs xml expected
@@ -324,7 +323,7 @@ def get_layer_descriptors(url):
         each layer of the following form:
 
         [['geonode:lembang_schools',
-          {'layer_type': 'feature',
+          {'layer_type': 'vector',
            'category': 'exposure',
            'subcategory': 'building',
            'title': 'lembang_schools'}],
@@ -341,7 +340,7 @@ def get_layer_descriptors(url):
     #              I am not sure if it can be changed. My problem is
     #
     #              1: A dictionary of metadata entries would be simpler
-    #              2: The keywords should have their own dictinary to avoid
+    #              2: The keywords should have their own dictionary to avoid
     #                 danger of keywords overwriting other metadata
     #
     #              I have raised this in ticket #126
@@ -358,15 +357,12 @@ def get_layer_descriptors(url):
 
         # Create new special purpose entry
         block = {}
-        if md['layer_type'] == 'vector':
-            block['layer_type'] = 'feature'
-        else:
-            block['layer_type'] = 'raster'
+        block['layer_type'] = md['layer_type']
+        block['title'] = md['title']
 
+        # Copy keyword data into this block possibly overwriting data
         for kw in md['keywords']:
             block[kw] = md['keywords'][kw]
-
-        block['title'] = md['title']
 
         x.append([key, block])
 
@@ -434,21 +430,28 @@ def check_bbox_string(bbox_string):
     assert miny < maxy, msg
 
 
-def download(server_url, layer_name, bbox):
+def download(server_url, layer_name, bbox, resolution=None):
     """Download the source data of a given layer.
 
-       Input
-           server_url: String such as 'http://www.aifdr.org:8080/geoserver/ows'
-           layer_name: Layer identifier of the form workspace:name,
-                       e.g 'geonode:Earthquake_Ground_Shaking'
-           bbox: Bounding box for layer. This can either be a string or a list
-                 with format [west, south, east, north], e.g.
-                 '87.998242,-8.269822,117.046094,5.097895'
+    Input
+        server_url: String such as 'http://www.aifdr.org:8080/geoserver/ows'
+        layer_name: Layer identifier of the form workspace:name,
+                    e.g 'geonode:Earthquake_Ground_Shaking'
+        bbox: Bounding box for layer. This can either be a string or a list
+              with format [west, south, east, north], e.g.
+              '87.998242,-8.269822,117.046094,5.097895'
+        resolution: Optional argument specifying resolution in case of
+                    raster layers.
+                    Resolution can be a tuple (resx, resy) signifying the
+                    spacing in decimal degrees in the longitude, latitude
+                    direction respectively.
+                    If resolution is just one number it is used for both resx
+                    and resy.
+                    If resolution is None, the 'native' resolution of
+                    the dataset is used.
 
-       Layer type must be either 'vector' or 'raster'
+    Layer geometry type must be either 'vector' or 'raster'
     """
-
-    # FIXME (Ole): Pass in resolution here
 
     # Input checks
     assert isinstance(server_url, basestring)
@@ -481,12 +484,40 @@ def download(server_url, layer_name, bbox):
     # Check integrity of bounding box
     check_bbox_string(bbox_string)
 
+    # Check resolution
+    if resolution is not None:
+
+        # Make sure it is a list or a tuple
+        if not is_sequence(resolution):
+            # Replicate single value twice
+            resolution = (resolution, resolution)
+
+        # Check length
+        msg = ('Specified resolution must be either a number or a 2-tuple. '
+               'I got %s' % str(resolution))
+        assert len(resolution) == 2, msg
+
+        # Check floating point
+        for res in resolution:
+            try:
+                float(res)
+            except ValueError, e:
+                msg = ('Expecting number for resolution, but got %s: %s'
+                       % (res, str(e)))
+                raise RisikoException(msg)
+
     # Create REST request and download file
     template = None
     layer_metadata = get_metadata(server_url, layer_name)
 
     data_type = layer_metadata['layer_type']
     if data_type == 'vector':
+
+        if resolution is not None:
+            msg = ('Resolution was requested for Vector layer %s. '
+                   'This can only be done for raster layers.' % layer_name)
+            raise RisikoException(msg)
+
         template = WFS_TEMPLATE
         suffix = '.zip'
         download_url = template % (server_url, layer_name, bbox_string)
@@ -499,15 +530,22 @@ def download(server_url, layer_name, bbox):
         (shpname,) = [name for name in namelist if '.shp' in name]
         filename = os.path.join(dirname, shpname)
     elif data_type == 'raster':
+
+        if resolution is None:
+            # Get native resolution and use that
+            resolution = layer_metadata['resolution']
+
+        # Download raster using specified bounding box and resolution
         template = WCS_TEMPLATE
         suffix = '.tif'
-        download_url = template % (server_url, layer_name, bbox_string)
+        download_url = template % (server_url, layer_name, bbox_string,
+                                   resolution[0], resolution[1])
         filename = get_file(download_url, suffix)
 
     # Instantiate layer from file
     lyr = read_layer(filename)
 
-    #FIXME (Ariel) Don't monkeypatch the layer object
+    # FIXME (Ariel) Don't monkeypatch the layer object
     lyr.metadata = layer_metadata
     return lyr
 
@@ -722,8 +760,9 @@ def save_file_to_geonode(filename, user=None, title=None,
             if ':' in raw_keyword:
                 keyword = ':'.join([x.strip() for x in raw_keyword.split(':')])
 
-            # Store keyword
-            keyword_list.append(keyword)
+            # FIXME (Ole): Replace spaces by underscores and store keyword.
+            # See issue #148
+            keyword_list.append(keyword.replace(' ', '_'))
         f.close()
 
     # Take care of file types
@@ -765,7 +804,10 @@ def save_file_to_geonode(filename, user=None, title=None,
                             keywords=keyword_list,
                             overwrite=overwrite)
 
-        # FIXME (Ole): This is some kind of hack that should be revisited.
+        # FIXME (Ole): This workaround should be revisited.
+        #              This fx means that keywords can't have spaces
+        #              Really need a generic way of getting this kind of
+        #              info in and out of GeoNode
         layer.keywords = ' '.join(keyword_list)
         layer.save()
     except GeoNodeException, e:

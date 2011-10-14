@@ -13,6 +13,7 @@ from geonode.maps.utils import get_valid_user
 from impact.storage.io import save_to_geonode, RisikoException
 from impact.storage.io import check_layer, assert_bounding_box_matches
 from impact.storage.io import get_bounding_box_string
+from impact.storage.io import bboxstring2list
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page
 from impact.storage.io import read_layer
@@ -53,7 +54,6 @@ class Test_geonode_connection(unittest.TestCase):
                                             # projection (TM3_Zone_48-2) so
                                             # serves as another test for
                                             # issue #40
-
         for root, dirs, files in os.walk(datadir):
             for filename in files:
                 basename, extension = os.path.splitext(filename)
@@ -119,7 +119,7 @@ class Test_geonode_connection(unittest.TestCase):
     def test_raster_wcs_reprojection(self):
         """UTM Raster can be reprojected by Geoserver and downloaded correctly
         """
-        # FIXME (Ole): Still need to do this with assertions
+        # FIXME (Ole): Jeff needs to do this with assertions (ticket #40)
 
         filename = 'tsunami_max_inundation_depth_BB_utm.asc'
         projected_tif_file = os.path.join(TESTDATA, filename)
@@ -707,9 +707,11 @@ class Test_geonode_connection(unittest.TestCase):
                    % (keywords['subcategory'], category))
             assert subcategory == keywords['subcategory'], msg
 
-    # FIXME (Ole): Enable when issue #103 has been resolved
-    def Xtest_raster_upload(self):
-        """Raster layer can be uploaded and downloaded again correctly
+    def test_native_raster_resolution(self):
+        """Raster layer retains native resolution through Geoserver
+
+        Raster layer can be uploaded and downloaded again with
+        native resolution. This is one test for ticket #103
         """
 
         hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
@@ -724,7 +726,7 @@ class Test_geonode_connection(unittest.TestCase):
         hazard_layer = save_to_geonode(hazard_filename, user=self.user)
         hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
 
-        # Download data again
+        # Download data again with native resolution
         bbox = get_bounding_box_string(hazard_filename)
         H = download(INTERNAL_SERVER_URL, hazard_name, bbox)
         A = H.get_data()
@@ -745,8 +747,79 @@ class Test_geonode_connection(unittest.TestCase):
                               [depth_min_ref, depth_max_ref],
                               rtol=1.0e-6, atol=1.0e-10), msg
 
-        # FIXME (Ole): Eventually compare number by number
-        #assert numpy.allclose(A, A_ref)
+        # Compare data number by number
+        assert numpy.allclose(A, A_ref, rtol=1.0e-8)
+
+    def test_specified_raster_resolution(self):
+        """Raster layer can be downloaded with specific resolution
+
+        This is another test for ticket #103
+
+        Native test .asc data has
+        ncols 931
+        nrows 463
+        cellsize 0.00018
+
+        Here we download it at a range of fixed resolutions that
+        are both coarser and finer, and check that the dimensions
+        of the downloaded matrix are as expected.
+
+        We also check that the extrema of the subsampled matrix are sane
+        """
+
+        # Test for a range of specified resolutions
+        for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
+                    0.0002, 0.0001, 0.00006, 0.00003]:        # Finer
+
+            hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
+                               % TESTDATA)
+
+            # Get reference values
+            H = read_layer(hazard_filename)
+            depth_min_ref, depth_max_ref = H.get_extrema()
+
+            # Upload to internal geonode
+            hazard_layer = save_to_geonode(hazard_filename, user=self.user)
+            hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                     hazard_layer.name)
+
+            # Download data again
+            bbox = get_bounding_box_string(hazard_filename)
+            H = download(INTERNAL_SERVER_URL, hazard_name,
+                         bbox, resolution=res)
+            A = H.get_data()
+
+            # Determine expected shape from bbox (W, S, E, N)
+            bb = bboxstring2list(bbox)
+            ref_rows = int(round((bb[3] - bb[1]) / res))
+            ref_cols = int(round((bb[2] - bb[0]) / res))
+
+            # Compare shapes
+            msg = ('Shape of downloaded raster was [%i, %i]. '
+                   'Expected [%i, %i].' % (A.shape[0], A.shape[1],
+                                           ref_rows, ref_cols))
+            assert numpy.allclose((ref_rows, ref_cols), A.shape,
+                                  rtol=0, atol=0), msg
+
+            # Assess that the range of the interpolated data is sane
+            A = numpy.where(A == -9999, 0, A)  # Get rid of -9999
+
+            # We expect exact match of the minimum
+            assert numpy.allclose(depth_min_ref, numpy.amin(A),
+                                  rtol=0, atol=0)
+
+            # At the maximum it depends on the subsampling
+            if res < 0.0002:
+                # At these resolutions we expect a close match
+                assert numpy.allclose(depth_max_ref, numpy.amax(A),
+                                      rtol=1.0e-10, atol=1.0e-8)
+            elif res < 0.002:
+                # At these resolutions we expect ballpark match (~20%)
+                assert numpy.allclose(depth_max_ref, numpy.amax(A),
+                                      rtol=0.17, atol=0.0)
+            else:
+                # At coarser resolutions, we just want sanity
+                assert 0 < numpy.amax(A) <= depth_max_ref
 
 
 if __name__ == '__main__':

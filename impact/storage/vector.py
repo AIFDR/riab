@@ -3,7 +3,7 @@
 
 import os
 import numpy
-from osgeo import ogr
+from osgeo import ogr, gdal
 from impact.storage.projection import Projection
 from impact.storage.utilities import DRIVER_MAP, TYPE_MAP
 from impact.storage.utilities import read_keywords
@@ -11,8 +11,11 @@ from impact.storage.utilities import write_keywords
 from impact.storage.utilities import get_geometry_type
 from impact.storage.utilities import is_sequence
 from impact.storage.utilities import array2wkt
+from impact.storage.utilities import calculate_polygon_centroid
+from impact.storage.utilities import geometrytype2string
 
-
+# FIXME (Ole): Consider using pyshp to read and write shapefiles
+#              See http://code.google.com/p/pyshp
 class Vector:
     """Class for abstraction of vector data
     """
@@ -103,7 +106,11 @@ class Vector:
             # FIXME: Need to establish extent here
 
     def __str__(self):
-        return self.name
+        return ('Vector data set: %s, %i features, geometry type '
+                '%i (%s)' % (self.name,
+                             len(self),
+                             self.geometry_type,
+                             geometrytype2string(self.geometry_type)))
 
     def __len__(self):
         """Size of vector layer defined as number of features
@@ -175,6 +182,11 @@ class Vector:
     def get_name(self):
         return self.name
 
+    def get_keywords(self):
+        """Return keywords dictionary
+        """
+        return self.keywords
+
     def get_caption(self):
         """Return 'caption' keyword if present. Otherwise ''.
         """
@@ -207,8 +219,19 @@ class Vector:
 
         basename, _ = os.path.splitext(filename)
 
-        # Always use basename without leading directories as name
-        self.name = os.path.split(basename)[-1]
+        # Look for any keywords
+        self.keywords = read_keywords(basename + '.keywords')
+
+        # Determine name
+        if 'title' in self.keywords:
+            vectorname = self.keywords['title']
+        else:
+            # Use basename without leading directories as name
+            vectorname = os.path.split(basename)[-1]
+
+        self.name = vectorname
+        self.filename = filename
+
 
         fid = ogr.Open(filename)
         if fid is None:
@@ -265,7 +288,7 @@ class Vector:
                                                 dtype='d',
                                                 copy=False))
                 else:
-                    msg = ('Only point geometries are supported. '
+                    msg = ('Only point and polygon geometries are supported. '
                            'Geometry in filename %s '
                            'was %s.' % (filename,
                                         G.GetGeometryType()))
@@ -289,16 +312,18 @@ class Vector:
         # Store geometry coordinates as a compact numeric array
         self.geometry = geometry
         self.data = data
-        self.filename = filename
 
-        # Look for any keywords
-        self.keywords = read_keywords(basename + '.keywords')
 
     def write_to_file(self, filename):
         """Save vector data to file
 
         Input
             filename: filename with extension .shp or .gml
+
+        Note, if attribute names are longer than 10 characters they will be
+        truncated. This is due to limitations in the shp file driver and has
+        to be done here since gdal v1.7 onwards has changed its handling of
+        this issue: http://www.gdal.org/ogr/drv_shapefile.html
         """
 
         # Check file format
@@ -322,6 +347,7 @@ class Vector:
         # Get vector data
         geometry = self.get_geometry()
         data = self.get_data()
+
         N = len(geometry)
 
         # Clear any previous file of this name (ogr does not overwrite)
@@ -379,9 +405,7 @@ class Vector:
             # Create attribute fields in layer
             store_attributes = True
             for name in fields:
-
                 fd = ogr.FieldDefn(name, ogrtypes[name])
-
                 # FIXME (Ole): Trying to address issue #16
                 #              But it doesn't work and
                 #              somehow changes the values of MMI in test
@@ -389,15 +413,21 @@ class Vector:
                 #print name, width
                 #fd.SetWidth(width)
 
+                # Silent handling of warnings like
+                # Warning 6: Normalized/laundered field name:
+                #'CONTENTS_LOSS_AUD' to 'CONTENTS_L'
+                gdal.PushErrorHandler('CPLQuietErrorHandler')
                 if lyr.CreateField(fd) != 0:
                     msg = 'Could not create field %s' % name
                     raise Exception(msg)
+
+                # Restore error handler
+                gdal.PopErrorHandler()
 
         # Store geometry
         geom = ogr.Geometry(self.geometry_type)
         layer_def = lyr.GetLayerDefn()
         for i in range(N):
-
             # Create new feature instance
             feature = ogr.Feature(layer_def)
 
@@ -407,10 +437,10 @@ class Vector:
                 y = float(geometry[i][1])
                 geom.SetPoint_2D(0, x, y)
             elif self.geometry_type == ogr.wkbPolygon:
-                wkt = array2wkt(geometry[i])
+                wkt = array2wkt(geometry[i], geom_type='POLYGON')
                 geom = ogr.CreateGeometryFromWkt(wkt)
             else:
-                msg = 'Geometry %s not implemented' % self.geometry_type
+                msg = 'Geometry type %s not implemented' % self.geometry_type
                 raise Exception(msg)
 
             feature.SetGeometry(geom)
@@ -422,8 +452,18 @@ class Vector:
 
             # Store attributes
             if store_attributes:
-                for name in fields:
-                    feature.SetField(name, data[i][name])
+                for j, name in enumerate(fields):
+                    actual_field_name = layer_def.GetFieldDefn(j).GetNameRef()
+
+                    val = data[i][name]
+                    if type(val) == numpy.ndarray:
+                        # A singleton of type <type 'numpy.ndarray'> works
+                        # for gdal version 1.6 but fails for version 1.8
+                        # in SetField with error: NotImplementedError:
+                        # Wrong number of arguments for overloaded function
+                        val = float(val)
+
+                    feature.SetField(actual_field_name, val)
 
             # Save this feature
             if lyr.CreateFeature(feature) != 0:
@@ -456,6 +496,7 @@ class Vector:
         If optional argument index is specified on the that value will
         be returned. Any value of index is ignored if attribute is None.
         """
+
         if hasattr(self, 'data'):
             if attribute is None:
                 return self.data
@@ -493,7 +534,7 @@ class Vector:
         -----------------------------
         point             coordinates (Nx2 array of longitudes and latitudes)
         line              TODO
-        polygon           TODO
+        polygon           list of arrays of coordinates
 
         """
         return self.geometry
@@ -596,3 +637,38 @@ class Vector:
     @property
     def is_polygon_data(self):
         return self.is_vector and self.geometry_type == ogr.wkbPolygon
+
+
+#----------------------------------
+# Helper functions for class Vector
+#----------------------------------
+
+def convert_polygons_to_centroids(V):
+    """Convert polygon vector data to point vector data
+
+    Input
+        V: Vector layer with polygon data
+
+    Output
+        Vector layer with point data and the same attributes as V
+    """
+
+    msg = 'Input data %s must be polygon vector data' % V
+    assert V.is_polygon_data, msg
+
+    geometry = V.get_geometry()
+    N = len(V)
+
+    # Calculate centroids for each polygon
+    centroids = []
+    for i in range(N):
+        c = calculate_polygon_centroid(geometry[i])
+        centroids.append(c)
+
+    # Create new point vector layer with same attributes and return
+    V = Vector(data=V.get_data(),
+               projection=V.get_projection(),
+               geometry=centroids,
+               name='%s_centroid_data' % V.get_name(),
+               keywords=V.get_keywords())
+    return V

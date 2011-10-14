@@ -45,11 +45,12 @@ vulnerability_map = {('unreinforced_masonry', 'tin'): 'weak',
 class HOTEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for earthquake damage to buildings
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("earthquake") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building")
+    :param requires category=='hazard' and \
+                    subcategory.startswith('earthquake') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building') and \
+                    never=='nothing'
     """
 
     @staticmethod

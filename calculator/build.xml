@@ -38,9 +38,8 @@
         <exec executable="git" dir="${build}/buildkit" failonerror="true">
             <arg line="checkout 86eacbd7b3bf62b8e99f46911dd5a633464b8570"/>
         </exec>
-
         <echo message="pulling in js dependencies"/>
-        <get src="https://github.com/openlayers/openlayers/zipball/4d1ac13a36beecac5bf7d6c97d357be1e17cf7c0" dest="${build}/openlayers.zip"/>
+        <get src="https://github.com/openlayers/openlayers/zipball/master" dest="${build}/openlayers.zip"/>
         <unzip src="${build}/openlayers.zip" dest="${externals}"/>
         <exec executable="sh" dir="${externals}" failonerror="true">
           <arg line="-c 'rm -Rf openlayers &amp;&amp; mv openlayers-openlayers-* openlayers'"/>

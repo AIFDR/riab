@@ -16,7 +16,10 @@ sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
 echo ">>> Installing Ubuntu packages"
 # Python development prerequisites
-sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext python-psycopg2 ttf-mscorefonts-installer
+sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext python-psycopg2
+
+# Install Microsoft fonts needed for custom icons, does not work in Lucid.
+sudo apt-get install -y ttf-mscorefonts-installer
 
 # Java development prerequisites, make sure to use this line with --no-install-recommends
 # the ant package behaves badly and wants to install gcj.
@@ -35,7 +38,7 @@ then
     echo "You already have RIAB_HOME in your ~/.bash_aliases"
 else
     echo "export RIAB_HOME=`pwd`" >> ~/.bash_aliases
-    echo 'alias risiko-activate="source $RIAB_HOME/riab_env/bin/activate;echo Risk In a Box virtual environment activated. Available commands are:; echo;echo risiko-test risiko-start risiko-stop risiko-clean risiko-upload risiko-populate;echo"' >> ~/.bash_aliases
+    echo 'alias risiko-activate="source $RIAB_HOME/riab_env/bin/activate;echo Risk In a Box virtual environment activated. Available commands are:; echo;echo risiko-test risiko-start risiko-stop risiko-clean risiko-upload risiko-populate risiko-uninstall;echo"' >> ~/.bash_aliases
     echo 'source $RIAB_HOME/riab/extras/django_bash_completion' >> ~/.bash_aliases
     echo "Adding RIAB_HOME, RIAB_DATA and risiko-<commands> to your ~/.bash_aliases"
 fi

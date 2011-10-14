@@ -67,18 +67,28 @@ class Test_HTTP(unittest.TestCase):
 
         # Run calculation through API
         c = Client()
-        rv = c.post('/impact/api/calculate/', dict(
-                   hazard_server=INTERNAL_SERVER_URL,
-                   hazard='geonode:earthquake_ground_shaking',
-                   exposure='geonode:population_2010_clip',
-                   exposure_server=INTERNAL_SERVER_URL,
-                   bbox='99.36,-2.199,102.237,0.00',
-                   impact_function='Earthquake Fatality Function',
-                   keywords='test,earthquake,fatality',
-            ))
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
+        rv = c.post('/impact/api/calculate/',
+                    dict(hazard_server=INTERNAL_SERVER_URL,
+                         hazard='geonode:earthquake_ground_shaking',
+                         exposure='geonode:population_2010_clip',
+                         exposure_server=INTERNAL_SERVER_URL,
+                         bbox='99.36,-2.199,102.237,0.00',
+                         impact_function='Earthquake Fatality Function',
+                         keywords='test,earthquake,fatality'))
+
+        msg = 'Expected status code 200, got %i' % rv.status_code
+        self.assertEqual(rv.status_code, 200), msg
+
+        msg = ('Expected Content-Type "application/json", '
+               'got %s' % rv['Content-Type'])
+        self.assertEqual(rv['Content-Type'], 'application/json'), msg
+
         data = json.loads(rv.content)
+
+        if data['stacktrace'] is not None:
+            msg = data['stacktrace']
+            raise Exception(msg)
+
         assert 'hazard_layer' in data.keys()
         assert 'exposure_layer' in data.keys()
         assert 'run_duration' in data.keys()
@@ -121,9 +131,20 @@ class Test_HTTP(unittest.TestCase):
                    impact_function='Earthquake Building Damage Function',
                    keywords='test,schools,lembang',
         ))
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
+
+        msg = 'Expected status code 200, got %i' % rv.status_code
+        self.assertEqual(rv.status_code, 200), msg
+
+        msg = ('Expected Content-Type "application/json", '
+               'got %s' % rv['Content-Type'])
+        self.assertEqual(rv['Content-Type'], 'application/json'), msg
+
         data = json.loads(rv.content)
+
+        if data['stacktrace'] is not None:
+            msg = data['stacktrace']
+            raise Exception(msg)
+
         assert 'hazard_layer' in data.keys()
         assert 'exposure_layer' in data.keys()
         assert 'run_duration' in data.keys()

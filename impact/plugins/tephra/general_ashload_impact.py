@@ -8,12 +8,12 @@ from impact.storage.vector import Vector
 class TephraImpactFunction(FunctionProvider):
     """Risk plugin for tephra damage (FIXME: Origin?)
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("tephra") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building") and \
-                    layer_type=="feature"
+    :param requires category=='hazard' and \
+                    subcategory.startswith('tephra') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building') and \
+                    layer_type=='vector'
     """
 
     @staticmethod

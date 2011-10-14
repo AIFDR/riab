@@ -10,13 +10,13 @@ class FloodImpactFunction(FunctionProvider):
 
     :author HKV
     :rating 1
-    :param requires category=="hazard" and \
-                    subcategory.startswith("flood") and \
-                    layer_type=="raster" and \
-                    unit=="m"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("population") and \
-                    layer_type=="raster"
+    :param requires category=='hazard' and \
+                    subcategory.startswith('flood') and \
+                    layer_type=='raster' and \
+                    unit=='m'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('population') and \
+                    layer_type=='raster'
     """
 
     @staticmethod
