@@ -22,7 +22,7 @@ System Requirements
  - The platform is using the default /etc/sources.list as it comes in a fresh Ubuntu installation. You may want to change this to a local mirror if the internet connection is slow (see e.g. https://help.ubuntu.com/community/Repositories/CommandLine) for details.
  - The user installing and running Risiko has administrator rights (using the sudo)
 
-.. sec-quick-start::
+.. _sec-quick-start:
 
 ------------------------
 Development installation
