@@ -212,7 +212,7 @@ If you now go to your local Riskio install (by default 127.0.0.1:8000) you can s
 * Earthquake ground shaking
 * Glp10ag (Population for Indonesia)
 
-.. note:: If you don't see any demo data please follow the quick start instructions :ref:`sec-quick-start`_
+.. note:: If you don't see any demo data please follow the quick start instructions :ref:`sec-quick-start`.
 
 
 You should see your impact function in the fuction selection box as `Simple Impact Earthquake Function`. The name comes from the plugin class name.
