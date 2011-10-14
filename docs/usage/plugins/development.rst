@@ -209,6 +209,8 @@ Testing the plugin
 
 If you now go to your local Riskio install (by default 127.0.0.1:8000) you can select the following from the demo data:
 
+Earthquake ground shaking
+
 .. note:: If you don't see any demo data please follow the quick start instructions :ref:`sec-quick-start`
 
 
