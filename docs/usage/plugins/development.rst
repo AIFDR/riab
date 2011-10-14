@@ -212,7 +212,7 @@ If you now go to your local Riskio install (by default 127.0.0.1:8000) you can s
 * Earthquake ground shaking
 * Glp10ag (Population for Indonesia)
 
-.. figure:: images/plugin_tutorial01_1.png
+.. figure:: /images/plugin_tutorial01_1.png
 	:scale: 100 %
         
         The parameter selection box
@@ -223,7 +223,7 @@ You should see your impact function in the fuction selection box as `Simple Impa
 The Plugin name shown here is derived from the plugin class name SimpleImpactEarthquakeFunction.
 
 
-.. figure:: images/plugin_tutorial01_2.png
+.. figure:: /images/plugin_tutorial01_2.png
 	:scale: 100 %
         
         The demo data for the hazard and population shown
@@ -233,14 +233,14 @@ Then click on calculate.
 
 If after a few seconds you see the impact calculated as a new layer showing estimated fatalities then, congratulation!
 
-.. figure:: images/plugin_tutorial01_4.png
+.. figure:: /images/plugin_tutorial01_4.png
 	:scale: 100 %
         
         The fatality impact calculated using our simple impact function 
 
 If you get an error please check you have carefully followed the instructions above (`Installing the plugin`_).
 
-.. figure:: images/plugin_tutorial01_5.png
+.. figure:: /images/plugin_tutorial01_5.png
 	:scale: 100 %
         
         What a syntax error in the plugin looks like
