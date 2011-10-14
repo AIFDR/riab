@@ -1,3 +1,24 @@
+"""Impact function based on Padang 2009 post earthquake survey
+
+This impact function estimates percentual damage to buildings as a
+function of ground shaking measured in MMI.
+Buildings are assumed to fall the 9 classes below as described in
+the Geoscience Australia/ITB 2009 Padang earthquake
+survey (http://trove.nla.gov.au/work/38470066).
+
+Class Building Type                              Median (MMI)  Beta (MMI)
+-------------------------------------------------------------------------
+1     URM with river rock walls                        7.5     0.11
+2     URM with Metal Roof                              8.3     0.1
+3     Timber frame with masonry in-fill                8.8     0.11
+4     RC medium rise Frame with Masonry in-fill walls  8.4     0.05
+5     Timber frame with stucco in-fill                 9.2     0.11
+6     Concrete Shear wall  high rise* Hazus C2H        9.7     0.15
+7     RC low rise Frame with Masonry in-fill walls     9       0.08
+8     Confined Masonry                                 8.9     0.07
+9     Timber frame residential                        10.5     0.15
+"""
+
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
@@ -5,43 +26,51 @@ from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
 from impact.plugins.utilities import PointSymbol
+from impact.plugins.mappings import osm2padang
 import scipy.stats
+
+
+# Damage curves for each of the nine classes derived from the Padang survey
+damage_curves = {'1': dict(median=7.5, beta=0.11),
+                 '2': dict(median=8.3, beta=0.1),
+                 '3': dict(median=8.8, beta=0.11),
+                 '4': dict(median=8.4, beta=0.05),
+                 '5': dict(median=9.2, beta=0.11),
+                 '6': dict(median=9.7, beta=0.15),
+                 '7': dict(median=9.0, beta=0.08),
+                 '8': dict(median=8.9, beta=0.07),
+                 '9': dict(median=10.5, beta=0.15)}
 
 
 class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for Padang earthquake damage to buildings
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("earthquake") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building")
+    :param requires category=='hazard' and \
+                    subcategory.startswith('earthquake') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building') and \
+                    layer_type=='vector'
     """
-
-    target_field = 'DAMAGE'
-    symbol_field = 'USE_MAJOR'
 
     def run(self, layers):
         """Risk plugin for earthquake school damage
         """
-
-        damage_curves = {
-                   '1': dict(median=7.5, beta=0.11),
-                   '2': dict(median=8.3, beta=0.1),
-                   '3': dict(median=8.8, beta=0.11),
-                   '4': dict(median=8.4, beta=0.05),
-                   '5': dict(median=9.2, beta=0.11),
-                   '6': dict(median=9.7, beta=0.15),
-                   '7': dict(median=9, beta=0.08),
-                   '8': dict(median=8.9, beta=0.07),
-                   '9': dict(median=10.5, beta=0.15),
-                  }
 
         # Extract data
         # FIXME (Ole): This will be replaced by a helper function
         #              to separate hazard from exposure using keywords
         H = layers[0]  # Ground shaking
         E = layers[1]  # Building locations
+
+        # FIXME (Ole): Not very robust way of deciding
+        # Need keyword identifier for each kind of building dataset.
+        if E.get_name().lower().startswith('osm'):
+            # Map from OSM attributes to the padang building classes
+            E = osm2padang(E)
+            vclass_tag = 'VCLASS'
+        else:
+            vclass_tag = 'TestBLDGCl'
 
         # Interpolate hazard level to building locations
         H = H.interpolate(E)
@@ -58,17 +87,18 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         count50 = 0
         count25 = 0
         count10 = 0
+        count0 = 0
         building_damage = []
         for i in range(N):
             mmi = float(shaking[i].values()[0])
 
-            building_class = E.get_data('TestBLDGCl', i)
+            building_class = E.get_data(vclass_tag, i)
+
             building_type = str(int(building_class))
             damage_params = damage_curves[building_type]
-            percent_damage = scipy.stats.lognorm.cdf(
-                                        mmi,
-                                        damage_params['beta'],
-                                        scale=damage_params['median']) * 100
+            percent_damage = scipy.stats.lognorm.cdf(mmi,
+                                                     damage_params['beta'],
+                                                     scale=damage_params['median']) * 100
 
             # Collect shake level and calculated damage
             result_dict = {self.target_field: percent_damage,
@@ -82,6 +112,9 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
             building_damage.append(result_dict)
 
             # Calculate statistics
+            if percent_damage < 10:
+                count0 += 1
+
             if 10 <= percent_damage < 25:
                 count10 += 1
 
@@ -97,10 +130,12 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                     '   <tr></tr>'
                     '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
                     '</table>' % (_('Buildings'), _('Total'),
                                   _('All'), N,
+                                  _('No damage'), count0,
                                   _('Low damage'), count10,
                                   _('Medium damage'), count25,
                                   _('High damage'), count50))
@@ -114,6 +149,18 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         return V
 
     def generate_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+
+        if data.is_point_data:
+            return self.generate_point_style(data)
+        elif data.is_polygon_data:
+            return self.generate_polygon_style(data)
+        else:
+            msg = 'Unknown style %s' % str(data)
+            raise Exception(msg)
+
+    def generate_point_style(self, data):
         """Generates and SLD file based on the data values
         """
 
@@ -172,4 +219,111 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                       scales=dict(zip(scale_keys, scale_values)),
                       classifications=dict(zip(class_keys, class_values)))
 
+        # The styles are in $RIAB_HOME/riab/impact/templates/impact/styles
         return render_to_string('impact/styles/point_classes.sld', params)
+
+    def generate_polygon_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+
+        # FIXME (Ole): Return static style to start with: ticket #144
+        style = """<?xml version="1.0" encoding="UTF-8"?>
+<sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
+  <sld:NamedLayer>
+    <sld:Name>earthquake_impact</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>earthquake_impact</sld:Name>
+      <sld:Title/>
+      <sld:FeatureTypeStyle>
+        <sld:Name>name</sld:Name>
+        <sld:Rule>
+          <sld:Name>1</sld:Name>
+          <sld:Title>Low</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsLessThan>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>10</ogc:Literal>
+            </ogc:PropertyIsLessThan>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#CCCCCC</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#BCBCBC</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>2</sld:Name>
+          <sld:Title>Medium</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>10</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>%s</ogc:PropertyName>
+                <ogc:Literal>25</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FECC5C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#EEBC4C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>3</sld:Name>
+          <sld:Title>Medium</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>25</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>%s</ogc:PropertyName>
+                <ogc:Literal>50</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FD8D3C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#ED7D2C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>4</sld:Name>
+          <sld:Title>High</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>50</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#F31A1C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#E30A0C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+</sld:StyledLayerDescriptor>
+""" % ((self.target_field,) * 6)
+
+        return style

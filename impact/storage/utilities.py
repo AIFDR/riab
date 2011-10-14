@@ -8,10 +8,6 @@ from osgeo import ogr
 from tempfile import mkstemp
 from urllib2 import urlopen
 
-
-# The projection string depends on the gdal version
-DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
-
 # Spatial layer file extensions that are recognised in Risiko
 # FIXME: Perhaps add '.gml', '.zip', ...
 LAYER_TYPES = ['.shp', '.asc', '.tif', '.tiff', '.geotif', '.geotiff']
@@ -31,6 +27,16 @@ TYPE_MAP = {type(None): ogr.OFTString,  # What else should this be?
             type(numpy.array([0.0])[0]): ogr.OFTReal,  # numpy.float64
             type(numpy.array([[0.0]])[0]): ogr.OFTReal}  # numpy.ndarray
 
+# Templates for downloading layers through rest
+WCS_TEMPLATE = '%s?version=1.0.0' + \
+    '&service=wcs&request=getcoverage&format=GeoTIFF&' + \
+    'store=false&coverage=%s&crs=EPSG:4326&bbox=%s' + \
+    '&resx=%s&resy=%s'
+
+WFS_TEMPLATE = '%s?service=WFS&version=1.0.0' + \
+    '&request=GetFeature&typeName=%s' + \
+    '&outputFormat=SHAPE-ZIP&bbox=%s'
+
 
 # Miscellaneous auxiliary functions
 def unique_filename(**kwargs):
@@ -49,6 +55,83 @@ def unique_filename(**kwargs):
         pass
 
     return filename
+
+
+def truncate_field_names(data, n=10):
+    """Truncate field names to fixed width
+
+    Input
+        data: List of dictionary with names as keys. Can also be None.
+        n: Max number of characters allowed
+
+    Output
+        dictionary with same values as data but with keys truncated
+
+    THIS IS OBSOLETE AFTER OGR'S OWN FIELD NAME LAUNDERER IS USED
+    """
+
+    if data is None:
+        return None
+
+    N = len(data)
+
+    # Check if truncation is needed
+    need_to_truncate = False
+    for key in data[0]:
+        if len(key) > n:
+            need_to_truncate = True
+
+    if not need_to_truncate:
+        return data
+
+    # Go ahead and truncate attribute table for every entry
+    new = []
+    for i in range(N):
+        D = {}  # New dictionary
+        for key in data[i]:
+            x = key[:n]
+            if x in D:
+                msg = ('Truncated attribute name %s is duplicated: %s ' %
+                       (key, str(D.keys())))
+                raise Exception(msg)
+
+            D[x] = data[i][key]
+
+        new.append(D)
+
+    return new
+
+""" FIXME: The truncation method can be replaced with something like this
+
+>>> from osgeo import ogr
+>>> from osgeo import osr
+>>> drv = ogr.GetDriverByName('ESRI Shapefile')
+>>> ds = drv.CreateDataSource('shptest.shp')
+>>> lyr = ds.CreateLayer('mylyr', osr.SpatialReference(), ogr.wkbPolygon)
+>>> fd = ogr.FieldDefn('A slightly long name', ogr.OFTString)
+>>> lyr.CreateField(fd)
+Warning 6: Normalized/laundered field name: 'A slightly long name'
+to 'A slightly'
+0
+>>> layer_defn = lyr.GetLayerDefn()
+>>> last_field_idx = layer_defn.GetFieldCount() - 1
+>>> real_field_name = layer_defn.GetFieldDefn(last_field_idx).GetNameRef()
+>>> feature = ogr.Feature(layer_defn)
+>>> feature.SetField('A slightly', 'value')
+>>> real_field_name
+'A slightly'
+"""
+
+"""To suppress Warning 6:
+
+Yes, you can surround the CreateField() call with :
+
+gdal.PushErrorHandler('CPLQuietErrorHandler')
+...
+gdal.PopErrorHandler()
+
+
+"""
 
 
 # GeoServer utility functions
@@ -130,6 +213,7 @@ def read_keywords(filename):
                   string
     Output
         keywords: Dictionary of keyword, value pairs
+
     """
 
     # Input checks
@@ -163,7 +247,7 @@ def read_keywords(filename):
         else:
             val = None
 
-        keywords[key] = val
+        keywords[key] = val  # .replace(' ', '_')
     fid.close()
 
     return keywords
@@ -212,6 +296,10 @@ def geotransform2bbox(geotransform, columns, rows):
     Output
         bbox: Bounding box as a list of geographic coordinates
               [west, south, east, north]
+
+    Rows and columns are needed to determine eastern and northern bounds.
+    FIXME: Not sure if the pixel vs gridline registration issue is observed
+    correctly here. Need to check against gdal > v1.7
     """
 
     x_origin = geotransform[0]  # top left x
@@ -227,6 +315,26 @@ def geotransform2bbox(geotransform, columns, rows):
     maxy = y_origin
 
     return [minx, miny, maxx, maxy]
+
+
+def geotransform2resolution(geotransform):
+    """Convert geotransform to resolution
+
+    Input
+        geotransform: GDAL geotransform (6-tuple).
+                      (top left x, w-e pixel resolution, rotation,
+                      top left y, rotation, n-s pixel resolution).
+                      See e.g. http://www.gdal.org/gdal_tutorial.html
+
+    Output
+        resolution: grid spacing (resx, resy) in (positive) decimal
+                    degrees ordered as longitude first, then latitude.
+    """
+
+    x_res = geotransform[1]     # w-e pixel resolution
+    y_res = - geotransform[5]   # n-s pixel resolution (always negative)
+
+    return x_res, y_res
 
 
 def bbox_intersection(*args):
@@ -321,9 +429,18 @@ def get_geometry_type(geometry):
         geometry_type: Either ogr.wkbPoint or ogr.wkbPolygon
 
     If geometry type cannot be determined an Exception is raised.
-    There is no consistency check across all entries of the geometry list, only
-    the first element is used in this determination.
+
+    Note, there is no consistency check across all entries of the
+    geometry list, only the first element is used in this determination.
     """
+
+    msg = 'Argument geometry must be a sequence. I got %s ' % type(geometry)
+    assert is_sequence(geometry), msg
+
+    msg = ('The first element in geometry must be a sequence of length > 2. '
+           'I got %s ' % str(geometry[0]))
+    assert is_sequence(geometry[0]), msg
+    assert len(geometry[0]) >= 2, msg
 
     if len(geometry[0]) == 2:
         try:
@@ -399,6 +516,152 @@ def array2wkt(A, geom_type='POLYGON'):
 
     N = len(A)
     for i in range(N):
-        wkt_string += '%f %f, ' % tuple(A[i])  # Works for both lists and arrays
+        # Works for both lists and arrays
+        wkt_string += '%f %f, ' % tuple(A[i])
 
     return wkt_string[:-2] + ')' * n
+
+# Map of ogr numerical geometry types to their textual representation
+# FIXME (Ole): Some of them don't exist, even though they show up
+# when doing dir(ogr) - Why?:
+geometry_type_map = {ogr.wkbPoint: 'Point',
+                     ogr.wkbPoint25D: 'Point25D',
+                     ogr.wkbPolygon: 'Polygon',
+                     ogr.wkbPolygon25D: 'Polygon25D',
+                     #ogr.wkbLinePoint: 'LinePoint',  # ??
+                     ogr.wkbGeometryCollection: 'GeometryCollection',
+                     ogr.wkbGeometryCollection25D: 'GeometryCollection25D',
+                     ogr.wkbLineString: 'LineString',
+                     ogr.wkbLineString25D: 'LineString25D',
+                     ogr.wkbLinearRing: 'LinearRing',
+                     ogr.wkbMultiLineString: 'MultiLineString',
+                     ogr.wkbMultiLineString25D: 'MultiLineString25D',
+                     ogr.wkbMultiPoint: 'MultiPoint',
+                     ogr.wkbMultiPoint25D: 'MultiPoint25D',
+                     ogr.wkbMultiPolygon: 'MultiPolygon',
+                     ogr.wkbMultiPolygon25D: 'MultiPolygon25D',
+                     ogr.wkbNDR: 'NDR',
+                     ogr.wkbNone: 'None',
+                     ogr.wkbUnknown: 'Unknown'}
+
+
+def geometrytype2string(g_type):
+    """Provides string representation of numeric geometry types
+
+    FIXME (Ole): I can't find anything like this in ORG. Why?
+    """
+
+    if g_type in geometry_type_map:
+        return geometry_type_map[g_type]
+    else:
+        return 'Unknown geometry type: %i' % g_type
+
+
+def calculate_polygon_area(polygon, signed=False):
+    """Calculate the signed area of non-self-intersecting polygon
+
+    Input
+        polygon: Numeric array of points (longitude, latitude). It is assumed
+                 to be closed, i.e. first and last points are identical
+        signed: Optional flag deciding whether returned area retains its sign:
+                If points are ordered counter clockwise, the signed area
+                will be positive.
+                If points are ordered clockwise, it will be negative
+                Default is False which means that the area is always positive.
+
+    Output
+        area: Area of polygon (subject to the value of argument signed)
+
+    Sources
+        http://paulbourke.net/geometry/polyarea/
+        http://en.wikipedia.org/wiki/Centroid
+    """
+
+    # Make sure it is numeric
+    P = numpy.array(polygon)
+
+    msg = ('Polygon is assumed to consist of coordinate pairs. '
+           'I got second dimension %i instead of 2' % P.shape[1])
+    assert P.shape[1] == 2, msg
+
+    x = P[:, 0]
+    y = P[:, 1]
+
+    # Calculate 0.5 sum_{i=0}^{N-1} (x_i y_{i+1} - x_{i+1} y_i)
+    a = x[:-1] * y[1:]
+    b = y[:-1] * x[1:]
+
+    A = numpy.sum(a - b) / 2.
+
+    if signed:
+        return A
+    else:
+        return abs(A)
+
+
+def calculate_polygon_centroid(polygon):
+    """Calculate the centroid of non-self-intersecting polygon
+
+    Input
+        polygon: Numeric array of points (longitude, latitude). It is assumed
+                 to be closed, i.e. first and last points are identical
+
+    Sources
+        http://paulbourke.net/geometry/polyarea/
+        http://en.wikipedia.org/wiki/Centroid
+    """
+
+    # Make sure it is numeric
+    P = numpy.array(polygon)
+
+    # Normalise to ensure numerical accurracy.
+    # This requirement in backed by tests in test_io.py and without it
+    # centroids at building footprint level may get shifted outside the
+    # polygon!
+    P_origin = numpy.amin(P, axis=0)
+    P = P - P_origin
+
+    # Get area. This calculation could be incorporated to save time
+    # if necessary as the two formulas are very similar.
+    A = calculate_polygon_area(polygon, signed=True)
+
+    x = P[:, 0]
+    y = P[:, 1]
+
+    # Calculate
+    #Cx = sum_{i=0}^{N-1} (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+
+    # Calculate
+    # Cy = sum_{i=0}^{N-1} (y_i + y_{i+1})(x_i y_{i+1} - x_{i+1} y_i)/(6A)
+    a = x[:-1] * y[1:]
+    b = y[:-1] * x[1:]
+
+    cx = x[:-1] + x[1:]
+    cy = y[:-1] + y[1:]
+
+    Cx = numpy.sum(cx * (a - b)) / (6. * A)
+    Cy = numpy.sum(cy * (a - b)) / (6. * A)
+
+    # Translate back to real location
+    C = numpy.array([Cx, Cy]) + P_origin
+    return C
+
+
+def titelize(s):
+    """Convert string into title
+
+    This is better than the built-in method title() because
+    it leaves all uppercase words like UK unchanged.
+
+    Source http://stackoverflow.com/questions/1549641/
+           how-to-capitalize-the-first-letter-of-each-word-in-a-string-python
+    """
+
+    # Replace underscores with spaces
+    s = s.replace('_', ' ')
+
+    # Capitalise
+    #s = s.title()  # This will capitalize first letter force the rest down
+    s = ' '.join([w[0].upper() + w[1:] for w in s.split(' ')])
+
+    return s

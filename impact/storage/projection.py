@@ -3,6 +3,9 @@
 
 from osgeo import osr
 
+# The projection string depends on the gdal version
+DEFAULT_PROJECTION = '+proj=longlat +datum=WGS84 +no_defs'
+
 
 class Projection:
     """Represents projections associated with layers

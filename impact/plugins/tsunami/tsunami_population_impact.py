@@ -1,11 +1,8 @@
-from django.template.loader import render_to_string
+import numpy
+
 from impact.plugins.core import FunctionProvider
-from impact.storage.vector import Vector
+from impact.storage.raster import Raster
 from django.utils.translation import ugettext as _
-from impact.plugins.utilities import PointZoomSize
-from impact.plugins.utilities import PointClassColor
-from impact.plugins.utilities import PointSymbol
-import scipy.stats
 
 
 class TsunamiPopulationImpactFunction(FunctionProvider):
@@ -16,121 +13,100 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
                     layer_type=="raster"
     :param requires category=="exposure" and \
                     subcategory.startswith("population") and \
-                    layer_type=="feature"
+                    layer_type=="raster"
     """
-
-    target_field = 'AFFECTED'
 
     def run(self, layers):
         """Risk plugin for tsunami population
         """
 
-        # Extract data
-        # FIXME (Ole): This will be replaced by a helper function
-        #              to separate hazard from exposure using keywords
-        H = layers[0]  # Depth
-        E = layers[1]  # Building locations
+        thresholds = [0.2, 0.3, 0.5, 0.8, 1.0]
+        #threshold = 1  # Depth above which people are regarded affected [m]
 
-        # Interpolate hazard level to building locations
-        H = H.interpolate(E)
+        # Identify hazard and exposure layers
+        inundation = layers[0]  # Tsunami inundation [m]
+        population = layers[1]  # Population density
 
-        # Extract relevant numerical data
-        coordinates = E.get_geometry()
-        depth = H.get_data()
-        N = len(depth)
+        # Get actual resolution
+        resolution = population.get_resolution(isotropic=True)
 
-        # List attributes to carry forward to result layer
-        attributes = E.get_attribute_names()
+        # Extract data as numeric arrays
+        D = inundation.get_data(nan=0.0)  # Depth
+        P = population.get_data(nan=0.0)  # Population density
 
-        #print attributes
-        #print 'Number of population points', N
+        # Calculate impact as population exposed to depths > 1m
+        I_map = numpy.where(D > thresholds[-1], P, 0)
 
-        # Calculate population impact
-        count = 0
-        population_impact = []
-        for i in range(N):
-            dep = float(depth[i].values()[0])
-            pop = E.get_data('GRID_CODE', i)
-            pointid = E.get_data('POINTID', i)
+        # Generate text with result for this study
+        number_of_people_affected = sum(I_map.flat)
 
-            if dep > 1:
-                affected = 99.5
-            else:
-                affected = 0
-
-            #if pointid == 263:
-            #    print i, pointid, dep, pop, affected
-
-            # Collect depth and calculated damage
-            result_dict = {'AFFECTED': affected,
-                           'DEPTH': dep}
-
-            # Carry all original attributes forward
-            for key in attributes:
-                result_dict[key] = E.get_data(key, i)
-
-            # Record result for this feature
-            population_impact.append(result_dict)
-
-            # Calculate statistics
-            if affected > 99:
-                count += pop
+        # Do breakdown
 
         # Create report
-        caption = ('Number of people affected by tsunami inundation greater '
-                   'than 1 m = %i' % count)
+        caption = ('<table border="0" width="320px">'
+                   '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
+                   '   <tr></tr>' % ('Ambang batas', 'Jumlah orang terdampak'))
 
-        #print population_impact
-        # Create vector layer and return
-        V = Vector(data=population_impact,
-                   projection=E.get_projection(),
-                   geometry=coordinates,
-                   name='Estimated population affected',
+        counts = []
+        for i, threshold in enumerate(thresholds):
+            I = numpy.where(D > threshold, P, 0)
+            counts.append(sum(I.flat))
+
+            caption += '   <tr><td>%s m</td><td>%i</td></tr>' % (threshold,
+                                                                 counts[i])
+
+        caption += '</table>'
+
+        # Create raster object and return
+        R = Raster(I_map,
+                   projection=inundation.get_projection(),
+                   geotransform=inundation.get_geotransform(),
+                   name='People affected by more than 1m of inundation',
                    keywords={'caption': caption})
-        return V
+        return R
 
     def generate_style(self, data):
         """Generates and SLD file based on the data values
         """
-        DEFAULT_SYMBOL = 'ttf://Webdings#0x0067'
 
-        symbol_field = None
-        symbol_keys = [None, '']
-        symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
+        s = """<?xml version="1.0" encoding="UTF-8"?>
+<sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
+  <sld:NamedLayer>
+    <sld:Name>People affected by more than 1m of inundation</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>People affected by more than 1m of inundation</sld:Name>
+      <sld:Title>People Affected By More Than 1m Of Inundation</sld:Title>
+      <sld:Abstract>People Affected By More Than 1m Of Inundation</sld:Abstract>
+      <sld:FeatureTypeStyle>
+        <sld:Name>People affected by more than 1m of inundation</sld:Name>
+        <sld:Rule>
+          <sld:RasterSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:ChannelSelection>
+              <sld:GrayChannel>
+                <sld:SourceChannelName>1</sld:SourceChannelName>
+              </sld:GrayChannel>
+            </sld:ChannelSelection>
+            <sld:ColorMap>
+              <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-9999.0"/>
+              <sld:ColorMapEntry color="#38A800" opacity="0" quantity="0.01"/>
+              <sld:ColorMapEntry color="#38A800" quantity="0.02"/>
+              <sld:ColorMapEntry color="#79C900" quantity="0.05"/>
+              <sld:ColorMapEntry color="#CEED00" quantity="0.1"/>
+              <sld:ColorMapEntry color="#FFCC00" quantity="0.2"/>
+              <sld:ColorMapEntry color="#FF6600" quantity="0.3"/>
+              <sld:ColorMapEntry color="#FF0000" quantity="0.5"/>
+              <sld:ColorMapEntry color="#7A0000" quantity="0.9"/>
+            </sld:ColorMap>
+          </sld:RasterSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+</sld:StyledLayerDescriptor>
 
-        scale_keys = [10000000000, 10000000, 5000000,
-                      1000000, 500000, 250000, 100000]
-        scale_values = [8, 8, 8, 8, 8, 8, 8]
+        """
 
-        class_keys = ['No Damage', '90-100']
-        class_values = [{'min': 0, 'max': 90,
-                         'color': '#cccccc', 'opacity': '0'},
-                        {'min': 90, 'max': 100,
-                         'color': '#e31a1c', 'opacity': '1'}]
-
-        if self.symbol_field in data.get_attribute_names():
-            symbol_field = self.symbol_field
-
-            symbol_keys.extend(['Church/Mosque', 'Commercial (office)',
-                                'Hotel',
-                                'Medical facility', 'Other',
-                                'Other industrial',
-                                'Residential', 'Retail', 'School',
-                                'Unknown', 'Warehouse'])
-
-            symbol_values.extend([DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL,
-                                  DEFAULT_SYMBOL, DEFAULT_SYMBOL])
-
-        params = dict(name=data.get_name(),
-                      damage_field=self.target_field,
-                      symbol_field=symbol_field,
-                      symbols=dict(zip(symbol_keys, symbol_values)),
-                      scales=dict(zip(scale_keys, scale_values)),
-                      classifications=dict(zip(class_keys, class_values)))
-
-        return render_to_string('impact/styles/point_classes.sld', params)
+        return s

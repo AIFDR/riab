@@ -53,12 +53,13 @@ contents_damage_curve = Damage_curve([[-MAXFLOAT, 0.0],
 class TsunamiBuildingLossFunction(FunctionProvider):
     """Risk plugin for earthquake damage based on empirical results
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("tsunami") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("building") and \
-                    layer_type=="feature"
+    :param requires category=='hazard' and \
+                    subcategory.startswith('tsunami') and \
+                    layer_type=='raster'
+    :param requires category=='exposure' and \
+                    subcategory.startswith('building') and \
+                    layer_type=='vector' and \
+                    nothing=='never'
     """
 
     @staticmethod

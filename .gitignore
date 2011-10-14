@@ -12,6 +12,7 @@ pylint.err
 pylint.output
 risiko.egg-info/
 risiko/development.db
+risiko/development.db-journal
 extras/.vagrant
 calculator/build/
 calculator/app/static/externals/openlayers

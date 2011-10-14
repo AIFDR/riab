@@ -213,7 +213,7 @@ class Test_plugins(unittest.TestCase):
         # get_layer_descriptors. FIXME: I think we should change this to be
         # a dictionary of metadata entries (ticket #126).
         reference = [['geonode:lembang_schools',
-                      {'layer_type': 'feature',
+                      {'layer_type': 'vector',
                        'category': 'exposure',
                        'subcategory': 'building',
                        'title': 'lembang_schools'}],
@@ -228,9 +228,14 @@ class Test_plugins(unittest.TestCase):
 
             i = [x[0] for x in metadata].index(name)
 
-            assert name == metadata[i][0]
+            msg = 'Got name %s, expected %s' % (name, metadata[i][0])
+            assert name == metadata[i][0], msg
             for key in entry[1]:
-                assert entry[1][key] == metadata[i][1][key]
+                refval = entry[1][key]
+                val = metadata[i][1][key]
+                msg = ('Got value "%s" for key "%s" '
+                       'Expected "%s"' % (val, key, refval))
+                assert refval == val, msg
 
         # Check plugins are returned
         annotated_plugins = [{'name': name,

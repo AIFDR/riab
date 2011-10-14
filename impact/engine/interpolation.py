@@ -7,6 +7,7 @@ ordering of dimensions between raster files and numpy arrays.
 import numpy
 from scipy.interpolate import RectBivariateSpline
 from impact.storage.vector import Vector
+from impact.storage.vector import convert_polygons_to_centroids
 
 
 def raster_spline(longitudes, latitudes, values):
@@ -87,7 +88,7 @@ class Interpolator:
         return self.F(lat, lon)
 
 
-def interpolate_raster_vector(R, V, name=None):
+def interpolate_raster_vector_points(R, V, name=None):
     """Interpolate from raster layer to point data
 
     Input
@@ -142,3 +143,32 @@ def interpolate_raster_vector(R, V, name=None):
 
     return Vector(data=attributes, projection=V.get_projection(),
                   geometry=coordinates)
+
+
+def interpolate_raster_vector(R, V, name=None):
+    """Interpolate from raster layer to vector data
+
+    Input
+        R: Raster data set (grid)
+        V: Vector data set (points or polygons)
+        name: Name for new attribute.
+              If None (default) the name of R is used
+
+    Output
+        I: Vector data set; points located as V with values interpolated from R
+
+    Note: If target geometry is polygon, data will be interpolated to
+    its centroids and the output is a point data set.
+    """
+
+    # Input checks
+    assert R.is_raster
+    assert V.is_vector
+
+    if V.is_polygon_data:
+        # Use centroids, in case of polygons
+        P = convert_polygons_to_centroids(V)
+    else:
+        P = V
+
+    return interpolate_raster_vector_points(R, P, name=name)
