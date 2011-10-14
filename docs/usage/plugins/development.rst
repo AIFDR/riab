@@ -150,17 +150,17 @@ The whole plugin file will now read::
     from impact.storage.raster import Raster
 
     class SimpleImpactEarthquakeFunction(FunctionProvider):
-	   """Simple plugin for earthquake damage
+	    """Simple plugin for earthquake damage
 	
-	   :author Allen
-	   :rating 1
-	   :param requires category=='hazard' and \
-	          subcategory.startswith('earthquake') and \
-	          layer_type=='raster'
-	   :param requires category=='exposure' and \
-	          subcategory.startswith('population') and \
-	          layer_type=='raster'
-	        """
+	    :author Allen
+	    :rating 1
+	    :param requires category=='hazard' and \
+	                    subcategory.startswith('earthquake') and \
+	                    layer_type=='raster'
+	    :param requires category=='exposure' and \
+	                    subcategory.startswith('population') and \
+	                    layer_type=='raster'
+	    """
 
 	    @staticmethod
 	    def run(layers,
