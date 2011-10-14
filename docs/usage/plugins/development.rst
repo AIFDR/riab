@@ -216,7 +216,7 @@ If you now go to your local Riskio install (by default 127.0.0.1:8000) you can s
 .. figure:: /images/plugin_tutorial01_1.png
 	:scale: 100 %
         
-        **The parameter selection box.**
+        **Figure 1. The parameter selection box.**
 
 .. note:: If you don't see any demo data please follow the quick start instructions :ref:`sec-quick-start`.
 
@@ -227,7 +227,7 @@ The Plugin name shown here is derived from the plugin class name SimpleImpactEar
 .. figure:: /images/plugin_tutorial01_2.png
 	:scale: 100 %
         
-        **The demo data for the hazard and population shown.**
+        **Figure 2. The demo data for the hazard and population shown.**
 
 
 Then click on calculate. 
@@ -237,14 +237,14 @@ If, after a few seconds, you see a new layer appear showing estimated fatalities
 .. figure:: /images/plugin_tutorial01_4.png
 	:scale: 100 %
         
-        **The fatality impact calculated using our simple impact function **
+        **Figure 3. The fatality impact calculated using our simple impact function**
 
 If you get an error please check you have carefully followed the instructions above (`Installing the plugin`_).
 
 .. figure:: /images/plugin_tutorial01_5.png
 	:scale: 100 %
         
-        **An example syntax error in the plugin.**
+        **Figure 4. An example syntax error in the plugin.**
 
 .. note:: FIXME: Include some information about the error logging file 
 
