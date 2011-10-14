@@ -193,10 +193,14 @@ The entire plugin file is now::
 
 If this is saved as SimpleImpactEarthquakeFunction.py
 
-Put the code in the plugins/earthquake directory. Restart Risiko using::
+Since its an earthquake plugin save the code into the following directory:
+	[root risiko dir]/riab/riab/impact/plugins/earthquake directory. 
+
+Then restart Risiko using:
 
 	risiko-stop
 	risiko-start
+
 
 Testing the plugin
 ++++++++++++++++++
