@@ -17,15 +17,15 @@ Risiko plugin system are:
 * Provide uptodate documentation on plugin functionality
 
 For details about the internal workings of the plugin subsystem please consult the developers guide in section :ref:`sec-plugin-manager`. 
-There are also many examples in section showing plugins used for earthquake, tusnami and flood which can act as templates for your own plugins.  
+There are also many examples in this section showing plugins used for earthquake, tusnami and flood which can act as templates for your own plugins.  
 
-------------------------------------
-Writing a Simple Plugin: Tutorial 01
-------------------------------------
+-------------------------------------------
+Writing a Simple Raster Plugin: Tutorial 01
+-------------------------------------------
 
-This section provides a quick tutorial on how to write a very impact plugin from scratch.
+This section provides a beginners tutorial on writing a simple earthquke impact plugin from scratch.
 
-Our first plugin we want to calculate a simple impact by using the following function of 
+For this plugin we want to calculate a simple impact by using the following function of 
 the severity of hazard (i.e. the amount of ground shaking - H) by the exposure 
 (i.e. the number of people in that area - P). e.g.::
 
@@ -51,8 +51,8 @@ Manager to know what plugins are available.
 Impact Parameters
 +++++++++++++++++
 
-Each plugin needs to be used in the correct context. Using a flood impact function for earthquakes may yield misleading
-results at best. As such pugins may have a variety of conditions that need to be met before they can be run. Such conditions
+Each plugin needs to be used in the correct context. Using a flood impact function for earthquakes will likely yield misleading
+results at best! As such pugins may have a variety of conditions that need to be met before they can be run. Such conditions
 may include:
 
 * The type of hazard
@@ -63,6 +63,7 @@ In the future plugins may also support filtering by:
 * The geographic location
 * The avaliable layer meta data
 
+Risiko will try to show users only those plugins that can be validly run.
 
 These parameters required to run the plugin, and indeed all parameters specific to the plugin, 
 are defined in the doc string of the class::
@@ -198,17 +199,18 @@ Put the code in the plugins/earthquake directory. Restart Risiko using::
 Testing the plugin
 ++++++++++++++++++
 
-Put the code in ......
+
+If you now go to your local Riskio install (by default 127.0.0.1:8000) you can select the following from the demo data:
+
+.. note:: If you don't see any demo data please follow the quick start instructions 
 
 
 .. warning:: One major gotcha with the plugins is that the files they are in must be imported as part of the module hierarchy consideration. This is done automatically on restart so you will need to restart Risiko to see any new plugins added.
 
-.. note:: As the doc string is exec'ed as part of the requirements check it could be that security issues would be exposed. However it should be noted that if one can change the docstring, then any other malicious code injection would also be possible. The only objection then is that it is less noticeable in the doc string.
 
-
-------------------------------------
-Writing a Simple Plugin: Tutorial 02
-------------------------------------
+-------------------------------------------
+Writing a Simple Vector Plugin: Tutorial 02
+-------------------------------------------
 
 
 [https://github.com/AIFDR/riab/blob/develop/docs/usage/plugins/development.rst]
