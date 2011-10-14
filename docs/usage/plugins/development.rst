@@ -217,11 +217,10 @@ If you now go to your local Riskio install (by default 127.0.0.1:8000) you can s
 
 You should see your impact function in the fuction selection box as `Simple Impact Earthquake Function`. The name comes from the plugin class name.
 
-Then click on calculate. Congratulations after a few seconds you should see the impact calculated as a new layer showing estimated fatalities.
+Then click on calculate. 
+
+If after a few seconds you see the impact calculated as a new layer showing estimated fatalities then, congratulation!
 If you get an error please check you have carefully followed the instructions above (`Installing the plugin`_).
-
-
-.. warning:: One major gotcha with the plugins is that the files they are in must be imported as part of the module hierarchy consideration. This is done automatically on restart so you will need to restart Risiko to see any new plugins added.
 
 
 -------------------------------------------
