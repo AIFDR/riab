@@ -6,7 +6,7 @@ Plugin Development
 Introduction
 ------------
 
-Risiko contains a plugin system that allows complex impact functions to be implemented whilst (ideally) minimizing
+Risiko contains a plugin system that allows complex impact functions to be implemented in Python (http://www.python.org) whilst (ideally) minimizing
 the need to understand all the complexity of the handling the hazard and exposure layers. Features of the 
 Risiko plugin system are:
 
@@ -23,7 +23,7 @@ There are also many examples in this section showing plugins used for earthquake
 Writing a Simple Raster Plugin: Tutorial 01
 -------------------------------------------
 
-This section provides a beginners tutorial on writing a simple earthquke impact plugin from scratch.
+This section provides a beginners tutorial on writing a simple earthquke impact plugin from scratch. You will need to be familiar with the basics of Python to be able to write and debug plugins - if you are new to Python the standard Python tutorial is a great place to start (http://docs.python.org/tutorial/).
 
 For this plugin we want to calculate a simple impact by using the following function of 
 the severity of hazard (i.e. the amount of ground shaking - H) by the exposure 
@@ -209,9 +209,16 @@ Testing the plugin
 
 If you now go to your local Riskio install (by default 127.0.0.1:8000) you can select the following from the demo data:
 
-Earthquake ground shaking
+* Earthquake ground shaking
+* Glp10ag (Population for Indonesia)
 
-.. note:: If you don't see any demo data please follow the quick start instructions :ref:`sec-quick-start`
+.. note:: If you don't see any demo data please follow the quick start instructions :ref:`sec-quick-start`_
+
+
+You should see your impact function in the fuction selection box as `Simple Impact Earthquake Function`. The name comes from the plugin class name.
+
+Then click on calculate. Congratulations after a few seconds you should see the impact calculated as a new layer showing estimated fatalities.
+If you get an error please check you have carefully followed the instructions above (`Installing the plugin`_).
 
 
 .. warning:: One major gotcha with the plugins is that the files they are in must be imported as part of the module hierarchy consideration. This is done automatically on restart so you will need to restart Risiko to see any new plugins added.
