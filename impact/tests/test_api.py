@@ -11,6 +11,7 @@ from geonode.maps.utils import get_valid_user
 from impact.storage.io import check_layer
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 
+from impact.tests.plugins import unspecific_building_impact_model
 
 class Test_HTTP(unittest.TestCase):
     """Test suite for API

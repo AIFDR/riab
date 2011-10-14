@@ -2,9 +2,6 @@ from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
 from impact.storage.vector import Vector
 
-# FIXME: This plugin is required for test_plugins.py
-
-
 class EarthquakeBuildingDamageFunction(FunctionProvider):
     """Risk plugin for earthquake damage to buildings
 

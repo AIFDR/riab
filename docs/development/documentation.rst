@@ -15,19 +15,19 @@ The documentation for this project is automatically made by the service Read-the
 
 .. note::
 
-    if Read-the-docs does not update this can be done manually from the dashboard at [http://readthedocs.org/dashboard/risiko/ or http://readthedocs.org/dashboard/risiko_dev/]. Click on the bottom button "Build Latest Version".
+    if Read-the-docs does not update this can be done manually from the dashboard at [http://readthedocs.org/projects/risiko or http://readthedocs.org/projects/risiko_dev]. Click on the bottom button "Build Latest Version".
 
 Development Documentation
 -------------------------
 
 You can edit the docs straight from the git repository or after checking the repository out, making changes and pushing these changes back to github.
 
-Changes reflected in the development branch [http://readthedocs.org/dashboard/risiko_dev/] can be found at http://risiko_dev.readthedocs.org.
+Changes reflected in the development branch [http://readthedocs.org/projects/risiko_dev] can be found at http://risiko_dev.readthedocs.org.
 
-Current Stable Version 
+Current Stable Version
 ----------------------
 
-Documentation in the master branch [http://readthedocs.org/dashboard/risiko/] can be found at http://risiko.readthedocs.org.
+Documentation in the master branch [http://readthedocs.org/projects/risiko/] can be found at http://risiko.readthedocs.org.
 
 
 Making the documentation
@@ -39,12 +39,12 @@ To manually make the documentation go to the Risiko docs directory and use...
    make html
 
 * For latex::
-  
+
    make latexpdf
 
 
-.. note:: 
-   
+.. note::
+
    In order to make the pdf documentation you will need to install the tex support. On Ubuntu you can use:
 
    sudo apt-get install texlive-full
@@ -52,13 +52,13 @@ To manually make the documentation go to the Risiko docs directory and use...
 
 To view the html documentation go to::
 
-   [your Riskio install path]/docs/.build/html/index.html
+   [your Risiko install path]/docs/.build/html/index.html
 
 For the pdf docs they are in::
 
-   [your Riskio install path]/docs/.build/latex/riab.pdf
+   [your Risiko install path]/docs/.build/latex/riab.pdf
 
- 
+
 
 Documentation Structure
 -----------------------

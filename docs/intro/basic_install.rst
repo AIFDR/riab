@@ -1,15 +1,14 @@
-
-
-
-============
-Installation
-============
+========================
+Quick-Start Installation
+========================
 
 This is the project: "Risiko - Risk in a Box".
 The latest source code is available in https://github.com/AIFDR/riab/tree/master/impact which contains modules for risk calculations, gis functionality and plugin management.
 
 For more information about Risk In a Box please look at
-our documentation on http://riab.readthedocs.org
+our documentation on http://risiko.readthedocs.org (for the current stable release) or http://risiko_dev.readthedocs.org (for the most recent development version)
+
+.. FIXME: Make ole link http://riab.readthedocs.org obsolete
 
 These are the instructions for installation of Risiko in development mode (for changing the software) and production mode (for deploying on a server).
 
@@ -19,10 +18,11 @@ System Requirements
 -------------------
 
  - A standard PC with at least 4GB of RAM.
- - The operating system is a recent version of Ubuntu Linux (http://www.ubuntu.com). Risiko has been tested on versions 10.04 and 10.10 (32 and 64 bit).
+ - The operating system is a recent version of Ubuntu Linux (http://www.ubuntu.com). Risiko has been tested on versions 10.04, 10.10 and 11.04 (32 and 64 bit).
  - The platform is using the default /etc/sources.list as it comes in a fresh Ubuntu installation. You may want to change this to a local mirror if the internet connection is slow (see e.g. https://help.ubuntu.com/community/Repositories/CommandLine) for details.
  - The user installing and running Risiko has administrator rights (using the sudo)
 
+.. _sec-quick-start:
 
 ------------------------
 Development installation
