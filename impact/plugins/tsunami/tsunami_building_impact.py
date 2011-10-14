@@ -29,7 +29,7 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
         H = layers[0]  # Depth
         E = layers[1]  # Building locations
 
-        print 'Number of polygons', len(E)
+        #print 'Number of polygons', len(E)
 
         # Interpolate hazard level to building locations
         H = H.interpolate(E)
