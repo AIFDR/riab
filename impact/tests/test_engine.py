@@ -14,6 +14,7 @@ from impact.plugins import get_plugins
 
 from impact.tests.utilities import TESTDATA
 from impact.tests.plugins import empirical_fatality_model
+from impact.tests.plugins import NEXIS_building_impact_model
 
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
@@ -395,7 +396,6 @@ class Test_Engine(unittest.TestCase):
         """Building loss from tsunami use case works
         """
 
-        from impact.plugins.tsunami import NEXIS_building_impact_model
         # This test merely exercises the use case as there is
         # no reference data. It does check the sanity of values as
         # far as possible.
