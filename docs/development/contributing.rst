@@ -74,7 +74,7 @@ Update development branch as well
     (resolve conflicts)
     * git push origin develop
 
-Delete development branch
+Delete release branch
     * git branch -d <releasebranch>
     or
     * git push origin :<releasebranch>
