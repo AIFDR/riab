@@ -60,7 +60,7 @@ These parameters required to run the plugin, and indeed all parameters specific 
 are defined in the doc string of the class::
 
     class SimpleImpactFunction(FunctionProvider):
-    	"""Risk plugin for simple impact calculation
+    	"""Impact plugin for simple impact calculation
 
     	:author Ted
 
@@ -93,7 +93,7 @@ dictionary correctly in this case with keys containing relavent data for the exp
     @staticmethod
     def run(input):
 
-        """Risk plugin for earthquake fatalities
+        """Tutorial on writing a simple impact plugin
 
         Input
           inputs: Specifies a dictionary containing the input paramaters for the plugin
@@ -131,7 +131,7 @@ The entire plugin file is now::
    @staticmethod
     def run(input):
 
-        """Risk plugin for earthquake fatalities
+        ""Tutorial on writing a simple impact plugin
 
         Input
           inputs: Specifies a dictionary containing the input paramaters for the plugin
