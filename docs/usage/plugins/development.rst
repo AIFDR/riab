@@ -25,16 +25,24 @@ Writing a Simple Plugin: Tutorial 01
 
 This section provides a quick tutorial on how to write a very impact plugin from scratch.
 
-Our first plugin we want to calculate a simple impact by multiplying the severity of hazard (i.e. the amount of ground shaking) by the exposure (i.e. the number of people in that area). e.g.::
+Our first plugin we want to calculate a simple impact by using the following function of 
+the severity of hazard (i.e. the amount of ground shaking - H) by the exposure 
+(i.e. the number of people in that area - P). e.g.::
 
-    Impact =  Exposure x Hazard
+    Impact  = 10 ** (a * H - b) * P
+    
+    where 
+          H: Raster layer of MMI ground shaking
+          P: Raster layer of population data on the same grid as H
+          a,b: Parameters that were tuned from real world data
+ 
 
 Defining the impact class
 +++++++++++++++++++++++++
 
 As the first step we need to define the plugin class.::
 
-    class SimpleImpactFunction(FunctionProvider)
+    class SimpleImpactEarthquakeFunction(FunctionProvider)
 
 Every plugin must be subclassed from FunctionProvider. This is the
 method of registration for the plugin and allows the Risiko Plugin 
@@ -59,14 +67,18 @@ In the future plugins may also support filtering by:
 These parameters required to run the plugin, and indeed all parameters specific to the plugin, 
 are defined in the doc string of the class::
 
-    class SimpleImpactFunction(FunctionProvider):
-    	"""Impact plugin for simple impact calculation
+     class SimpleImpactEarthquakeFunction(FunctionProvider):
+        """Simple plugin for earthquake damage
 
-    	:author Ted
-
-    	:param requires category=="hazard" and subcategory.startswith("earthquake") and layerType=="raster"
-    	:param requires category=="exposure" and subcategory.startswith("population") and layerType=="raster"
-    	"""
+        :author Allen
+        :rating 1
+        :param requires category=='hazard' and \
+                subcategory.startswith('earthquake') and \
+                layer_type=='raster'
+        :param requires category=='exposure' and \
+                subcategory.startswith('population') and \
+                layer_type=='raster'
+        """
 
 This tells the Risiko plugin manager that this plugin requires at a minimum inputs of
 
@@ -91,64 +103,97 @@ The parameters are passed in as a dictionary. It is up to the framework to popul
 dictionary correctly in this case with keys containing relavent data for the exposure and hazard.::
 
     @staticmethod
-    def run(input):
-
-        """Tutorial on writing a simple impact plugin
+    def run(layers,
+            a=0.97429, b=11.037):
+        """Risk plugin for earthquake fatalities
 
         Input
-          inputs: Specifies a dictionary containing the input paramaters for the plugin
+          layers: List of layers expected to contain
+              H: Raster layer of MMI ground shaking
+              P: Raster layer of population data on the same grid as H
         """
 
-	# Get the hazard and exposure layers
-        E=input['exposure']
-        H=input['hazard']
-        scale_constant=input('scale_constant')
+        # Identify input layers
+        intensity = layers[0]
+        population = layers[1]
+
+        # Extract data
+        H = intensity.get_data(nan=0)
+        P = population.get_data(nan=0)
 
         # Calculate impact
-        Impact =  E * H * scale_constant
+        F = 10 ** (a * H - b) * P
 
-        # Return
-        return Impact
+        # Create new layer and return
+        R = Raster(F,
+                   projection=population.get_projection(),
+                   geotransform=population.get_geotransform(),
+                   name='Estimated fatalities')
+        return R
 
 
-At the end of the function the calculated impact is returned. This can be any object 
-and it is up to the application to know what to do with the results returned
+
+At the end of the function the calculated impact layer R is returned. This return layer 
+in our example is a Raster layer the correct projection for this layer is ensured by passing
+in the input layer projections.
+
 
 Installing the plugin
 +++++++++++++++++++++
 
 The entire plugin file is now::
 
-    class SimpleImpactFunction(FunctionProvider):
-    	"""Risk plugin for simple impact calculation
+    from impact.plugins.core import FunctionProvider
+    from impact.storage.raster import Raster
 
-    	:author Ted
+    class SimpleImpactEarthquakeFunction(FunctionProvider):
+        """Simple plugin for earthquake damage
 
-    	:param requires category=="hazard" and subcategory.startswith("earthquake") and layerType=="raster"
-    	:param requires category=="exposure" and subcategory.startswith("population") and layerType=="raster"
-    	"""
+        :author Allen
+        :rating 1
+        :param requires category=='hazard' and \
+                subcategory.startswith('earthquake') and \
+                layer_type=='raster'
+        :param requires category=='exposure' and \
+                subcategory.startswith('population') and \
+                layer_type=='raster'
+        """
 
-   @staticmethod
-    def run(input):
-
-        ""Tutorial on writing a simple impact plugin
+    @staticmethod
+    def run(layers,
+            a=0.97429, b=11.037):
+        """Risk plugin for earthquake fatalities
 
         Input
-          inputs: Specifies a dictionary containing the input paramaters for the plugin
+          layers: List of layers expected to contain
+              H: Raster layer of MMI ground shaking
+              P: Raster layer of population data on the same grid as H
         """
-        E=input['exposure']
-        H=input['hazard']
-        scale_constant=input('scale_constant')
+
+        # Identify input layers
+        intensity = layers[0]
+        population = layers[1]
+
+        # Extract data
+        H = intensity.get_data(nan=0)
+        P = population.get_data(nan=0)
 
         # Calculate impact
-        Impact =  E * H * scale_constant
+        F = 10 ** (a * H - b) * P
 
-        # Return
-        return Impact
+        # Create new layer and return
+        R = Raster(F,
+                   projection=population.get_projection(),
+                   geotransform=population.get_geotransform(),
+                   name='Estimated fatalities')
+        return R
 
-If this is saved as SimpleImpactFunction.py
+If this is saved as SimpleImpactEarthquakeFunction.py
 
-Put the code in ......
+Put the code in the plugins/earthquake directory. Restart Risiko using::
+
+	risiko-stop
+	risiko-start
 
 Testing the plugin
 ++++++++++++++++++
