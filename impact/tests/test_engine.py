@@ -626,7 +626,7 @@ class Test_Engine(unittest.TestCase):
         for i, eta in enumerate(latitudes):
             for j, xi in enumerate(longitudes):
 
-                val = interpolate_raster(longitudes, latitudes, A, [xi], [eta], mode='linear')[0]
+                val = interpolate_raster(longitudes, latitudes, A, [(xi, eta)], mode='linear')[0]
                 assert numpy.allclose(val,
                                       linear_function(xi, eta),
                                       rtol=1e-12, atol=1e-12)
@@ -636,7 +636,7 @@ class Test_Engine(unittest.TestCase):
         etas = numpy.linspace(lat_ll + 1, lat_ll + numlat - 1, 10 * numlat)
         for xi in xis:
             for eta in etas:
-                val = interpolate_raster(longitudes, latitudes, A, [xi], [eta], mode='linear')[0]
+                val = interpolate_raster(longitudes, latitudes, A, [(xi, eta)], mode='linear')[0]
                 assert numpy.allclose(val,
                                       linear_function(xi, eta),
                                       rtol=1e-12, atol=1e-12)
