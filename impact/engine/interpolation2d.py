@@ -42,8 +42,7 @@ def interpolate2d(x, y, A, xi, eta, mode='linear', bounds_error=False):
 
         If this routine is to be used for interpolation of raster grids where
         data is typically organised with longitudes (x) going from left to right
-        and latitudes (y) from left to right then A should be transposed and
-        flipped upside down before calling interpolate2d.
+        and latitudes (y) from left to right then user interpolate_raster in this module
 
     Example:
 
@@ -57,8 +56,26 @@ def interpolate2d(x, y, A, xi, eta, mode='linear', bounds_error=False):
     eta = numpy.array(eta)
     A = numpy.array(A)
 
-    Nx = len(x)
-    Ny = len(y)
+    if bounds_error:
+        msg = ('Interpolation point %f was less than the smallest value in domain %f '
+               'and bounds_error was requested.' % (xi[0], x[0]))
+        if xi[0] < x[0]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was greater than the largest value in domain %f '
+               'and bounds_error was requested.' % (xi[-1], x[-1]))
+        if xi[-1] > x[-1]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was less than the smallest value in domain %f '
+               'and bounds_error was requested.' % (eta[0], y[0]))
+        if eta[0] < y[0]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was greater than the largest value in domain %f '
+               'and bounds_error was requested.' % (eta[-1], y[-1]))
+        if eta[-1] > y[-1]:
+            raise Exception(msg)
 
     try:
         m, n = A.shape
@@ -66,6 +83,8 @@ def interpolate2d(x, y, A, xi, eta, mode='linear', bounds_error=False):
         msg = 'A must be a 2D numpy array: %s' % str(e)
         raise Exception(msg)
 
+    Nx = len(x)
+    Ny = len(y)
     msg = ('Input array A must have dimensions %i x %i corresponding to the '
            'lengths of the input coordinates x and y. However, '
            'A has dimensions %i x %i.' % (Nx, Ny, m, n))
@@ -79,6 +98,12 @@ def interpolate2d(x, y, A, xi, eta, mode='linear', bounds_error=False):
     # Begin interpolation
     idx = numpy.searchsorted(x, xi)
     idy = numpy.searchsorted(y, eta)
+
+    # FIXME: Need to assign NaN's here
+    #print
+    #print idx
+
+
 
     # Take care of end points
     idx[idx == 0] = 1

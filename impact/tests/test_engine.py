@@ -4,7 +4,7 @@ import sys
 import os
 
 from impact.engine.core import calculate_impact
-from impact.engine.interpolation import raster_spline
+from impact.engine.interpolation2d import interpolate_raster
 from impact.storage.io import read_layer
 
 from impact.storage.utilities import unique_filename
@@ -622,13 +622,12 @@ class Test_Engine(unittest.TestCase):
                 A[numlat - 1 - i, j] = linear_function(longitudes[j],
                                                    latitudes[i])
 
-        # Create bilinear interpolation function
-        F = raster_spline(longitudes, latitudes, A)
-
         # Test first that original points are reproduced correctly
         for i, eta in enumerate(latitudes):
             for j, xi in enumerate(longitudes):
-                assert numpy.allclose(F(xi, eta),
+
+                val = interpolate_raster(longitudes, latitudes, A, [xi], [eta], mode='linear')[0]
+                assert numpy.allclose(val,
                                       linear_function(xi, eta),
                                       rtol=1e-12, atol=1e-12)
 
@@ -637,7 +636,8 @@ class Test_Engine(unittest.TestCase):
         etas = numpy.linspace(lat_ll + 1, lat_ll + numlat - 1, 10 * numlat)
         for xi in xis:
             for eta in etas:
-                assert numpy.allclose(F(xi, eta),
+                val = interpolate_raster(longitudes, latitudes, A, [xi], [eta], mode='linear')[0]
+                assert numpy.allclose(val,
                                       linear_function(xi, eta),
                                       rtol=1e-12, atol=1e-12)
 
@@ -677,9 +677,6 @@ class Test_Engine(unittest.TestCase):
             for j in range(numlon):
                 A[numlat - 1 - i, j] = linear_function(longitudes[j],
                                                        latitudes[i])
-
-        # Create bilinear interpolation function
-        F = raster_spline(longitudes, latitudes, A)
 
         # Write array to a raster file
         geotransform = (lon_ul, dlon, 0, lat_ul, 0, dlat)

@@ -5,7 +5,7 @@ ordering of dimensions between raster files and numpy arrays.
 """
 
 import numpy
-from scipy.interpolate import RectBivariateSpline
+from impact.engine.interpolation2d import interpolate_raster
 from impact.storage.vector import Vector
 from impact.storage.vector import convert_polygons_to_centroids
 
@@ -118,9 +118,6 @@ def interpolate_raster_vector_points(R, V, name=None):
     assert len(longitudes) == A.shape[1]
     assert len(latitudes) == A.shape[0]
 
-    # Create interpolator
-    f = raster_spline(longitudes, latitudes, A)
-
     # Get vector point geometry as Nx2 array
     coordinates = numpy.array(V.get_geometry(),
                               dtype='d',
@@ -138,7 +135,7 @@ def interpolate_raster_vector_points(R, V, name=None):
         eta = coordinates[i, 1]  # Latitude
 
         # Use layer name from raster for new attribute
-        value = float(f(xi, eta))
+        value = interpolate_raster(longitudes, latitudes, A, [xi], [eta], mode='linear')[0]
         attributes.append({name: value})
 
     return Vector(data=attributes, projection=V.get_projection(),

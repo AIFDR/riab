@@ -66,6 +66,69 @@ class Test_interpolate(unittest.TestCase):
                 refs = linear_function(xis, etas)
                 assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)
 
+    def test_linear_interpolation_outside_domain(self):
+        """Interpolation library sensibly handles values outside the domain
+        """
+
+
+        # Define pixel centers along each direction
+        x = [1.0, 2.0, 4.0]
+        y = [5.0, 9.0]
+
+        # Define ny by nx array with values corresponding to each value of x and y
+        A = numpy.zeros((len(x), len(y)))
+
+        # Define values for each x, y pair as a linear function
+        for i in range(len(x)):
+            for j in range(len(y)):
+                A[i, j] = linear_function(x[i], y[j])
+
+        # Try all combinations of points outside domain with error_bounds True
+        for lox in [x[0], x[0]-1]:
+            for hix in [x[-1], x[-1]+1]:
+                for loy in [y[0], y[0]-1]:
+                    for hiy in [y[-1], y[-1]+1]:
+
+                        # Then test that points outside domain can be handled
+                        xis = numpy.linspace(lox, hix, 4)
+                        etas = numpy.linspace(loy, hiy, 4)
+                        if lox < x[0] or hix > x[-1] or loy < x[0] or hiy > y[-1]:
+                            try:
+                                vals = interpolate2d(x, y, A, xis, etas, mode='linear', bounds_error=True)
+                            except Exception, e:
+                                pass
+                            else:
+                                #print lox, hix, loy, hiy
+                                msg = 'Should have raise bounds error'
+                                raise Exception, msg
+
+
+        # Try all combinations of points outside domain with error_bounds False
+        for lox in [x[0], x[0]-1, x[0]-10]:
+            for hix in [x[-1], x[-1]+1, x[-1] + 5]:
+                for loy in [y[0], y[0]-1, y[0]-10]:
+                    for hiy in [y[-1], y[-1]+1, y[-1] + 10]:
+
+                        # Then test that points outside domain can be handled
+                        xis = numpy.linspace(lox, hix, 100)
+                        etas = numpy.linspace(loy, hiy, 100)
+                        vals = interpolate2d(x, y, A, xis, etas, mode='linear', bounds_error=False)
+
+                        #if lox < x[0]:
+                        #    assert numpy.isnan(vals[0])
+
+
+                        refs = linear_function(xis, etas)
+
+                        #print
+                        #print A
+                        ##print
+                        #print xis
+                        #print vals
+                        #print refs
+
+
+                #assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)
 
 
     def test_interpolation_raster_data(self):
@@ -114,6 +177,7 @@ class Test_interpolate(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    #suite = unittest.makeSuite(Test_interpolate, 'test_linear_interpolation_outs')
     suite = unittest.makeSuite(Test_interpolate, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
