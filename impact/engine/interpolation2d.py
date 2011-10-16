@@ -101,17 +101,20 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     idx = numpy.searchsorted(x, xi)
     idy = numpy.searchsorted(y, eta)
 
-    # FIXME: Need to assign NaN's here
+    # FIXME: Need to assign NaN's here.
+    # Something like
+    #
+    #??[idx == 0] = numpy.nan
     #print
     #print idx
 
 
 
-    # Take care of end points
-    idx[idx == 0] = 1
+    # Take care of end points - FIXME: Why?
+    #idx[idx == 0] = 1
     idx[idx == Nx] = Nx-1
 
-    idy[idy == 0] = 1
+    #idy[idy == 0] = 1
     idy[idy == Ny] = Ny-1
 
     # Get the four neighbours for each interpolation point
