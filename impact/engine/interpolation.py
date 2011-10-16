@@ -129,14 +129,11 @@ def interpolate_raster_vector_points(R, V, name=None):
     if name is None:
         name = R.get_name()
 
-    # FIXME (Ole): Profiling may suggest that his loop should be written in C
-    for i in range(N):
-        xi = coordinates[i, 0]   # Longitude
-        eta = coordinates[i, 1]  # Latitude
+    values = interpolate_raster(longitudes, latitudes, A, coordinates, mode='linear')
 
-        # Use layer name from raster for new attribute
-        value = interpolate_raster(longitudes, latitudes, A, [xi], [eta], mode='linear')[0]
-        attributes.append({name: value})
+    # Create list of dictionaries for this attribute and return
+    for i in range(N):
+        attributes.append({name: values[i]})
 
     return Vector(data=attributes, projection=V.get_projection(),
                   geometry=coordinates)

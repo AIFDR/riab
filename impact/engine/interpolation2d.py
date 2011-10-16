@@ -12,15 +12,14 @@ This module
 
 import numpy
 
-def interpolate2d(x, y, A, xi, eta, mode='linear', bounds_error=False):
+def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     """Fundamental 2D interpolation routine
 
     Input
         x: 1D array of x-coordinates of the mesh on which to interpolate
         y: 1D array of y-coordinates of the mesh on which to interpolate
         A: 2D array of values for each x, y pair
-        xi: 1D array of x-coordinates where interpolated values are sought
-        eta: 1D array of y-coordinates where interpolated values are sought
+        points: Nx2 array of x, y coordinates where interpolated values are sought
         mode: Determines the interpolation order. Options are
               'constant' - piecewise constant nearest neighbour interpolation
               'linear' - bilinear interpolation using the four
@@ -30,7 +29,7 @@ def interpolate2d(x, y, A, xi, eta, mode='linear', bounds_error=False):
                       outside the domain of the input data. If False, nan
                       is returned for those values
     Output
-        1D array with same length as xi and eta with interpolated values
+        1D array with same length as points with interpolated values
 
     Notes
         Input coordinates x and y are assumed to be monotonically increasing,
@@ -52,9 +51,12 @@ def interpolate2d(x, y, A, xi, eta, mode='linear', bounds_error=False):
     # Input checks
     x = numpy.array(x)
     y = numpy.array(y)
-    xi = numpy.array(xi)
-    eta = numpy.array(eta)
+    points = numpy.array(points)
     A = numpy.array(A)
+
+    # Get interpolation points
+    xi = points[:, 0]
+    eta = points[:, 1]
 
     if bounds_error:
         msg = ('Interpolation point %f was less than the smallest value in domain %f '
@@ -134,7 +136,7 @@ def interpolate2d(x, y, A, xi, eta, mode='linear', bounds_error=False):
     return Z
 
 
-def interpolate_raster(x, y, A, xi, eta, mode='linear', bounds_error=False):
+def interpolate_raster(x, y, A, points, mode='linear', bounds_error=False):
     """2D interpolation of raster data
 
     It is assumed that data is organised in A as latitudes from
@@ -152,7 +154,7 @@ def interpolate_raster(x, y, A, xi, eta, mode='linear', bounds_error=False):
     A = A.transpose()
 
     # Call underlying interpolation routine and return
-    res = interpolate2d(x, y, A, xi, eta, mode=mode, bounds_error=bounds_error)
+    res = interpolate2d(x, y, A, points, mode=mode, bounds_error=bounds_error)
     return res
 
 
