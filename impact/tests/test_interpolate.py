@@ -2,6 +2,7 @@ import unittest
 import numpy
 
 from impact.engine.interpolation2d import interpolate2d, interpolate_raster
+from impact.tests.utilities import combine_coordinates
 
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
@@ -21,7 +22,7 @@ class Test_interpolate(unittest.TestCase):
         x = [1.0, 2.0, 4.0]
         y = [5.0, 9.0]
 
-        # Define ny by nx array with values corresponding to each value of x and y
+        # Define ny by nx array with corresponding values
         A = numpy.zeros((len(x), len(y)))
 
         # Define values for each x, y pair as a linear function
@@ -39,13 +40,8 @@ class Test_interpolate(unittest.TestCase):
         # Then test that genuinly interpolated points are correct
         xis = numpy.linspace(x[0], x[-1], 10)
         etas = numpy.linspace(y[0], y[-1], 10)
+        points = combine_coordinates(xis, etas)
 
-        points = []
-        for xi in xis:
-            for eta in etas:
-                points.append((xi, eta))
-
-        points = numpy.array(points)
         #numpy.repeat(xis, 5)
         #numpy.concat(
 
@@ -61,7 +57,7 @@ class Test_interpolate(unittest.TestCase):
         for x in [[1.0, 2.0, 4.0], [-20, -19, 0], numpy.arange(200)+1000]:
             for y in [[5.0, 9.0], [100, 200, 10000]]:
 
-                # Define ny by nx array with values corresponding to each value of x and y
+                # Define ny by nx array with corresponding values
                 A = numpy.zeros((len(x), len(y)))
 
                 # Define values for each x, y pair as a linear function
@@ -72,12 +68,7 @@ class Test_interpolate(unittest.TestCase):
                 # Test that linearly interpolated points are correct
                 xis = numpy.linspace(x[0], x[-1], 100)
                 etas = numpy.linspace(y[0], y[-1], 100)
-
-                points = []
-                for xi in xis:
-                    for eta in etas:
-                        points.append((xi, eta))
-                points = numpy.array(points)
+                points = combine_coordinates(xis, etas)
 
                 vals = interpolate2d(x, y, A, points, mode='linear')
                 refs = linear_function(points[:, 0], points[:, 1])
@@ -92,7 +83,7 @@ class Test_interpolate(unittest.TestCase):
         x = [1.0, 2.0, 4.0]
         y = [5.0, 9.0]
 
-        # Define ny by nx array with values corresponding to each value of x and y
+        # Define ny by nx array with corresponding values
         A = numpy.zeros((len(x), len(y)))
 
         # Define values for each x, y pair as a linear function
@@ -100,7 +91,28 @@ class Test_interpolate(unittest.TestCase):
             for j in range(len(y)):
                 A[i, j] = linear_function(x[i], y[j])
 
-        # Try all combinations of points outside domain with error_bounds True
+        # Simple example first for debugging
+        xis = numpy.linspace(0.9, 4.0, 4)
+        etas = numpy.linspace(5, 9.1, 3)
+        points = combine_coordinates(xis, etas)
+        refs = linear_function(points[:, 0], points[:, 1])
+
+        vals = interpolate2d(x, y, A, points, mode='linear',
+                             bounds_error=False)
+        msg = ('Length of interpolation points %i differs from length '
+               'of interpolated values %i' % (len(points), len(vals)))
+        assert len(points) == len(vals), msg
+        for i, (xi, eta) in enumerate(points):
+            if xi < x[0] or xi > x[-1] or eta < y[0] or eta > y[-1]:
+                assert numpy.isnan(vals[i])
+            else:
+                msg = ('Got %.15f for (%f, %f), expected %.15f'
+                       % (vals[i], xi, eta, refs[i]))
+                assert numpy.allclose(vals[i], refs[i],
+                                      rtol=1.0e-12, atol=1.0e-12), msg
+
+        # Try a range of combinations of points outside domain
+        # with error_bounds True
         for lox in [x[0], x[0]-1]:
             for hix in [x[-1], x[-1]+1]:
                 for loy in [y[0], y[0]-1]:
@@ -109,55 +121,48 @@ class Test_interpolate(unittest.TestCase):
                         # Then test that points outside domain can be handled
                         xis = numpy.linspace(lox, hix, 4)
                         etas = numpy.linspace(loy, hiy, 4)
-                        points = []
-                        for xi in xis:
-                            for eta in etas:
-                                points.append((xi, eta))
-                        points = numpy.array(points)
+                        points = combine_coordinates(xis, etas)
 
-                        if lox < x[0] or hix > x[-1] or loy < x[0] or hiy > y[-1]:
+                        if lox < x[0] or hix > x[-1] or \
+                                loy < x[0] or hiy > y[-1]:
                             try:
-                                vals = interpolate2d(x, y, A, points, mode='linear', bounds_error=True)
+                                vals = interpolate2d(x, y, A, points,
+                                                     mode='linear',
+                                                     bounds_error=True)
                             except Exception, e:
                                 pass
                             else:
-                                #print lox, hix, loy, hiy
                                 msg = 'Should have raise bounds error'
                                 raise Exception, msg
 
 
-        # Try all combinations of points outside domain with error_bounds False
+        # Try a range of combinations of points outside domain with
+        # error_bounds False
         for lox in [x[0], x[0]-1, x[0]-10]:
             for hix in [x[-1], x[-1]+1, x[-1] + 5]:
                 for loy in [y[0], y[0]-1, y[0]-10]:
                     for hiy in [y[-1], y[-1]+1, y[-1] + 10]:
 
                         # Then test that points outside domain can be handled
-                        xis = numpy.linspace(lox, hix, 100)
-                        etas = numpy.linspace(loy, hiy, 100)
-                        points = []
-                        for xi in xis:
-                            for eta in etas:
-                                points.append((xi, eta))
-                        points = numpy.array(points)
-
-                        vals = interpolate2d(x, y, A, points, mode='linear', bounds_error=False)
-
-                        #if lox < x[0]:
-                        #    assert numpy.isnan(vals[0])
-
-
+                        xis = numpy.linspace(lox, hix, 10)
+                        etas = numpy.linspace(loy, hiy, 10)
+                        points = combine_coordinates(xis, etas)
                         refs = linear_function(points[:, 0], points[:, 1])
+                        vals = interpolate2d(x, y, A, points,
+                                             mode='linear', bounds_error=False)
 
-                        #print
-                        #print A
-                        ##print
-                        #print xis
-                        #print vals
-                        #print refs
-
-
-                #assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)
+                        assert len(points) == len(vals), msg
+                        for i, (xi, eta) in enumerate(points):
+                            if xi < x[0] or xi > x[-1] or\
+                                    eta < y[0] or eta > y[-1]:
+                                msg = 'Expected NaN for %f, %f' % (xi, eta)
+                                assert numpy.isnan(vals[i]), msg
+                            else:
+                                msg = ('Got %.15f for (%f, %f), expected '
+                                       '%.15f' % (vals[i], xi, eta, refs[i]))
+                                assert numpy.allclose(vals[i], refs[i],
+                                                      rtol=1.0e-12,
+                                                      atol=1.0e-12), msg
 
 
     def test_interpolation_raster_data(self):
@@ -199,14 +204,10 @@ class Test_interpolate(unittest.TestCase):
         # Then test that interpolated points are correct
         xis = numpy.linspace(lon_ll + 1, lon_ll + numlon - 1, 100)
         etas = numpy.linspace(lat_ll + 1, lat_ll + numlat - 1, 100)
+        points = combine_coordinates(xis, etas)
 
-        points = []
-        for xi in xis:
-            for eta in etas:
-                points.append((xi, eta))
-        points = numpy.array(points)
-
-        vals = interpolate_raster(longitudes, latitudes, A, points, mode='linear')
+        vals = interpolate_raster(longitudes, latitudes, A, points,
+                                  mode='linear')
         #refs = linear_function(xis, etas)#, xis)
         refs = linear_function(points[:, 0], points[:, 1])
 
