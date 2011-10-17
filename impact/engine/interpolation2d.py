@@ -100,13 +100,6 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     idx = numpy.searchsorted(x, xi)
     idy = numpy.searchsorted(y, eta)
 
-    # Take care of end points - FIXME: Why?
-    #idx[idx == 0] = 1
-    idx[idx == Nx] = Nx-1
-
-    #idy[idy == 0] = 1
-    idy[idy == Ny] = Ny-1
-
     # Get the four neighbours for each interpolation point
     x0 = x[idx-1]
     x1 = x[idx]
