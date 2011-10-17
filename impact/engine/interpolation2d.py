@@ -19,7 +19,7 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
         x: 1D array of x-coordinates of the mesh on which to interpolate
         y: 1D array of y-coordinates of the mesh on which to interpolate
         A: 2D array of values for each x, y pair
-        points: Nx2 array of x, y coordinates where interpolated values are sought
+        points: Nx2 array of coordinates where interpolated values are sought
         mode: Determines the interpolation order. Options are
               'constant' - piecewise constant nearest neighbour interpolation
               'linear' - bilinear interpolation using the four
@@ -36,12 +36,14 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
         but need not be equidistantly spaced.
 
         A is assumed to have dimension M x N, where M = len(x) and N = len(y).
-        In other words it is assumed that the x values follow the first (vertical) axis
-        downwards and y values the second (horizontal) axis from left to right.
+        In other words it is assumed that the x values follow the first
+        (vertical) axis downwards and y values the second (horizontal) axis
+        from left to right.
 
         If this routine is to be used for interpolation of raster grids where
-        data is typically organised with longitudes (x) going from left to right
-        and latitudes (y) from left to right then user interpolate_raster in this module
+        data is typically organised with longitudes (x) going from left to
+        right and latitudes (y) from left to right then user
+        interpolate_raster in this module
 
     Example:
 
@@ -52,34 +54,9 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     x = numpy.array(x)
     y = numpy.array(y)
     points = numpy.array(points)
-    A = numpy.array(A)
-
-    # Get interpolation points
-    xi = points[:, 0]
-    eta = points[:, 1]
-
-    if bounds_error:
-        msg = ('Interpolation point %f was less than the smallest value in domain %f '
-               'and bounds_error was requested.' % (xi[0], x[0]))
-        if xi[0] < x[0]:
-            raise Exception(msg)
-
-        msg = ('Interpolation point %f was greater than the largest value in domain %f '
-               'and bounds_error was requested.' % (xi[-1], x[-1]))
-        if xi[-1] > x[-1]:
-            raise Exception(msg)
-
-        msg = ('Interpolation point %f was less than the smallest value in domain %f '
-               'and bounds_error was requested.' % (eta[0], y[0]))
-        if eta[0] < y[0]:
-            raise Exception(msg)
-
-        msg = ('Interpolation point %f was greater than the largest value in domain %f '
-               'and bounds_error was requested.' % (eta[-1], y[-1]))
-        if eta[-1] > y[-1]:
-            raise Exception(msg)
 
     try:
+        A = numpy.array(A)
         m, n = A.shape
     except Exception, e:
         msg = 'A must be a 2D numpy array: %s' % str(e)
@@ -93,22 +70,35 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     assert Nx == m, msg
     assert Ny == n, msg
 
-    msg = 'Input arrays xi and eta must have the same length'
-    assert len(xi) == len(eta), msg
 
+    # Get interpolation points
+    xi = points[:, 0]
+    eta = points[:, 1]
 
-    # Begin interpolation
+    if bounds_error:
+        msg = ('Interpolation point %f was less than the smallest value in '
+               'domain %f and bounds_error was requested.' % (xi[0], x[0]))
+        if xi[0] < x[0]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was greater than the largest value in '
+               'domain %f and bounds_error was requested.' % (xi[-1], x[-1]))
+        if xi[-1] > x[-1]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was less than the smallest value in '
+               'domain %f and bounds_error was requested.' % (eta[0], y[0]))
+        if eta[0] < y[0]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was greater than the largest value in '
+               'domain %f and bounds_error was requested.' % (eta[-1], y[-1]))
+        if eta[-1] > y[-1]:
+            raise Exception(msg)
+
+    # Find upper neighbours for each interpolation point
     idx = numpy.searchsorted(x, xi)
     idy = numpy.searchsorted(y, eta)
-
-    # FIXME: Need to assign NaN's here.
-    # Something like
-    #
-    #??[idx == 0] = numpy.nan
-    #print
-    #print idx
-
-
 
     # Take care of end points - FIXME: Why?
     #idx[idx == 0] = 1
@@ -143,9 +133,11 @@ def interpolate_raster(x, y, A, points, mode='linear', bounds_error=False):
     """2D interpolation of raster data
 
     It is assumed that data is organised in A as latitudes from
-    bottom up along the first dimension and longitudes from west to east along the second dimension.
+    bottom up along the first dimension and longitudes from west to east
+    along the second dimension.
 
-    Further it is assumed that x is the vector of longitudes and y the vector of latitudes.
+    Further it is assumed that x is the vector of longitudes and y the
+    vector of latitudes.
 
     See interpolate2d for details of the interpolation routine
     """
@@ -153,7 +145,8 @@ def interpolate_raster(x, y, A, points, mode='linear', bounds_error=False):
     # Flip matrix A up-down so that scipy will interpret latitudes correctly.
     A = numpy.flipud(A)
 
-    # Transpose A to have y coordinates along the first axis and x coordinates along the second axis
+    # Transpose A to have y coordinates along the first axis and x coordinates
+    # along the second axis
     A = A.transpose()
 
     # Call underlying interpolation routine and return
