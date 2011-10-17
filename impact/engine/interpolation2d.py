@@ -96,6 +96,12 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
         if eta[-1] > y[-1]:
             raise Exception(msg)
 
+    # Identify elements that are outside interpolation domain
+    outside = (xi < x[0]) + (eta < y[0]) + (xi > x[-1]) + (eta > y[-1])
+    inside = -outside
+    xi = xi[inside]
+    eta = eta[inside]
+
     # Find upper neighbours for each interpolation point
     idx = numpy.searchsorted(x, xi)
     idy = numpy.searchsorted(y, eta)
@@ -119,7 +125,14 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     Dy = A01 - A00
 
     Z = A00 + alpha * Dx + beta * Dy + alpha * beta * (A11 - Dx - Dy - A00)
-    return Z
+
+    # Populate result with interpolated values for points inside domain
+    # and NaN for values outside
+    R = numpy.zeros(len(points))
+    R[inside] = Z
+    R[outside] = numpy.nan
+
+    return R
 
 
 def interpolate_raster(x, y, A, points, mode='linear', bounds_error=False):
