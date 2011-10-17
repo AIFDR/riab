@@ -137,3 +137,18 @@ def centroid_formula(P):
     Cy = Cy / 6 / A
 
     return [Cx, Cy]
+
+
+def combine_coordinates(x, y):
+    """Make list of all combinations of points for x and y coordinates
+    """
+
+    points = []
+    for px in x:
+        for py in y:
+            points.append((px, py))
+    points = numpy.array(points)
+
+    return points
+
+
