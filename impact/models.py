@@ -19,7 +19,7 @@ class Calculation(models.Model):
     hazard_server = models.URLField(null=True, blank=True)
     hazard_layer = models.CharField(max_length=255, null=True, blank=True)
     bbox = models.CharField(max_length=255, null=True, blank=True)
-    errors = models.CharField(max_length=255, null=True, blank=True)
+    errors = models.TextField()
     stacktrace = models.TextField(null=True, blank=True)
     layer = models.CharField(max_length=255, null=True, blank=True)
 
