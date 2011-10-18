@@ -87,6 +87,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         count50 = 0
         count25 = 0
         count10 = 0
+        count0 = 0
         building_damage = []
         for i in range(N):
             mmi = float(shaking[i].values()[0])
@@ -111,6 +112,9 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
             building_damage.append(result_dict)
 
             # Calculate statistics
+            if percent_damage < 10:
+                count0 += 1
+
             if 10 <= percent_damage < 25:
                 count10 += 1
 
@@ -126,10 +130,12 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                     '   <tr></tr>'
                     '   <tr><td>%s&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
                     '</table>' % (_('Buildings'), _('Total'),
                                   _('All'), N,
+                                  _('No damage'), count0,
                                   _('Low damage'), count10,
                                   _('Medium damage'), count25,
                                   _('High damage'), count50))
@@ -143,6 +149,18 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         return V
 
     def generate_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+
+        if data.is_point_data:
+            return self.generate_point_style(data)
+        elif data.is_polygon_data:
+            return self.generate_polygon_style(data)
+        else:
+            msg = 'Unknown style %s' % str(data)
+            raise Exception(msg)
+
+    def generate_point_style(self, data):
         """Generates and SLD file based on the data values
         """
 
@@ -203,3 +221,109 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
 
         # The styles are in $RIAB_HOME/riab/impact/templates/impact/styles
         return render_to_string('impact/styles/point_classes.sld', params)
+
+    def generate_polygon_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+
+        # FIXME (Ole): Return static style to start with: ticket #144
+        style = """<?xml version="1.0" encoding="UTF-8"?>
+<sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
+  <sld:NamedLayer>
+    <sld:Name>earthquake_impact</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>earthquake_impact</sld:Name>
+      <sld:Title/>
+      <sld:FeatureTypeStyle>
+        <sld:Name>name</sld:Name>
+        <sld:Rule>
+          <sld:Name>1</sld:Name>
+          <sld:Title>Low</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsLessThan>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>10</ogc:Literal>
+            </ogc:PropertyIsLessThan>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#CCCCCC</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#BCBCBC</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>2</sld:Name>
+          <sld:Title>Medium</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>10</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>%s</ogc:PropertyName>
+                <ogc:Literal>25</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FECC5C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#EEBC4C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>3</sld:Name>
+          <sld:Title>Medium</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>25</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>%s</ogc:PropertyName>
+                <ogc:Literal>50</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FD8D3C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#ED7D2C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>4</sld:Name>
+          <sld:Title>High</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>%s</ogc:PropertyName>
+              <ogc:Literal>50</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#F31A1C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#E30A0C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+</sld:StyledLayerDescriptor>
+""" % ((self.target_field,) * 6)
+
+        return style

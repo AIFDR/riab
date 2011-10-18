@@ -1,5 +1,8 @@
-Coding conventions for Risiko:
-==============================
+Contributing
+============
+
+Coding conventions for Risiko
+-----------------------------
 
 * Coding must follow a style guide. In case of Python it is http://www.python.org/dev/peps/pep-0008 and using the command line tool pep8 to enforce this
 * Python documentation guide: http://www.python.org/dev/peps/pep-0257
@@ -10,7 +13,7 @@ Coding conventions for Risiko:
 
 
 Branching guide
-===============
+---------------
 
 Risiko follows the branching model laid out in this paper:
 http://nvie.com/posts/a-successful-git-branching-model
@@ -20,8 +23,8 @@ with the bleeding edge and master always a stable release.
 
 
 
-Process for developers adding a new feature:
-============================================
+Process for developers adding a new feature
+-------------------------------------------
 
 Create a feature branch
     * git checkout -b <featurebranch> develop
@@ -50,8 +53,8 @@ To delete when branch is no longer needed
 
 
 
-Process for making a new release:
-=================================
+Process for making a new release
+--------------------------------
 
 Create a release branch from the current development branch
     * git checkout -b <releasebranch> master
@@ -71,14 +74,14 @@ Update development branch as well
     (resolve conflicts)
     * git push origin develop
 
-Delete development branch
+Delete release branch
     * git branch -d <releasebranch>
     or
     * git push origin :<releasebranch>
 
 
 Process for making a hotfix on master
-=====================================
+-------------------------------------
 
 Create a hotfix branch from master
     * git checkout -b <hotfixbranch> master

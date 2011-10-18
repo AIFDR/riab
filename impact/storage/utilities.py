@@ -213,6 +213,7 @@ def read_keywords(filename):
                   string
     Output
         keywords: Dictionary of keyword, value pairs
+
     """
 
     # Input checks
@@ -246,7 +247,7 @@ def read_keywords(filename):
         else:
             val = None
 
-        keywords[key] = val
+        keywords[key] = val  # .replace(' ', '_')
     fid.close()
 
     return keywords
@@ -333,7 +334,7 @@ def geotransform2resolution(geotransform):
     x_res = geotransform[1]     # w-e pixel resolution
     y_res = - geotransform[5]   # n-s pixel resolution (always negative)
 
-    return (x_res, y_res)
+    return x_res, y_res
 
 
 def bbox_intersection(*args):
@@ -644,3 +645,23 @@ def calculate_polygon_centroid(polygon):
     # Translate back to real location
     C = numpy.array([Cx, Cy]) + P_origin
     return C
+
+
+def titelize(s):
+    """Convert string into title
+
+    This is better than the built-in method title() because
+    it leaves all uppercase words like UK unchanged.
+
+    Source http://stackoverflow.com/questions/1549641/
+           how-to-capitalize-the-first-letter-of-each-word-in-a-string-python
+    """
+
+    # Replace underscores with spaces
+    s = s.replace('_', ' ')
+
+    # Capitalise
+    #s = s.title()  # This will capitalize first letter force the rest down
+    s = ' '.join([w[0].upper() + w[1:] for w in s.split(' ')])
+
+    return s

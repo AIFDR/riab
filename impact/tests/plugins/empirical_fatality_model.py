@@ -12,7 +12,6 @@ class EmpiricalFatalityFunction(FunctionProvider):
     :author Hadi Ghasemi
     :rating 2
 
-    FIXME (Ole): Temporarily disabled this function until it has been tested.
     :param requires category=='doesnotexist'
     :param requires title=='neverwas'
     """

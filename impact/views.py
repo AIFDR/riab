@@ -39,6 +39,7 @@ from impact.storage.io import check_bbox_string
 from impact.storage.io import save_to_geonode
 from impact.storage.utilities import bbox_intersection
 from impact.storage.utilities import minimal_bounding_box
+from impact.storage.utilities import titelize
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
@@ -183,10 +184,10 @@ def calculate(request, save_output=save_to_geonode):
         msg = ('- Uploading impact layer %s' % impact_filename)
         logger.info(msg)
         result = save_output(impact_filename,
-                         title='output_%s' % start.isoformat(),
-                         user=theuser)
+                             title='output_%s' % start.isoformat(),
+                             user=theuser)
     except Exception, e:
-        #FIXME: Reimplement error saving for calculation
+        # FIXME: Reimplement error saving for calculation
         logger.error(e)
         errors = e.__str__()
         trace = exception_format(e)
@@ -209,7 +210,7 @@ def calculate(request, save_output=save_to_geonode):
     # let's make it a json string ourselves
     output['run_date'] = 'new Date("%s")' % calculation.run_date
 
-    # FIXME:This should not be needed in an ideal world
+    # FIXME: This should not be needed in an ideal world
     ows_server_url = settings.GEOSERVER_BASE_URL + 'ows',
     output['ows_server_url'] = ows_server_url
 
@@ -223,9 +224,12 @@ def calculate(request, save_output=save_to_geonode):
         output['excel'] = download_dict['excel']
 
     # Keywords do not like caption being there.
-    #FIXME: Do proper parsing, don't assume caption is the only keyword.
+    # FIXME: Do proper parsing, don't assume caption is the only keyword.
     if 'caption' in result.keywords:
-        output['caption'] = result.keywords.split('caption:')[1]
+        caption = result.keywords.split('caption:')[1]
+        # FIXME: Hack to return underscores to spaces that was put in place
+        # to store it in the first place. See issue #148
+        output['caption'] = caption.replace('_', ' ')
     else:
         output['caption'] = 'Calculation finished ' \
                             'in %s' % calculation.run_duration
@@ -364,6 +368,7 @@ def layers(request):
         ld = get_layer_descriptors(geoserver['url'])
         for layer in ld:
             out = {'name': layer[0],
+                   'title': titelize(layer[1]['title']),
                    'server_url': geoserver['url']}
             metadata = layer[1]
             name_category = out['name'].split('_')

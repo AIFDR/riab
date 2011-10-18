@@ -111,7 +111,6 @@ def osm2padang(E):
     return V
 
 
-
 def osm2bnpb(E, target_attribute='VCLASS'):
     """Map OSM attributes to BNPB vulnerability classes
 
@@ -155,8 +154,7 @@ def osm2bnpb(E, target_attribute='VCLASS'):
                 vulnerability_class = 'RM'
             elif 1 <= levels < 4:
                 # Low
-                if structure in ['plastered',
-                                 'reinforced masonry',
+                if structure in ['reinforced masonry',
                                  'reinforced_masonry']:
                     vulnerability_class = 'RM'
                 elif structure == 'confined_masonry':
@@ -188,4 +186,3 @@ def osm2bnpb(E, target_attribute='VCLASS'):
                name=E.get_name() + ' mapped to BNPB vulnerability classes',
                keywords=E.get_keywords())
     return V
-

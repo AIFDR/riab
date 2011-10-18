@@ -14,7 +14,8 @@ from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_centroid
 from impact.storage.utilities import geometrytype2string
 
-
+# FIXME (Ole): Consider using pyshp to read and write shapefiles
+#              See http://code.google.com/p/pyshp
 class Vector:
     """Class for abstraction of vector data
     """
@@ -218,8 +219,19 @@ class Vector:
 
         basename, _ = os.path.splitext(filename)
 
-        # Always use basename without leading directories as name
-        self.name = os.path.split(basename)[-1]
+        # Look for any keywords
+        self.keywords = read_keywords(basename + '.keywords')
+
+        # Determine name
+        if 'title' in self.keywords:
+            vectorname = self.keywords['title']
+        else:
+            # Use basename without leading directories as name
+            vectorname = os.path.split(basename)[-1]
+
+        self.name = vectorname
+        self.filename = filename
+
 
         fid = ogr.Open(filename)
         if fid is None:
@@ -300,10 +312,7 @@ class Vector:
         # Store geometry coordinates as a compact numeric array
         self.geometry = geometry
         self.data = data
-        self.filename = filename
 
-        # Look for any keywords
-        self.keywords = read_keywords(basename + '.keywords')
 
     def write_to_file(self, filename):
         """Save vector data to file
