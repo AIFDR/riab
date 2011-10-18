@@ -2,7 +2,7 @@ import unittest
 import numpy
 
 from impact.engine.interpolation2d import interpolate2d, interpolate_raster
-from impact.tests.utilities import combine_coordinates
+from impact.tests.utilities import combine_coordinates, nanallclose
 
 
 def linear_function(x, y):
@@ -42,9 +42,6 @@ class Test_interpolate(unittest.TestCase):
         etas = numpy.linspace(y[0], y[-1], 10)
         points = combine_coordinates(xis, etas)
 
-        #numpy.repeat(xis, 5)
-        #numpy.concat(
-
         vals = interpolate2d(x, y, A, points, mode='linear')
         refs = linear_function(points[:, 0], points[:, 1])
         assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)
@@ -72,6 +69,71 @@ class Test_interpolate(unittest.TestCase):
                 vals = interpolate2d(x, y, A, points, mode='linear')
                 refs = linear_function(points[:, 0], points[:, 1])
                 assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)
+
+    def test_linear_interpolation_nan_points(self):
+        """Interpolation library works with interpolation points being NaN
+
+        This is was the reason for bug reported in: https://github.com/AIFDR/riab/issues/155
+        """
+
+        # Define pixel centers along each direction
+        x = [1.0, 2.0, 4.0]
+        y = [5.0, 9.0]
+
+        # Define ny by nx array with corresponding values
+        A = numpy.zeros((len(x), len(y)))
+
+        # Define values for each x, y pair as a linear function
+        for i in range(len(x)):
+            for j in range(len(y)):
+                A[i, j] = linear_function(x[i], y[j])
+
+        # Then test that interpolated points can contain NaN
+        xis = numpy.linspace(x[0], x[-1], 10)
+        etas = numpy.linspace(y[0], y[-1], 10)
+        xis[6:7] = numpy.nan
+        etas[3] = numpy.nan
+        points = combine_coordinates(xis, etas)
+
+        vals = interpolate2d(x, y, A, points, mode='linear')
+        refs = linear_function(points[:, 0], points[:, 1])
+        assert nanallclose(vals, refs, rtol=1e-12, atol=1e-12)
+
+
+    def test_linear_interpolation_nan_array(self):
+        """Interpolation library works with grid points being NaN
+        """
+
+        # Define pixel centers along each direction
+        x = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+        y = [4.0, 5.0, 7.0, 9.0, 11.0, 13.0]
+
+        # Define ny by nx array with corresponding values
+        A = numpy.zeros((len(x), len(y)))
+
+        # Define values for each x, y pair as a linear function
+        for i in range(len(x)):
+            for j in range(len(y)):
+                A[i, j] = linear_function(x[i], y[j])
+        A[2, 3] = numpy.nan  # (x=2.0, y=9.0): NaN
+
+        # Then test that interpolated points can contain NaN
+        xis = numpy.linspace(x[0], x[-1], 12)
+        etas = numpy.linspace(y[0], y[-1], 10)
+        points = combine_coordinates(xis, etas)
+
+        vals = interpolate2d(x, y, A, points, mode='linear')
+        refs = linear_function(points[:, 0], points[:, 1])
+
+        # Set reference result with expected NaNs and compare
+        for i, (xi, eta) in enumerate(points):
+            if (1.0 < xi <= 3.0) and (7.0 < eta <= 11.0):
+                refs[i] = numpy.nan
+            #print xi, eta, refs[i], vals[i]
+
+        assert nanallclose(vals, refs, rtol=1e-12, atol=1e-12)
+
+
 
     def test_linear_interpolation_outside_domain(self):
         """Interpolation library sensibly handles values outside the domain

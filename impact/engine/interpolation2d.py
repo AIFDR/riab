@@ -54,16 +54,33 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     # Input checks
     x, y, A, xi, eta = check_inputs(x, y, A, points, bounds_error)
 
-
-    # Identify elements that are outside interpolation domain
+    # Identify elements that are outside interpolation domain or NaN
     outside = (xi < x[0]) + (eta < y[0]) + (xi > x[-1]) + (eta > y[-1])
+    outside += numpy.isnan(xi) + numpy.isnan(eta)
+
     inside = -outside
     xi = xi[inside]
     eta = eta[inside]
 
     # Find upper neighbours for each interpolation point
-    idx = numpy.searchsorted(x, xi)
-    idy = numpy.searchsorted(y, eta)
+    idx = numpy.searchsorted(x, xi, side='left')
+    idy = numpy.searchsorted(y, eta, side='left')
+
+    # Internal check (index == 0 is OK)
+    msg = 'Interpolation point outside domain. This should never happen. Email Ole.Moller.Nielsen@gmail.com'
+    assert max(idx) < len(x), msg
+    assert max(idy) < len(y), msg
+
+    #print
+    #print x[0], x[-1]
+    #print xi[0], xi[-1]
+    #print min(xi), max(xi)
+    #print numpy.where(idx == 3)
+    #print xi[numpy.where(idx == 3)]
+    #print numpy.where(numpy.isnan(xi))
+
+    #print
+    #print max(x)
 
     # Get the four neighbours for each interpolation point
     x0 = x[idx - 1]
@@ -84,6 +101,12 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     Dy = A01 - A00
 
     Z = A00 + alpha * Dx + beta * Dy + alpha * beta * (A11 - Dx - Dy - A00)
+
+    # Self test
+    mZ = numpy.nanmax(Z)
+    mA = numpy.nanmax(A)
+    msg = 'Internal check failed. Max interpolated value %.15f exceeds max grid value %.15f ' % (mZ, mA)
+    assert mZ <= mA, msg
 
     # Populate result with interpolated values for points inside domain
     # and NaN for values outside
