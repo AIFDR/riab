@@ -4,6 +4,7 @@ import numpy
 from impact.engine.interpolation2d import interpolate2d, interpolate_raster
 from impact.tests.utilities import combine_coordinates
 
+
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
     """
@@ -12,7 +13,6 @@ def linear_function(x, y):
 
 
 class Test_interpolate(unittest.TestCase):
-
 
     def test_linear_interpolation_basic(self):
         """Interpolation library works for linear function - basic test
@@ -49,12 +49,11 @@ class Test_interpolate(unittest.TestCase):
         refs = linear_function(points[:, 0], points[:, 1])
         assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)
 
-
     def test_linear_interpolation_range(self):
         """Interpolation library works for linear function - a range of cases
         """
 
-        for x in [[1.0, 2.0, 4.0], [-20, -19, 0], numpy.arange(200)+1000]:
+        for x in [[1.0, 2.0, 4.0], [-20, -19, 0], numpy.arange(200) + 1000]:
             for y in [[5.0, 9.0], [100, 200, 10000]]:
 
                 # Define ny by nx array with corresponding values
@@ -77,7 +76,6 @@ class Test_interpolate(unittest.TestCase):
     def test_linear_interpolation_outside_domain(self):
         """Interpolation library sensibly handles values outside the domain
         """
-
 
         # Define pixel centers along each direction
         x = [1.0, 2.0, 4.0]
@@ -113,10 +111,10 @@ class Test_interpolate(unittest.TestCase):
 
         # Try a range of combinations of points outside domain
         # with error_bounds True
-        for lox in [x[0], x[0]-1]:
-            for hix in [x[-1], x[-1]+1]:
-                for loy in [y[0], y[0]-1]:
-                    for hiy in [y[-1], y[-1]+1]:
+        for lox in [x[0], x[0] - 1]:
+            for hix in [x[-1], x[-1] + 1]:
+                for loy in [y[0], y[0] - 1]:
+                    for hiy in [y[-1], y[-1] + 1]:
 
                         # Then test that points outside domain can be handled
                         xis = numpy.linspace(lox, hix, 4)
@@ -133,15 +131,14 @@ class Test_interpolate(unittest.TestCase):
                                 pass
                             else:
                                 msg = 'Should have raise bounds error'
-                                raise Exception, msg
-
+                                raise Exception(msg)
 
         # Try a range of combinations of points outside domain with
         # error_bounds False
-        for lox in [x[0], x[0]-1, x[0]-10]:
-            for hix in [x[-1], x[-1]+1, x[-1] + 5]:
-                for loy in [y[0], y[0]-1, y[0]-10]:
-                    for hiy in [y[-1], y[-1]+1, y[-1] + 10]:
+        for lox in [x[0], x[0] - 1, x[0] - 10]:
+            for hix in [x[-1], x[-1] + 1, x[-1] + 5]:
+                for loy in [y[0], y[0] - 1, y[0] - 10]:
+                    for hiy in [y[-1], y[-1] + 1, y[-1] + 10]:
 
                         # Then test that points outside domain can be handled
                         xis = numpy.linspace(lox, hix, 10)
@@ -163,7 +160,6 @@ class Test_interpolate(unittest.TestCase):
                                 assert numpy.allclose(vals[i], refs[i],
                                                       rtol=1.0e-12,
                                                       atol=1.0e-12), msg
-
 
     def test_interpolation_raster_data(self):
         """Interpolation library works for raster data
@@ -215,9 +211,6 @@ class Test_interpolate(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    #suite = unittest.makeSuite(Test_interpolate, 'test_linear_interpolation_outs')
     suite = unittest.makeSuite(Test_interpolate, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-
-

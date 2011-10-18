@@ -1,16 +1,17 @@
-"""Module for piecewise constant and bilinear 2D interpolation over a rectangular mesh
+"""Module 2D interpolation over a rectangular mesh
 
 This module
-* is fast (base on numpy vector operations)
-* depends only on numpy
 * provides piecewise constant (nearest neighbour) and bilinear interpolation
+* is fast (based on numpy vector operations)
+* depends only on numpy
 * guarantees that interpolated values never exceed the four nearest neighbours
-* handles missing values sensible using NaN
+* handles missing values in domain sensibly using NaN
 * is unit tested with a range of common and corner cases
 
 """
 
 import numpy
+
 
 def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     """Fundamental 2D interpolation routine
@@ -70,7 +71,6 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     assert Nx == m, msg
     assert Ny == n, msg
 
-
     # Get interpolation points
     xi = points[:, 0]
     eta = points[:, 1]
@@ -107,14 +107,14 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     idy = numpy.searchsorted(y, eta)
 
     # Get the four neighbours for each interpolation point
-    x0 = x[idx-1]
+    x0 = x[idx - 1]
     x1 = x[idx]
-    y0 = y[idy-1]
+    y0 = y[idy - 1]
     y1 = y[idy]
 
-    A00 = A[idx-1, idy-1]
-    A01 = A[idx-1, idy]
-    A10 = A[idx, idy-1]
+    A00 = A[idx - 1, idy - 1]
+    A01 = A[idx - 1, idy]
+    A10 = A[idx, idy - 1]
     A11 = A[idx, idy]
 
     # Linear interpolation formula
@@ -158,6 +158,3 @@ def interpolate_raster(x, y, A, points, mode='linear', bounds_error=False):
     # Call underlying interpolation routine and return
     res = interpolate2d(x, y, A, points, mode=mode, bounds_error=bounds_error)
     return res
-
-
-
