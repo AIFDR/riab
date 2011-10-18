@@ -113,7 +113,7 @@ def interpolate_raster_vector_points(R, V, name=None):
     # Get raster data and corresponding x and y axes
 
     # FIXME (Ole): Replace NODATA with 0 until we can handle proper NaNs
-    A = R.get_data(nan=0.0)
+    A = R.get_data(nan=True)
     longitudes, latitudes = R.get_geometry()
     assert len(longitudes) == A.shape[1]
     assert len(latitudes) == A.shape[0]
