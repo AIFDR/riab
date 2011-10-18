@@ -394,7 +394,7 @@ class Test_Engine(unittest.TestCase):
 
 
     def test_earthquake_impact_OSM_data(self):
-        """Earthquake impact on OSM building data works
+        """Earthquake layer interpolation to OSM building data works
 
         The impact function used is based on the guidelines plugin
 
@@ -403,13 +403,14 @@ class Test_Engine(unittest.TestCase):
         """
 
         # FIXME: Still needs some reference data to compare to
-
+        print
         for mmi_filename in ['Shakemap_Padang_2009.asc',
                              'Earthquake_Ground_Shaking.asc',
                              'Lembang_Earthquake_Scenario.asc']:
 
             # Name file names for hazard level and exposure
             hazard_filename = '%s/%s' % (TESTDATA, mmi_filename)
+            print hazard_filename
             exposure_filename = '%s/OSM_building_polygons_20110905.shp' % TESTDATA
 
             # Calculate impact using API
@@ -422,7 +423,6 @@ class Test_Engine(unittest.TestCase):
             assert plugin_list[0].keys()[0] == plugin_name
 
             IF = plugin_list[0][plugin_name]
-
             impact_filename = calculate_impact(layers=[H, E],
                                                impact_fcn=IF)
 
@@ -442,7 +442,6 @@ class Test_Engine(unittest.TestCase):
 
             # Verify interpolated MMI with test result
             for i in range(len(iattributes)):
-                lon, lat = icoordinates[i][:]
                 calculated_mmi = iattributes[i]['MMI']
 
                 if numpy.isnan(calculated_mmi):
@@ -450,16 +449,13 @@ class Test_Engine(unittest.TestCase):
 
                 # Check that interpolated points are within range
                 msg = ('Interpolated mmi %f from file %s was outside '
-                       'extrema: [%f, %f] at location '
-                       '[%f, %f].' % (calculated_mmi, hazard_filename,
-                                      mmi_min, mmi_max, lon, lat))
+                       'extrema: [%f, %f] at point %i '
+                       % (calculated_mmi, hazard_filename,
+                          mmi_min, mmi_max, i))
                 assert mmi_min <= calculated_mmi <= mmi_max, msg
 
-                calculated_dam = iattributes[i]['DAMAGE']
+                calculated_dam = iattributes[i]['DMGLEVEL']
                 assert calculated_dam in [1, 2, 3]
-
-
-
 
     def test_tsunami_loss_use_case(self):
         """Building loss from tsunami use case works
@@ -985,6 +981,6 @@ class Test_Engine(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_Engine, 'test')
+    suite = unittest.makeSuite(Test_Engine, 'test_earthquake_impact_OSM_data')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
