@@ -403,14 +403,12 @@ class Test_Engine(unittest.TestCase):
         """
 
         # FIXME: Still needs some reference data to compare to
-        print
         for mmi_filename in ['Shakemap_Padang_2009.asc',
-                             'Earthquake_Ground_Shaking.asc',
+                             #'Earthquake_Ground_Shaking.asc',  # Time consuming
                              'Lembang_Earthquake_Scenario.asc']:
 
             # Name file names for hazard level and exposure
             hazard_filename = '%s/%s' % (TESTDATA, mmi_filename)
-            print hazard_filename
             exposure_filename = '%s/OSM_building_polygons_20110905.shp' % TESTDATA
 
             # Calculate impact using API
@@ -981,7 +979,7 @@ class Test_Engine(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    #suite = unittest.makeSuite(Test_Engine, 'test_earthquake_impact_OSM_data')
+    #suite = unittest.makeSuite(Test_Engine, 'test_earthquake_fatality_estimation_allen')
     suite = unittest.makeSuite(Test_Engine, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

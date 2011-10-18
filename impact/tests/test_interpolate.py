@@ -2,7 +2,8 @@ import unittest
 import numpy
 
 from impact.engine.interpolation2d import interpolate2d, interpolate_raster
-from impact.tests.utilities import combine_coordinates, nanallclose
+from impact.tests.utilities import combine_coordinates
+from impact.storage.utilities import nanallclose
 
 
 def linear_function(x, y):

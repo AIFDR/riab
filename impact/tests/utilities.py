@@ -152,16 +152,3 @@ def combine_coordinates(x, y):
     return points
 
 
-def nanallclose(x, y, rtol=1.0e-5, atol=1.0e-8):
-    """Numpy allclose function which allows NaN
-
-    Returns True if all non-nan elements pass.
-    """
-
-    xn = numpy.isnan(x)
-    yn = numpy.isnan(y)
-    if numpy.any(xn != yn):
-        return False
-
-    return numpy.allclose(xn, yn, rtol=rtol, atol=atol)
-
