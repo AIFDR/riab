@@ -177,7 +177,7 @@ def osm2bnpb(E, target_attribute='VCLASS'):
         # Store new attribute value
         attributes[i][target_attribute] = vulnerability_class
 
-    print 'Got %i without levels or structure (out of %i total)' % (count, N)
+    #print 'Got %i without levels or structure (out of %i total)' % (count, N)
 
     # Create new vector instance and return
     V = Vector(data=attributes,

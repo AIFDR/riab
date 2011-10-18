@@ -262,7 +262,7 @@ class Test_Engine(unittest.TestCase):
     def test_earthquake_damage_schools(self):
         """Lembang building damage from ground shaking works
 
-        This test also exercises ineterpolation of hazard level (raster) to
+        This test also exercises interpolation of hazard level (raster) to
         building locations (vector data).
         """
 
@@ -391,6 +391,75 @@ class Test_Engine(unittest.TestCase):
             assert max_damage <= 100
             #print 'Extrema', mmi_filename, min_damage, max_damage
             #print len(MMI)
+
+
+    def test_earthquake_impact_OSM_data(self):
+        """Earthquake impact on OSM building data works
+
+        The impact function used is based on the guidelines plugin
+
+        This test also exercises interpolation of hazard level (raster) to
+        building locations (vector data).
+        """
+
+        # FIXME: Still needs some reference data to compare to
+
+        for mmi_filename in ['Shakemap_Padang_2009.asc',
+                             'Earthquake_Ground_Shaking.asc',
+                             'Lembang_Earthquake_Scenario.asc']:
+
+            # Name file names for hazard level and exposure
+            hazard_filename = '%s/%s' % (TESTDATA, mmi_filename)
+            exposure_filename = '%s/OSM_building_polygons_20110905.shp' % TESTDATA
+
+            # Calculate impact using API
+            H = read_layer(hazard_filename)
+            E = read_layer(exposure_filename)
+
+            plugin_name = 'Earthquake Guidelines Function'
+            plugin_list = get_plugins(plugin_name)
+            assert len(plugin_list) == 1
+            assert plugin_list[0].keys()[0] == plugin_name
+
+            IF = plugin_list[0][plugin_name]
+
+            impact_filename = calculate_impact(layers=[H, E],
+                                               impact_fcn=IF)
+
+            # Read input data
+            hazard_raster = read_layer(hazard_filename)
+            A = hazard_raster.get_data()
+            mmi_min, mmi_max = hazard_raster.get_extrema()
+
+            exposure_vector = read_layer(exposure_filename)
+            coordinates = exposure_vector.get_geometry()
+            attributes = exposure_vector.get_data()
+
+            # Read calculated result
+            impact_vector = read_layer(impact_filename)
+            icoordinates = impact_vector.get_geometry()
+            iattributes = impact_vector.get_data()
+
+            # Verify interpolated MMI with test result
+            for i in range(len(iattributes)):
+                lon, lat = icoordinates[i][:]
+                calculated_mmi = iattributes[i]['MMI']
+
+                if numpy.isnan(calculated_mmi):
+                    continue
+
+                # Check that interpolated points are within range
+                msg = ('Interpolated mmi %f from file %s was outside '
+                       'extrema: [%f, %f] at location '
+                       '[%f, %f].' % (calculated_mmi, hazard_filename,
+                                      mmi_min, mmi_max, lon, lat))
+                assert mmi_min <= calculated_mmi <= mmi_max, msg
+
+                calculated_dam = iattributes[i]['DAMAGE']
+                assert calculated_dam in [1, 2, 3]
+
+
+
 
     def test_tsunami_loss_use_case(self):
         """Building loss from tsunami use case works
