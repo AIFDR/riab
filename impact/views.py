@@ -107,15 +107,19 @@ def calculate(request, save_output=save_to_geonode):
         exp_metadata = get_metadata(exposure_server, exposure_layer)
 
         # Determine common resolution in case of raster layers
-        if haz_metadata['layer_type'] == 'raster' and \
-                exp_metadata['layer_type'] == 'raster':
+        if haz_metadata['layer_type'] == 'raster':
             haz_res = haz_metadata['resolution']
+            resx = haz_res[0]
+            resy = haz_res[1]
+        else:
+            resx = resy = None
+
+        if exp_metadata['layer_type'] == 'raster':
             exp_res = exp_metadata['resolution']
+            resx = min(resx, exp_res[0])
+            resy = min(resy, exp_res[1])
 
-            # Take the minimum
-            resx = min(haz_res[0], exp_res[0])
-            resy = min(haz_res[1], exp_res[1])
-
+        if haz_res is not None and exp_res is not None:
             raster_resolution = (resx, resy)
         else:
             # This means native resolution will be used
@@ -130,7 +134,7 @@ def calculate(request, save_output=save_to_geonode):
         # Impose minimum bounding box size (as per issue #101).
         # FIXME (Ole): This will need to be revisited in conjunction with
         # raster resolutions at some point.
-        min_res = 0.00833334
+        min_res = max(resx, resy)
         eps = 1.0e-1
         vpt_bbox = minimal_bounding_box(vpt_bbox, min_res, eps=eps)
         haz_bbox = minimal_bounding_box(haz_bbox, min_res, eps=eps)
