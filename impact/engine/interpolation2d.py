@@ -52,49 +52,8 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     """
 
     # Input checks
-    x = numpy.array(x)
-    y = numpy.array(y)
-    points = numpy.array(points)
+    x, y, A, xi, eta = check_inputs(x, y, A, points, bounds_error)
 
-    try:
-        A = numpy.array(A)
-        m, n = A.shape
-    except Exception, e:
-        msg = 'A must be a 2D numpy array: %s' % str(e)
-        raise Exception(msg)
-
-    Nx = len(x)
-    Ny = len(y)
-    msg = ('Input array A must have dimensions %i x %i corresponding to the '
-           'lengths of the input coordinates x and y. However, '
-           'A has dimensions %i x %i.' % (Nx, Ny, m, n))
-    assert Nx == m, msg
-    assert Ny == n, msg
-
-    # Get interpolation points
-    xi = points[:, 0]
-    eta = points[:, 1]
-
-    if bounds_error:
-        msg = ('Interpolation point %f was less than the smallest value in '
-               'domain %f and bounds_error was requested.' % (xi[0], x[0]))
-        if xi[0] < x[0]:
-            raise Exception(msg)
-
-        msg = ('Interpolation point %f was greater than the largest value in '
-               'domain %f and bounds_error was requested.' % (xi[-1], x[-1]))
-        if xi[-1] > x[-1]:
-            raise Exception(msg)
-
-        msg = ('Interpolation point %f was less than the smallest value in '
-               'domain %f and bounds_error was requested.' % (eta[0], y[0]))
-        if eta[0] < y[0]:
-            raise Exception(msg)
-
-        msg = ('Interpolation point %f was greater than the largest value in '
-               'domain %f and bounds_error was requested.' % (eta[-1], y[-1]))
-        if eta[-1] > y[-1]:
-            raise Exception(msg)
 
     # Identify elements that are outside interpolation domain
     outside = (xi < x[0]) + (eta < y[0]) + (xi > x[-1]) + (eta > y[-1])
@@ -158,3 +117,83 @@ def interpolate_raster(x, y, A, points, mode='linear', bounds_error=False):
     # Call underlying interpolation routine and return
     res = interpolate2d(x, y, A, points, mode=mode, bounds_error=bounds_error)
     return res
+
+
+def check_inputs(x, y, A, points, bounds_error):
+    """Check inputs for interpolate2d function
+    """
+
+    try:
+        x = numpy.array(x)
+    except Exception, e:
+        msg = ('Input vector x could not be converted to numpy array: '
+               '%s' % str(e))
+        raise Exception(msg)
+
+    try:
+        y = numpy.array(y)
+    except Exception, e:
+        msg = ('Input vector y could not be converted to numpy array: '
+               '%s' % str(e))
+        raise Exception(msg)
+
+
+    msg = ('Input vector x must be monotoneously increasing. I got min(x) == %.15f, '
+           'but x[0] == %.15f' % (min(x), x[0]))
+    assert min(x) == x[0], msg
+
+    msg = ('Input vector y must be monotoneously increasing. I got min(y) == %.15f, '
+           'but y[0] == %.15f' % (min(y), y[0]))
+    assert min(y) == y[0], msg
+
+    msg = ('Input vector x must be monotoneously increasing. I got max(x) == %.15f, '
+           'but x[-1] == %.15f' % (max(x), x[-1]))
+    assert max(x) == x[-1], msg
+
+    msg = ('Input vector y must be monotoneously increasing. I got max(y) == %.15f, '
+           'but y[-1] == %.15f' % (max(y), y[-1]))
+    assert max(y) == y[-1], msg
+
+
+    try:
+        A = numpy.array(A)
+        m, n = A.shape
+    except Exception, e:
+        msg = 'A must be a 2D numpy array: %s' % str(e)
+        raise Exception(msg)
+
+    Nx = len(x)
+    Ny = len(y)
+    msg = ('Input array A must have dimensions %i x %i corresponding to the '
+           'lengths of the input coordinates x and y. However, '
+           'A has dimensions %i x %i.' % (Nx, Ny, m, n))
+    assert Nx == m, msg
+    assert Ny == n, msg
+
+    # Get interpolation points
+    points = numpy.array(points)
+    xi = points[:, 0]
+    eta = points[:, 1]
+
+    if bounds_error:
+        msg = ('Interpolation point %f was less than the smallest value in '
+               'domain %f and bounds_error was requested.' % (xi[0], x[0]))
+        if xi[0] < x[0]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was greater than the largest value in '
+               'domain %f and bounds_error was requested.' % (xi[-1], x[-1]))
+        if xi[-1] > x[-1]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was less than the smallest value in '
+               'domain %f and bounds_error was requested.' % (eta[0], y[0]))
+        if eta[0] < y[0]:
+            raise Exception(msg)
+
+        msg = ('Interpolation point %f was greater than the largest value in '
+               'domain %f and bounds_error was requested.' % (eta[-1], y[-1]))
+        if eta[-1] > y[-1]:
+            raise Exception(msg)
+
+    return x, y, A, xi, eta
