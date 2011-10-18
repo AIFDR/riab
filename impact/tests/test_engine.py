@@ -981,6 +981,7 @@ class Test_Engine(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.makeSuite(Test_Engine, 'test_earthquake_impact_OSM_data')
+    #suite = unittest.makeSuite(Test_Engine, 'test_earthquake_impact_OSM_data')
+    suite = unittest.makeSuite(Test_Engine, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

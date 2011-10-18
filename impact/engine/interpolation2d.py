@@ -68,8 +68,10 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
 
     # Internal check (index == 0 is OK)
     msg = 'Interpolation point outside domain. This should never happen. Email Ole.Moller.Nielsen@gmail.com'
-    assert max(idx) < len(x), msg
-    assert max(idy) < len(y), msg
+    if len(idx) > 0:
+        assert max(idx) < len(x), msg
+    if len(idy) > 0:
+        assert max(idy) < len(y), msg
 
     #print
     #print x[0], x[-1]
@@ -103,10 +105,11 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     Z = A00 + alpha * Dx + beta * Dy + alpha * beta * (A11 - Dx - Dy - A00)
 
     # Self test
-    mZ = numpy.nanmax(Z)
-    mA = numpy.nanmax(A)
-    msg = 'Internal check failed. Max interpolated value %.15f exceeds max grid value %.15f ' % (mZ, mA)
-    assert mZ <= mA, msg
+    if len(Z) > 0:
+        mZ = numpy.nanmax(Z)
+        mA = numpy.nanmax(A)
+        msg = 'Internal check failed. Max interpolated value %.15f exceeds max grid value %.15f ' % (mZ, mA)
+        assert mZ <= mA, msg
 
     # Populate result with interpolated values for points inside domain
     # and NaN for values outside
