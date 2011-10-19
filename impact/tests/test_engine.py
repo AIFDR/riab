@@ -4,7 +4,7 @@ import sys
 import os
 
 from impact.engine.core import calculate_impact
-from impact.engine.interpolation import raster_spline
+from impact.engine.interpolation2d import interpolate_raster
 from impact.storage.io import read_layer
 
 from impact.storage.utilities import unique_filename
@@ -15,6 +15,7 @@ from impact.plugins import get_plugins
 from impact.tests.utilities import TESTDATA
 from impact.tests.plugins import empirical_fatality_model
 from impact.tests.plugins import NEXIS_building_impact_model
+
 
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
@@ -262,7 +263,7 @@ class Test_Engine(unittest.TestCase):
     def test_earthquake_damage_schools(self):
         """Lembang building damage from ground shaking works
 
-        This test also exercises ineterpolation of hazard level (raster) to
+        This test also exercises interpolation of hazard level (raster) to
         building locations (vector data).
         """
 
@@ -341,9 +342,9 @@ class Test_Engine(unittest.TestCase):
                                       mmi_min, mmi_max, lon, lat))
                 assert mmi_min <= calculated_mmi <= mmi_max, msg
 
-                # Set up some tolerances. Revise when NaN interpolation works
+                # Set up some tolerances for comparison with test set.
                 if mmi_filename.startswith('Lembang_Earthquake'):
-                    pct = 10
+                    pct = 3
                 else:
                     pct = 2
 
@@ -391,6 +392,70 @@ class Test_Engine(unittest.TestCase):
             assert max_damage <= 100
             #print 'Extrema', mmi_filename, min_damage, max_damage
             #print len(MMI)
+
+    def test_earthquake_impact_OSM_data(self):
+        """Earthquake layer interpolation to OSM building data works
+
+        The impact function used is based on the guidelines plugin
+
+        This test also exercises interpolation of hazard level (raster) to
+        building locations (vector data).
+        """
+
+        # FIXME: Still needs some reference data to compare to
+        for mmi_filename in ['Shakemap_Padang_2009.asc',
+                             # Time consuming
+                             #'Earthquake_Ground_Shaking.asc',
+                             'Lembang_Earthquake_Scenario.asc']:
+
+            # Name file names for hazard level and exposure
+            hazard_filename = '%s/%s' % (TESTDATA, mmi_filename)
+            exposure_filename = ('%s/OSM_building_polygons_20110905.shp'
+                                 % TESTDATA)
+
+            # Calculate impact using API
+            H = read_layer(hazard_filename)
+            E = read_layer(exposure_filename)
+
+            plugin_name = 'Earthquake Guidelines Function'
+            plugin_list = get_plugins(plugin_name)
+            assert len(plugin_list) == 1
+            assert plugin_list[0].keys()[0] == plugin_name
+
+            IF = plugin_list[0][plugin_name]
+            impact_filename = calculate_impact(layers=[H, E],
+                                               impact_fcn=IF)
+
+            # Read input data
+            hazard_raster = read_layer(hazard_filename)
+            A = hazard_raster.get_data()
+            mmi_min, mmi_max = hazard_raster.get_extrema()
+
+            exposure_vector = read_layer(exposure_filename)
+            coordinates = exposure_vector.get_geometry()
+            attributes = exposure_vector.get_data()
+
+            # Read calculated result
+            impact_vector = read_layer(impact_filename)
+            icoordinates = impact_vector.get_geometry()
+            iattributes = impact_vector.get_data()
+
+            # Verify interpolated MMI with test result
+            for i in range(len(iattributes)):
+                calculated_mmi = iattributes[i]['MMI']
+
+                if numpy.isnan(calculated_mmi):
+                    continue
+
+                # Check that interpolated points are within range
+                msg = ('Interpolated mmi %f from file %s was outside '
+                       'extrema: [%f, %f] at point %i '
+                       % (calculated_mmi, hazard_filename,
+                          mmi_min, mmi_max, i))
+                assert mmi_min <= calculated_mmi <= mmi_max, msg
+
+                calculated_dam = iattributes[i]['DMGLEVEL']
+                assert calculated_dam in [1, 2, 3]
 
     def test_tsunami_loss_use_case(self):
         """Building loss from tsunami use case works
@@ -547,9 +612,6 @@ class Test_Engine(unittest.TestCase):
         coordinates = impact_vector.get_geometry()
         attributes = impact_vector.get_data()
 
-        # FIXME: Remove this tolerance when interpolation is better (issue #19)
-        tol = 1.0e-8
-
         # Test that results are as expected
         # FIXME: Change test when we decide what values should actually be
         #        calculated :-) :-) :-)
@@ -562,7 +624,7 @@ class Test_Engine(unittest.TestCase):
                                                            load_min,
                                                            load_max)
             if not numpy.isnan(load):
-                assert load_min - tol <= load <= load_max, msg
+                assert load_min <= load <= load_max, msg
 
             # Test calcalated values
             if 0.01 <= load < 90.0:
@@ -622,13 +684,13 @@ class Test_Engine(unittest.TestCase):
                 A[numlat - 1 - i, j] = linear_function(longitudes[j],
                                                    latitudes[i])
 
-        # Create bilinear interpolation function
-        F = raster_spline(longitudes, latitudes, A)
-
         # Test first that original points are reproduced correctly
         for i, eta in enumerate(latitudes):
             for j, xi in enumerate(longitudes):
-                assert numpy.allclose(F(xi, eta),
+
+                val = interpolate_raster(longitudes, latitudes, A,
+                                         [(xi, eta)], mode='linear')[0]
+                assert numpy.allclose(val,
                                       linear_function(xi, eta),
                                       rtol=1e-12, atol=1e-12)
 
@@ -637,12 +699,11 @@ class Test_Engine(unittest.TestCase):
         etas = numpy.linspace(lat_ll + 1, lat_ll + numlat - 1, 10 * numlat)
         for xi in xis:
             for eta in etas:
-                assert numpy.allclose(F(xi, eta),
+                val = interpolate_raster(longitudes, latitudes, A,
+                                         [(xi, eta)], mode='linear')[0]
+                assert numpy.allclose(val,
                                       linear_function(xi, eta),
                                       rtol=1e-12, atol=1e-12)
-
-        # FIXME (Ole): Need test for values outside grid.
-        #              They should be NaN or something
 
     def test_riab_interpolation(self):
         """Interpolation using Raster and Vector objects
@@ -677,9 +738,6 @@ class Test_Engine(unittest.TestCase):
             for j in range(numlon):
                 A[numlat - 1 - i, j] = linear_function(longitudes[j],
                                                        latitudes[i])
-
-        # Create bilinear interpolation function
-        F = raster_spline(longitudes, latitudes, A)
 
         # Write array to a raster file
         geotransform = (lon_ul, dlon, 0, lat_ul, 0, dlat)
@@ -799,10 +857,10 @@ class Test_Engine(unittest.TestCase):
             # as this was calculated using EQRM and thus different.
             assert numpy.allclose(calculated_mmi, MMI[i], rtol=0.02)
 
-    # FIXME (Ole): Disabled until we get onto the
-    # new interpolation scheme (issue #19)
-    def Xtest_interpolation_tsunami(self):
-        """Interpolation using tsunami data set
+    def test_interpolation_tsunami(self):
+        """Interpolation using tsunami data set works
+
+        This is test for issue #19 about interpolation overshoot
         """
 
         # Name file names for hazard level, exposure and expected fatalities
@@ -836,16 +894,12 @@ class Test_Engine(unittest.TestCase):
                                    depth_min, depth_max))
 
             if not numpy.isnan(interpolated_depth):
-                tol = 1.0e-6
-                assert depth_min - tol <= interpolated_depth <= depth_max, msg
+                assert depth_min <= interpolated_depth <= depth_max, msg
 
-    # FIXME (Ole): This is another test for interpolation. Work in progress.
-    # Enable when workning on issue #19
-    def Xtest_interpolation_tsunami_maumere(self):
+    def test_interpolation_tsunami_maumere(self):
         """Interpolation using tsunami data set from Maumere
 
-        This data showed some very wrong results from interpolation overshoot
-        when first attempted in August 2011 - hence this test
+        This is a test for interpolation (issue #19)
         """
 
         # Name file names for hazard level, exposure and expected fatalities
@@ -904,9 +958,13 @@ class Test_Engine(unittest.TestCase):
                 # 4.531, 3.911
                 # 2.675, 2.583
                 assert interpolated_depth < 4.531
+                assert interpolated_depth < 3.911
                 assert interpolated_depth > 2.583
-                assert numpy.allclose(interpolated_depth, 3.553,
-                                      rtol=1.0e-5, atol=1.0e-5)
+                assert interpolated_depth > 2.675
+
+                # This is a characterisation test for bilinear interpolation
+                assert numpy.allclose(interpolated_depth, 3.62477215491,
+                                      rtol=1.0e-12, atol=1.0e-12)
 
             # Check that interpolated points are within range
             msg = ('Interpolated depth %f at point %i was outside extrema: '
@@ -914,8 +972,7 @@ class Test_Engine(unittest.TestCase):
                                    depth_min, depth_max))
 
             if not numpy.isnan(interpolated_depth):
-                tol = 1.0e-6
-                assert depth_min - tol <= interpolated_depth <= depth_max, msg
+                assert depth_min <= interpolated_depth <= depth_max, msg
 
 
 if __name__ == '__main__':

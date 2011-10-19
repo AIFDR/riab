@@ -60,41 +60,28 @@ def padang_check_results(mmi, building_class):
     # and Ted Dunstone. Format is
     # MMI, Building class, impact [%]
     padang_verified_results = [
-          [7.511692, 1, 50.56493],
-          [7.480775, 1, 49.06926],
-          [7.638388, 2, 20.30747],
-          [7.098015, 2, 5.886142],
-          [7.494795, 3, 7.221645],
-          [7.610998, 3, 9.348216],
-          [7.662717, 4, 3.308273],
-          [7.260199, 4, 0.176997],
-          [7.144405, 5, 1.075663],
-          [7.857333, 5, 7.576518],
-          [7.550323, 6, 4.743625],
-          [7.470334, 6, 4.082062],
-          [7.306306, 6, 2.942894],
-          [7.528476, 7, 1.281912],
-          [7.098805, 7, 0.150739],
-          [7.603434, 8, 1.224659],
-          [7.442411, 8, 0.530800],
-          [7.400580, 8, 0.419928],
-          [7.397977, 8, 0.413749],
-          [7.450592, 8, 0.555220],
-          [7.453757, 8, 0.564922],
-          [7.445377, 8, 0.539542],
-          [7.433962, 8, 0.506559],
-          [7.424470, 8, 0.480477],
-          [7.439781, 8, 0.523150],
-          [7.398985, 8, 0.416132],
-          [7.435351, 8, 0.510478],
-          [7.446795, 8, 0.543766],
-          [7.454428, 8, 0.567000],
-          [7.401520, 8, 0.422178],
-          [7.397964, 8, 0.413719],
-          [7.396476, 8, 0.410224],
-          [7.638214, 9, 1.694369],
-          [7.427594, 9, 1.050452],
-          [7.345935, 9, 0.862066]]
+        [7.50352, 1, 50.17018],
+        [7.49936, 1, 49.96942],
+        [7.63961, 2, 20.35277],
+        [7.09855, 2, 5.895076],
+        [7.49990, 3, 7.307292],
+        [7.80284, 3, 13.71306],
+        [7.66337, 4, 3.320895],
+        [7.12665, 4, 0.050489],
+        [7.12665, 5, 1.013092],
+        [7.85400, 5, 7.521769],
+        [7.54040, 6, 4.657564],
+        [7.48122, 6, 4.167858],
+        [7.31694, 6, 3.008460],
+        [7.54057, 7, 1.349811],
+        [7.12753, 7, 0.177422],
+        [7.61912, 7, 1.866942],
+        [7.64828, 8, 1.518264],
+        [7.43644, 8, 0.513577],
+        [7.12665, 8, 0.075070],
+        [7.64828, 9, 1.731623],
+        [7.48122, 9, 1.191497],
+        [7.12665, 9, 0.488944]]
 
     impact_array = [verified_impact
         for verified_mmi, verified_building_class, verified_impact
@@ -380,8 +367,8 @@ class Test_plugins(unittest.TestCase):
                     calculated_mmi = attributes[i]['MMI']
 
                     if calculated_mmi == 0.0:
-                         # FIXME (Ole): Some points have MMI==0 here.
-                         # Weird but not a show stopper
+                        # FIXME (Ole): Some points have MMI==0 here.
+                        # Weird but not a show stopper
                         continue
 
                     # Check that interpolated points are within range
@@ -398,8 +385,8 @@ class Test_plugins(unittest.TestCase):
                     calculated_dam = attributes[i]['DAMAGE']
                     verified_dam = padang_check_results(calculated_mmi,
                                                         building_class)
-                    if verified_dam != False:
-
+                    #print calculated_mmi, building_class, calculated_dam
+                    if verified_dam:
                         msg = ('Calculated damage was not as expected '
                                  'for hazard layer %s. I got %f '
                                'but expected %f' % (hazardfile,
@@ -412,6 +399,9 @@ class Test_plugins(unittest.TestCase):
 
                 msg = ('No points was verified in output. Please create '
                        'table withe reference data')
+                #print
+                #print verified_count
+                #print count
                 assert verified_count > 0, msg
                 assert count == 3802, 'Number buildings was not 3802.'
 

@@ -5,7 +5,7 @@ ordering of dimensions between raster files and numpy arrays.
 """
 
 import numpy
-from scipy.interpolate import RectBivariateSpline
+from impact.engine.interpolation2d import interpolate_raster
 from impact.storage.vector import Vector
 from impact.storage.vector import convert_polygons_to_centroids
 
@@ -111,15 +111,10 @@ def interpolate_raster_vector_points(R, V, name=None):
     assert V.is_point_data
 
     # Get raster data and corresponding x and y axes
-
-    # FIXME (Ole): Replace NODATA with 0 until we can handle proper NaNs
-    A = R.get_data(nan=0.0)
+    A = R.get_data(nan=True)
     longitudes, latitudes = R.get_geometry()
     assert len(longitudes) == A.shape[1]
     assert len(latitudes) == A.shape[0]
-
-    # Create interpolator
-    f = raster_spline(longitudes, latitudes, A)
 
     # Get vector point geometry as Nx2 array
     coordinates = numpy.array(V.get_geometry(),
@@ -132,14 +127,12 @@ def interpolate_raster_vector_points(R, V, name=None):
     if name is None:
         name = R.get_name()
 
-    # FIXME (Ole): Profiling may suggest that his loop should be written in C
-    for i in range(N):
-        xi = coordinates[i, 0]   # Longitude
-        eta = coordinates[i, 1]  # Latitude
+    values = interpolate_raster(longitudes, latitudes, A,
+                                coordinates, mode='linear')
 
-        # Use layer name from raster for new attribute
-        value = float(f(xi, eta))
-        attributes.append({name: value})
+    # Create list of dictionaries for this attribute and return
+    for i in range(N):
+        attributes.append({name: values[i]})
 
     return Vector(data=attributes, projection=V.get_projection(),
                   geometry=coordinates)

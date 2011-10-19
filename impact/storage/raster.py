@@ -9,6 +9,7 @@ from impact.storage.utilities import DRIVER_MAP
 from impact.engine.interpolation import interpolate_raster_vector
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
+from impact.storage.utilities import nanallclose
 from impact.storage.utilities import geotransform2bbox, geotransform2resolution
 
 
@@ -116,9 +117,9 @@ class Raster:
             return False
 
         # Check data
-        if not numpy.allclose(self.get_data(),
-                              other.get_data(),
-                              rtol=rtol, atol=atol):
+        if not nanallclose(self.get_data(),
+                           other.get_data(),
+                           rtol=rtol, atol=atol):
             return False
 
         # Check keywords
@@ -227,7 +228,10 @@ class Raster:
         # Get Dimensions. Note numpy and Gdal swap order
         N, M = A.shape
 
-        # Create empty file
+        # Create empty file.
+        # FIXME (Ole): It appears that this is created as single
+        #              precision even though Float64 is specified
+        #              - see issue #17
         driver = gdal.GetDriverByName(format)
         fid = driver.Create(filename, M, N, 1, gdal.GDT_Float64)
         if fid is None:
@@ -273,7 +277,7 @@ class Raster:
             # Interpolate this raster layer to geometry of X
             return interpolate_raster_vector(self, X, name)
 
-    def get_data(self, nan=False):
+    def get_data(self, nan=True):
         """Get raster data as numeric array
         If keyword nan is True, nodata values will be replaced with NaN
         If keyword nan has a numeric value, that will be used for NODATA
@@ -402,7 +406,10 @@ class Raster:
         If the internal value is None, the standard -9999 is assumed
         """
 
-        nodata = self.band.GetNoDataValue()
+        if hasattr(self, 'band'):
+            nodata = self.band.GetNoDataValue()
+        else:
+            nodata = None
 
         # Use common default in case nodata was not registered in raster file
         if nodata is None:
@@ -478,7 +485,6 @@ class Raster:
             return resx
         else:
             return resx, resy
-
 
     @property
     def is_raster(self):

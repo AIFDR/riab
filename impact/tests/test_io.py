@@ -23,6 +23,7 @@ from impact.storage.utilities import calculate_polygon_area
 from impact.storage.utilities import calculate_polygon_centroid
 from impact.storage.utilities import geotransform2bbox
 from impact.storage.utilities import geotransform2resolution
+from impact.storage.utilities import nanallclose
 from impact.storage.io import get_bounding_box
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.tests.utilities import same_API
@@ -604,12 +605,12 @@ class Test_IO(unittest.TestCase):
 
                 A2 = R2.get_data()
 
-                assert numpy.allclose(numpy.min(A1), numpy.min(A2))
-                assert numpy.allclose(numpy.max(A1), numpy.max(A2))
+                assert numpy.allclose(numpy.nanmin(A1), numpy.nanmin(A2))
+                assert numpy.allclose(numpy.nanmax(A1), numpy.nanmax(A2))
 
                 msg = ('Array values of written raster array were not as '
                        'expected')
-                assert numpy.allclose(A1, A2), msg
+                assert nanallclose(A1, A2), msg
 
                 msg = 'Geotransforms were different'
                 assert R1.get_geotransform() == R2.get_geotransform(), msg
@@ -662,7 +663,7 @@ class Test_IO(unittest.TestCase):
             filename = '%s/%s' % (TESTDATA, rastername)
             R = read_layer(filename)
 
-            A = R.get_data()
+            A = R.get_data(nan=False)
 
             # Verify nodata value
             Amin = min(A.flat[:])

@@ -14,6 +14,7 @@ from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_centroid
 from impact.storage.utilities import geometrytype2string
 
+
 # FIXME (Ole): Consider using pyshp to read and write shapefiles
 #              See http://code.google.com/p/pyshp
 class Vector:
@@ -232,7 +233,6 @@ class Vector:
         self.name = vectorname
         self.filename = filename
 
-
         fid = ogr.Open(filename)
         if fid is None:
             msg = 'Could not open %s' % filename
@@ -312,7 +312,6 @@ class Vector:
         # Store geometry coordinates as a compact numeric array
         self.geometry = geometry
         self.data = data
-
 
     def write_to_file(self, filename):
         """Save vector data to file

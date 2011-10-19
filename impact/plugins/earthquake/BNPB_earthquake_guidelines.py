@@ -120,6 +120,7 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
                    geometry=coordinates,
                    name='Estimated damage level',
                    keywords={'caption': caption})
+
         return V
 
     def generate_style(self, data):

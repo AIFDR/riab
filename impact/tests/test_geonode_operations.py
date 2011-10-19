@@ -14,6 +14,7 @@ from impact.storage.io import save_to_geonode, RisikoException
 from impact.storage.io import check_layer, assert_bounding_box_matches
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import bboxstring2list
+from impact.storage.utilities import nanallclose
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page
 from impact.storage.io import read_layer
@@ -719,7 +720,7 @@ class Test_geonode_connection(unittest.TestCase):
 
         # Get reference values
         H = read_layer(hazard_filename)
-        A_ref = H.get_data()
+        A_ref = H.get_data(nan=True)
         depth_min_ref, depth_max_ref = H.get_extrema()
 
         # Upload to internal geonode
@@ -729,7 +730,7 @@ class Test_geonode_connection(unittest.TestCase):
         # Download data again with native resolution
         bbox = get_bounding_box_string(hazard_filename)
         H = download(INTERNAL_SERVER_URL, hazard_name, bbox)
-        A = H.get_data()
+        A = H.get_data(nan=True)
 
         # Compare shapes
         msg = ('Shape of downloaded raster was [%i, %i]. '
@@ -748,7 +749,7 @@ class Test_geonode_connection(unittest.TestCase):
                               rtol=1.0e-6, atol=1.0e-10), msg
 
         # Compare data number by number
-        assert numpy.allclose(A, A_ref, rtol=1.0e-8)
+        assert nanallclose(A, A_ref, rtol=1.0e-8)
 
     def test_specified_raster_resolution(self):
         """Raster layer can be downloaded with specific resolution
@@ -802,7 +803,7 @@ class Test_geonode_connection(unittest.TestCase):
                                   rtol=0, atol=0), msg
 
             # Assess that the range of the interpolated data is sane
-            A = numpy.where(A == -9999, 0, A)  # Get rid of -9999
+            A = numpy.where(numpy.isnan(A), 0, A)  # Get rid of missing values
 
             # We expect exact match of the minimum
             assert numpy.allclose(depth_min_ref, numpy.amin(A),
