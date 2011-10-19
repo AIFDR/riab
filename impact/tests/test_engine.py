@@ -610,9 +610,6 @@ class Test_Engine(unittest.TestCase):
         coordinates = impact_vector.get_geometry()
         attributes = impact_vector.get_data()
 
-        # FIXME: Remove this tolerance when interpolation is better (issue #19)
-        tol = 1.0e-8
-
         # Test that results are as expected
         # FIXME: Change test when we decide what values should actually be
         #        calculated :-) :-) :-)
@@ -625,7 +622,7 @@ class Test_Engine(unittest.TestCase):
                                                            load_min,
                                                            load_max)
             if not numpy.isnan(load):
-                assert load_min - tol <= load <= load_max, msg
+                assert load_min <= load <= load_max, msg
 
             # Test calcalated values
             if 0.01 <= load < 90.0:
