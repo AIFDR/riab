@@ -228,7 +228,10 @@ class Raster:
         # Get Dimensions. Note numpy and Gdal swap order
         N, M = A.shape
 
-        # Create empty file
+        # Create empty file.
+        # FIXME (Ole): It appears that this is created as single
+        #              precision even though Float64 is specified
+        #              - see issue #17
         driver = gdal.GetDriverByName(format)
         fid = driver.Create(filename, M, N, 1, gdal.GDT_Float64)
         if fid is None:
