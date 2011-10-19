@@ -125,15 +125,15 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                 count50 += 1
 
         # Create report
-        caption = ('<table border="0" width="320px">'
+        caption = ('<font size="3"> <table border="0" width="320px">'
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
                     '   <tr></tr>'
                     '   <tr><td>%s&#58;</td><td>%i</td></tr>'
-                    '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (<10%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
-                    '</table>' % (_('Buildings'), _('Total'),
+                    '</table></font>' % (_('Buildings'), _('Total'),
                                   _('All'), N,
                                   _('No damage'), count0,
                                   _('Low damage'), count10,
