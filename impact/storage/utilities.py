@@ -678,5 +678,5 @@ def nanallclose(x, y, rtol=1.0e-5, atol=1.0e-8):
     if numpy.any(xn != yn):
         return False
 
-    return numpy.allclose(xn, yn, rtol=rtol, atol=atol)
+    return numpy.allclose(x[-xn], y[-yn], rtol=rtol, atol=atol)
 
