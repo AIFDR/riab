@@ -341,9 +341,9 @@ class Test_Engine(unittest.TestCase):
                                       mmi_min, mmi_max, lon, lat))
                 assert mmi_min <= calculated_mmi <= mmi_max, msg
 
-                # Set up some tolerances. Revise when NaN interpolation works
+                # Set up some tolerances for comparison with test set.
                 if mmi_filename.startswith('Lembang_Earthquake'):
-                    pct = 10
+                    pct = 3
                 else:
                     pct = 2
 
@@ -895,13 +895,10 @@ class Test_Engine(unittest.TestCase):
             if not numpy.isnan(interpolated_depth):
                 assert depth_min <= interpolated_depth <= depth_max, msg
 
-    # FIXME (Ole): This is another test for interpolation. Work in progress.
-    # Enable when workning on issue #19
-    def Xtest_interpolation_tsunami_maumere(self):
+    def test_interpolation_tsunami_maumere(self):
         """Interpolation using tsunami data set from Maumere
 
-        This data showed some very wrong results from interpolation overshoot
-        when first attempted in August 2011 - hence this test
+        This is a test for interpolation (issue #19)
         """
 
         # Name file names for hazard level, exposure and expected fatalities
@@ -960,9 +957,13 @@ class Test_Engine(unittest.TestCase):
                 # 4.531, 3.911
                 # 2.675, 2.583
                 assert interpolated_depth < 4.531
+                assert interpolated_depth < 3.911
                 assert interpolated_depth > 2.583
-                assert numpy.allclose(interpolated_depth, 3.553,
-                                      rtol=1.0e-5, atol=1.0e-5)
+                assert interpolated_depth > 2.675
+
+                # This is a characterisation test for bilinear interpolation
+                assert numpy.allclose(interpolated_depth, 3.62477215491,
+                                      rtol=1.0e-12, atol=1.0e-12)
 
             # Check that interpolated points are within range
             msg = ('Interpolated depth %f at point %i was outside extrema: '
@@ -970,12 +971,10 @@ class Test_Engine(unittest.TestCase):
                                    depth_min, depth_max))
 
             if not numpy.isnan(interpolated_depth):
-                tol = 1.0e-6
-                assert depth_min - tol <= interpolated_depth <= depth_max, msg
+                assert depth_min <= interpolated_depth <= depth_max, msg
 
 
 if __name__ == '__main__':
-    #suite = unittest.makeSuite(Test_Engine, 'test_earthquake_fatality_estimation_allen')
     suite = unittest.makeSuite(Test_Engine, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)

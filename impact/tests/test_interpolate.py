@@ -134,6 +134,76 @@ class Test_interpolate(unittest.TestCase):
 
         assert nanallclose(vals, refs, rtol=1e-12, atol=1e-12)
 
+    def test_linear_interpolation_random_array_and_nan(self):
+        """Interpolation library works with random array and NaN
+        """
+
+        # Define pixel centers along each direction
+        x = numpy.arange(20) * 1.0
+        y = numpy.arange(25) * 1.0
+
+        # Define ny by nx array with corresponding values
+        A = numpy.zeros((len(x), len(y)))
+
+        # Define arbitrary values for each x, y pair
+        numpy.random.seed(17)
+        A = numpy.random.random((len(x), len(y)))*10
+
+        # Create islands of NaN
+        A[5, 13] = numpy.nan
+        A[6, 14] = A[6, 18] = numpy.nan
+        A[7, 14:18] = numpy.nan
+        A[8, 13:18] = numpy.nan
+        A[9, 12:19] = numpy.nan
+        A[10, 14:17] = numpy.nan
+        A[11, 15] = numpy.nan
+
+        A[15, 5:6] = numpy.nan
+
+        # Creat interpolation points
+        xis = numpy.linspace(x[0], x[-1], 39)  # Hit all mid points
+        etas = numpy.linspace(y[0], y[-1], 73) # Hit thirds
+        points = combine_coordinates(xis, etas)
+
+        vals = interpolate2d(x, y, A, points, mode='linear')
+
+
+        # Calculate reference result with expected NaNs and compare
+        i = j = 0
+        for k, (xi, eta) in enumerate(points):
+
+            # Find indices of nearest higher value in x and y
+            i = numpy.searchsorted(x, xi)
+            j = numpy.searchsorted(y, eta)
+
+            if i > 0 and j > 0:
+
+                # Get four neigbours
+                A00 = A[i-1, j-1]
+                A01 = A[i-1, j]
+                A10 = A[i, j-1]
+                A11 = A[i, j]
+
+                if numpy.any(numpy.isnan([A00, A01, A10, A11])):
+                    ref = numpy.nan
+                else:
+                    if numpy.allclose(xi, x[i]):
+                        alpha = 1.0
+                    else:
+                        alpha = 0.5
+
+                    if numpy.allclose(eta, y[j]):
+                        beta = 1.0
+                    else:
+                        beta = eta - y[j-1]
+
+                    ref = (A00 * (1 - alpha) * (1 - beta) +
+                           A01 * (1 - alpha) * beta +
+                           A10 * alpha * (1 - beta) +
+                           A11 * alpha * beta)
+
+                #print i, j, xi, eta, alpha, beta, vals[k], ref
+                assert nanallclose(vals[k], ref, rtol=1e-12, atol=1e-12)
 
 
     def test_linear_interpolation_outside_domain(self):
@@ -223,6 +293,7 @@ class Test_interpolate(unittest.TestCase):
                                 assert numpy.allclose(vals[i], refs[i],
                                                       rtol=1.0e-12,
                                                       atol=1.0e-12), msg
+
 
     def test_interpolation_raster_data(self):
         """Interpolation library works for raster data
