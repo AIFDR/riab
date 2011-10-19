@@ -127,7 +127,8 @@ def interpolate_raster_vector_points(R, V, name=None):
     if name is None:
         name = R.get_name()
 
-    values = interpolate_raster(longitudes, latitudes, A, coordinates, mode='linear')
+    values = interpolate_raster(longitudes, latitudes, A,
+                                coordinates, mode='linear')
 
     # Create list of dictionaries for this attribute and return
     for i in range(N):

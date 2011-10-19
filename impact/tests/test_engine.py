@@ -16,6 +16,7 @@ from impact.tests.utilities import TESTDATA
 from impact.tests.plugins import empirical_fatality_model
 from impact.tests.plugins import NEXIS_building_impact_model
 
+
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
     """
@@ -392,7 +393,6 @@ class Test_Engine(unittest.TestCase):
             #print 'Extrema', mmi_filename, min_damage, max_damage
             #print len(MMI)
 
-
     def test_earthquake_impact_OSM_data(self):
         """Earthquake layer interpolation to OSM building data works
 
@@ -404,12 +404,14 @@ class Test_Engine(unittest.TestCase):
 
         # FIXME: Still needs some reference data to compare to
         for mmi_filename in ['Shakemap_Padang_2009.asc',
-                             #'Earthquake_Ground_Shaking.asc',  # Time consuming
+                             # Time consuming
+                             #'Earthquake_Ground_Shaking.asc',
                              'Lembang_Earthquake_Scenario.asc']:
 
             # Name file names for hazard level and exposure
             hazard_filename = '%s/%s' % (TESTDATA, mmi_filename)
-            exposure_filename = '%s/OSM_building_polygons_20110905.shp' % TESTDATA
+            exposure_filename = ('%s/OSM_building_polygons_20110905.shp'
+                                 % TESTDATA)
 
             # Calculate impact using API
             H = read_layer(hazard_filename)
@@ -686,7 +688,8 @@ class Test_Engine(unittest.TestCase):
         for i, eta in enumerate(latitudes):
             for j, xi in enumerate(longitudes):
 
-                val = interpolate_raster(longitudes, latitudes, A, [(xi, eta)], mode='linear')[0]
+                val = interpolate_raster(longitudes, latitudes, A,
+                                         [(xi, eta)], mode='linear')[0]
                 assert numpy.allclose(val,
                                       linear_function(xi, eta),
                                       rtol=1e-12, atol=1e-12)
@@ -696,13 +699,11 @@ class Test_Engine(unittest.TestCase):
         etas = numpy.linspace(lat_ll + 1, lat_ll + numlat - 1, 10 * numlat)
         for xi in xis:
             for eta in etas:
-                val = interpolate_raster(longitudes, latitudes, A, [(xi, eta)], mode='linear')[0]
+                val = interpolate_raster(longitudes, latitudes, A,
+                                         [(xi, eta)], mode='linear')[0]
                 assert numpy.allclose(val,
                                       linear_function(xi, eta),
                                       rtol=1e-12, atol=1e-12)
-
-        # FIXME (Ole): Need test for values outside grid.
-        #              They should be NaN or something
 
     def test_riab_interpolation(self):
         """Interpolation using Raster and Vector objects

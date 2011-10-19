@@ -74,7 +74,8 @@ class Test_interpolate(unittest.TestCase):
     def test_linear_interpolation_nan_points(self):
         """Interpolation library works with interpolation points being NaN
 
-        This is was the reason for bug reported in: https://github.com/AIFDR/riab/issues/155
+        This is was the reason for bug reported in:
+        https://github.com/AIFDR/riab/issues/155
         """
 
         # Define pixel centers along each direction
@@ -99,7 +100,6 @@ class Test_interpolate(unittest.TestCase):
         vals = interpolate2d(x, y, A, points, mode='linear')
         refs = linear_function(points[:, 0], points[:, 1])
         assert nanallclose(vals, refs, rtol=1e-12, atol=1e-12)
-
 
     def test_linear_interpolation_nan_array(self):
         """Interpolation library works with grid points being NaN
@@ -147,7 +147,7 @@ class Test_interpolate(unittest.TestCase):
 
         # Define arbitrary values for each x, y pair
         numpy.random.seed(17)
-        A = numpy.random.random((len(x), len(y)))*10
+        A = numpy.random.random((len(x), len(y))) * 10
 
         # Create islands of NaN
         A[5, 13] = numpy.nan
@@ -161,12 +161,11 @@ class Test_interpolate(unittest.TestCase):
         A[15, 5:6] = numpy.nan
 
         # Creat interpolation points
-        xis = numpy.linspace(x[0], x[-1], 39)  # Hit all mid points
-        etas = numpy.linspace(y[0], y[-1], 73) # Hit thirds
+        xis = numpy.linspace(x[0], x[-1], 39)   # Hit all mid points
+        etas = numpy.linspace(y[0], y[-1], 73)  # Hit thirds
         points = combine_coordinates(xis, etas)
 
         vals = interpolate2d(x, y, A, points, mode='linear')
-
 
         # Calculate reference result with expected NaNs and compare
         i = j = 0
@@ -179,9 +178,9 @@ class Test_interpolate(unittest.TestCase):
             if i > 0 and j > 0:
 
                 # Get four neigbours
-                A00 = A[i-1, j-1]
-                A01 = A[i-1, j]
-                A10 = A[i, j-1]
+                A00 = A[i - 1, j - 1]
+                A01 = A[i - 1, j]
+                A10 = A[i, j - 1]
                 A11 = A[i, j]
 
                 if numpy.any(numpy.isnan([A00, A01, A10, A11])):
@@ -195,7 +194,7 @@ class Test_interpolate(unittest.TestCase):
                     if numpy.allclose(eta, y[j]):
                         beta = 1.0
                     else:
-                        beta = eta - y[j-1]
+                        beta = eta - y[j - 1]
 
                     ref = (A00 * (1 - alpha) * (1 - beta) +
                            A01 * (1 - alpha) * beta +
@@ -204,7 +203,6 @@ class Test_interpolate(unittest.TestCase):
 
                 #print i, j, xi, eta, alpha, beta, vals[k], ref
                 assert nanallclose(vals[k], ref, rtol=1e-12, atol=1e-12)
-
 
     def test_linear_interpolation_outside_domain(self):
         """Interpolation library sensibly handles values outside the domain
@@ -293,7 +291,6 @@ class Test_interpolate(unittest.TestCase):
                                 assert numpy.allclose(vals[i], refs[i],
                                                       rtol=1.0e-12,
                                                       atol=1.0e-12), msg
-
 
     def test_interpolation_raster_data(self):
         """Interpolation library works for raster data

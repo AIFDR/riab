@@ -486,7 +486,6 @@ class Raster:
         else:
             return resx, resy
 
-
     @property
     def is_raster(self):
         return True

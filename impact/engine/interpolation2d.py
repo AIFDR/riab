@@ -67,22 +67,12 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     idy = numpy.searchsorted(y, eta, side='left')
 
     # Internal check (index == 0 is OK)
-    msg = 'Interpolation point outside domain. This should never happen. Email Ole.Moller.Nielsen@gmail.com'
+    msg = ('Interpolation point outside domain. This should never happen. '
+           'Please email Ole.Moller.Nielsen@gmail.com')
     if len(idx) > 0:
         assert max(idx) < len(x), msg
     if len(idy) > 0:
         assert max(idy) < len(y), msg
-
-    #print
-    #print x[0], x[-1]
-    #print xi[0], xi[-1]
-    #print min(xi), max(xi)
-    #print numpy.where(idx == 3)
-    #print xi[numpy.where(idx == 3)]
-    #print numpy.where(numpy.isnan(xi))
-
-    #print
-    #print max(x)
 
     # Get the four neighbours for each interpolation point
     x0 = x[idx - 1]
@@ -108,7 +98,8 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
     if len(Z) > 0:
         mZ = numpy.nanmax(Z)
         mA = numpy.nanmax(A)
-        msg = 'Internal check failed. Max interpolated value %.15f exceeds max grid value %.15f ' % (mZ, mA)
+        msg = ('Internal check failed. Max interpolated value %.15f '
+               'exceeds max grid value %.15f ' % (mZ, mA))
         assert mZ <= mA, msg
 
     # Populate result with interpolated values for points inside domain
@@ -163,23 +154,21 @@ def check_inputs(x, y, A, points, bounds_error):
                '%s' % str(e))
         raise Exception(msg)
 
-
-    msg = ('Input vector x must be monotoneously increasing. I got min(x) == %.15f, '
-           'but x[0] == %.15f' % (min(x), x[0]))
+    msg = ('Input vector x must be monotoneously increasing. I got '
+           'min(x) == %.15f, but x[0] == %.15f' % (min(x), x[0]))
     assert min(x) == x[0], msg
 
-    msg = ('Input vector y must be monotoneously increasing. I got min(y) == %.15f, '
-           'but y[0] == %.15f' % (min(y), y[0]))
+    msg = ('Input vector y must be monotoneously increasing. '
+           'I got min(y) == %.15f, but y[0] == %.15f' % (min(y), y[0]))
     assert min(y) == y[0], msg
 
-    msg = ('Input vector x must be monotoneously increasing. I got max(x) == %.15f, '
-           'but x[-1] == %.15f' % (max(x), x[-1]))
+    msg = ('Input vector x must be monotoneously increasing. I got '
+           'max(x) == %.15f, but x[-1] == %.15f' % (max(x), x[-1]))
     assert max(x) == x[-1], msg
 
-    msg = ('Input vector y must be monotoneously increasing. I got max(y) == %.15f, '
-           'but y[-1] == %.15f' % (max(y), y[-1]))
+    msg = ('Input vector y must be monotoneously increasing. I got '
+           'max(y) == %.15f, but y[-1] == %.15f' % (max(y), y[-1]))
     assert max(y) == y[-1], msg
-
 
     try:
         A = numpy.array(A)

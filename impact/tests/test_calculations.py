@@ -489,7 +489,7 @@ class Test_calculations(unittest.TestCase):
             assert numpy.allclose(ref_geotransform, gn_geotransform), msg
 
     def test_data_resampling_example(self):
-        """Raster data is unchanged (up to a tolerance) when going through geonode
+        """Raster data is unchanged when going through geonode
 
         """
 
@@ -501,7 +501,6 @@ class Test_calculations(unittest.TestCase):
         #------------
         # Hazard data
         #------------
-
         # Read hazard input data for reference
         H_ref = read_layer(hazard_filename)
 
@@ -519,15 +518,16 @@ class Test_calculations(unittest.TestCase):
         A = H.get_data()
         depth_min, depth_max = H.get_extrema()
 
-
-        # FIXME (Ole): The layer read from file is single precision only: Issue #17
-        # Here's the explanation why interpolation below produce slightly different results (but why?)
-        # The layer read from file is single precision which may be due to the way it is converted
-        # from ASC to TIF. In other words the problem may be in raster.write_to_file. Float64 is
+        # FIXME (Ole): The layer read from file is single precision only:
+        # Issue #17
+        # Here's the explanation why interpolation below produce slightly
+        # different results (but why?)
+        # The layer read from file is single precision which may be due to
+        # the way it is converted from ASC to TIF. In other words the
+        # problem may be in raster.write_to_file. Float64 is
         # specified there, so this is a mystery.
         #print 'A', A.dtype          # Double precision
         #print 'A_ref', A_ref.dtype  # Single precision
-
 
         # Compare extrema to values from numpy array
         assert numpy.allclose(depth_max, numpy.nanmax(A),
@@ -558,7 +558,8 @@ class Test_calculations(unittest.TestCase):
                 if not numpy.isnan(A[i, j]):
                     err = abs(A[i, j] - A_ref[i, j])
                     if err > 0:
-                        msg = '%i, %i: %.15f, %.15f, %.15f' % (i, j, A[i, j], A_ref[i, j], err)
+                        msg = ('%i, %i: %.15f, %.15f, %.15f'
+                               % (i, j, A[i, j], A_ref[i, j], err))
                         raise Exception(msg)
                     #if A[i,j] > 16:
                     #    print i, j, A[i, j], A_ref[i, j]
@@ -570,16 +571,14 @@ class Test_calculations(unittest.TestCase):
         assert numpy.allclose(A[-id_nan], A_ref[-id_nan],
                               rtol=1.0e-15, atol=1.0e-15)
 
-        #print 'MAX', A[245, 283], A_ref[245, 283], abs(A[245, 283] - A_ref[245, 283])
-        #print 'MAX: %.15f %.15f %.15f' %(A[245, 283], A_ref[245, 283], abs(A[245, 283] - A_ref[245, 283]))
+        #print 'MAX', A[245, 283], A_ref[245, 283]
+        #print 'MAX: %.15f %.15f %.15f' %(A[245, 283], A_ref[245, 283])
         assert numpy.allclose(A[245, 283], A_ref[245, 283],
                               rtol=1.0e-15, atol=1.0e-15)
-
 
         #--------------
         # Exposure data
         #--------------
-
         # Read exposure input data for reference
         E_ref = read_layer(exposure_filename)
 
@@ -604,7 +603,6 @@ class Test_calculations(unittest.TestCase):
             for key in att:
                 assert att[key] == att_ref[key]
 
-
         # Test riab's interpolation function
         I = H.interpolate(E, name='depth')
         icoordinates = I.get_geometry()
@@ -619,7 +617,6 @@ class Test_calculations(unittest.TestCase):
                               icoordinates_ref,
                               rtol=1.0e-12, atol=1.0e-12)
 
-
         iattributes = I.get_data()
         assert numpy.allclose(icoordinates, coordinates)
 
@@ -627,7 +624,8 @@ class Test_calculations(unittest.TestCase):
         assert N == 891
 
         # Set tolerance for single precision until issue #17 has been fixed
-        # It appears that the single precision leads to larger interpolation errors
+        # It appears that the single precision leads to larger interpolation
+        # errors
         rtol_issue17 = 2.0e-3
         atol_issue17 = 1.0e-4
 
@@ -637,7 +635,6 @@ class Test_calculations(unittest.TestCase):
             interpolated_depth_ref = I_ref.get_data()[i]['depth']
             interpolated_depth = iattributes[i]['depth']
 
-            #print interpolated_depth, interpolated_depth_ref, interpolated_depth-interpolated_depth_ref
             assert nanallclose(interpolated_depth,
                                interpolated_depth_ref,
                                rtol=rtol_issue17, atol=atol_issue17)
@@ -661,7 +658,7 @@ class Test_calculations(unittest.TestCase):
 
             if pointid == 148:
                 # Check that location is correct
-                print coordinates[i]
+                #print coordinates[i]
                 assert numpy.allclose(coordinates[i],
                                       [122.2045912, -8.608483265],
                                       rtol=1.0e-7, atol=1.0e-12)
@@ -674,7 +671,7 @@ class Test_calculations(unittest.TestCase):
                 assert interpolated_depth > 2.583
                 assert interpolated_depth > 2.675
 
-                print interpolated_depth
+                #print interpolated_depth
                 # This is a characterisation test for bilinear interpolation
                 assert numpy.allclose(interpolated_depth, 3.62477215491,
                                       rtol=rtol_issue17, atol=1.0e-12)

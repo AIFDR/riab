@@ -33,7 +33,6 @@ from impact.tests.utilities import FEATURE_COUNTS
 from impact.tests.utilities import GEOTRANSFORMS
 
 
-
 # Auxiliary function for raster test
 def linear_function(x, y):
     """Auxiliary function for use with raster test

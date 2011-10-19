@@ -159,4 +159,3 @@ def check_data_integrity(layer_files):
                                             layer.columns,
                                             refname, N))
             assert layer.columns == N, msg
-

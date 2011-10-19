@@ -13,6 +13,7 @@ from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 
 from impact.tests.plugins import unspecific_building_impact_model
 
+
 class Test_HTTP(unittest.TestCase):
     """Test suite for API
     """
