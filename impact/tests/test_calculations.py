@@ -173,7 +173,7 @@ class Test_calculations(unittest.TestCase):
         data = json.loads(rv.content)
         if 'errors' in data:
             errors = data['errors']
-            if errors is not None and len(errors) > 0:
+            if errors is not None:
                 msg = ('The server returned the error message: %s'
                        % str(errors))
                 raise Exception(msg)
