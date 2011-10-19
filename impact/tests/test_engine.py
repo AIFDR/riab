@@ -856,10 +856,10 @@ class Test_Engine(unittest.TestCase):
             # as this was calculated using EQRM and thus different.
             assert numpy.allclose(calculated_mmi, MMI[i], rtol=0.02)
 
-    # FIXME (Ole): Disabled until we get onto the
-    # new interpolation scheme (issue #19)
-    def Xtest_interpolation_tsunami(self):
-        """Interpolation using tsunami data set
+    def test_interpolation_tsunami(self):
+        """Interpolation using tsunami data set works
+
+        This is test for issue #19 about interpolation overshoot
         """
 
         # Name file names for hazard level, exposure and expected fatalities
@@ -893,8 +893,7 @@ class Test_Engine(unittest.TestCase):
                                    depth_min, depth_max))
 
             if not numpy.isnan(interpolated_depth):
-                tol = 1.0e-6
-                assert depth_min - tol <= interpolated_depth <= depth_max, msg
+                assert depth_min <= interpolated_depth <= depth_max, msg
 
     # FIXME (Ole): This is another test for interpolation. Work in progress.
     # Enable when workning on issue #19
