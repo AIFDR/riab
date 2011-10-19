@@ -173,14 +173,20 @@ class Test_calculations(unittest.TestCase):
         data = json.loads(rv.content)
         if 'errors' in data:
             errors = data['errors']
-            if errors is not None:
-                raise Exception(errors)
+            if errors is not None and len(errors) > 0:
+                msg = ('The server returned the error message: %s'
+                       % str(errors))
+                raise Exception(msg)
 
+        assert 'success' in data
         assert 'hazard_layer' in data
         assert 'exposure_layer' in data
         assert 'run_duration' in data
         assert 'run_date' in data
         assert 'layer' in data
+
+        assert data['success']
+
 
         # Download result and check
         layer_name = data['layer'].split('/')[-1]
