@@ -46,13 +46,11 @@ def interpolate2d(x, y, A, points, mode='linear', bounds_error=False):
         right and latitudes (y) from left to right then user
         interpolate_raster in this module
 
-    Example:
-
-
+        FIXME: Still need to implement constant mode
     """
 
     # Input checks
-    x, y, A, xi, eta = check_inputs(x, y, A, points, bounds_error)
+    x, y, A, xi, eta = check_inputs(x, y, A, points, mode, bounds_error)
 
     # Identify elements that are outside interpolation domain or NaN
     outside = (xi < x[0]) + (eta < y[0]) + (xi > x[-1]) + (eta > y[-1])
@@ -136,9 +134,12 @@ def interpolate_raster(x, y, A, points, mode='linear', bounds_error=False):
     return res
 
 
-def check_inputs(x, y, A, points, bounds_error):
+def check_inputs(x, y, A, points, mode, bounds_error):
     """Check inputs for interpolate2d function
     """
+
+    msg = 'Only mode == "linear" is implemented. I got %s' % mode
+    assert mode == 'linear', msg
 
     try:
         x = numpy.array(x)
