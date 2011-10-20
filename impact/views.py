@@ -239,6 +239,11 @@ def calculate(request, save_output=save_to_geonode):
     del output['_user_cache']
     del output['_state']
 
+    # If success == True and errors = '' ...
+    # ... let's make errors=None for backwards compat
+    if output['success'] and len(output['errors']) == 0:
+        output['errors'] = None
+
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')
 
