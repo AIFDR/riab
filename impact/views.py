@@ -141,9 +141,12 @@ def calculate(request, save_output=save_to_geonode):
         intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
         if intersection is None:
             # Bounding boxes did not overlap
-            msg = ('Bounding boxes of hazard data, exposure data and '
-                   'viewport did not overlap, so no computation was '
-                   'done. Please try again.')
+            msg = ('Bounding boxes of hazard data [%s], exposure data [%s] and '
+                   'viewport [%s] did not overlap, so no computation was '
+                   'done. Please try again.'
+                   % (bboxlist2string(haz_bbox, decimals=3),
+                      bboxlist2string(exp_bbox, decimals=3),
+                      bboxlist2string(vpt_bbox, decimals=3)))
             logger.info(msg)
             raise Exception(msg)
 

@@ -112,7 +112,7 @@ def get_bounding_box(filename):
     return layer.get_bounding_box()
 
 
-def bboxlist2string(bbox):
+def bboxlist2string(bbox, decimals=6):
     """Convert bounding box list to comma separated string
 
     Input
@@ -142,7 +142,11 @@ def bboxlist2string(bbox):
                    'original error was "%s".' % (bbox, x, e))
             raise AssertionError(msg)
 
-    return '%.6f,%.6f,%.6f,%.6f' % tuple(bbox)
+    # Make template of the form '%.5f,%.5f,%.5f,%.5f'
+    template = (('%%.%if,' % decimals) * 4)[:-1]
+
+    # Assign numbers and return
+    return template % tuple(bbox)
 
 
 def bboxstring2list(bbox_string):
