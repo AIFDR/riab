@@ -37,11 +37,13 @@ sudo mv -f ~/.bash_aliases ~/.bash_aliases_risiko_copy
 
 echo "Removing Risiko"
 /bin/rm -rf $RIAB_HOME
+cd
 
 echo
 echo "Success, You have removed Risk in a Box"
 echo
 echo "To reinstall "
-echo "1) wget http://bit.ly/risiko-install"
-echo "2) bash risiko-install"
+echo "1) Make an area (say ~/work) and cd to it"
+echo "2) wget http://bit.ly/risiko-install"
+echo "3) bash risiko-install"
 echo
