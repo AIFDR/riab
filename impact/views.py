@@ -143,7 +143,8 @@ def calculate(request, save_output=save_to_geonode):
             # Bounding boxes did not overlap
             msg = ('Bounding boxes of hazard data [%s], exposure data [%s] '
                    'and viewport [%s] did not overlap, so no computation was '
-                   'done. Please try again.'
+                   'done. Please make sure you pan to where the data is and '
+                   'that hazard and exposure data overlaps.'
                    % (bboxlist2string(haz_bbox, decimals=3),
                       bboxlist2string(exp_bbox, decimals=3),
                       bboxlist2string(vpt_bbox, decimals=3)))
