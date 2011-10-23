@@ -47,6 +47,67 @@ class Test_interpolate(unittest.TestCase):
         refs = linear_function(points[:, 0], points[:, 1])
         assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)
 
+    def test_constant_interpolation_basic(self):
+        """Interpolation library works for piecewise constant function
+        """
+
+        # Define pixel centers along each direction
+        x = numpy.array([1.0, 2.0, 4.0])
+        y = numpy.array([5.0, 9.0])
+
+        # Define ny by nx array with corresponding values
+        A = numpy.zeros((len(x), len(y)))
+
+        # Define values for each x, y pair as a linear function
+        for i in range(len(x)):
+            for j in range(len(y)):
+                A[i, j] = linear_function(x[i], y[j])
+
+        # Then test that interpolated points are always assigned value of
+        # closest neighbour
+        xis = numpy.linspace(x[0], x[-1], 10)
+        etas = numpy.linspace(y[0], y[-1], 10)
+        points = combine_coordinates(xis, etas)
+
+        vals = interpolate2d(x, y, A, points, mode='constant')
+
+        # Find upper neighbours for each interpolation point
+        xi = points[:, 0]
+        eta = points[:, 1]
+        idx = numpy.searchsorted(x, xi, side='left')
+        idy = numpy.searchsorted(y, eta, side='left')
+
+        # Get the four neighbours for each interpolation point
+        x0 = x[idx - 1]
+        x1 = x[idx]
+        y0 = y[idy - 1]
+        y1 = y[idy]
+
+        z00 = A[idx - 1, idy - 1]
+        z01 = A[idx - 1, idy]
+        z10 = A[idx, idy - 1]
+        z11 = A[idx, idy]
+
+        # Location coefficients
+        alpha = (xi - x0) / (x1 - x0)
+        beta = (eta - y0) / (y1 - y0)
+
+        refs = numpy.zeros(len(vals))
+        for i in range(len(refs)):
+            if alpha[i] < 0.5 and beta[i] < 0.5:
+                refs[i] = z00[i]
+
+            if alpha[i] >= 0.5 and beta[i] < 0.5:
+                refs[i] = z10[i]
+
+            if alpha[i] < 0.5 and beta[i] >= 0.5:
+                refs[i] = z01[i]
+
+            if alpha[i] >= 0.5 and beta[i] >= 0.5:
+                refs[i] = z11[i]
+
+        assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)
+
     def test_linear_interpolation_range(self):
         """Interpolation library works for linear function - a range of cases
         """
@@ -102,7 +163,7 @@ class Test_interpolate(unittest.TestCase):
         assert nanallclose(vals, refs, rtol=1e-12, atol=1e-12)
 
     def test_linear_interpolation_nan_array(self):
-        """Interpolation library works with grid points being NaN
+        """Interpolation library works (linear mode) with grid points being NaN
         """
 
         # Define pixel centers along each direction
@@ -130,12 +191,11 @@ class Test_interpolate(unittest.TestCase):
         for i, (xi, eta) in enumerate(points):
             if (1.0 < xi <= 3.0) and (7.0 < eta <= 11.0):
                 refs[i] = numpy.nan
-            #print xi, eta, refs[i], vals[i]
 
         assert nanallclose(vals, refs, rtol=1e-12, atol=1e-12)
 
-    def test_linear_interpolation_random_array_and_nan(self):
-        """Interpolation library works with random array and NaN
+    def test_interpolation_random_array_and_nan(self):
+        """Interpolation library (constant and linear) works with NaN
         """
 
         # Define pixel centers along each direction
@@ -165,27 +225,26 @@ class Test_interpolate(unittest.TestCase):
         etas = numpy.linspace(y[0], y[-1], 73)  # Hit thirds
         points = combine_coordinates(xis, etas)
 
-        vals = interpolate2d(x, y, A, points, mode='linear')
 
-        # Calculate reference result with expected NaNs and compare
-        i = j = 0
-        for k, (xi, eta) in enumerate(points):
+        for mode in ['linear', 'constant']:
+            vals = interpolate2d(x, y, A, points, mode=mode)
 
-            # Find indices of nearest higher value in x and y
-            i = numpy.searchsorted(x, xi)
-            j = numpy.searchsorted(y, eta)
+            # Calculate reference result with expected NaNs and compare
+            i = j = 0
+            for k, (xi, eta) in enumerate(points):
 
-            if i > 0 and j > 0:
+                # Find indices of nearest higher value in x and y
+                i = numpy.searchsorted(x, xi)
+                j = numpy.searchsorted(y, eta)
 
-                # Get four neigbours
-                A00 = A[i - 1, j - 1]
-                A01 = A[i - 1, j]
-                A10 = A[i, j - 1]
-                A11 = A[i, j]
+                if i > 0 and j > 0:
 
-                if numpy.any(numpy.isnan([A00, A01, A10, A11])):
-                    ref = numpy.nan
-                else:
+                    # Get four neigbours
+                    A00 = A[i - 1, j - 1]
+                    A01 = A[i - 1, j]
+                    A10 = A[i, j - 1]
+                    A11 = A[i, j]
+
                     if numpy.allclose(xi, x[i]):
                         alpha = 1.0
                     else:
@@ -196,13 +255,27 @@ class Test_interpolate(unittest.TestCase):
                     else:
                         beta = eta - y[j - 1]
 
-                    ref = (A00 * (1 - alpha) * (1 - beta) +
-                           A01 * (1 - alpha) * beta +
-                           A10 * alpha * (1 - beta) +
-                           A11 * alpha * beta)
+                    if mode == 'linear':
+                        if numpy.any(numpy.isnan([A00, A01, A10, A11])):
+                            ref = numpy.nan
+                        else:
+                            ref = (A00 * (1 - alpha) * (1 - beta) +
+                                   A01 * (1 - alpha) * beta +
+                                   A10 * alpha * (1 - beta) +
+                                   A11 * alpha * beta)
+                    elif mode == 'constant':
+                        assert alpha >= 0.5  # Only case in this test
 
-                #print i, j, xi, eta, alpha, beta, vals[k], ref
-                assert nanallclose(vals[k], ref, rtol=1e-12, atol=1e-12)
+                        if beta < 0.5:
+                            ref = A10
+                        else:
+                            ref = A11
+                    else:
+                        msg = 'Unknown mode: %s' % mode
+                        raise Exception(msg)
+
+                    #print i, j, xi, eta, alpha, beta, vals[k], ref
+                    assert nanallclose(vals[k], ref, rtol=1e-12, atol=1e-12)
 
     def test_linear_interpolation_outside_domain(self):
         """Interpolation library sensibly handles values outside the domain
@@ -335,7 +408,6 @@ class Test_interpolate(unittest.TestCase):
 
         vals = interpolate_raster(longitudes, latitudes, A, points,
                                   mode='linear')
-        #refs = linear_function(xis, etas)#, xis)
         refs = linear_function(points[:, 0], points[:, 1])
 
         assert numpy.allclose(vals, refs, rtol=1e-12, atol=1e-12)

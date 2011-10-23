@@ -46,8 +46,6 @@ def interpolate2d(x, y, Z, points, mode='linear', bounds_error=False):
         data is typically organised with longitudes (x) going from left to
         right and latitudes (y) from left to right then user
         interpolate_raster in this module
-
-        FIXME: Still need to implement constant mode
     """
 
     # Input checks
@@ -84,14 +82,35 @@ def interpolate2d(x, y, Z, points, mode='linear', bounds_error=False):
     z10 = Z[idx, idy - 1]
     z11 = Z[idx, idy]
 
-    # Linear interpolation formula
+    # Coefficients for weighting between lower and upper bounds
     alpha = (xi - x0) / (x1 - x0)
     beta = (eta - y0) / (y1 - y0)
 
-    dx = z10 - z00
-    dy = z01 - z00
+    if mode == 'linear':
+        # Bilinear interpolation formula
+        dx = z10 - z00
+        dy = z01 - z00
+        z = z00 + alpha * dx + beta * dy + alpha * beta * (z11 - dx - dy - z00)
+    else:
+        # Piecewise constant (as verified in input_check)
 
-    z = z00 + alpha * dx + beta * dy + alpha * beta * (z11 - dx - dy - z00)
+        # Set up masks for the quadrants
+        left = alpha < 0.5
+        right = -left
+        lower = beta < 0.5
+        upper = -lower
+
+        lower_left = lower * left
+        lower_right = lower * right
+        upper_left = upper * left
+
+        # Initialise result array with all elements set to upper right
+        z = z11
+
+        # Then set the other quadrants
+        z[lower_left] = z00[lower_left]
+        z[lower_right] = z10[lower_right]
+        z[upper_left] = z01[upper_left]
 
     # Self test
     if len(z) > 0:
@@ -139,8 +158,8 @@ def check_inputs(x, y, Z, points, mode, bounds_error):
     """Check inputs for interpolate2d function
     """
 
-    msg = 'Only mode == "linear" is implemented. I got %s' % mode
-    assert mode == 'linear', msg
+    msg = 'Only mode "linear" and "constant" are implemented. I got %s' % mode
+    assert mode in ['linear', 'constant'], msg
 
     try:
         x = numpy.array(x)
