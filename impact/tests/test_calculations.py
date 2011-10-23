@@ -187,7 +187,6 @@ class Test_calculations(unittest.TestCase):
 
         assert data['success']
 
-
         # Download result and check
         layer_name = data['layer'].split('/')[-1]
 

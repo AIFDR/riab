@@ -225,7 +225,6 @@ class Test_interpolate(unittest.TestCase):
         etas = numpy.linspace(y[0], y[-1], 73)  # Hit thirds
         points = combine_coordinates(xis, etas)
 
-
         for mode in ['linear', 'constant']:
             vals = interpolate2d(x, y, A, points, mode=mode)
 
