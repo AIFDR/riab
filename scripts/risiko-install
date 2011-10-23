@@ -16,7 +16,8 @@ sudo apt-get install -y --force-yes openjdk-6-jre-headless
 
 echo ">>> Installing Ubuntu packages"
 # Python development prerequisites
-sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-scipy python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext python-psycopg2
+# FIXME (Ole): I think we can remove scipy for now sinc issue #19 is done
+sudo apt-get install -y vim zip unzip subversion git-core binutils build-essential python-dev python-setuptools python-imaging python-reportlab gdal-bin libproj-dev libgeos-dev python-urlgrabber python-nose pep8 python-virtualenv python-numpy python-scipy python-gdal python-pastescript postgresql-contrib libpq-dev gettext python-psycopg2
 
 # Install Microsoft fonts needed for custom icons, does not work in Lucid.
 sudo apt-get install -y ttf-mscorefonts-installer
