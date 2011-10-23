@@ -106,18 +106,23 @@ def calculate(request, save_output=save_to_geonode):
         haz_metadata = get_metadata(hazard_server, hazard_layer)
         exp_metadata = get_metadata(exposure_server, exposure_layer)
 
-        # Determine common resolution in case of raster layers
+        # Determine minimum common resolution in case of raster layers
         if haz_metadata['layer_type'] == 'raster':
             haz_res = haz_metadata['resolution']
-            resx = haz_res[0]
-            resy = haz_res[1]
         else:
-            resx = resy = None
+            haz_res = None
 
         if exp_metadata['layer_type'] == 'raster':
             exp_res = exp_metadata['resolution']
-            resx = min(resx, exp_res[0])
-            resy = min(resy, exp_res[1])
+        else:
+            exp_res = None
+
+        if not (haz_res is None or exp_res is None):
+        #if (haz_metadata['layer_type'] == 'raster' and
+        #    exp_metadata['layer_type'] == 'raster'):
+            # Both layers are rasters, take the minimum
+            resx = min(haz_res[0], exp_res[0])
+            resy = min(haz_res[1], exp_res[1])
 
         if haz_res is not None and exp_res is not None:
             raster_resolution = (resx, resy)
