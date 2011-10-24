@@ -308,7 +308,7 @@ class Test_calculations(unittest.TestCase):
             calculated_raster = read_layer(result_layer.filename)
             C = calculated_raster.get_data(nan=0)
 
-            # FIXME
+            # FIXME (Ole): Bring this back
             # Check caption
             #caption = calculated_raster.get_caption()
             #print
