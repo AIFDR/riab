@@ -98,6 +98,7 @@ def padang_check_results(mmi, building_class):
     msg = 'More than one lookup result returned. May be precision error.'
     assert len(impact_array) < 2, msg
 
+    # FIXME (Ole): Count how many buildings were damaged in each category?
 
 class Test_plugins(unittest.TestCase):
     """Tests of Risiko calculations
