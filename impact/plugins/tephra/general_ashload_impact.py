@@ -45,6 +45,10 @@ class TephraImpactFunction(FunctionProvider):
             #------------------------
             # Compute damage level
             #------------------------
+
+            # FIXME: The thresholds have been greatly reduced
+            # for the purpose of demonstration. Any real analyis
+            # should bring them back to 0, 90, 150, 300
             if 0.01 <= load < 0.5:
                 # Loss of crops and livestock
                 impact = 0

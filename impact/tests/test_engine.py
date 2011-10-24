@@ -627,14 +627,25 @@ class Test_Engine(unittest.TestCase):
                 assert load_min <= load <= load_max, msg
 
             # Test calcalated values
-            if 0.01 <= load < 90.0:
-                assert impact == 25
-            elif 90.0 <= load < 150.0:
-                assert impact == 50
-            elif 150.0 <= load < 300.0:
-                assert impact == 75
-            elif load >= 300.0:
-                assert impact == 100
+            #if 0.01 <= load < 90.0:
+            #    assert impact == 1
+            #elif 90.0 <= load < 150.0:
+            #    assert impact == 2
+            #elif 150.0 <= load < 300.0:
+            #    assert impact == 3
+            #elif load >= 300.0:
+            #    assert impact == 4
+            #else:
+            #    assert impact == 0
+
+            if 0.01 <= load < 0.5:
+                assert impact == 0
+            elif 0.5 <= load < 2.0:
+                assert impact == 1
+            elif 2.0 <= load < 10.0:
+                assert impact == 2
+            elif load >= 10.0:
+                assert impact == 3
             else:
                 assert impact == 0
 
