@@ -27,7 +27,6 @@ from impact.storage.utilities import nanallclose
 from impact.storage.io import get_bounding_box
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.tests.utilities import same_API
-from impact.tests.utilities import centroid_formula
 from impact.tests.utilities import TESTDATA
 from impact.tests.utilities import FEATURE_COUNTS
 from impact.tests.utilities import GEOTRANSFORMS
