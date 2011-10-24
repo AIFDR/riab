@@ -3,7 +3,6 @@ import numpy
 from impact.plugins.core import FunctionProvider
 from impact.storage.raster import Raster
 
-
 # FIXME (Ole): This one works, but needs styling
 class FloodImpactFunction(FunctionProvider):
     """Risk plugin for flood impact
@@ -44,7 +43,7 @@ class FloodImpactFunction(FunctionProvider):
         I = numpy.where(D > threshold, P, 0) / 100000.0 * pixel_area
 
         # Generate text with result for this study
-        number_of_people_affected = sum(I.flat)
+        number_of_people_affected = numpy.nansum(I.flat)
         caption = ('%i people affected by flood levels greater '
                    'than %i cm' % (number_of_people_affected,
                                    threshold * 100))

@@ -326,21 +326,21 @@ class Test_calculations(unittest.TestCase):
 
             msg = ('Minimum of calculated raster differs from reference '
                    'raster: '
-                   'C=%s, I=%s' % (numpy.min(C), numpy.min(I)))
-            assert numpy.allclose(numpy.min(C), numpy.min(I),
-                                  rtol=1e-12, atol=1e-12), msg
+                   'C=%s, I=%s' % (numpy.nanmin(C), numpy.nanmin(I)))
+            assert numpy.allclose(numpy.nanmin(C), numpy.nanmin(I),
+                                  rtol=1e-6, atol=1e-12), msg
             msg = ('Maximum of calculated raster differs from reference '
                    'raster: '
-                   'C=%s, I=%s' % (numpy.max(C), numpy.max(I)))
-            assert numpy.allclose(numpy.max(C), numpy.max(I),
-                                  rtol=1e-5, atol=1e-12), msg
+                   'C=%s, I=%s' % (numpy.nanmax(C), numpy.nanmax(I)))
+            assert numpy.allclose(numpy.nanmax(C), numpy.nanmax(I),
+                                  rtol=1e-6, atol=1e-12), msg
 
             # Compare every single value numerically (a bit loose -
             # probably due to single precision conversions when
             # data flows through geonode)
             #
             # FIXME: Not working - but since this test is about
-            # issue #162 we'll leave it for now.
+            # issue #162 we'll leave it for now. TODO with NAN
             # Manually verified that the two expected values are correct, though.
             #msg = 'Array values of written raster array were not as expected'
             #print C
@@ -350,9 +350,10 @@ class Test_calculations(unittest.TestCase):
 
             # Check that extrema are in range
             xmin, xmax = calculated_raster.get_extrema()
-            assert numpy.alltrue(C >= xmin)
-            assert numpy.alltrue(C <= xmax)
-            assert numpy.alltrue(C >= 0)
+
+            assert numpy.alltrue(C[-numpy.isnan(C)] >= xmin), msg
+            assert numpy.alltrue(C[-numpy.isnan(C)] <= xmax)
+            assert numpy.alltrue(C[-numpy.isnan(C)] >= 0)
 
             i += 1
 
