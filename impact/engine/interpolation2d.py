@@ -51,6 +51,10 @@ def interpolate2d(x, y, Z, points, mode='linear', bounds_error=False):
     # Input checks
     x, y, Z, xi, eta = check_inputs(x, y, Z, points, mode, bounds_error)
 
+    # If there is only one pixel, assign that value to all points
+    #if len(x) == 1 and len(y) == 1:
+    #    return numpy.array([Z[0, 0]] * len(points))
+
     # Identify elements that are outside interpolation domain or NaN
     outside = (xi < x[0]) + (eta < y[0]) + (xi > x[-1]) + (eta > y[-1])
     outside += numpy.isnan(xi) + numpy.isnan(eta)
@@ -202,7 +206,7 @@ def check_inputs(x, y, Z, points, mode, bounds_error):
     Ny = len(y)
     msg = ('Input array Z must have dimensions %i x %i corresponding to the '
            'lengths of the input coordinates x and y. However, '
-           'A has dimensions %i x %i.' % (Nx, Ny, m, n))
+           'Z has dimensions %i x %i.' % (Nx, Ny, m, n))
     assert Nx == m, msg
     assert Ny == n, msg
 

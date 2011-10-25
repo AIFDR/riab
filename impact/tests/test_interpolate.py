@@ -364,6 +364,53 @@ class Test_interpolate(unittest.TestCase):
                                                       rtol=1.0e-12,
                                                       atol=1.0e-12), msg
 
+
+    def Xtest_interpolation_corner_cases(self):
+        """Interpolation library works sensibly for incomplete grid points
+        """
+
+        # Define four pixel centers
+        x = [2.0, 4.0]
+        y = [5.0, 9.0]
+
+        # Define ny by nx array with corresponding values
+        A = numpy.zeros((len(x), len(y)))
+
+        # Define values for each x, y pair as a linear function
+        for i in range(len(x)):
+            for j in range(len(y)):
+                A[i, j] = linear_function(x[i], y[j])
+
+        # Test that interpolated points are correct
+        xis = numpy.linspace(x[0], x[-1], 3)
+        etas = numpy.linspace(y[0], y[-1], 3)
+        points = combine_coordinates(xis, etas)
+
+        # Interpolate to cropped grids
+        for xc, yc, Ac in [#(x, y, A),
+                           #([x[0]], [y[0]], numpy.array([[A[0, 0]]])), # 1 x 1
+                           ([x[0]], y, numpy.array([A[0, :]])),  # 1 x 2
+                           ]: #  ([x[0]], y, [A[0,:]])]:
+            print
+            print xc, yc, Ac
+            print points
+
+            vals = interpolate2d(xc, yc, Ac, points, mode='linear')
+
+            if len(xc) == 1 and len(yc) == 1:
+                # One pixel - return constant value
+                refs = [Ac[0, 0]] * len(points)
+            elif len(xc) == 1 and len(yc) == 2:
+                # Two pixel points in the y direction.
+                # Use 1D linear interpolation
+                refs = linear_function(0, points[:, 1])
+            else:
+                refs = linear_function(points[:, 0], points[:, 1])
+
+            print vals
+            print refs
+            assert nanallclose(vals, refs, rtol=1e-12, atol=1e-12)
+
     def test_interpolation_raster_data(self):
         """Interpolation library works for raster data
 
