@@ -118,6 +118,13 @@ def check_data_integrity(layer_files):
                 assert numpy.allclose(coordinates,
                                       layer.get_geometry()), msg
 
+            msg = ('There are no data points to interpolate to. '
+                   'Perhaps zoom out or pan to the study area '
+                   'and try again')
+            assert len(layer) > 0, msg
+
+
+
     # Check that arrays are aligned.
     #
     # We have observerd Geoserver resolution changes - see ticket:102
