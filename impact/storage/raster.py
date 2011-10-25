@@ -137,10 +137,18 @@ class Raster:
     def get_name(self):
         return self.name
 
-    def get_keywords(self):
+    def get_keywords(self, key=None):
         """Return keywords dictionary
         """
-        return self.keywords
+        if key is None:
+            return self.keywords
+        else:
+            if key in self.keywords:
+                return self.keywords[key]
+            else:
+                msg = ('Keyword %s does not exist in %s: Options are '
+                       '%s' % (self.get_name(), self.keywords.keys()))
+                raise Exception(msg)
 
     def get_caption(self):
         """Return 'caption' keyword if present. Otherwise ''.
