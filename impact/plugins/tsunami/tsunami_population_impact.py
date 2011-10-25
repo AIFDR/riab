@@ -13,7 +13,8 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
                     layer_type=="raster"
     :param requires category=="exposure" and \
                     subcategory.startswith("population") and \
-                    layer_type=="raster"
+                    layer_type=="raster" and \
+                    never=="disabled"
     """
 
     def run(self, layers):

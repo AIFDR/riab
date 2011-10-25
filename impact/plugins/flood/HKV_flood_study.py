@@ -15,7 +15,8 @@ class FloodImpactFunction(FunctionProvider):
                     unit=='m'
     :param requires category=='exposure' and \
                     subcategory.startswith('population') and \
-                    layer_type=='raster'
+                    layer_type=='raster' and \
+                    datatype=='hkv'
     """
 
     @staticmethod

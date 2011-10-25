@@ -16,6 +16,7 @@ class TsunamiBuildingImpactFunction(FunctionProvider):
                     layer_type=='raster'
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
+                    layer_type=='vector' and \
                     datatype=='osm'
     """
 
