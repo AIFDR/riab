@@ -397,8 +397,10 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
         eps: Optional tolerance that will be applied to 'buffer' result
 
     Ouput
-        Adjusted bounding box guarenteed to exceed specified resolution
+        Adjusted bounding box guaranteed to exceed specified resolution
     """
+
+    # FIXME (Ole): Probably obsolete now
 
     bbox = copy.copy(list(bbox))
 
@@ -416,6 +418,58 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
         bbox[3] += dy
 
     return bbox
+
+def buffered_bounding_box(bbox, resolution):
+    """Grow bounding box with one unit of resolution in each direction
+
+
+    This will ensure there is enough pixels to robustly provide
+    interpolated values without having to painstakingly deal with
+    all corner cases such as 1 x 1, 1 x 2 and 2 x 1 arrays.
+
+    The border will also make sure that points that would otherwise fall
+    outside the domain (as defined by a tight bounding box) get assigned
+    values.
+
+    Input
+        bbox: Bounding box with format [W, S, E, N]
+        resolution: (resx, resy) Raster resolution in each direction.
+                    If resolution is None bbox is returned unchanged.
+
+    Ouput
+        Adjusted bounding box
+
+
+
+    Case in point: Interpolation point O would fall outside this domain
+                   even though there are enough grid points to support it
+
+    --------------
+    |            |
+    |   *     *  | *    *
+    |           O|
+    |            |
+    |   *     *  | *    *
+    --------------
+    """
+
+    bbox = copy.copy(list(bbox))
+
+    if resolution is None:
+        return bbox
+
+    resx, resy = resolution
+
+    #print 'bbox', bbox
+    #print resx, resy
+    bbox[0] -= resx
+    bbox[1] -= resy
+    bbox[2] += resx
+    bbox[3] += resy
+
+    #print 'grown bbox', bbox
+    return bbox
+
 
 
 def get_geometry_type(geometry):
@@ -553,8 +607,10 @@ def geometrytype2string(g_type):
 
     if g_type in geometry_type_map:
         return geometry_type_map[g_type]
+    elif g_type is None:
+        return 'No geometry type assigned'
     else:
-        return 'Unknown geometry type: %i' % g_type
+        return 'Unknown geometry type: %s' % str(g_type)
 
 
 def calculate_polygon_area(polygon, signed=False):

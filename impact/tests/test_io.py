@@ -18,6 +18,7 @@ from impact.storage.utilities import write_keywords
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import bbox_intersection
 from impact.storage.utilities import minimal_bounding_box
+from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_area
 from impact.storage.utilities import calculate_polygon_centroid
@@ -1195,6 +1196,32 @@ class Test_IO(unittest.TestCase):
             if bbox[3] - bbox[1] <= min_res:
                 assert numpy.allclose(adjusted_bbox[3] - adjusted_bbox[1],
                                       min_res + (2 * eps))
+
+            # Check that input box was not changed
+            assert adjusted_bbox is not bbox
+
+    def test_buffered_bounding_box(self):
+        """Bounding box can be buffered
+        """
+
+        big = (95.06, -11.0, 141.0, 5.9)
+        mid = [103.28, -8.46, 109.67, -4.68]
+        sml = (106.818998, -6.18585170, 106.82264510, -6.1810)
+
+        for bbox in [big, mid, sml]:
+
+            # Set common resolution which is bigger than the smallest box
+            resolution = (0.1, 0.2)
+
+            dx = bbox[2]-bbox[0]
+            dy = bbox[3]-bbox[1]
+
+            # Calculate minimal bounding box
+            adjusted_bbox = buffered_bounding_box(bbox, resolution)
+
+            # Check that adjusted box exceeds minimal resolution
+            assert adjusted_bbox[2] - adjusted_bbox[0] > 2 * resolution[0]
+            assert adjusted_bbox[3] - adjusted_bbox[1] > 2 * resolution[1]
 
             # Check that input box was not changed
             assert adjusted_bbox is not bbox

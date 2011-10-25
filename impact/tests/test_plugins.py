@@ -400,11 +400,9 @@ class Test_plugins(unittest.TestCase):
 
                 msg = ('No points was verified in output. Please create '
                        'table withe reference data')
-                #print
-                #print verified_count
-                #print count
                 assert verified_count > 0, msg
-                assert count == 3802, 'Number buildings was not 3802.'
+                msg = 'Number buildings was not 3896.'
+                assert count == 3896, msg
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

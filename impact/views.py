@@ -38,7 +38,7 @@ from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.storage.io import check_bbox_string
 from impact.storage.io import save_to_geonode
 from impact.storage.utilities import bbox_intersection
-from impact.storage.utilities import minimal_bounding_box
+from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import titelize
 from impact.plugins.core import get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
@@ -106,40 +106,37 @@ def calculate(request, save_output=save_to_geonode):
         haz_metadata = get_metadata(hazard_server, hazard_layer)
         exp_metadata = get_metadata(exposure_server, exposure_layer)
 
-        # Determine common resolution in case of raster layers
-        if haz_metadata['layer_type'] == 'raster' and \
-                exp_metadata['layer_type'] == 'raster':
-            haz_res = haz_metadata['resolution']
-            exp_res = exp_metadata['resolution']
+        # Get bounding boxes for layers and viewport
+        haz_bbox = haz_metadata['bounding_box']
+        exp_bbox = exp_metadata['bounding_box']
+        vpt_bbox = bboxstring2list(bbox)
 
+        # Determine common resolution of raster layers
+        if haz_metadata['layer_type'] == 'raster':
+            haz_res = haz_metadata['resolution']
+        else:
+            haz_res = None
+
+        if exp_metadata['layer_type'] == 'raster':
+            exp_res = exp_metadata['resolution']
+        else:
+            exp_res = None
+
+        # Determine common resolution in case of two raster layers
+        if haz_res is None or exp_res is None:
+            # This means native resolution will be used
+            raster_resolution = None
+        else:
             # Take the minimum
             resx = min(haz_res[0], exp_res[0])
             resy = min(haz_res[1], exp_res[1])
 
             raster_resolution = (resx, resy)
-        else:
-            # This means native resolution will be used
-            raster_resolution = None
-
-        # Find the intersection of bounding boxes for viewport,
-        # hazard and exposure.
-        vpt_bbox = bboxstring2list(bbox)
-        haz_bbox = haz_metadata['bounding_box']
-        exp_bbox = exp_metadata['bounding_box']
-
-        # Impose minimum bounding box size (as per issue #101).
-        # FIXME (Ole): This will need to be revisited in conjunction with
-        # raster resolutions at some point.
-        min_res = 0.00833334
-        eps = 1.0e-1
-        vpt_bbox = minimal_bounding_box(vpt_bbox, min_res, eps=eps)
-        haz_bbox = minimal_bounding_box(haz_bbox, min_res, eps=eps)
-        exp_bbox = minimal_bounding_box(exp_bbox, min_res, eps=eps)
 
         # New bounding box for data common to hazard, exposure and viewport
         # Download only data within this intersection
-        intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
-        if intersection is None:
+        intersection_bbox = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
+        if intersection_bbox is None:
             # Bounding boxes did not overlap
             msg = ('Bounding boxes of hazard data [%s], exposure data [%s] '
                    'and viewport [%s] did not overlap, so no computation was '
@@ -151,7 +148,18 @@ def calculate(request, save_output=save_to_geonode):
             logger.info(msg)
             raise Exception(msg)
 
-        bbox = bboxlist2string(intersection)
+        # Grow hazard bbox to buffer this common bbox in case where
+        # hazard is raster and exposure is vector
+        if (haz_metadata['layer_type'] == 'raster' and
+            exp_metadata['layer_type'] == 'vector'):
+            haz_bbox = buffered_bounding_box(intersection_bbox, haz_res)
+        else:
+            haz_bbox = intersection_bbox
+
+        # Convert bboxes to string format
+        # FIXME (Ole): Push list to string conversion into download
+        bbox = bboxlist2string(intersection_bbox)
+        haz_bbox = bboxlist2string(haz_bbox)
 
         plugin_list = get_plugins(impact_function_name)
         _, impact_function = plugin_list[0].items()[0]
@@ -170,7 +178,7 @@ def calculate(request, save_output=save_to_geonode):
                                                           hazard_server))
         logger.info(msg)
 
-        H = download(hazard_server, hazard_layer, bbox, raster_resolution)
+        H = download(hazard_server, hazard_layer, haz_bbox, raster_resolution)
 
         msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
                                                             exposure_server))
