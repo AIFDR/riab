@@ -107,11 +107,14 @@ class Vector:
             # FIXME: Need to establish extent here
 
     def __str__(self):
+
+        g_type_str = geometrytype2string(self.geometry_type)
         return ('Vector data set: %s, %i features, geometry type '
-                '%i (%s)' % (self.name,
+                '%s (%s)' % (self.name,
                              len(self),
-                             self.geometry_type,
-                             geometrytype2string(self.geometry_type)))
+                             str(self.geometry_type),
+                             g_type_str))
+
 
     def __len__(self):
         """Size of vector layer defined as number of features
@@ -232,6 +235,7 @@ class Vector:
 
         self.name = vectorname
         self.filename = filename
+        self.geometry_type = None  # In case there are no features
 
         fid = ogr.Open(filename)
         if fid is None:
