@@ -24,6 +24,10 @@ def interpolate_raster_vector_points(R, V, name=None):
 
     """
 
+    msg = ('There are no data points to interpolate to. Perhaps zoom out '
+           'and try again')
+    assert len(V) > 0, msg
+
     # Input checks
     assert R.is_raster
     assert V.is_vector
