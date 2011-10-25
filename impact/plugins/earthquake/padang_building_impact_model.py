@@ -51,7 +51,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
                     layer_type=='vector' and \
-                    type in ['osm', 'itb']
+                    datatype in ['osm', 'itb']
     """
 
     def run(self, layers):
