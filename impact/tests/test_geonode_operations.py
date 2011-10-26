@@ -823,6 +823,74 @@ class Test_geonode_connection(unittest.TestCase):
                 assert 0 < numpy.amax(A) <= depth_max_ref
 
 
+    def test_keywords_download(self):
+        """Keywords are downloaded from GeoServer along with layer data
+        """
+
+        # Upload test data
+        filenames = ['Lembang_Earthquake_Scenario.asc',
+                     'Padang_WGS84.shp',
+                     'maumere_aos_depth_20m_land_wgs84.asc']
+        layers = []
+        paths = []
+        for filename in filenames:
+            basename, ext = os.path.splitext(filename)
+
+            path = os.path.join(TESTDATA, filename)
+
+            # Upload to GeoNode
+            layer = save_to_geonode(path, user=self.user, overwrite=True)
+
+            # Record layer and file
+            layers.append(layer)
+            paths.append(path)
+
+        # Check integrity
+        for i, layer in enumerate(layers):
+
+            # Get reference keyword dictionary from file
+            L = read_layer(paths[i])
+            ref_keywords = L.get_keywords()
+
+            # Get keywords metadata from GeoServer
+            layer_name = '%s:%s' % (layer.workspace, layer.name)
+            metadata = get_metadata(INTERNAL_SERVER_URL,
+                                    layer_name)
+            assert 'keywords' in metadata
+            geo_keywords = metadata['keywords']
+            print i, geo_keywords
+            msg = ('Uploaded keywords were not as expected: I got %s '
+                   'but expected %s' % (geo_keywords, ref_keywords))
+            assert ref_keywords == geo_keywords, msg
+
+            # Download data
+            bbox = get_bounding_box_string(paths[i])
+            H = download(INTERNAL_SERVER_URL, layer_name, bbox)
+            print dir(H)
+            fid = open(H.filename)
+
+            dwn_keywords = H.get_keywords()
+            print i, dwn_keywords
+            msg = ('Downloaded keywords were not as expected: I got %s '
+                   'but expected %s' % (dwn_keywords, ref_keywords))
+            assert ref_keywords == dwn_keywords, msg
+
+            # Check that the layer and its .keyword file is there.
+            msg = 'Downloaded layer %s was not found' % H.filename
+            assert os.path.isfile(H.filename), msg
+
+            kw_filename = os.path.splitext(H.filename)[0] + '.keywords'
+            msg = 'Downloaded keywords file %s was not found' % kw_filename
+            assert os.path.isfile(kw_filename), msg
+
+            L = read_layer(H.filename)
+            msg = ('Keywords in downloaded file %s were not as expected: '
+                   'I got %s but expected %s'
+                   % (kw_filename, dwn_keywords, ref_keywords))
+            assert L.get_keywords() == ref_keywords, msg
+
+
+
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
     suite = unittest.makeSuite(Test_geonode_connection, 'test')
