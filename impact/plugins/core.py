@@ -109,6 +109,18 @@ def get_plugins(name=None):
         raise Exception(msg)
 
 
+def get_plugin(name):
+    """Get plugin that matches given name
+
+    This is just a wrapper around get_plugins to simplify
+    """
+
+    plugin_list = get_plugins(name)
+    _, impact_function = plugin_list[0].items()[0]
+
+    return impact_function
+
+
 def pretty_function_name(func):
     """Return a human readable name for the function
     if the function has a func.plugin_name use this

@@ -40,7 +40,7 @@ from impact.storage.io import save_to_geonode
 from impact.storage.utilities import bbox_intersection
 from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import titelize
-from impact.plugins.core import get_plugins, compatible_layers
+from impact.plugins.core import get_plugin, get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.models import Calculation, Workspace
 
@@ -94,12 +94,13 @@ def calculate(request, save_output=save_to_geonode):
                               impact_function=impact_function_name,
                               success=False)
 
+    # Wrap main computation loop in try except to catch and present
+    # messages and stack traces in the application
     try:
-
         # Input checks
-        msg = 'This cannot happen :-)'
+        msg = ('Invalid bounding box %s (%s). '
+               'It must be a string' % (str(bbox), type(bbox)))
         assert isinstance(bbox, basestring), msg
-
         check_bbox_string(bbox)
 
         # Get metadata
@@ -111,16 +112,13 @@ def calculate(request, save_output=save_to_geonode):
         exp_bbox = exp_metadata['bounding_box']
         vpt_bbox = bboxstring2list(bbox)
 
-        # Determine common resolution of raster layers
+        # Determine resolution in case of raster layers
+        haz_res = exp_res = None
         if haz_metadata['layer_type'] == 'raster':
             haz_res = haz_metadata['resolution']
-        else:
-            haz_res = None
 
         if exp_metadata['layer_type'] == 'raster':
             exp_res = exp_metadata['resolution']
-        else:
-            exp_res = None
 
         # Determine common resolution in case of two raster layers
         if haz_res is None or exp_res is None:
@@ -156,39 +154,35 @@ def calculate(request, save_output=save_to_geonode):
         else:
             haz_bbox = intersection_bbox
 
-        # Convert bboxes to string format
-        # FIXME (Ole): Push list to string conversion into download
-        bbox = bboxlist2string(intersection_bbox)
-        haz_bbox = bboxlist2string(haz_bbox)
-
-        plugin_list = get_plugins(impact_function_name)
-        _, impact_function = plugin_list[0].items()[0]
+        # Get selected impact function
+        impact_function = get_plugin(impact_function_name)
         impact_function_source = inspect.getsource(impact_function)
 
+        # Record information calculation object and save it
         calculation.impact_function_source = impact_function_source
-        calculation.bbox = bbox
-
+        calculation.bbox = bboxlist2string(intersection_bbox)
         calculation.save()
 
+        # Start computation
         msg = 'Performing requested calculation'
         logger.info(msg)
 
         # Download selected layer objects
-        msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
-                                                          hazard_server))
+        msg = ('- Downloading hazard layer %s from %s'
+               % (hazard_layer, hazard_server))
         logger.info(msg)
+        H = download(hazard_server, hazard_layer,
+                     haz_bbox, raster_resolution)
 
-        H = download(hazard_server, hazard_layer, haz_bbox, raster_resolution)
-
-        msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
-                                                            exposure_server))
+        msg = ('- Downloading exposure layer %s from %s'
+               % (exposure_layer, exposure_server))
         logger.info(msg)
-        E = download(exposure_server, exposure_layer, bbox, raster_resolution)
+        E = download(exposure_server, exposure_layer,
+                     intersection_bbox, raster_resolution)
 
         # Calculate result using specified impact function
         msg = ('- Calculating impact using %s' % impact_function)
         logger.info(msg)
-
         impact_filename = calculate_impact(layers=[H, E],
                                            impact_fcn=impact_function)
 
@@ -199,7 +193,8 @@ def calculate(request, save_output=save_to_geonode):
                              title='output_%s' % start.isoformat(),
                              user=theuser)
     except Exception, e:
-        # FIXME: Reimplement error saving for calculation
+        # FIXME: Reimplement error saving for calculation.
+        # FIXME (Ole): Why?
         logger.error(e)
         errors = e.__str__()
         trace = exception_format(e)
@@ -239,7 +234,7 @@ def calculate(request, save_output=save_to_geonode):
     # FIXME: Do proper parsing, don't assume caption is the only keyword.
     if 'caption' in result.keywords:
         caption = result.keywords.split('caption:')[1]
-        # FIXME: Hack to return underscores to spaces that was put in place
+        # FIXME (Ole): Return underscores to spaces that was put in place
         # to store it in the first place. See issue #148
         output['caption'] = caption.replace('_', ' ')
     else:
@@ -395,6 +390,7 @@ def layers(request):
                 # FIXME: This is a temporary measure until we get the keywords:
                 # https://github.com/AIFDR/riab/issues/46
                 # If there is no metadata then try using format category_name
+                # FIXME (Ole): This section should definitely be cleaned up
                 category = name_category[0]
             else:
                 category = None
