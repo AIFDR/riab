@@ -40,9 +40,13 @@ echo "Removing Risiko"
 cd
 
 echo
-echo "Success, You have removed Risk in a Box"
+echo "Success, You have removed Risk in a Box!"
+echo "There are two more steps to do, that we couldn't automate"
+echo "1) deactivate"
+echo "2) cd"
 echo
-echo "To reinstall "
+echo
+echo "If you want to reinstall "
 echo "1) Make an area (say ~/work) and cd to it"
 echo "2) wget http://bit.ly/risiko-install"
 echo "3) bash risiko-install"
