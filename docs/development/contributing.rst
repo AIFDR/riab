@@ -57,7 +57,7 @@ Process for making a new release
 --------------------------------
 
 Create a release branch from the current development branch
-    * git checkout -b <releasebranch> master
+    * git checkout -b <releasebranch> develop
 
 Start working on release specific development (such as bumping version number)
     ...
