@@ -167,9 +167,13 @@ def write_keywords(keywords, filename):
     # Input checks
     basename, ext = os.path.splitext(filename)
 
+    # FIXME (Ole): Why don't we just pass in the filename and let
+    # this function decide the extension?
     msg = ('Unknown extension for file %s. '
            'Expected %s.keywords' % (filename, basename))
     assert ext == '.keywords', msg
+
+
 
     # Write
     fid = open(filename, 'w')

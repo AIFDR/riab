@@ -19,6 +19,7 @@ from impact.storage.utilities import LAYER_TYPES
 from impact.storage.utilities import WCS_TEMPLATE
 from impact.storage.utilities import WFS_TEMPLATE
 from impact.storage.utilities import unique_filename
+from impact.storage.utilities import write_keywords
 from impact.storage.utilities import extract_geotransform
 from impact.storage.utilities import geotransform2resolution
 
@@ -545,6 +546,10 @@ def download(server_url, layer_name, bbox, resolution=None):
         download_url = template % (server_url, layer_name, bbox_string,
                                    resolution[0], resolution[1])
         filename = get_file(download_url, suffix)
+
+    # Write keywords file
+    keywords = layer_metadata['keywords']
+    write_keywords(keywords, os.path.splitext(filename)[0] + '.keywords')
 
     # Instantiate layer from file
     lyr = read_layer(filename)
