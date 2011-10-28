@@ -195,12 +195,15 @@ def requirement_check(params, require_str, verbose=False):
                 raise Exception(msg)
             else:
                 continue
+
+        # Check that symbol is not a Python keyword
         if key in keyword.kwlist:
             msg = ('Error in plugin requirements'
                    'Must not use Python keywords as params: %s' % (key))
             logger.error(msg)
             return False
-        if type(params[key]) == type(''):  # is it a string param
+
+        if isinstance(params[key], basestring):
             execstr += '  %s = "%s" \n' % (key.strip(), params[key])
         else:
             execstr += '  %s = %s \n' % (key.strip(), params[key])
