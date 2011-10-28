@@ -255,6 +255,9 @@ def get_metadata_from_layer(layer):
                     else:
                         keyword_dict[keyword_string] = None
 
+        # Add a few extras:
+        # layertype
+        # resolution
         metadata['keywords'] = keyword_dict
 
     return metadata

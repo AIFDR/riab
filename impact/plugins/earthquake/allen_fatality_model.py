@@ -1,5 +1,6 @@
 from impact.plugins.core import FunctionProvider
 from impact.storage.raster import Raster
+import numpy
 
 
 class EarthquakeFatalityFunction(FunctionProvider):
@@ -30,6 +31,15 @@ class EarthquakeFatalityFunction(FunctionProvider):
         intensity = layers[0]
         population = layers[1]
 
+        print 'Res', intensity.get_resolution()
+        print 'Kwd', intensity.get_keywords()
+        #print 'Meta', intensity.get_metadata()
+        print 'Res', population.get_resolution()
+        print 'Kwd', population.get_keywords()
+        #print 'Meta', population.get_metadata()
+        print dir(population)
+
+
         # Extract data
         H = intensity.get_data(nan=0)
         P = population.get_data(nan=0)
@@ -37,9 +47,22 @@ class EarthquakeFatalityFunction(FunctionProvider):
         # Calculate impact
         F = 10 ** (a * H - b) * P
 
+        # Generate text with result for this study
+        count = numpy.nansum(F.flat)
+        total = numpy.nansum(P.flat)
+
+        # Create report
+        caption = ('<table border="0" width="320px">'
+                   '   <tr><td>%s&#58;</td><td>%i</td></tr>'
+                   '   <tr><td>%s&#58;</td><td>%i</td></tr>'
+                   '</table>' % ('Jumlah Penduduk', int(total),
+                                 'Perkiraan Orang Meninggal', int(count)))
+
+
         # Create new layer and return
         R = Raster(F,
                    projection=population.get_projection(),
                    geotransform=population.get_geotransform(),
-                   name='Estimated fatalities')
+                   name='Estimated fatalities',
+                   keywords={'caption': caption})
         return R

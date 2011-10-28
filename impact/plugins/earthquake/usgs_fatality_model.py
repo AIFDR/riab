@@ -14,7 +14,6 @@ class USGSFatalityFunction(FunctionProvider):
 
     :param requires category == 'hazard' and \
                     subcategory == 'earthquake' and \
-                    unit == 'mmi' and \
                     layer_type == 'raster'
 
     :param requires category == 'exposure' and \
@@ -36,30 +35,20 @@ class USGSFatalityFunction(FunctionProvider):
         intensity = layers[0]
         population = layers[1]
 
-        print
-        print '------------------'
-        print 'Got input layers'
-        print intensity
-        print population
-
-        print 'Population Resolution', population.get_geotransform()
-
         # Extract data
         H = intensity.get_data(nan=0)   # Ground Shaking
         P = population.get_data(nan=0)  # Population Density
 
         # Calculate population affected by each MMI level
-        for mmi in range(2, 10):
+        mmi_range = range(2, 10)
+        number_of_people_affected = {}
+        for mmi in mmi_range:
             mask = numpy.logical_and(mmi - 0.5 < H,
                                      H <= mmi + 0.5)
             I = numpy.where(mask, P, 0)
 
             # Generate text with result for this study
-            number_of_people_affected = sum(I.flat)
-
-            print ('Number of people affected by mmi '
-                   'level %i: %.0f' % (mmi,
-                                       number_of_people_affected / 1000))
+            number_of_people_affected[mmi] = numpy.nansum(I.flat)
 
         # Calculate impact
         logHazard = 1 / beta * scipy.log(H / teta)
@@ -69,9 +58,103 @@ class USGSFatalityFunction(FunctionProvider):
                                for row in logHazard])
         F = scipy.stats.norm.cdf(arrayout * P)
 
+        # Stats
+        total = numpy.nansum(P.flat)
+        fatalities = numpy.nansum(F)
+        print 'Total', total
+        print 'Estimated fatalities', fatalities
+        print 'Min', numpy.amin(F)
+        print 'Max', numpy.amax(F)
+
+
+        # Generate text with result for this study
+        caption = generate_exposure_table(mmi_range,
+                                          number_of_people_affected)
+        caption += generate_fatality_table(fatalities)
+
         # Create new layer and return
         R = Raster(F,
                    projection=population.get_projection(),
                    geotransform=population.get_geotransform(),
+                   keywords={'caption': caption},
                    name='Estimated fatalities')
         return R
+
+
+    def generate_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+
+        s = """<?xml version="1.0" encoding="UTF-8"?>
+<sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
+  <sld:NamedLayer>
+    <sld:Name>Estimated Fatalities</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>Estimated Fatalities</sld:Name>
+      <sld:Title>Estimated Earthquake Fatalities</sld:Title>
+      <sld:Abstract>Estimated Fatalities from ground shaking</sld:Abstract>
+      <sld:FeatureTypeStyle>
+        <sld:Name>Estimated Fatalities</sld:Name>
+        <sld:Rule>
+          <sld:RasterSymbolizer>
+            <sld:Geometry>
+              <ogc:PropertyName>geom</ogc:PropertyName>
+            </sld:Geometry>
+            <sld:ChannelSelection>
+              <sld:GrayChannel>
+                <sld:SourceChannelName>1</sld:SourceChannelName>
+              </sld:GrayChannel>
+            </sld:ChannelSelection>
+            <sld:ColorMap>
+              <sld:ColorMapEntry color="#ffffff" opacity="0" quantity="-9999.0"/>
+              <sld:ColorMapEntry color="#38A800" opacity="0" quantity="0.01"/>
+              <sld:ColorMapEntry color="#38A800" quantity="0.02"/>
+              <sld:ColorMapEntry color="#79C900" quantity="0.05"/>
+              <sld:ColorMapEntry color="#CEED00" quantity="0.1"/>
+              <sld:ColorMapEntry color="#FFCC00" quantity="0.2"/>
+              <sld:ColorMapEntry color="#FF6600" quantity="0.3"/>
+              <sld:ColorMapEntry color="#FF0000" quantity="0.5"/>
+              <sld:ColorMapEntry color="#7A0000" quantity="0.9"/>
+            </sld:ColorMap>
+          </sld:RasterSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+</sld:StyledLayerDescriptor>
+
+        """
+
+        return s
+
+
+def generate_exposure_table(mmi_range,
+                            number_of_people_affected):
+    """Helper to make html report
+    """
+
+    header = 'Jumlah Orang yg terkena dampak (x1000)'
+    caption = ('<font size="3"><table border="0" width="400px">'
+               '   <tr><td><b>MMI</b></td><td><b>%s</b></td></tr>'
+               % header)
+
+    for mmi in mmi_range:
+        caption += ('   <tr><td>%i&#58;</td><td>%i</td></tr>'
+                    % (mmi,
+                       number_of_people_affected[mmi]/1000))
+    caption += '<tr></tr>'
+    caption += '</table></font>'
+
+    return caption
+
+
+def generate_fatality_table(fatalities):
+    """Helper to make html report
+    """
+
+    caption = ('<br>'
+               '<font size="3"><table border="0" width="300px">'
+               '    <tr><td><b>Jumlah Perkiraan Kematian</b></td>'
+               '    <td><b>%i</b></td></tr>'
+               '</table></font>'  % fatalities)
+    return caption
