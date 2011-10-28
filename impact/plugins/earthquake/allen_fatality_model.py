@@ -32,14 +32,20 @@ class EarthquakeFatalityFunction(FunctionProvider):
         population = layers[1]
 
         # Scale resampled population density
+
         current_res = population.get_resolution()[0]
-        native_res = float(population.get_keywords()['resolution'])
+        keywords = population.get_keywords()
+        if 'resolution' in keywords:
+            # Clunky - see issue #171
+            native_res = float(keywords['resolution'])
 
-        #print 'current res', current_res
-        #print 'native res', native_res
+            #print 'current res', current_res
+            #print 'native res', native_res
 
-        scaling = (current_res / native_res) ** 2
-        #print 'scaling', scaling
+            scaling = (current_res / native_res) ** 2
+            #print 'scaling', scaling
+        else:
+            scaling = 1
 
         # Extract data
         H = intensity.get_data(nan=0)
