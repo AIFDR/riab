@@ -54,6 +54,17 @@ class USGSFatalityFunction(FunctionProvider):
         H = intensity.get_data(nan=0)   # Ground Shaking
         P = population.get_data(nan=0)  # Population Density
 
+        import cPickle
+        name = intensity.get_name()
+        print name
+        fid = open('/home/nielso/population_%s.pck' % name, 'wb')
+        cPickle.dump(P, fid)
+        fid.close()
+
+        fid = open('/home/nielso/intensity_%s.pck' % name, 'wb')
+        cPickle.dump(H, fid)
+        fid.close()
+
         # Calculate population affected by each MMI level
         mmi_range = range(2, 10)
         number_of_people_affected = {}
