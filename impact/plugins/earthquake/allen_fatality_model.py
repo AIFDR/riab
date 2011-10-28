@@ -31,18 +31,19 @@ class EarthquakeFatalityFunction(FunctionProvider):
         intensity = layers[0]
         population = layers[1]
 
-        #print 'Res', intensity.get_resolution()
-        #print 'Kwd', intensity.get_keywords()
-        ##print 'Meta', intensity.get_metadata()
-        #print 'Res', population.get_resolution()
-        #print 'Kwd', population.get_keywords()
-        ##print 'Meta', population.get_metadata()
-        #print dir(population)
+        # Scale resampled population density
+        current_res = population.get_resolution()[0]
+        native_res = float(population.get_keywords()['resolution'])
 
+        #print 'current res', current_res
+        #print 'native res', native_res
+
+        scaling = (current_res / native_res) ** 2
+        #print 'scaling', scaling
 
         # Extract data
         H = intensity.get_data(nan=0)
-        P = population.get_data(nan=0)
+        P = population.get_data(nan=0) * scaling
 
         # Calculate impact
         F = 10 ** (a * H - b) * P

@@ -36,6 +36,18 @@ class FloodImpactFunction(FunctionProvider):
         inundation = layers[0]  # Flood inundation [m]
         population = layers[1]  # Population density [people/100000 m^2]
 
+        # Scale resampled population density
+        # FIXME (Ole) - TODO
+        current_res = population.get_resolution()[0]
+        native_res = float(population.get_keywords()['resolution'])
+
+        #print 'current res', current_res
+        #print 'native res', native_res
+
+        scaling = (current_res / native_res) ** 2
+        #print 'scaling', scaling
+
+
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth
         P = population.get_data(nan=0.0)  # Population density
