@@ -31,13 +31,13 @@ class EarthquakeFatalityFunction(FunctionProvider):
         intensity = layers[0]
         population = layers[1]
 
-        print 'Res', intensity.get_resolution()
-        print 'Kwd', intensity.get_keywords()
-        #print 'Meta', intensity.get_metadata()
-        print 'Res', population.get_resolution()
-        print 'Kwd', population.get_keywords()
-        #print 'Meta', population.get_metadata()
-        print dir(population)
+        #print 'Res', intensity.get_resolution()
+        #print 'Kwd', intensity.get_keywords()
+        ##print 'Meta', intensity.get_metadata()
+        #print 'Res', population.get_resolution()
+        #print 'Kwd', population.get_keywords()
+        ##print 'Meta', population.get_metadata()
+        #print dir(population)
 
 
         # Extract data

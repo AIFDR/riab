@@ -18,7 +18,8 @@ class USGSFatalityFunction(FunctionProvider):
 
     :param requires category == 'exposure' and \
                     subcategory == 'population' and \
-                    layer_type == 'raster'
+                    layer_type == 'raster' and \
+                    disabled == 'notinuse'
     """
 
     @staticmethod
@@ -29,6 +30,17 @@ class USGSFatalityFunction(FunctionProvider):
         Input
           H: Numerical array of hazard data
           E: Numerical array of exposure data
+
+        Algorithm and coefficients are from:
+
+        An Empirical Model for Global Earthquake Fatality Estimation.
+        Kishor Jaiswal and David Wald.
+        Earthquake Spectra, Volume 26, No. 4, pages 1017-1037, November 2010.
+
+
+        teta=14.05, beta=0.17, zeta=2.1  # Coefficients for Indonesia.
+
+
         """
 
         # Identify input layers
@@ -53,7 +65,7 @@ class USGSFatalityFunction(FunctionProvider):
             # Generate text with result for this study
             number_of_people_affected[mmi] = numpy.nansum(I.flat)
 
-        # Calculate impact
+        # Calculate impact according to equation (1) in the Kishor and Wald 2010
         logHazard = 1 / beta * scipy.log(H / teta)
 
         # Convert array to be standard floats expected by cdf
@@ -118,6 +130,8 @@ class USGSFatalityFunction(FunctionProvider):
               <sld:ColorMapEntry color="#FF6600" quantity="0.3"/>
               <sld:ColorMapEntry color="#FF0000" quantity="0.5"/>
               <sld:ColorMapEntry color="#7A0000" quantity="0.9"/>
+              <sld:ColorMapEntry color="#DDDDDD" quantity="5.0"/>
+              <sld:ColorMapEntry color="#FFFFFF" quantity="10.0"/>
             </sld:ColorMap>
           </sld:RasterSymbolizer>
         </sld:Rule>
