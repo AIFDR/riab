@@ -365,7 +365,8 @@ class Test_geonode_connection(unittest.TestCase):
 
         # A little metadata characterisation test
         # FIXME (Ole): Get this right when new resolution keyword
-        # has been fully sorted out.
+        # has been fully sorted out. There are 3 other tests failing at
+        # the moment
         ref = {'layer_type': 'raster',
                'keywords': {'category': 'hazard',
                             'subcategory': 'earthquake',
