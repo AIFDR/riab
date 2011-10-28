@@ -369,6 +369,7 @@ class Test_geonode_connection(unittest.TestCase):
                             'subcategory': 'earthquake'},
                'geotransform': (105.29857, 0.0112, 0.0,
                                 -5.565233000000001, 0.0, -0.0112),
+               'resolution': '0.0112',
                'title': 'lembang_mmi_hazmap'}
 
         for key in ['layer_type', 'keywords', 'geotransform',
