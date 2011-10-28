@@ -35,6 +35,9 @@ class USGSFatalityFunction(FunctionProvider):
         intensity = layers[0]
         population = layers[1]
 
+        print intensity.get_resolution()
+        print population.get_resolution()
+
         # Extract data
         H = intensity.get_data(nan=0)   # Ground Shaking
         P = population.get_data(nan=0)  # Population Density
