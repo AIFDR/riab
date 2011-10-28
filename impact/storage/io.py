@@ -230,7 +230,11 @@ def get_metadata_from_layer(layer):
     if layer.datatype == 'raster':
         geotransform = extract_geotransform(layer)
         metadata['geotransform'] = geotransform
-        metadata['resolution'] = geotransform2resolution(geotransform)
+        metadata['resolution'] = geotransform2resolution(geotransform,
+                                                         isotropic=True)
+    else:
+        metadata['resolution'] = None
+        metadata['geotransform'] = None
 
     # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
@@ -238,11 +242,11 @@ def get_metadata_from_layer(layer):
     metadata['id'] = layer.id
 
     # Extract keywords
+    keyword_dict = {}
     if not hasattr(layer, 'keywords'):
-        msg = 'No keywords in %s. Submit patch to OWSLib maintainers' % layer
+        msg = 'No keywords in %s. Submit patch to OWSLib maintainers.' % layer
         raise Exception(msg)
     else:
-        keyword_dict = {}
         for keyword in layer.keywords:
             if keyword is not None:
                 # FIXME (Ole): Why would this be None sometimes?
@@ -254,11 +258,16 @@ def get_metadata_from_layer(layer):
                     else:
                         keyword_dict[keyword_string] = None
 
-        # Add a few extras:
-        # layertype
-        # resolution
-        metadata['keywords'] = keyword_dict
+    # Add resolution (as a string) so that layer "remembers"
+    # its original resolution
+    keyword_dict['resolution'] = str(metadata['resolution'])
 
+    # FIXME (Ole): This does not cause an Exception, and nothing is written to the log file
+    #              See issue #170
+    #raise Exception('weird')
+
+    # Record all keywords as part of the metadata and return
+    metadata['keywords'] = keyword_dict
     return metadata
 
 
@@ -289,7 +298,6 @@ def get_metadata(server_url, layer_name=None):
     # Get metadata for requested layer(s)
     metadata = {}
     for name in layer_names:
-
         if name in wcs.contents:
             layer = wcs.contents[name]
             layer.datatype = 'raster'  # Monkey patch layer type
@@ -541,6 +549,7 @@ def download(server_url, layer_name, bbox, resolution=None):
         if resolution is None:
             # Get native resolution and use that
             resolution = layer_metadata['resolution']
+            resolution = (resolution, resolution)  #FIXME (Ole): Make nicer
 
         # Download raster using specified bounding box and resolution
         template = WCS_TEMPLATE

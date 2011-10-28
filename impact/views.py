@@ -126,10 +126,7 @@ def calculate(request, save_output=save_to_geonode):
             raster_resolution = None
         else:
             # Take the minimum
-            resx = min(haz_res[0], exp_res[0])
-            resy = min(haz_res[1], exp_res[1])
-
-            raster_resolution = (resx, resy)
+            raster_resolution = min(haz_res, exp_res)
 
         # New bounding box for data common to hazard, exposure and viewport
         # Download only data within this intersection
@@ -194,7 +191,12 @@ def calculate(request, save_output=save_to_geonode):
                              user=theuser)
     except Exception, e:
         # FIXME: Reimplement error saving for calculation.
-        # FIXME (Ole): Why?
+        # FIXME (Ole): Why should we reimplement?
+        # This is dangerous. Try to raise an exception
+        # e.g. in get_metadata_from_layer. Things will silently fail.
+        # See issue #170
+        #print 'ERRRORRRRRRR'
+
         logger.error(e)
         errors = e.__str__()
         trace = exception_format(e)

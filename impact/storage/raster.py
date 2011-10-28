@@ -477,22 +477,20 @@ class Raster:
         """Get raster resolution as a 2-tuple (resx, resy)
 
         Input
-            isotropic:
+            isotropic: If True, verify that dx == dy and return dx
+                       If False return 2-tuple (dx, dy)
         """
 
-        resx, resy = geotransform2resolution(self.geotransform)
+        try:
+            res = geotransform2resolution(self.geotransform,
+                                          isotropic=isotropic)
+        except Exception, e:
+            msg = ('Resolution for layer %s could not be obtained: %s '
+                   % (self.get_name(), str(e)))
+            raise Exception(msg)
 
-        if isotropic:
-            msg = ('Resolution for layer %s requested with '
-                   'isotropic=True, but '
-                   'resolutions in the horizontal and vertical '
-                   'are different: resx = %.12f, resy = %.12f. '
-                   % (self.get_name(), resx, resy))
-            assert numpy.allclose(resx, resy,
-                                  rtol=1.0e-6, atol=1.0e-8), msg
-            return resx
-        else:
-            return resx, resy
+        return res
+
 
     @property
     def is_raster(self):

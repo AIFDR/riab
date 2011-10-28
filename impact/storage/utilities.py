@@ -173,15 +173,17 @@ def write_keywords(keywords, filename):
            'Expected %s.keywords' % (filename, basename))
     assert ext == '.keywords', msg
 
-
-
     # Write
     fid = open(filename, 'w')
     for k, v in keywords.items():
 
         msg = ('Key in keywords dictionary must be a string. '
-               'I got %s with type %s' % (k, type(k)))
+               'I got %s with type %s' % (k, str(type(k))[1:-1]))
         assert isinstance(k, basestring), msg
+
+        msg = ('Keyword value must be a string. '
+               'For key %s, I got %s with type %s' % (k, v, str(type(v))[1:-1]))
+        assert isinstance(v, basestring), msg
 
         key = k.strip()
 
@@ -321,7 +323,9 @@ def geotransform2bbox(geotransform, columns, rows):
     return [minx, miny, maxx, maxy]
 
 
-def geotransform2resolution(geotransform):
+def geotransform2resolution(geotransform, isotropic=False,
+                            # FIXME (Ole): Check these tolerances
+                            rtol=1.0e-2, atol=1.0e-5):
     """Convert geotransform to resolution
 
     Input
@@ -329,17 +333,34 @@ def geotransform2resolution(geotransform):
                       (top left x, w-e pixel resolution, rotation,
                       top left y, rotation, n-s pixel resolution).
                       See e.g. http://www.gdal.org/gdal_tutorial.html
+        Input
+            isotropic: If True, verify that dx == dy and return dx
+                       If False (default) return 2-tuple (dx, dy)
+            rtol, atol: Used to control how close dx and dy must be
+                        to quality for isotropic. These are passed on to
+                        numpy.allclose for comparison.
 
     Output
         resolution: grid spacing (resx, resy) in (positive) decimal
                     degrees ordered as longitude first, then latitude.
+                    or resx (if isotropic is True)
     """
 
-    x_res = geotransform[1]     # w-e pixel resolution
-    y_res = - geotransform[5]   # n-s pixel resolution (always negative)
+    resx = geotransform[1]     # w-e pixel resolution
+    resy = - geotransform[5]   # n-s pixel resolution (always negative)
 
-    return x_res, y_res
+    if isotropic:
+        msg = ('Resolution requested with '
+               'isotropic=True, but '
+               'resolutions in the horizontal and vertical '
+               'are different: resx = %.12f, resy = %.12f. '
+               % (resx, resy))
+        assert numpy.allclose(resx, resy,
+                              rtol=rtol, atol=atol), msg
 
+        return resx
+    else:
+        return resx, resy
 
 def bbox_intersection(*args):
     """Compute intersection between two or more bounding boxes
@@ -437,12 +458,12 @@ def buffered_bounding_box(bbox, resolution):
 
     Input
         bbox: Bounding box with format [W, S, E, N]
-        resolution: (resx, resy) Raster resolution in each direction.
+        resolution: (resx, resy) - Raster resolution in each direction.
+                    res - Raster resolution in either direction
                     If resolution is None bbox is returned unchanged.
 
     Ouput
         Adjusted bounding box
-
 
 
     Case in point: Interpolation point O would fall outside this domain
@@ -462,18 +483,17 @@ def buffered_bounding_box(bbox, resolution):
     if resolution is None:
         return bbox
 
-    resx, resy = resolution
+    try:
+        resx, resy = resolution
+    except:
+        resx = resy = resolution
 
-    #print 'bbox', bbox
-    #print resx, resy
     bbox[0] -= resx
     bbox[1] -= resy
     bbox[2] += resx
     bbox[3] += resy
 
-    #print 'grown bbox', bbox
     return bbox
-
 
 
 def get_geometry_type(geometry):

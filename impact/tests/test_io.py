@@ -1403,11 +1403,14 @@ class Test_IO(unittest.TestCase):
         """
 
         for gt in GEOTRANSFORMS:
-            res = geotransform2resolution(gt)
-
+            res = geotransform2resolution(gt, isotropic=False)
             assert len(res) == 2
             assert numpy.allclose(res[0], gt[1], rtol=0, atol=1.0e-12)
             assert numpy.allclose(res[1], - gt[5], rtol=0, atol=1.0e-12)
+
+            res = geotransform2resolution(gt, isotropic=True)
+            assert numpy.allclose(res, gt[1], rtol=0, atol=1.0e-12)
+            assert numpy.allclose(res, - gt[5], rtol=0, atol=1.0e-12)
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')
