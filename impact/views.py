@@ -126,7 +126,11 @@ def calculate(request, save_output=save_to_geonode):
             raster_resolution = None
         else:
             # Take the minimum
-            raster_resolution = min(haz_res, exp_res)
+            resx = min(haz_res[0], exp_res[0])
+            resy = min(haz_res[1], exp_res[1])
+
+            raster_resolution = (resx, resy)
+            #raster_resolution = min(haz_res, exp_res)
 
         # New bounding box for data common to hazard, exposure and viewport
         # Download only data within this intersection

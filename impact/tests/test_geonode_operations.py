@@ -867,7 +867,12 @@ class Test_geonode_connection(unittest.TestCase):
             geo_keywords = metadata['keywords']
             msg = ('Uploaded keywords were not as expected: I got %s '
                    'but expected %s' % (geo_keywords, ref_keywords))
-            assert ref_keywords == geo_keywords, msg
+            for kw in ref_keywords:
+                # Check that all keywords were uploaded
+                # It is OK for new automatic keywords to have appeared
+                #  (e.g. resolution)
+                assert kw in geo_keywords, msg
+                assert ref_keywords[kw] == geo_keywords[kw], msg
 
             # Download data
             bbox = get_bounding_box_string(paths[i])
@@ -875,8 +880,8 @@ class Test_geonode_connection(unittest.TestCase):
 
             dwn_keywords = H.get_keywords()
             msg = ('Downloaded keywords were not as expected: I got %s '
-                   'but expected %s' % (dwn_keywords, ref_keywords))
-            assert ref_keywords == dwn_keywords, msg
+                   'but expected %s' % (dwn_keywords, geo_keywords))
+            assert geo_keywords == dwn_keywords, msg
 
             # Check that the layer and its .keyword file is there.
             msg = 'Downloaded layer %s was not found' % H.filename
@@ -888,10 +893,11 @@ class Test_geonode_connection(unittest.TestCase):
 
             # Check that keywords are OK when reading downloaded file
             L = read_layer(H.filename)
+            read_keywords = L.get_keywords()
             msg = ('Keywords in downloaded file %s were not as expected: '
                    'I got %s but expected %s'
-                   % (kw_filename, dwn_keywords, ref_keywords))
-            assert L.get_keywords() == ref_keywords, msg
+                   % (kw_filename, read_keywords, geo_keywords))
+            assert read_keywords == geo_keywords, msg
 
 
 

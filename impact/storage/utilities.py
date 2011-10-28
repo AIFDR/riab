@@ -181,10 +181,6 @@ def write_keywords(keywords, filename):
                'I got %s with type %s' % (k, str(type(k))[1:-1]))
         assert isinstance(k, basestring), msg
 
-        msg = ('Keyword value must be a string. '
-               'For key %s, I got %s with type %s' % (k, v, str(type(v))[1:-1]))
-        assert isinstance(v, basestring), msg
-
         key = k.strip()
 
         msg = ('Key in keywords dictionary must not contain the ":" '
@@ -194,6 +190,11 @@ def write_keywords(keywords, filename):
         if v is None:
             fid.write('%s\n' % key)
         else:
+            msg = ('Keyword value must be a string. '
+                   'For key %s, I got %s with type %s'
+                   % (k, v, str(type(v))[1:-1]))
+            assert isinstance(v, basestring), msg
+
             val = v.strip()
 
             msg = ('Value in keywords dictionary must be a string or None. '
