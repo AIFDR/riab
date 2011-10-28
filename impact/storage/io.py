@@ -240,8 +240,7 @@ def get_metadata_from_layer(layer):
     # Extract keywords
     if not hasattr(layer, 'keywords'):
         msg = 'No keywords in %s. Submit patch to OWSLib maintainers' % layer
-        # FIXME (Ole): Uncomment when OWSLib patch has been submitted
-        #Raise Exception(msg)
+        raise Exception(msg)
     else:
         keyword_dict = {}
         for keyword in layer.keywords:
