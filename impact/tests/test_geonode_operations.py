@@ -364,28 +364,33 @@ class Test_geonode_connection(unittest.TestCase):
         assert len(metadata['bounding_box']) == 4
 
         # A little metadata characterisation test
+        # FIXME (Ole): Get this right when new resolution keyword
+        # has been fully sorted out.
         ref = {'layer_type': 'raster',
                'keywords': {'category': 'hazard',
-                            'subcategory': 'earthquake'},
+                            'subcategory': 'earthquake',
+                            'resolution': '0.0112'},
                'geotransform': (105.29857, 0.0112, 0.0,
                                 -5.565233000000001, 0.0, -0.0112),
-               'resolution': '0.0112',
+               'resolution': 0.0112,
                'title': 'lembang_mmi_hazmap'}
 
         for key in ['layer_type', 'keywords', 'geotransform',
                     'title']:
 
-            msg = ('Expected metadata for key %s to be %s. '
-                   'Instead got %s' % (key, ref[key], metadata[key]))
-            if key == 'geotransform':
-                assert numpy.allclose(metadata[key], ref[key]), msg
-            else:
-                assert metadata[key] == ref[key], msg
-
             if key == 'keywords':
                 kwds = metadata[key]
                 for k in kwds:
                     assert kwds[k] == ref[key][k]
+            else:
+                msg = ('Expected metadata for key %s to be %s. '
+                       'Instead got %s' % (key, ref[key], metadata[key]))
+                if key in ['geotransform', 'resolution']:
+                    assert numpy.allclose(metadata[key], ref[key]), msg
+                else:
+                    assert metadata[key] == ref[key], msg
+
+
 
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
