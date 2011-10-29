@@ -51,6 +51,10 @@ class EarthquakeFatalityFunction(FunctionProvider):
         H = intensity.get_data(nan=0)
         P = population.get_data(nan=0) * scaling
 
+        # As per issue #172, I want this
+        #P = population.get_data(nan=0, scaling=True)
+        # with the code above rolled into get_data
+
         # Calculate impact
         F = 10 ** (a * H - b) * P
 
