@@ -813,16 +813,15 @@ class Test_geonode_connection(unittest.TestCase):
                                       rtol=0, atol=0), msg
 
                 # Assess that the range of the interpolated data is sane
-                #A = numpy.where(numpy.isnan(A), 0, A)  # Remove missing values
 
-                # We expect exact match of the minimum
+                # For these test sets we get exact match of the minimum
                 msg = ('Minimum of %s resampled at resolution %f '
                        'was %f. Expected %f.' % (hazard_layer.name,
                                                  res,
                                                  numpy.nanmin(A),
                                                  depth_min_ref))
                 assert numpy.allclose(depth_min_ref, numpy.nanmin(A),
-                                      rtol=0, atol=0), msg
+                                      rtol=0.0, atol=0.0), msg
 
                 # At the maximum it depends on the subsampling
                 if res < native_resolution[0]:
