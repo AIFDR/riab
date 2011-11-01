@@ -355,19 +355,9 @@ class Raster:
         elif scaling is True:
             # Calculate scaling based on resolution change
 
-            current_res = self.get_resolution()[0]
-
-            # REFACTOR USING kw native
-            keywords = self.get_keywords()
-            if 'resolution' in keywords:
-                # Clunky but works - see issue #171
-                native_res = float(keywords['resolution'])
-
-                sigma = (current_res / native_res) ** 2
-            else:
-                # No change in resolution was detected
-                sigma = 1
-
+            actual_res = self.get_resolution(isotropic=True)
+            native_res = self.get_resolution(isotropic=True, native=True)
+            sigma = (actual_res / native_res) ** 2
         else:
             # See if scaling can work as a scalar value
             try:
@@ -554,6 +544,7 @@ class Raster:
         if native:
             keywords = self.get_keywords()
             if 'resolution' in keywords:
+                # Clunky but works - see issue #171
                 res = float(keywords['resolution'])
                 if not isotropic:
                     res = (res, res)
