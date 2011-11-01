@@ -364,9 +364,9 @@ class Test_interpolate(unittest.TestCase):
                                                       rtol=1.0e-12,
                                                       atol=1.0e-12), msg
 
-    # FIXME (Ole): Bring this one back!
-    def Xtest_interpolation_corner_cases(self):
-        """Interpolation library works sensibly for incomplete grid points
+
+    def test_interpolation_corner_cases(self):
+        """Interpolation library returns NaN for incomplete grid points
         """
 
         # Define four pixel centers
@@ -387,29 +387,14 @@ class Test_interpolate(unittest.TestCase):
         points = combine_coordinates(xis, etas)
 
         # Interpolate to cropped grids
-        for xc, yc, Ac in [#(x, y, A),
-                           #([x[0]], [y[0]], numpy.array([[A[0, 0]]])), # 1 x 1
+        for xc, yc, Ac in [([x[0]], [y[0]], numpy.array([[A[0, 0]]])), # 1 x 1
                            ([x[0]], y, numpy.array([A[0, :]])),  # 1 x 2
-                           ]: #  ([x[0]], y, [A[0,:]])]:
-            print
-            print xc, yc, Ac
-            print points
+                           ]:
 
             vals = interpolate2d(xc, yc, Ac, points, mode='linear')
+            msg = 'Expected NaN when grid %s is incomplete' % str(Ac.shape)
+            assert numpy.all(numpy.isnan(vals)), msg
 
-            if len(xc) == 1 and len(yc) == 1:
-                # One pixel - return constant value
-                refs = [Ac[0, 0]] * len(points)
-            elif len(xc) == 1 and len(yc) == 2:
-                # Two pixel points in the y direction.
-                # Use 1D linear interpolation
-                refs = linear_function(0, points[:, 1])
-            else:
-                refs = linear_function(points[:, 0], points[:, 1])
-
-            print vals
-            print refs
-            assert nanallclose(vals, refs, rtol=1e-12, atol=1e-12)
 
     def test_interpolation_raster_data(self):
         """Interpolation library works for raster data

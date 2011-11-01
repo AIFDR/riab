@@ -122,7 +122,8 @@ def interpolate2d(x, y, Z, points, mode='linear', bounds_error=False):
         mZ = numpy.nanmax(Z)
         msg = ('Internal check failed. Max interpolated value %.15f '
                'exceeds max grid value %.15f ' % (mz, mZ))
-        assert mz <= mZ, msg
+        if not(numpy.isnan(mz) or numpy.isnan(mZ)):
+            assert mz <= mZ, msg
 
     # Populate result with interpolated values for points inside domain
     # and NaN for values outside
