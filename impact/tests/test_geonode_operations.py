@@ -824,14 +824,19 @@ class Test_geonode_connection(unittest.TestCase):
                                       rtol=0.0, atol=0.0), msg
 
                 # At the maximum it depends on the subsampling
+                msg = ('Maximum of %s resampled at resolution %f '
+                       'was %f. Expected %f.' % (hazard_layer.name,
+                                                 res,
+                                                 numpy.nanmax(A),
+                                                 depth_max_ref))
                 if res < native_resolution[0]:
                     # At these resolutions we expect a close match
                     assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
-                                          rtol=1.0e-10, atol=1.0e-8)
+                                          rtol=1.0e-10, atol=1.0e-8), msg
                 elif res < native_resolution[0] * 10:
                     # At these resolutions we expect ballpark match (~20%)
                     assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
-                                          rtol=0.17, atol=0.0)
+                                          rtol=0.17, atol=0.0), msg
                 else:
                     # At coarser resolutions, we just want sanity
                     assert 0 < numpy.nanmax(A) <= depth_max_ref
