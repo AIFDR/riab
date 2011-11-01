@@ -364,7 +364,7 @@ class Test_interpolate(unittest.TestCase):
                                                       rtol=1.0e-12,
                                                       atol=1.0e-12), msg
 
-
+    # FIXME (Ole): Bring this one back!
     def Xtest_interpolation_corner_cases(self):
         """Interpolation library works sensibly for incomplete grid points
         """

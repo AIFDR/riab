@@ -363,6 +363,7 @@ def geotransform2resolution(geotransform, isotropic=False,
     else:
         return resx, resy
 
+
 def bbox_intersection(*args):
     """Compute intersection between two or more bounding boxes
 
@@ -444,6 +445,7 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
         bbox[3] += dy
 
     return bbox
+
 
 def buffered_bounding_box(bbox, resolution):
     """Grow bounding box with one unit of resolution in each direction

@@ -391,8 +391,6 @@ class Test_geonode_connection(unittest.TestCase):
                 else:
                     assert metadata[key] == ref[key], msg
 
-
-
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
         """
@@ -792,7 +790,6 @@ class Test_geonode_connection(unittest.TestCase):
                               'Population_Jakarta_geographic.asc',
                               'Population_2010.asc']:
 
-
             hazard_filename = ('%s/%s' % (TESTDATA, test_filename))
 
             # Get reference values
@@ -835,7 +832,8 @@ class Test_geonode_connection(unittest.TestCase):
 
                 # Verify that data has the requested bobx and resolution
                 actual_bbox = H.get_bounding_box()
-                msg = ('Bounding box for %s was not as requested. I got %s but '
+                msg = ('Bounding box for %s was not as requested. I got %s '
+                       'but '
                        'expected %s' % (hazard_name, actual_bbox, bb))
                 assert numpy.allclose(actual_bbox, bb, rtol=1.0e-6)
 
@@ -851,7 +849,6 @@ class Test_geonode_connection(unittest.TestCase):
                        'expected %s' % (hazard_name, actual_resolution, res))
                 assert numpy.allclose(actual_resolution, res,
                                       rtol=tolerance102), msg
-
 
                 # Determine expected shape from bbox (W, S, E, N)
                 ref_rows = int(round((bb[3] - bb[1]) / res))
@@ -894,7 +891,7 @@ class Test_geonode_connection(unittest.TestCase):
                     assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
                                           rtol=0.17, atol=0.0), msg
                 else:
-                    # Upsampling to very coarse resolutions, we just want sanity
+                    # Upsampling to very coarse resolutions, just want sanity
                     assert 0 < numpy.nanmax(A) <= depth_max_ref
 
     def test_raster_scaling(self):
@@ -1084,7 +1081,6 @@ class Test_geonode_connection(unittest.TestCase):
                    'I got %s but expected %s'
                    % (kw_filename, read_keywords, geo_keywords))
             assert read_keywords == geo_keywords, msg
-
 
 
 if __name__ == '__main__':

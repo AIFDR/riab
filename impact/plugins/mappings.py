@@ -188,7 +188,6 @@ def osm2bnpb(E, target_attribute='VCLASS'):
     return V
 
 
-
 def unspecific2bnpb(E, target_attribute='VCLASS'):
     """Map Unspecific point data to BNPB vulnerability classes
 
@@ -221,4 +220,3 @@ def unspecific2bnpb(E, target_attribute='VCLASS'):
                name=E.get_name() + ' mapped to BNPB vulnerability class URM',
                keywords=E.get_keywords())
     return V
-

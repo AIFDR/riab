@@ -1213,8 +1213,8 @@ class Test_IO(unittest.TestCase):
             # Set common resolution which is bigger than the smallest box
             resolution = (0.1, 0.2)
 
-            dx = bbox[2]-bbox[0]
-            dy = bbox[3]-bbox[1]
+            dx = bbox[2] - bbox[0]
+            dy = bbox[3] - bbox[1]
 
             # Calculate minimal bounding box
             adjusted_bbox = buffered_bounding_box(bbox, resolution)

@@ -115,7 +115,6 @@ class Vector:
                              str(self.geometry_type),
                              g_type_str))
 
-
     def __len__(self):
         """Size of vector layer defined as number of features
         """

@@ -123,8 +123,6 @@ def check_data_integrity(layer_files):
                    'and try again')
             assert len(layer) > 0, msg
 
-
-
     # Check that arrays are aligned.
     #
     # We have observerd Geoserver resolution changes - see ticket:102

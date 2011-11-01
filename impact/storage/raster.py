@@ -540,7 +540,6 @@ class Raster:
                    % (self.get_name(), str(e)))
             raise Exception(msg)
 
-
         if native:
             keywords = self.get_keywords()
             if 'resolution' in keywords:
@@ -550,7 +549,6 @@ class Raster:
                     res = (res, res)
 
         return res
-
 
     @property
     def is_raster(self):

@@ -195,7 +195,6 @@ class Test_calculations(unittest.TestCase):
                                 get_bounding_box_string(hazard_filename))
         assert os.path.exists(result_layer.filename)
 
-
     def test_jakarta_flood_study(self):
         """HKV Jakarta flood study calculated correctly using the API
         """
@@ -219,7 +218,8 @@ class Test_calculations(unittest.TestCase):
         assert workspace == 'geonode'
 
         layer_name = exposure_layer.name
-        msg = 'Expected layer name to be "%s". Got %s' % (population, layer_name)
+        msg = 'Expected layer name to be "%s". Got %s' % (population,
+                                                          layer_name)
         assert layer_name.lower() == population.lower(), msg
 
         exposure_name = '%s:%s' % (workspace, layer_name)
@@ -341,7 +341,8 @@ class Test_calculations(unittest.TestCase):
             #
             # FIXME: Not working - but since this test is about
             # issue #162 we'll leave it for now. TODO with NAN
-            # Manually verified that the two expected values are correct, though.
+            # Manually verified that the two expected values are correct,
+            # though.
             #msg = 'Array values of written raster array were not as expected'
             #print C
             #print I
@@ -356,8 +357,6 @@ class Test_calculations(unittest.TestCase):
             assert numpy.alltrue(C[-numpy.isnan(C)] >= 0)
 
             i += 1
-
-
 
     def test_metadata_available_after_upload(self):
         """Test metadata is available after upload
