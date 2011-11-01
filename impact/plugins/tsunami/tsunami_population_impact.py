@@ -13,8 +13,8 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
                     layer_type=="raster"
     :param requires category=="exposure" and \
                     subcategory.startswith("population") and \
-                    layer_type=="raster" and \
-                    never=="disabled"
+                    layer_type=="raster"
+
     """
 
     def run(self, layers):
@@ -28,18 +28,15 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
         inundation = layers[0]  # Tsunami inundation [m]
         population = layers[1]  # Population density
 
-        # Get actual resolution
-        resolution = population.get_resolution(isotropic=True)
-
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth
-        P = population.get_data(nan=0.0)  # Population density
+        P = population.get_data(nan=0.0, scaling=True)  # Population density
 
         # Calculate impact as population exposed to depths > 1m
         I_map = numpy.where(D > thresholds[-1], P, 0)
 
         # Generate text with result for this study
-        number_of_people_affected = sum(I_map.flat)
+        number_of_people_affected = numpy.nansum(I_map.flat)
 
         # Do breakdown
 
@@ -51,7 +48,7 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
         counts = []
         for i, threshold in enumerate(thresholds):
             I = numpy.where(D > threshold, P, 0)
-            counts.append(sum(I.flat))
+            counts.append(numpy.nansum(I.flat))
 
             caption += '   <tr><td>%s m</td><td>%i</td></tr>' % (threshold,
                                                                  counts[i])
