@@ -775,23 +775,23 @@ class Test_geonode_connection(unittest.TestCase):
         We also check that the extrema of the subsampled matrix are sane
         """
 
-        # Test for a range of specified resolutions
+        hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
+                           % TESTDATA)
+
+        # Get reference values
+        H = read_layer(hazard_filename)
+        depth_min_ref, depth_max_ref = H.get_extrema()
+
+        # Upload to internal geonode
+        hazard_layer = save_to_geonode(hazard_filename, user=self.user)
+        hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                     hazard_layer.name)
+
+        # Test for a range of resolutions
         for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
                     0.0002, 0.0001, 0.00006, 0.00003]:        # Finer
 
-            hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
-                               % TESTDATA)
-
-            # Get reference values
-            H = read_layer(hazard_filename)
-            depth_min_ref, depth_max_ref = H.get_extrema()
-
-            # Upload to internal geonode
-            hazard_layer = save_to_geonode(hazard_filename, user=self.user)
-            hazard_name = '%s:%s' % (hazard_layer.workspace,
-                                     hazard_layer.name)
-
-            # Download data again
+            # Download data at specified resolution
             bbox = get_bounding_box_string(hazard_filename)
             H = download(INTERNAL_SERVER_URL, hazard_name,
                          bbox, resolution=res)
@@ -828,7 +828,6 @@ class Test_geonode_connection(unittest.TestCase):
             else:
                 # At coarser resolutions, we just want sanity
                 assert 0 < numpy.amax(A) <= depth_max_ref
-
 
     def test_keywords_download(self):
         """Keywords are downloaded from GeoServer along with layer data
