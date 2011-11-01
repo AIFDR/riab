@@ -356,6 +356,8 @@ class Raster:
             # Calculate scaling based on resolution change
 
             current_res = self.get_resolution()[0]
+
+            # REFACTOR USING kw native
             keywords = self.get_keywords()
             if 'resolution' in keywords:
                 # Clunky but works - see issue #171
@@ -364,7 +366,7 @@ class Raster:
                 sigma = (current_res / native_res) ** 2
             else:
                 # No change in resolution was detected
-                scaling = 1
+                sigma = 1
 
         else:
             # See if scaling can work as a scalar value
@@ -529,14 +531,17 @@ class Raster:
 
         return geotransform2bbox(self.geotransform, self.columns, self.rows)
 
-    def get_resolution(self, isotropic=False):
+    def get_resolution(self, isotropic=False, native=False):
         """Get raster resolution as a 2-tuple (resx, resy)
 
         Input
             isotropic: If True, verify that dx == dy and return dx
                        If False return 2-tuple (dx, dy)
+            native: Optional flag. If True, return native resolution if
+                                   available. Otherwise return actual.
         """
 
+        # Get actual resolution first
         try:
             res = geotransform2resolution(self.geotransform,
                                           isotropic=isotropic)
@@ -544,6 +549,14 @@ class Raster:
             msg = ('Resolution for layer %s could not be obtained: %s '
                    % (self.get_name(), str(e)))
             raise Exception(msg)
+
+
+        if native:
+            keywords = self.get_keywords()
+            if 'resolution' in keywords:
+                res = float(keywords['resolution'])
+                if not isotropic:
+                    res = (res, res)
 
         return res
 
