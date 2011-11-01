@@ -814,7 +814,7 @@ class Test_geonode_connection(unittest.TestCase):
                 if test_filename.startswith('Population') and res < 0.00006:
                     break
 
-                # Download data at specified resolution
+                # Set bounding box
                 bbox = get_bounding_box_string(hazard_filename)
                 compare_extrema = True
                 if test_filename == 'Population_2010.asc':
@@ -826,13 +826,34 @@ class Test_geonode_connection(unittest.TestCase):
                     if res < 0.005:
                         bbox = '106.685974,-6.373421,106.974534,-6.079886'
                         compare_extrema = False
+                bb = bboxstring2list(bbox)
 
+                # Download data at specified resolution
                 H = download(INTERNAL_SERVER_URL, hazard_name,
                              bbox, resolution=res)
                 A = H.get_data()
 
+                # Verify that data has the requested bobx and resolution
+                actual_bbox = H.get_bounding_box()
+                msg = ('Bounding box for %s was not as requested. I got %s but '
+                       'expected %s' % (hazard_name, actual_bbox, bb))
+                assert numpy.allclose(actual_bbox, bb, rtol=1.0e-6)
+
+                # FIXME (Ole): How do we sensibly resolve the issue with
+                #              resx, resy vs one resolution (issue #173)
+                actual_resolution = H.get_resolution()[0]
+
+                # FIXME (Ole): Resolution is often far from the requested
+                #              see issue #102
+                #              Here we have to accept up to 5%
+                tolerance102 = 5.0e-2
+                msg = ('Resolution of %s was not as requested. I got %s but '
+                       'expected %s' % (hazard_name, actual_resolution, res))
+                assert numpy.allclose(actual_resolution, res,
+                                      rtol=tolerance102), msg
+
+
                 # Determine expected shape from bbox (W, S, E, N)
-                bb = bboxstring2list(bbox)
                 ref_rows = int(round((bb[3] - bb[1]) / res))
                 ref_cols = int(round((bb[2] - bb[0]) / res))
 
