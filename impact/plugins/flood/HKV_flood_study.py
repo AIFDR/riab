@@ -15,8 +15,7 @@ class FloodImpactFunction(FunctionProvider):
                     unit=='m'
     :param requires category=='exposure' and \
                     subcategory.startswith('population') and \
-                    layer_type=='raster' and \
-                    datatype=='hkv'
+                    layer_type=='raster'
     """
 
     @staticmethod
@@ -30,34 +29,27 @@ class FloodImpactFunction(FunctionProvider):
         """
 
         threshold = 0.1  # Depth above which people are regarded affected [m]
-        pixel_area = 2500  # FIXME (Ole): Get this from dataset
 
         # Identify hazard and exposure layers
         inundation = layers[0]  # Flood inundation [m]
         population = layers[1]  # Population density [people/100000 m^2]
 
-        # Scale resampled population density
-        # FIXME (Ole) - TODO
-        current_res = population.get_resolution()[0]
-        keywords = population.get_keywords()
-        if 'resolution' in keywords:
-            # Clunky - see issue #171
-            native_res = float(keywords['resolution'])
-
-            #print 'current res', current_res
-            #print 'native res', native_res
-
-            scaling = (current_res / native_res) ** 2
-            #print 'scaling', scaling
-        else:
-            scaling = 1
-
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth
-        P = population.get_data(nan=0.0)  # Population density
 
         # Calculate impact as population exposed to depths > threshold
-        I = numpy.where(D > threshold, P, 0) / 100000.0 * pixel_area
+        if population.get_resolution(native=True, isotropic=True) < 0.0005:
+            # Keep this for backwards compatibility just a little while
+            # This uses the original custom population set and
+            # serves as a reference
+
+            P = population.get_data(nan=0.0)  # Population density
+            pixel_area = 2500
+            I = numpy.where(D > threshold, P, 0) / 100000.0 * pixel_area
+        else:
+            # This is the new generic way of scaling (issue #168 and #172)
+            P = population.get_data(nan=0.0, scaling=True)
+            I = numpy.where(D > threshold, P, 0)
 
         # Generate text with result for this study
         number_of_people_affected = numpy.nansum(I.flat)
