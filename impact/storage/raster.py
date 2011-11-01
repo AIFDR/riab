@@ -287,8 +287,27 @@ class Raster:
 
     def get_data(self, nan=True, scaling=False):
         """Get raster data as numeric array
-        If keyword nan is True, nodata values will be replaced with NaN
-        If keyword nan has a numeric value, that will be used for NODATA
+
+        Input
+            nan: Optional flag controlling handling of missing values.
+                 If nan is True (default), nodata values will be replaced
+                 with numpy.nan
+                 If keyword nan has a numeric value, nodata values will
+                 be replaced by that value. E.g. to set missing values to 0,
+                 do get_data(nan=0.0)
+            scaling: Optional flag controlling if data is to be scaled
+                     if it has been resampled. Admissible values are
+                     False (default): data is retrieved without modificatio.
+                     True: Data is rescaled based on the squared ratio between
+                           its current and native resolution. This is typically
+                           required if raster data represents a density
+                           such as population per km^2
+                     None: The behaviour will depend on the keyword density
+                           associated with the layer. If density is True,
+                           scaling will be applied otherwise not.
+                     scalar value: If scaling takes a numerical scalar value,
+                                   that will be use to scale the data
+
         """
 
         # FIXME (Ole): Once we have the ability to use numpy.nan throughout,
@@ -321,7 +340,44 @@ class Raster:
             NaN = numpy.ones(A.shape, A.dtype) * NAN
             A = numpy.where(A == nodata, NaN, A)
 
-        return A
+        # Take care of possible scaling
+        if scaling is None:
+            # Get scaling from density keyword if possible
+            kw = self.get_keywords()
+            if 'density' in kw:
+                scaling = kw['density']
+            else:
+                scaling = False
+
+        if scaling is False:
+            # No change
+            sigma = 1
+        elif scaling is True:
+            # Calculate scaling based on resolution change
+
+            current_res = self.get_resolution()[0]
+            keywords = self.get_keywords()
+            if 'resolution' in keywords:
+                # Clunky but works - see issue #171
+                native_res = float(keywords['resolution'])
+
+                sigma = (current_res / native_res) ** 2
+            else:
+                # No change in resolution was detected
+                scaling = 1
+
+        else:
+            # See if scaling can work as a scalar value
+            try:
+                sigma = float(scaling)
+            except Exception, e:
+                msg = ('Keyword scaling "%s" could not be converted to a '
+                       'number. It must be either True, False, None or a '
+                       'number: %s' % (scaling, str(e)))
+                raise Exception(msg)
+
+        # Return possibly scaled data
+        return sigma * A
 
     def get_projection(self, proj4=False):
         """Return projection of this layer as a string.

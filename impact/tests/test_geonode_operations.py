@@ -929,7 +929,7 @@ class Test_geonode_connection(unittest.TestCase):
 
             # Test for a range of resolutions
             for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
-                        0.0002, 0.0001]:                          # Finer
+                        0.0002]:                                  # Finer
 
                 # To save time don't do finest resolution for the
                 # large population set
@@ -938,35 +938,83 @@ class Test_geonode_connection(unittest.TestCase):
 
                 bbox = get_bounding_box_string(raster_filename)
 
-                print test_filename, res, bbox
-
                 R = download(INTERNAL_SERVER_URL, raster_name,
                              bbox, resolution=res)
                 A_native = R.get_data(scaling=False)
                 A_scaled = R.get_data(scaling=True)
 
-                sigma = (res / native_resolution[0]) ** 2
+                sigma = (R.get_resolution()[0] / native_resolution[0]) ** 2
 
                 # Compare extrema
                 expected_scaled_max = sigma * numpy.nanmax(A_native)
-                msg = ('Resampled raster was not rescaled correctly.'
+                msg = ('Resampled raster was not rescaled correctly: '
                        'max(A_scaled) was %f but expected %f'
                        % (numpy.nanmax(A_scaled), expected_scaled_max))
+
                 assert numpy.allclose(expected_scaled_max,
                                       numpy.nanmax(A_scaled),
-                                      rtol=1.0e-12, atol=1.0e-12), msg
+                                      rtol=1.0e-8, atol=1.0e-8), msg
 
                 expected_scaled_min = sigma * numpy.nanmin(A_native)
-                msg = ('Resampled raster was not rescaled correctly.'
+                msg = ('Resampled raster was not rescaled correctly: '
                        'min(A_scaled) was %f but expected %f'
                        % (numpy.nanmin(A_scaled), expected_scaled_min))
                 assert numpy.allclose(expected_scaled_min,
                                       numpy.nanmin(A_scaled),
-                                      rtol=1.0e-12, atol=1.0e-12), msg
+                                      rtol=1.0e-8, atol=1.0e-12), msg
 
                 # Compare elementwise
                 msg = 'Resampled raster was not rescaled correctly'
-                assert nanallclose(A_native * sigma, A_scaled), msg
+                assert nanallclose(A_native * sigma, A_scaled,
+                                   rtol=1.0e-8, atol=1.0e-8), msg
+
+                # Check that it also works with manual scaling
+                A_manual = R.get_data(scaling=sigma)
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_manual, A_scaled,
+                                   rtol=1.0e-8, atol=1.0e-8), msg
+
+                # Check that an exception is raised for bad arguments
+                try:
+                    R.get_data(scaling='bad')
+                except:
+                    pass
+                else:
+                    msg = 'String argument should have raised exception'
+                    raise Exception(msg)
+
+                try:
+                    R.get_data(scaling='(1, 3)')
+                except:
+                    pass
+                else:
+                    msg = 'Tuple argument should have raised exception'
+                    raise Exception(msg)
+
+                # Check None option without existence of density keyword
+                A_none = R.get_data(scaling=None)
+                msg = 'Data should not have changed'
+                assert nanallclose(A_native, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+                # Try with None and density keyword
+                R.keywords['density'] = True
+                A_none = R.get_data(scaling=None)
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_scaled, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+                R.keywords['density'] = False
+                A_none = R.get_data(scaling=None)
+                msg = 'Data should not have changed'
+                assert nanallclose(A_native, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+                R.keywords['density'] = '%.18e' % sigma
+                A_none = R.get_data(scaling=None)
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_scaled, A_none,
+                                   rtol=1.0e-10, atol=1.0e-10), msg
 
     def test_keywords_download(self):
         """Keywords are downloaded from GeoServer along with layer data
@@ -1008,7 +1056,7 @@ class Test_geonode_connection(unittest.TestCase):
             for kw in ref_keywords:
                 # Check that all keywords were uploaded
                 # It is OK for new automatic keywords to have appeared
-                #  (e.g. resolution)
+                #  (e.g. resolution) - see issue #171
                 assert kw in geo_keywords, msg
                 assert ref_keywords[kw] == geo_keywords[kw], msg
 
