@@ -364,7 +364,6 @@ class Test_interpolate(unittest.TestCase):
                                                       rtol=1.0e-12,
                                                       atol=1.0e-12), msg
 
-
     def test_interpolation_corner_cases(self):
         """Interpolation library returns NaN for incomplete grid points
         """
@@ -387,14 +386,13 @@ class Test_interpolate(unittest.TestCase):
         points = combine_coordinates(xis, etas)
 
         # Interpolate to cropped grids
-        for xc, yc, Ac in [([x[0]], [y[0]], numpy.array([[A[0, 0]]])), # 1 x 1
+        for xc, yc, Ac in [([x[0]], [y[0]], numpy.array([[A[0, 0]]])),  # 1 x 1
                            ([x[0]], y, numpy.array([A[0, :]])),  # 1 x 2
                            ]:
 
             vals = interpolate2d(xc, yc, Ac, points, mode='linear')
             msg = 'Expected NaN when grid %s is incomplete' % str(Ac.shape)
             assert numpy.all(numpy.isnan(vals)), msg
-
 
     def test_interpolation_raster_data(self):
         """Interpolation library works for raster data
