@@ -285,7 +285,7 @@ class Raster:
             # Interpolate this raster layer to geometry of X
             return interpolate_raster_vector(self, X, name)
 
-    def get_data(self, nan=True):
+    def get_data(self, nan=True, scaling=False):
         """Get raster data as numeric array
         If keyword nan is True, nodata values will be replaced with NaN
         If keyword nan has a numeric value, that will be used for NODATA

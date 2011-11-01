@@ -876,6 +876,76 @@ class Test_geonode_connection(unittest.TestCase):
                     # Upsampling to very coarse resolutions, we just want sanity
                     assert 0 < numpy.nanmax(A) <= depth_max_ref
 
+    def test_raster_scaling(self):
+        """Raster layers can be scaled when resampled
+
+        This is a test for ticket #168
+
+        Native test .asc data has
+
+        ncols         5525
+        nrows         2050
+        cellsize      0.0083333333333333
+
+        Scaling is necessary for raster data that represents density
+        such as population per km^2
+        """
+
+        for test_filename in ['Population_Jakarta_geographic.asc',
+                              'Population_2010.asc']:
+
+            raster_filename = ('%s/%s' % (TESTDATA, test_filename))
+
+            # Get reference values
+            R = read_layer(raster_filename)
+            R_min_ref, R_max_ref = R.get_extrema()
+            native_resolution = R.get_resolution()
+
+            # Upload to internal geonode
+            raster_layer = save_to_geonode(raster_filename, user=self.user)
+            raster_name = '%s:%s' % (raster_layer.workspace,
+                                     raster_layer.name)
+
+            # Test for a range of resolutions
+            for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
+                        0.0002, 0.0001]:                          # Finer
+
+                # To save time don't do finest resolution for the
+                # large population set
+                if test_filename.startswith('Population_2010') and res < 0.005:
+                    break
+
+                bbox = get_bounding_box_string(raster_filename)
+
+                print test_filename, res, bbox
+
+                R = download(INTERNAL_SERVER_URL, raster_name,
+                             bbox, resolution=res)
+                A_native = R.get_data(scaling=False)
+                A_scaled = R.get_data(scaling=True)
+
+                sigma = (res / native_resolution[0]) ** 2
+
+                # Compare extrema
+                expected_scaled_max = sigma * numpy.nanmax(A_native)
+                msg = ('Resampled raster was not rescaled correctly.'
+                       'max(A_scaled) was %f but expected %f'
+                       % (numpy.nanmax(A_scaled), expected_scaled_max))
+                assert numpy.allclose(expected_scaled_max,
+                                      numpy.nanmax(A_scaled),
+                                      rtol=1.0e-12, atol=1.0e-12), msg
+
+                expected_scaled_min = sigma * numpy.nanmin(A_native)
+                msg = ('Resampled raster was not rescaled correctly.'
+                       'min(A_scaled) was %f but expected %f'
+                       % (numpy.nanmin(A_scaled), expected_scaled_min))
+                assert numpy.allclose(expected_scaled_min,
+                                      numpy.nanmin(A_scaled),
+                                      rtol=1.0e-12, atol=1.0e-12), msg
+
+                # Compare elementwise
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_native * sigma, A_scaled), msg
 
     def test_keywords_download(self):
         """Keywords are downloaded from GeoServer along with layer data
