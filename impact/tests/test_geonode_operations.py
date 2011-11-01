@@ -759,7 +759,7 @@ class Test_geonode_connection(unittest.TestCase):
         assert nanallclose(A, A_ref, rtol=1.0e-8)
 
     def test_specified_raster_resolution(self):
-        """Raster layer can be downloaded with specific resolution
+        """Raster layers can be downloaded with specific resolution
 
         This is another test for ticket #103
 
@@ -775,59 +775,67 @@ class Test_geonode_connection(unittest.TestCase):
         We also check that the extrema of the subsampled matrix are sane
         """
 
-        hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
-                           % TESTDATA)
+        for test_filename in ['maumere_aos_depth_20m_land_wgs84.asc',
+                              'Population_Jakarta_geographic.asc']:
 
-        # Get reference values
-        H = read_layer(hazard_filename)
-        depth_min_ref, depth_max_ref = H.get_extrema()
+            hazard_filename = ('%s/%s' % (TESTDATA, test_filename))
 
-        # Upload to internal geonode
-        hazard_layer = save_to_geonode(hazard_filename, user=self.user)
-        hazard_name = '%s:%s' % (hazard_layer.workspace,
+            # Get reference values
+            H = read_layer(hazard_filename)
+            depth_min_ref, depth_max_ref = H.get_extrema()
+            native_resolution = H.get_resolution()
+
+            # Upload to internal geonode
+            hazard_layer = save_to_geonode(hazard_filename, user=self.user)
+            hazard_name = '%s:%s' % (hazard_layer.workspace,
                                      hazard_layer.name)
 
-        # Test for a range of resolutions
-        for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
-                    0.0002, 0.0001, 0.00006, 0.00003]:        # Finer
+            # Test for a range of resolutions
+            for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
+                        0.0002, 0.0001, 0.00006, 0.00003]:        # Finer
 
-            # Download data at specified resolution
-            bbox = get_bounding_box_string(hazard_filename)
-            H = download(INTERNAL_SERVER_URL, hazard_name,
-                         bbox, resolution=res)
-            A = H.get_data()
+                # Download data at specified resolution
+                bbox = get_bounding_box_string(hazard_filename)
+                H = download(INTERNAL_SERVER_URL, hazard_name,
+                             bbox, resolution=res)
+                A = H.get_data()
 
-            # Determine expected shape from bbox (W, S, E, N)
-            bb = bboxstring2list(bbox)
-            ref_rows = int(round((bb[3] - bb[1]) / res))
-            ref_cols = int(round((bb[2] - bb[0]) / res))
+                # Determine expected shape from bbox (W, S, E, N)
+                bb = bboxstring2list(bbox)
+                ref_rows = int(round((bb[3] - bb[1]) / res))
+                ref_cols = int(round((bb[2] - bb[0]) / res))
 
-            # Compare shapes
-            msg = ('Shape of downloaded raster was [%i, %i]. '
-                   'Expected [%i, %i].' % (A.shape[0], A.shape[1],
-                                           ref_rows, ref_cols))
-            assert numpy.allclose((ref_rows, ref_cols), A.shape,
-                                  rtol=0, atol=0), msg
+                # Compare shapes
+                msg = ('Shape of downloaded raster was [%i, %i]. '
+                       'Expected [%i, %i].' % (A.shape[0], A.shape[1],
+                                               ref_rows, ref_cols))
+                assert numpy.allclose((ref_rows, ref_cols), A.shape,
+                                      rtol=0, atol=0), msg
 
-            # Assess that the range of the interpolated data is sane
-            A = numpy.where(numpy.isnan(A), 0, A)  # Get rid of missing values
+                # Assess that the range of the interpolated data is sane
+                #A = numpy.where(numpy.isnan(A), 0, A)  # Remove missing values
 
-            # We expect exact match of the minimum
-            assert numpy.allclose(depth_min_ref, numpy.amin(A),
-                                  rtol=0, atol=0)
+                # We expect exact match of the minimum
+                msg = ('Minimum of %s resampled at resolution %f '
+                       'was %f. Expected %f.' % (hazard_layer.name,
+                                                 res,
+                                                 numpy.nanmin(A),
+                                                 depth_min_ref))
+                assert numpy.allclose(depth_min_ref, numpy.nanmin(A),
+                                      rtol=0, atol=0), msg
 
-            # At the maximum it depends on the subsampling
-            if res < 0.0002:
-                # At these resolutions we expect a close match
-                assert numpy.allclose(depth_max_ref, numpy.amax(A),
-                                      rtol=1.0e-10, atol=1.0e-8)
-            elif res < 0.002:
-                # At these resolutions we expect ballpark match (~20%)
-                assert numpy.allclose(depth_max_ref, numpy.amax(A),
-                                      rtol=0.17, atol=0.0)
-            else:
-                # At coarser resolutions, we just want sanity
-                assert 0 < numpy.amax(A) <= depth_max_ref
+                # At the maximum it depends on the subsampling
+                if res < native_resolution[0]:
+                    # At these resolutions we expect a close match
+                    assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
+                                          rtol=1.0e-10, atol=1.0e-8)
+                elif res < native_resolution[0] * 10:
+                    # At these resolutions we expect ballpark match (~20%)
+                    assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
+                                          rtol=0.17, atol=0.0)
+                else:
+                    # At coarser resolutions, we just want sanity
+                    assert 0 < numpy.nanmax(A) <= depth_max_ref
 
     def test_keywords_download(self):
         """Keywords are downloaded from GeoServer along with layer data
