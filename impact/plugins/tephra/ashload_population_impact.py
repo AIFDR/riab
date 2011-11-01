@@ -34,7 +34,7 @@ class TephraPopulationImpactFunction(FunctionProvider):
 
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth
-        P = population.get_data(nan=0.0)  # Population density
+        P = population.get_data(nan=0.0, scaling=True)  # Population density
 
         # Calculate impact as population exposed to depths > threshold
         I = numpy.where(D > threshold, P, 0)
