@@ -763,10 +763,23 @@ class Test_geonode_connection(unittest.TestCase):
 
         This is another test for ticket #103
 
-        Native test .asc data has
+        Native test data:
+
+        maumere....asc
         ncols 931
         nrows 463
         cellsize 0.00018
+
+        Population_Jakarta
+        ncols         638
+        nrows         649
+        cellsize      0.00045228819716044
+
+        Population_2010
+        ncols         5525
+        nrows         2050
+        cellsize      0.0083333333333333
+
 
         Here we download it at a range of fixed resolutions that
         are both coarser and finer, and check that the dimensions
@@ -776,7 +789,9 @@ class Test_geonode_connection(unittest.TestCase):
         """
 
         for test_filename in ['maumere_aos_depth_20m_land_wgs84.asc',
-                              'Population_Jakarta_geographic.asc']:
+                              'Population_Jakarta_geographic.asc',
+                              'Population_2010.asc']:
+
 
             hazard_filename = ('%s/%s' % (TESTDATA, test_filename))
 
@@ -794,8 +809,24 @@ class Test_geonode_connection(unittest.TestCase):
             for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
                         0.0002, 0.0001, 0.00006, 0.00003]:        # Finer
 
+                # To save time don't do finest resolution for the
+                # two population sets
+                if test_filename.startswith('Population') and res < 0.00006:
+                    break
+
                 # Download data at specified resolution
                 bbox = get_bounding_box_string(hazard_filename)
+                compare_extrema = True
+                if test_filename == 'Population_2010.asc':
+                    # Make bbox small for finer resolutions to
+                    # save time and to test that as well.
+                    # However, extrema obviously won't match those
+                    # of the full dataset. Once we can clip
+                    # datasets, we can remove this restriction.
+                    if res < 0.005:
+                        bbox = '106.685974,-6.373421,106.974534,-6.079886'
+                        compare_extrema = False
+
                 H = download(INTERNAL_SERVER_URL, hazard_name,
                              bbox, resolution=res)
                 A = H.get_data()
@@ -805,14 +836,16 @@ class Test_geonode_connection(unittest.TestCase):
                 ref_rows = int(round((bb[3] - bb[1]) / res))
                 ref_cols = int(round((bb[2] - bb[0]) / res))
 
-                # Compare shapes
+                # Compare shapes (generally, this may differ by 1)
                 msg = ('Shape of downloaded raster was [%i, %i]. '
                        'Expected [%i, %i].' % (A.shape[0], A.shape[1],
                                                ref_rows, ref_cols))
-                assert numpy.allclose((ref_rows, ref_cols), A.shape,
-                                      rtol=0, atol=0), msg
+                assert (ref_rows == A.shape[0] and
+                        ref_cols == A.shape[1]), msg
 
                 # Assess that the range of the interpolated data is sane
+                if not compare_extrema:
+                    continue
 
                 # For these test sets we get exact match of the minimum
                 msg = ('Minimum of %s resampled at resolution %f '
@@ -830,16 +863,19 @@ class Test_geonode_connection(unittest.TestCase):
                                                  numpy.nanmax(A),
                                                  depth_max_ref))
                 if res < native_resolution[0]:
-                    # At these resolutions we expect a close match
+                    # When subsampling to finer resolutions we expect a
+                    # close match
                     assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
                                           rtol=1.0e-10, atol=1.0e-8), msg
                 elif res < native_resolution[0] * 10:
-                    # At these resolutions we expect ballpark match (~20%)
+                    # When upsampling to coarser resolutions we expect
+                    # ballpark match (~20%)
                     assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
                                           rtol=0.17, atol=0.0), msg
                 else:
-                    # At coarser resolutions, we just want sanity
+                    # Upsampling to very coarse resolutions, we just want sanity
                     assert 0 < numpy.nanmax(A) <= depth_max_ref
+
 
     def test_keywords_download(self):
         """Keywords are downloaded from GeoServer along with layer data
