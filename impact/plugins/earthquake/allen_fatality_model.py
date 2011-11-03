@@ -33,7 +33,7 @@ class EarthquakeFatalityFunction(FunctionProvider):
 
         # Extract data
         H = intensity.get_data(nan=0)
-        P = population.get_data(nan=0, scaling=True)
+        P = population.get_data(nan=0)
 
         # Calculate impact
         F = 10 ** (a * H - b) * P

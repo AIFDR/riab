@@ -995,23 +995,29 @@ class Test_geonode_connection(unittest.TestCase):
                                    rtol=1.0e-12, atol=1.0e-12), msg
 
                 # Try with None and density keyword
-                R.keywords['density'] = True
+                R.keywords['density'] = 'true'
                 A_none = R.get_data(scaling=None)
                 msg = 'Resampled raster was not rescaled correctly'
                 assert nanallclose(A_scaled, A_none,
                                    rtol=1.0e-12, atol=1.0e-12), msg
 
-                R.keywords['density'] = False
+                R.keywords['density'] = 'Yes'
+                A_none = R.get_data(scaling=None)
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_scaled, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+                R.keywords['density'] = 'False'
                 A_none = R.get_data(scaling=None)
                 msg = 'Data should not have changed'
                 assert nanallclose(A_native, A_none,
                                    rtol=1.0e-12, atol=1.0e-12), msg
 
-                R.keywords['density'] = '%.18e' % sigma
+                R.keywords['density'] = 'no'
                 A_none = R.get_data(scaling=None)
-                msg = 'Resampled raster was not rescaled correctly'
-                assert nanallclose(A_scaled, A_none,
-                                   rtol=1.0e-10, atol=1.0e-10), msg
+                msg = 'Data should not have changed'
+                assert nanallclose(A_native, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
 
     def test_keywords_download(self):
         """Keywords are downloaded from GeoServer along with layer data

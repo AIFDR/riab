@@ -285,7 +285,7 @@ class Raster:
             # Interpolate this raster layer to geometry of X
             return interpolate_raster_vector(self, X, name)
 
-    def get_data(self, nan=True, scaling=False):
+    def get_data(self, nan=True, scaling=None):
         """Get raster data as numeric array
 
         Input
@@ -297,14 +297,15 @@ class Raster:
                  do get_data(nan=0.0)
             scaling: Optional flag controlling if data is to be scaled
                      if it has been resampled. Admissible values are
-                     False (default): data is retrieved without modificatio.
+                     False: data is retrieved without modification.
                      True: Data is rescaled based on the squared ratio between
                            its current and native resolution. This is typically
                            required if raster data represents a density
                            such as population per km^2
-                     None: The behaviour will depend on the keyword density
-                           associated with the layer. If density is True,
-                           scaling will be applied otherwise not.
+                     None: The behaviour will depend on the keyword "density"
+                           associated with the layer. If density is "true" or
+                           "yes" (ignoring case), scaling will be applied
+                           otherwise not. This is the default.
                      scalar value: If scaling takes a numerical scalar value,
                                    that will be use to scale the data
 
@@ -342,10 +343,10 @@ class Raster:
 
         # Take care of possible scaling
         if scaling is None:
-            # Get scaling from density keyword if possible
+            # Redefine scaling from density keyword if possible
             kw = self.get_keywords()
-            if 'density' in kw:
-                scaling = kw['density']
+            if 'density' in kw and kw['density'].lower() in ['true', 'yes']:
+                scaling = True
             else:
                 scaling = False
 
