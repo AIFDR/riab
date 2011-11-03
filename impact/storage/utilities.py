@@ -205,6 +205,9 @@ def write_keywords(keywords, filename):
                    'I got "%s"' % val)
             assert ':' not in val, msg
 
+            # FIXME (Ole): Have to remove commas (issue #148)
+            val = val.replace(',', '')
+
             fid.write('%s: %s\n' % (key, val))
     fid.close()
 
