@@ -496,6 +496,7 @@ class Test_calculations(unittest.TestCase):
             # Make only a few points were 0
             assert count > len(attributes) - 4
 
+    # FIXME (Ole): Do as part of issue #74
     def XXtest_shakemap_population_exposure(self):
         """Population exposed to groundshaking matches USGS numbers
         """
@@ -851,6 +852,116 @@ class Test_calculations(unittest.TestCase):
 
             if not numpy.isnan(interpolated_depth):
                 assert depth_min <= interpolated_depth <= depth_max, msg
+
+    def test_earthquake_exposure_plugin(self):
+        """Population exposure to individual MMI levels can be computed
+        """
+
+        # Upload exposure data for this test
+        # FIXME (Ole): While this dataset is ok for testing,
+        # note that is has been resampled without scaling
+        # so numbers are about 25 times too large.
+
+        name = 'Population_2010'
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
+        exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+        exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                   exposure_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(exposure_layer, exposure_filename)
+        exp_bbox_string = get_bounding_box_string(exposure_filename)
+        check_layer(exposure_layer, full=True)
+
+        # Upload hazard data
+        filename = 'Lembang_Earthquake_Scenario.asc'
+        hazard_filename = '%s/%s' % (TESTDATA, filename)
+        hazard_layer = save_to_geonode(hazard_filename,
+                                       user=self.user, overwrite=True)
+        hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                 hazard_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(hazard_layer, hazard_filename)
+        haz_bbox_string = get_bounding_box_string(hazard_filename)
+        check_layer(hazard_layer, full=True)
+
+        # Run calculation
+        c = Client()
+        rv = c.post('/impact/api/calculate/', data=dict(
+                hazard_server=INTERNAL_SERVER_URL,
+                hazard=hazard_name,
+                exposure_server=INTERNAL_SERVER_URL,
+                exposure=exposure_name,
+                bbox=haz_bbox_string,
+                impact_function='EarthquakePopulationExposureFunction',
+                keywords='test,population,exposure,usgs'))
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+        if 'errors' in data:
+            errors = data['errors']
+            if errors is not None:
+                msg = ('The server returned the error message: %s'
+                       % str(errors))
+                raise Exception(msg)
+
+        assert 'success' in data
+        assert 'hazard_layer' in data
+        assert 'exposure_layer' in data
+        assert 'run_duration' in data
+        assert 'run_date' in data
+        assert 'layer' in data
+
+        assert data['success']
+
+        # Download result and check
+        layer_name = data['layer'].split('/')[-1]
+
+        result_layer = download(INTERNAL_SERVER_URL,
+                                layer_name,
+                                get_bounding_box_string(hazard_filename))
+        assert os.path.exists(result_layer.filename)
+
+        # Check calculated values
+        keywords = result_layer.get_keywords()
+
+        assert 'mmi-classes' in keywords
+        assert 'affected-population' in keywords
+
+        mmi_classes = [int(x) for x in keywords['mmi-classes'].split('_')]
+        count = [float(x) for x in keywords['affected-population'].split('_')]
+
+        # Brute force count for each population level
+        population = download(INTERNAL_SERVER_URL,
+                              exposure_name,
+                              get_bounding_box_string(hazard_filename))
+        intensity = download(INTERNAL_SERVER_URL,
+                             hazard_name,
+                             get_bounding_box_string(hazard_filename))
+
+        # Extract data
+        H = intensity.get_data(nan=0)
+        P = population.get_data(nan=0)
+
+        brutecount = {}
+        for mmi in mmi_classes:
+            brutecount[mmi] = 0
+
+        for i in range(P.shape[0]):
+            for j in range(P.shape[1]):
+                mmi = H[i,j]
+                if not numpy.isnan(mmi):
+                    mmi_class = int(round(mmi))
+
+                    pop = P[i, j]
+                    if not numpy.isnan(pop):
+                        brutecount[mmi_class] += pop
+
+        for i, mmi in enumerate(mmi_classes):
+            assert numpy.allclose(count[i], brutecount[mmi], rtol=1.0e-6)
 
 
 if __name__ == '__main__':
