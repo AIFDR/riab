@@ -30,15 +30,18 @@ def csv2shp(path, lonname='Bujur', latname='Lintang'):
     lon = [float(x[lonname]) for x in data]
     lat = [float(x[latname]) for x in data]
     geometry = zip(lon, lat)
-    #print geometry
+
+    # Replace spaces in attribute names with underscores (issue #177)
+    for i, D in enumerate(data):
+        D_clean = {}
+        for key in D:
+            D_clean[key.replace(' ', '_')] = D[key]
+        data[i] = D_clean
 
     # Create vector object
-    V = Vector(data=data, projection=DEFAULT_PROJECTION, geometry=geometry)
-
-    #print path
-    #print V.get_data()
-
-
+    V = Vector(data=data,
+               projection=DEFAULT_PROJECTION,
+               geometry=geometry)
 
     # Write as shapefile
     basename, _ = os.path.splitext(path)
