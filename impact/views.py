@@ -34,14 +34,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from impact.storage.io import dummy_save, download
 from impact.storage.io import get_metadata, get_layer_descriptors
-from impact.storage.io import bboxlist2string, bboxstring2list
-from impact.storage.io import check_bbox_string
+from impact.storage.io import bboxlist2string
 from impact.storage.io import save_to_geonode
-from impact.storage.utilities import bbox_intersection
-from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import titelize
 from impact.plugins.core import get_plugin, get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
+from impact.engine.core import get_common_resolution, get_bounding_boxes
 from impact.models import Calculation, Workspace
 
 from geonode.maps.utils import get_valid_user
@@ -76,7 +74,7 @@ def calculate(request, save_output=save_to_geonode):
         hazard_layer = data['hazard']
         exposure_server = data['exposure_server']
         exposure_layer = data['exposure']
-        bbox = data['bbox']
+        requested_bbox = data['bbox']
         keywords = data['keywords']
 
     if request.user.is_anonymous():
@@ -97,63 +95,24 @@ def calculate(request, save_output=save_to_geonode):
     # Wrap main computation loop in try except to catch and present
     # messages and stack traces in the application
     try:
-        # Input checks
-        msg = ('Invalid bounding box %s (%s). '
-               'It must be a string' % (str(bbox), type(bbox)))
-        assert isinstance(bbox, basestring), msg
-        check_bbox_string(bbox)
-
         # Get metadata
         haz_metadata = get_metadata(hazard_server, hazard_layer)
         exp_metadata = get_metadata(exposure_server, exposure_layer)
 
-        # Get bounding boxes for layers and viewport
-        haz_bbox = haz_metadata['bounding_box']
-        exp_bbox = exp_metadata['bounding_box']
-        vpt_bbox = bboxstring2list(bbox)
+        # Determine common resolution in case of raster layers
+        raster_resolution = get_common_resolution(haz_metadata, exp_metadata)
 
-        # Determine resolution in case of raster layers
-        haz_res = exp_res = None
-        if haz_metadata['layer_type'] == 'raster':
-            haz_res = haz_metadata['resolution']
+        # Get reconciled bounding boxes
+        haz_bbox, exp_bbox, imp_bbox = get_bounding_boxes(haz_metadata,
+                                                          exp_metadata,
+                                                          requested_bbox)
 
-        if exp_metadata['layer_type'] == 'raster':
-            exp_res = exp_metadata['resolution']
+        # Record layers to download
+        download_layers = [(hazard_server, hazard_layer, haz_bbox),
+                           (exposure_server, exposure_layer, exp_bbox)]
 
-        # Determine common resolution in case of two raster layers
-        if haz_res is None or exp_res is None:
-            # This means native resolution will be used
-            raster_resolution = None
-        else:
-            # Take the minimum
-            resx = min(haz_res[0], exp_res[0])
-            resy = min(haz_res[1], exp_res[1])
+        # Add linked layers if any FIXME: STILL TODO!
 
-            raster_resolution = (resx, resy)
-            #raster_resolution = min(haz_res, exp_res)
-
-        # New bounding box for data common to hazard, exposure and viewport
-        # Download only data within this intersection
-        intersection_bbox = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
-        if intersection_bbox is None:
-            # Bounding boxes did not overlap
-            msg = ('Bounding boxes of hazard data [%s], exposure data [%s] '
-                   'and viewport [%s] did not overlap, so no computation was '
-                   'done. Please make sure you pan to where the data is and '
-                   'that hazard and exposure data overlaps.'
-                   % (bboxlist2string(haz_bbox, decimals=3),
-                      bboxlist2string(exp_bbox, decimals=3),
-                      bboxlist2string(vpt_bbox, decimals=3)))
-            logger.info(msg)
-            raise Exception(msg)
-
-        # Grow hazard bbox to buffer this common bbox in case where
-        # hazard is raster and exposure is vector
-        if (haz_metadata['layer_type'] == 'raster' and
-            exp_metadata['layer_type'] == 'vector'):
-            haz_bbox = buffered_bounding_box(intersection_bbox, haz_res)
-        else:
-            haz_bbox = intersection_bbox
 
         # Get selected impact function
         impact_function = get_plugin(impact_function_name)
@@ -161,7 +120,7 @@ def calculate(request, save_output=save_to_geonode):
 
         # Record information calculation object and save it
         calculation.impact_function_source = impact_function_source
-        calculation.bbox = bboxlist2string(intersection_bbox)
+        calculation.bbox = bboxlist2string(imp_bbox)
         calculation.save()
 
         # Start computation
@@ -169,22 +128,18 @@ def calculate(request, save_output=save_to_geonode):
         logger.info(msg)
 
         # Download selected layer objects
-        msg = ('- Downloading hazard layer %s from %s'
-               % (hazard_layer, hazard_server))
-        logger.info(msg)
-        H = download(hazard_server, hazard_layer,
-                     haz_bbox, raster_resolution)
-
-        msg = ('- Downloading exposure layer %s from %s'
-               % (exposure_layer, exposure_server))
-        logger.info(msg)
-        E = download(exposure_server, exposure_layer,
-                     intersection_bbox, raster_resolution)
+        layers = []
+        for server, layer_name, bbox in download_layers:
+            msg = ('- Downloading layer %s from %s'
+                   % (layer_name, server))
+            logger.info(msg)
+            L = download(server, layer_name, bbox, raster_resolution)
+            layers.append(L)
 
         # Calculate result using specified impact function
         msg = ('- Calculating impact using %s' % impact_function)
         logger.info(msg)
-        impact_filename = calculate_impact(layers=[H, E],
+        impact_filename = calculate_impact(layers=layers,
                                            impact_fcn=impact_function)
 
         # Upload result to internal GeoServer
@@ -199,7 +154,6 @@ def calculate(request, save_output=save_to_geonode):
         # This is dangerous. Try to raise an exception
         # e.g. in get_metadata_from_layer. Things will silently fail.
         # See issue #170
-        #print 'ERRRORRRRRRR'
 
         logger.error(e)
         errors = e.__str__()
@@ -397,6 +351,7 @@ def layers(request):
                 # https://github.com/AIFDR/riab/issues/46
                 # If there is no metadata then try using format category_name
                 # FIXME (Ole): This section should definitely be cleaned up
+                # FIXME (Ole): CLEAN IT - NOW!!!
                 category = name_category[0]
             else:
                 category = None

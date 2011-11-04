@@ -861,6 +861,9 @@ class Test_calculations(unittest.TestCase):
         # FIXME (Ole): While this dataset is ok for testing,
         # note that is has been resampled without scaling
         # so numbers are about 25 times too large.
+        # Consider replacing test populations dataset for good measures,
+        # just in case any one accidentally started using this dataset
+        # for real.
 
         name = 'Population_2010'
         exposure_filename = '%s/%s.asc' % (TESTDATA, name)
@@ -962,6 +965,83 @@ class Test_calculations(unittest.TestCase):
 
         for i, mmi in enumerate(mmi_classes):
             assert numpy.allclose(count[i], brutecount[mmi], rtol=1.0e-6)
+
+
+    def test_linked_datasets(self):
+        """Linked datesets can be pulled in e.g. to include gender break down
+        """
+
+        # Upload exposure data for this test. This will automatically
+        # pull in female_pct_yogya.asc through its "associates" keyword
+        name = 'population_yogya'
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
+        exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+        exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                   exposure_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(exposure_layer, exposure_filename)
+        exp_bbox_string = get_bounding_box_string(exposure_filename)
+        check_layer(exposure_layer, full=True)
+
+        # Upload hazard data
+        filename = 'eq_yogya_2006.asc'
+        hazard_filename = '%s/%s' % (TESTDATA, filename)
+        hazard_layer = save_to_geonode(hazard_filename,
+                                       user=self.user, overwrite=True)
+        hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                 hazard_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(hazard_layer, hazard_filename)
+        haz_bbox_string = get_bounding_box_string(hazard_filename)
+        check_layer(hazard_layer, full=True)
+
+        # Run calculation
+        c = Client()
+        rv = c.post('/impact/api/calculate/', data=dict(
+                hazard_server=INTERNAL_SERVER_URL,
+                hazard=hazard_name,
+                exposure_server=INTERNAL_SERVER_URL,
+                exposure=exposure_name,
+                bbox=haz_bbox_string,
+                impact_function='EarthquakeFatalityFunction',
+                keywords='test,fatalities,population,usgs'))
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+        if 'errors' in data:
+            errors = data['errors']
+            if errors is not None:
+                msg = ('The server returned the error message: %s'
+                       % str(errors))
+                raise Exception(msg)
+
+        assert 'success' in data
+        assert 'hazard_layer' in data
+        assert 'exposure_layer' in data
+        assert 'run_duration' in data
+        assert 'run_date' in data
+        assert 'layer' in data
+
+        assert data['success']
+
+        # Download result and check
+        layer_name = data['layer'].split('/')[-1]
+
+        result_layer = download(INTERNAL_SERVER_URL,
+                                layer_name,
+                                get_bounding_box_string(hazard_filename))
+        assert os.path.exists(result_layer.filename)
+
+        # Check calculated values
+        keywords = result_layer.get_keywords()
+
+        assert 'caption' in keywords
+
+        # Parse caption and look for the correct numbers
 
 
 if __name__ == '__main__':

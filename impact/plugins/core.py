@@ -185,6 +185,12 @@ def requirement_check(params, require_str, verbose=False):
     in require_str. Require_str must be a valid python expression
     and evaluate to True or False"""
 
+    # Some keyword should never go into the requirement check
+    # FIXME (Ole): This is not the most robust way. If we get a
+    # more general way of doing metadata we can treat caption and
+    # many other things separately. See issue #148
+    excluded_keywords = ['caption']
+
     execstr = 'def check():\n'
     for key in params.keys():
         if key == '':
@@ -202,6 +208,9 @@ def requirement_check(params, require_str, verbose=False):
                    'Must not use Python keywords as params: %s' % (key))
             logger.error(msg)
             return False
+
+        if key in excluded_keywords:
+            continue
 
         if isinstance(params[key], basestring):
             execstr += '  %s = "%s" \n' % (key.strip(), params[key])
