@@ -113,7 +113,6 @@ def calculate(request, save_output=save_to_geonode):
 
         # Add linked layers if any FIXME: STILL TODO!
 
-
         # Get selected impact function
         impact_function = get_plugin(impact_function_name)
         impact_function_source = inspect.getsource(impact_function)

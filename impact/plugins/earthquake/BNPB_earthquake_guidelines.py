@@ -59,7 +59,6 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
         else:
             E = unspecific2bnpb(E, target_attribute=self.vclass_tag)
 
-
         # Interpolate hazard level to building locations
         H = H.interpolate(E)
 
@@ -199,7 +198,6 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
 
         # The styles are in $RIAB_HOME/riab/impact/templates/impact/styles
         return render_to_string('impact/styles/point_classes.sld', params)
-
 
     def generate_polygon_style(self, data):
         """Generates a polygon SLD file based on the data values

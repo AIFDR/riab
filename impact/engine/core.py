@@ -262,4 +262,3 @@ def get_bounding_boxes(haz_metadata, exp_metadata, req_bbox):
     exp_bbox = imp_bbox = intersection_bbox
 
     return haz_bbox, exp_bbox, imp_bbox
-

@@ -3,6 +3,7 @@ import numpy
 from impact.plugins.core import FunctionProvider
 from impact.storage.raster import Raster
 
+
 class TephraPopulationImpactFunction(FunctionProvider):
     """Risk plugin for flood impact
 

@@ -92,7 +92,6 @@ class USGSFatalityFunction(FunctionProvider):
         print 'Min', numpy.amin(F)
         print 'Max', numpy.amax(F)
 
-
         # Generate text with result for this study
         caption = generate_exposure_table(mmi_range,
                                           number_of_people_affected)
@@ -105,7 +104,6 @@ class USGSFatalityFunction(FunctionProvider):
                    keywords={'caption': caption},
                    name='Estimated fatalities')
         return R
-
 
     def generate_style(self, data):
         """Generates and SLD file based on the data values
@@ -169,7 +167,7 @@ def generate_exposure_table(mmi_range,
     for mmi in mmi_range:
         caption += ('   <tr><td>%i&#58;</td><td>%i</td></tr>'
                     % (mmi,
-                       number_of_people_affected[mmi]/1000))
+                       number_of_people_affected[mmi] / 1000))
     caption += '<tr></tr>'
     caption += '</table></font>'
 
@@ -184,5 +182,5 @@ def generate_fatality_table(fatalities):
                '<font size="3"><table border="0" width="300px">'
                '    <tr><td><b>Jumlah Perkiraan Kematian</b></td>'
                '    <td><b>%i</b></td></tr>'
-               '</table></font>'  % fatalities)
+               '</table></font>' % fatalities)
     return caption

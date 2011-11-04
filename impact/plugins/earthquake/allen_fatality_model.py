@@ -49,7 +49,6 @@ class EarthquakeFatalityFunction(FunctionProvider):
                    '</table>' % ('Jumlah Penduduk', int(total),
                                  'Perkiraan Orang Meninggal', int(count)))
 
-
         # Create new layer and return
         R = Raster(F,
                    projection=population.get_projection(),

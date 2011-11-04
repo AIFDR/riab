@@ -955,7 +955,7 @@ class Test_calculations(unittest.TestCase):
 
         for i in range(P.shape[0]):
             for j in range(P.shape[1]):
-                mmi = H[i,j]
+                mmi = H[i, j]
                 if not numpy.isnan(mmi):
                     mmi_class = int(round(mmi))
 
@@ -965,7 +965,6 @@ class Test_calculations(unittest.TestCase):
 
         for i, mmi in enumerate(mmi_classes):
             assert numpy.allclose(count[i], brutecount[mmi], rtol=1.0e-6)
-
 
     def test_linked_datasets(self):
         """Linked datesets can be pulled in e.g. to include gender break down

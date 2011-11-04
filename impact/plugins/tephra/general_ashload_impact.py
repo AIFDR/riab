@@ -71,7 +71,6 @@ class TephraImpactFunction(FunctionProvider):
 
             result.append({'DAMAGE': impact, 'ASHLOAD': load})
 
-
         # Create report
         caption = ('<font size="3"> <table border="0" width="320px">'
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
@@ -91,15 +90,12 @@ class TephraImpactFunction(FunctionProvider):
                     #              'parsial runtuhnya (150 - 300 kg/m2', count2,
                     #              'runtuhnya lengkap (> 300 kg/m2', count3))
 
-
         V = Vector(data=result,
                    projection=E.get_projection(),
                    geometry=E.get_geometry(),
                    name='Estimated ashload damage',
                    keywords={'caption': caption})
         return V
-
-
 
     def generate_style(self, data):
         """Generates and SLD file based on the data values
@@ -136,4 +132,3 @@ class TephraImpactFunction(FunctionProvider):
                       classifications=dict(zip(class_keys, class_values)))
 
         return render_to_string('impact/styles/point_classes.sld', params)
-

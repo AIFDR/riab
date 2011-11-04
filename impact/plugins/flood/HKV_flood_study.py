@@ -74,7 +74,6 @@ class FloodImpactFunction(FunctionProvider):
 
         caption += '</table>'
 
-
         # Create raster object and return
         R = Raster(I,
                    projection=inundation.get_projection(),
@@ -82,9 +81,6 @@ class FloodImpactFunction(FunctionProvider):
                    name='People affected',
                    keywords={'caption': caption})
         return R
-
-
-
 
     def generate_style(self, data):
         """Generates and SLD file based on the data values

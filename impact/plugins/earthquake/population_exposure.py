@@ -51,7 +51,7 @@ class EarthquakePopulationExposureFunction(FunctionProvider):
                 count = 0
 
             # Update keyword string
-            count_str += '%i ' %  count
+            count_str += '%i ' % count
 
         # Calculate fatality map (FIXME (Ole): Need to replaced by USGS model)
         a = 0.97429
