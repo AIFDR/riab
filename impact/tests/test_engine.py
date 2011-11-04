@@ -226,7 +226,7 @@ class Test_Engine(unittest.TestCase):
 
             # Check caption
             caption = calculated_raster.get_caption()
-            expct = 'people'
+            expct = 'People'
             msg = ('Caption %s did not contain expected '
                    'keyword %s' % (caption, expct))
             assert expct in caption, msg
