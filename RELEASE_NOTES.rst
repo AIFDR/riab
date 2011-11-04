@@ -7,7 +7,7 @@ Main features since v0.5 (14 October 2011)
 * Scaling of raster density datasets when resampled (issue #168, #172, #171)
 * More robust interpolation allowing missing values (issue #19)
 * More work on plugins and styling (e.g. issue #32)
-
+* Beginnings of documentation emerging
 
 
 
