@@ -66,8 +66,8 @@ class FloodImpactFunction(FunctionProvider):
 
         counts = []
         for i, threshold in enumerate(thresholds):
-            I = numpy.where(D > threshold, P, 0)
-            counts.append(numpy.nansum(I.flat))
+            I_tmp = numpy.where(D > threshold, P, 0)
+            counts.append(numpy.nansum(I_tmp.flat))
 
             caption += '   <tr><td>%s m</td><td>%i</td></tr>' % (threshold,
                                                                  counts[i])
