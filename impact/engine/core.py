@@ -14,6 +14,8 @@ from impact.storage.utilities import buffered_bounding_box
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.storage.io import check_bbox_string
 
+import logging
+logger = logging.getLogger('risiko')
 
 def calculate_impact(layers, impact_fcn,
                      comment=''):
