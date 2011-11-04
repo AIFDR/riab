@@ -42,6 +42,7 @@ from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import titelize
 from impact.plugins.core import get_plugin, get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
+from impact.engine.core import get_resolutions, get_bounding_boxes
 from impact.models import Calculation, Workspace
 
 from geonode.maps.utils import get_valid_user
@@ -97,40 +98,23 @@ def calculate(request, save_output=save_to_geonode):
     # Wrap main computation loop in try except to catch and present
     # messages and stack traces in the application
     try:
+        # Get metadata
+        haz_metadata = get_metadata(hazard_server, hazard_layer)
+        exp_metadata = get_metadata(exposure_server, exposure_layer)
+
+        # Determine common resolution in case of raster layers
+        raster_resolution = get_resolutions(haz_metadata, exp_metadata)
+
         # Input checks
         msg = ('Invalid bounding box %s (%s). '
                'It must be a string' % (str(bbox), type(bbox)))
         assert isinstance(bbox, basestring), msg
         check_bbox_string(bbox)
 
-        # Get metadata
-        haz_metadata = get_metadata(hazard_server, hazard_layer)
-        exp_metadata = get_metadata(exposure_server, exposure_layer)
-
         # Get bounding boxes for layers and viewport
         haz_bbox = haz_metadata['bounding_box']
         exp_bbox = exp_metadata['bounding_box']
         vpt_bbox = bboxstring2list(bbox)
-
-        # Determine resolution in case of raster layers
-        haz_res = exp_res = None
-        if haz_metadata['layer_type'] == 'raster':
-            haz_res = haz_metadata['resolution']
-
-        if exp_metadata['layer_type'] == 'raster':
-            exp_res = exp_metadata['resolution']
-
-        # Determine common resolution in case of two raster layers
-        if haz_res is None or exp_res is None:
-            # This means native resolution will be used
-            raster_resolution = None
-        else:
-            # Take the minimum
-            resx = min(haz_res[0], exp_res[0])
-            resy = min(haz_res[1], exp_res[1])
-
-            raster_resolution = (resx, resy)
-            #raster_resolution = min(haz_res, exp_res)
 
         # New bounding box for data common to hazard, exposure and viewport
         # Download only data within this intersection
@@ -151,6 +135,8 @@ def calculate(request, save_output=save_to_geonode):
         # hazard is raster and exposure is vector
         if (haz_metadata['layer_type'] == 'raster' and
             exp_metadata['layer_type'] == 'vector'):
+
+            haz_res = haz_metadata['resolution']
             haz_bbox = buffered_bounding_box(intersection_bbox, haz_res)
         else:
             haz_bbox = intersection_bbox

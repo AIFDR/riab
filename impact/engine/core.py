@@ -164,3 +164,50 @@ def check_data_integrity(layer_files):
                                             layer.columns,
                                             refname, N))
             assert layer.columns == N, msg
+
+
+def get_resolutions(haz_metadata, exp_metadata):
+    """Determine common resolution for raster layers
+
+    Input
+        haz_metadata: Metadata for hazard layer
+        exp_metadata: Metadata for exposure layer
+
+    Output
+        raster_resolution: Common resolution or None (in case of vector layers)
+    """
+
+    # Determine resolution in case of raster layers
+    haz_res = exp_res = None
+    if haz_metadata['layer_type'] == 'raster':
+        haz_res = haz_metadata['resolution']
+
+    if exp_metadata['layer_type'] == 'raster':
+        exp_res = exp_metadata['resolution']
+
+    # Determine common resolution in case of two raster layers
+    if haz_res is None or exp_res is None:
+        # This means native resolution will be used
+        raster_resolution = None
+    else:
+        # Take the minimum
+        resx = min(haz_res[0], exp_res[0])
+        resy = min(haz_res[1], exp_res[1])
+
+        raster_resolution = (resx, resy)
+
+    return raster_resolution
+
+
+def get_bounding_boxes(haz_metadata, exp_metadata):
+    """Check and get appropriate bounding boxes for input layers
+
+    Input
+        haz_metadata: Metadata for hazard layer
+        exp_metadata: Metadata for exposure layer
+
+    Output
+
+    """
+
+

@@ -1041,6 +1041,8 @@ class Test_calculations(unittest.TestCase):
 
         assert 'caption' in keywords
 
+        # Parse caption and look for the correct numbers
+
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'
