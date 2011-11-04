@@ -107,6 +107,13 @@ def calculate(request, save_output=save_to_geonode):
                                                           exp_metadata,
                                                           requested_bbox)
 
+        # Record layers to download
+        download_layers = [(hazard_server, hazard_layer, haz_bbox),
+                           (exposure_server, exposure_layer, exp_bbox)]
+
+        # Add linked layers if any FIXME: TODO!
+
+
         # Get selected impact function
         impact_function = get_plugin(impact_function_name)
         impact_function_source = inspect.getsource(impact_function)
@@ -121,22 +128,30 @@ def calculate(request, save_output=save_to_geonode):
         logger.info(msg)
 
         # Download selected layer objects
-        msg = ('- Downloading hazard layer %s from %s'
-               % (hazard_layer, hazard_server))
-        logger.info(msg)
-        H = download(hazard_server, hazard_layer,
-                     haz_bbox, raster_resolution)
+        layers = []
+        for server, layer_name, bbox in download_layers:
+            msg = ('- Downloading layer %s from %s'
+                   % (layer_name, server))
+            logger.info(msg)
+            L = download(server, layer_name, bbox, raster_resolution)
+            layers.append(L)
 
-        msg = ('- Downloading exposure layer %s from %s'
-               % (exposure_layer, exposure_server))
-        logger.info(msg)
-        E = download(exposure_server, exposure_layer,
-                     exp_bbox, raster_resolution)
+        #msg = ('- Downloading hazard layer %s from %s'
+        #       % (hazard_layer, hazard_server))
+        #logger.info(msg)
+        #H = download(hazard_server, hazard_layer,
+        #             haz_bbox, raster_resolution)
+        #
+        #msg = ('- Downloading exposure layer %s from %s'
+        #       % (exposure_layer, exposure_server))
+        #logger.info(msg)
+        #E = download(exposure_server, exposure_layer,
+        #             exp_bbox, raster_resolution)
 
         # Calculate result using specified impact function
         msg = ('- Calculating impact using %s' % impact_function)
         logger.info(msg)
-        impact_filename = calculate_impact(layers=[H, E],
+        impact_filename = calculate_impact(layers=layers,
                                            impact_fcn=impact_function)
 
         # Upload result to internal GeoServer
@@ -349,6 +364,7 @@ def layers(request):
                 # https://github.com/AIFDR/riab/issues/46
                 # If there is no metadata then try using format category_name
                 # FIXME (Ole): This section should definitely be cleaned up
+                # FIXME (Ole): CLEAN IT - NOW!!!
                 category = name_category[0]
             else:
                 category = None
