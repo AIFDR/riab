@@ -177,12 +177,46 @@ def osm2bnpb(E, target_attribute='VCLASS'):
         # Store new attribute value
         attributes[i][target_attribute] = vulnerability_class
 
-    print 'Got %i without levels or structure (out of %i total)' % (count, N)
+    #print 'Got %i without levels or structure (out of %i total)' % (count, N)
 
     # Create new vector instance and return
     V = Vector(data=attributes,
                projection=E.get_projection(),
                geometry=E.get_geometry(),
                name=E.get_name() + ' mapped to BNPB vulnerability classes',
+               keywords=E.get_keywords())
+    return V
+
+
+def unspecific2bnpb(E, target_attribute='VCLASS'):
+    """Map Unspecific point data to BNPB vulnerability classes
+
+    This makes no assumptions about attributes and maps everything to
+    URM: Unreinforced Masonry
+
+    Input
+        E: Vector object representing the OSM data
+        target_attribute: Optional name of the attribute containing
+                          the mapped vulnerability class. Default
+                          value is 'VCLASS'
+
+    Output:
+        Vector object like E, but with one new attribute (e.g. 'VCLASS')
+        representing the vulnerability class used in the guidelines
+    """
+
+    # Start mapping
+    N = len(E)
+    attributes = E.get_data()
+    count = 0
+    for i in range(N):
+        # Store new attribute value
+        attributes[i][target_attribute] = 'URM'
+
+    # Create new vector instance and return
+    V = Vector(data=attributes,
+               projection=E.get_projection(),
+               geometry=E.get_geometry(),
+               name=E.get_name() + ' mapped to BNPB vulnerability class URM',
                keywords=E.get_keywords())
     return V

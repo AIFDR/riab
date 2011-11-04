@@ -167,6 +167,8 @@ def write_keywords(keywords, filename):
     # Input checks
     basename, ext = os.path.splitext(filename)
 
+    # FIXME (Ole): Why don't we just pass in the filename and let
+    # this function decide the extension?
     msg = ('Unknown extension for file %s. '
            'Expected %s.keywords' % (filename, basename))
     assert ext == '.keywords', msg
@@ -176,7 +178,7 @@ def write_keywords(keywords, filename):
     for k, v in keywords.items():
 
         msg = ('Key in keywords dictionary must be a string. '
-               'I got %s with type %s' % (k, type(k)))
+               'I got %s with type %s' % (k, str(type(k))[1:-1]))
         assert isinstance(k, basestring), msg
 
         key = k.strip()
@@ -188,6 +190,11 @@ def write_keywords(keywords, filename):
         if v is None:
             fid.write('%s\n' % key)
         else:
+            msg = ('Keyword value must be a string. '
+                   'For key %s, I got %s with type %s'
+                   % (k, v, str(type(v))[1:-1]))
+            assert isinstance(v, basestring), msg
+
             val = v.strip()
 
             msg = ('Value in keywords dictionary must be a string or None. '
@@ -197,6 +204,9 @@ def write_keywords(keywords, filename):
             msg = ('Value must not contain the ":" character. '
                    'I got "%s"' % val)
             assert ':' not in val, msg
+
+            # FIXME (Ole): Have to remove commas (issue #148)
+            val = val.replace(',', '')
 
             fid.write('%s: %s\n' % (key, val))
     fid.close()
@@ -317,7 +327,9 @@ def geotransform2bbox(geotransform, columns, rows):
     return [minx, miny, maxx, maxy]
 
 
-def geotransform2resolution(geotransform):
+def geotransform2resolution(geotransform, isotropic=False,
+                            # FIXME (Ole): Check these tolerances (issue #173)
+                            rtol=5.0e-2, atol=1.0e-2):
     """Convert geotransform to resolution
 
     Input
@@ -325,16 +337,34 @@ def geotransform2resolution(geotransform):
                       (top left x, w-e pixel resolution, rotation,
                       top left y, rotation, n-s pixel resolution).
                       See e.g. http://www.gdal.org/gdal_tutorial.html
+        Input
+            isotropic: If True, verify that dx == dy and return dx
+                       If False (default) return 2-tuple (dx, dy)
+            rtol, atol: Used to control how close dx and dy must be
+                        to quality for isotropic. These are passed on to
+                        numpy.allclose for comparison.
 
     Output
         resolution: grid spacing (resx, resy) in (positive) decimal
                     degrees ordered as longitude first, then latitude.
+                    or resx (if isotropic is True)
     """
 
-    x_res = geotransform[1]     # w-e pixel resolution
-    y_res = - geotransform[5]   # n-s pixel resolution (always negative)
+    resx = geotransform[1]     # w-e pixel resolution
+    resy = - geotransform[5]   # n-s pixel resolution (always negative)
 
-    return x_res, y_res
+    if isotropic:
+        msg = ('Resolution requested with '
+               'isotropic=True, but '
+               'resolutions in the horizontal and vertical '
+               'are different: resx = %.12f, resy = %.12f. '
+               % (resx, resy))
+        assert numpy.allclose(resx, resy,
+                              rtol=rtol, atol=atol), msg
+
+        return resx
+    else:
+        return resx, resy
 
 
 def bbox_intersection(*args):
@@ -397,8 +427,10 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
         eps: Optional tolerance that will be applied to 'buffer' result
 
     Ouput
-        Adjusted bounding box guarenteed to exceed specified resolution
+        Adjusted bounding box guaranteed to exceed specified resolution
     """
+
+    # FIXME (Ole): Probably obsolete now
 
     bbox = copy.copy(list(bbox))
 
@@ -414,6 +446,58 @@ def minimal_bounding_box(bbox, min_res, eps=1.0e-6):
         dy = (min_res - delta_y) / 2 + eps
         bbox[1] -= dy
         bbox[3] += dy
+
+    return bbox
+
+
+def buffered_bounding_box(bbox, resolution):
+    """Grow bounding box with one unit of resolution in each direction
+
+
+    This will ensure there is enough pixels to robustly provide
+    interpolated values without having to painstakingly deal with
+    all corner cases such as 1 x 1, 1 x 2 and 2 x 1 arrays.
+
+    The border will also make sure that points that would otherwise fall
+    outside the domain (as defined by a tight bounding box) get assigned
+    values.
+
+    Input
+        bbox: Bounding box with format [W, S, E, N]
+        resolution: (resx, resy) - Raster resolution in each direction.
+                    res - Raster resolution in either direction
+                    If resolution is None bbox is returned unchanged.
+
+    Ouput
+        Adjusted bounding box
+
+
+    Case in point: Interpolation point O would fall outside this domain
+                   even though there are enough grid points to support it
+
+    --------------
+    |            |
+    |   *     *  | *    *
+    |           O|
+    |            |
+    |   *     *  | *    *
+    --------------
+    """
+
+    bbox = copy.copy(list(bbox))
+
+    if resolution is None:
+        return bbox
+
+    try:
+        resx, resy = resolution
+    except:
+        resx = resy = resolution
+
+    bbox[0] -= resx
+    bbox[1] -= resy
+    bbox[2] += resx
+    bbox[3] += resy
 
     return bbox
 
@@ -553,8 +637,10 @@ def geometrytype2string(g_type):
 
     if g_type in geometry_type_map:
         return geometry_type_map[g_type]
+    elif g_type is None:
+        return 'No geometry type assigned'
     else:
-        return 'Unknown geometry type: %i' % g_type
+        return 'Unknown geometry type: %s' % str(g_type)
 
 
 def calculate_polygon_area(polygon, signed=False):
@@ -665,3 +751,35 @@ def titelize(s):
     s = ' '.join([w[0].upper() + w[1:] for w in s.split(' ')])
 
     return s
+
+
+def nanallclose(x, y, rtol=1.0e-5, atol=1.0e-8):
+    """Numpy allclose function which allows NaN
+
+    Input
+        x, y: Either scalars or numpy arrays
+
+    Output
+        True or False
+
+    Returns True if all non-nan elements pass.
+    """
+
+    xn = numpy.isnan(x)
+    yn = numpy.isnan(y)
+    if numpy.any(xn != yn):
+        # Presence of NaNs is not the same in x and y
+        return False
+
+    if numpy.all(xn):
+        # Everything is NaN.
+        # This will also take care of x and y being NaN scalars
+        return True
+
+    # Filter NaN's out
+    if numpy.any(xn):
+        x = x[-xn]
+        y = y[-yn]
+
+    # Compare non NaN's and return
+    return numpy.allclose(x, y, rtol=rtol, atol=atol)

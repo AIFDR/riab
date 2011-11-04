@@ -34,14 +34,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from impact.storage.io import dummy_save, download
 from impact.storage.io import get_metadata, get_layer_descriptors
-from impact.storage.io import bboxlist2string, bboxstring2list
-from impact.storage.io import check_bbox_string
+from impact.storage.io import bboxlist2string
 from impact.storage.io import save_to_geonode
-from impact.storage.utilities import bbox_intersection
-from impact.storage.utilities import minimal_bounding_box
 from impact.storage.utilities import titelize
-from impact.plugins.core import get_plugins, compatible_layers
+from impact.plugins.core import get_plugin, get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
+from impact.engine.core import get_common_resolution, get_bounding_boxes
 from impact.models import Calculation, Workspace
 
 from geonode.maps.utils import get_valid_user
@@ -76,7 +74,7 @@ def calculate(request, save_output=save_to_geonode):
         hazard_layer = data['hazard']
         exposure_server = data['exposure_server']
         exposure_layer = data['exposure']
-        bbox = data['bbox']
+        requested_bbox = data['bbox']
         keywords = data['keywords']
 
     if request.user.is_anonymous():
@@ -94,90 +92,53 @@ def calculate(request, save_output=save_to_geonode):
                               impact_function=impact_function_name,
                               success=False)
 
+    # Wrap main computation loop in try except to catch and present
+    # messages and stack traces in the application
     try:
-
-        # Input checks
-        msg = 'This cannot happen :-)'
-        assert isinstance(bbox, basestring), msg
-
-        check_bbox_string(bbox)
-
         # Get metadata
         haz_metadata = get_metadata(hazard_server, hazard_layer)
         exp_metadata = get_metadata(exposure_server, exposure_layer)
 
         # Determine common resolution in case of raster layers
-        if haz_metadata['layer_type'] == 'raster' and \
-                exp_metadata['layer_type'] == 'raster':
-            haz_res = haz_metadata['resolution']
-            exp_res = exp_metadata['resolution']
+        raster_resolution = get_common_resolution(haz_metadata, exp_metadata)
 
-            # Take the minimum
-            resx = min(haz_res[0], exp_res[0])
-            resy = min(haz_res[1], exp_res[1])
+        # Get reconciled bounding boxes
+        haz_bbox, exp_bbox, imp_bbox = get_bounding_boxes(haz_metadata,
+                                                          exp_metadata,
+                                                          requested_bbox)
 
-            raster_resolution = (resx, resy)
-        else:
-            # This means native resolution will be used
-            raster_resolution = None
+        # Record layers to download
+        download_layers = [(hazard_server, hazard_layer, haz_bbox),
+                           (exposure_server, exposure_layer, exp_bbox)]
 
-        # Find the intersection of bounding boxes for viewport,
-        # hazard and exposure.
-        vpt_bbox = bboxstring2list(bbox)
-        haz_bbox = haz_metadata['bounding_box']
-        exp_bbox = exp_metadata['bounding_box']
+        # Add linked layers if any FIXME: STILL TODO!
 
-        # Impose minimum bounding box size (as per issue #101).
-        # FIXME (Ole): This will need to be revisited in conjunction with
-        # raster resolutions at some point.
-        min_res = 0.00833334
-        eps = 1.0e-1
-        vpt_bbox = minimal_bounding_box(vpt_bbox, min_res, eps=eps)
-        haz_bbox = minimal_bounding_box(haz_bbox, min_res, eps=eps)
-        exp_bbox = minimal_bounding_box(exp_bbox, min_res, eps=eps)
-
-        # New bounding box for data common to hazard, exposure and viewport
-        # Download only data within this intersection
-        intersection = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
-        if intersection is None:
-            # Bounding boxes did not overlap
-            msg = ('Bounding boxes of hazard data, exposure data and '
-                   'viewport did not overlap, so no computation was '
-                   'done. Please try again.')
-            logger.info(msg)
-            raise Exception(msg)
-
-        bbox = bboxlist2string(intersection)
-
-        plugin_list = get_plugins(impact_function_name)
-        _, impact_function = plugin_list[0].items()[0]
+        # Get selected impact function
+        impact_function = get_plugin(impact_function_name)
         impact_function_source = inspect.getsource(impact_function)
 
+        # Record information calculation object and save it
         calculation.impact_function_source = impact_function_source
-        calculation.bbox = bbox
-
+        calculation.bbox = bboxlist2string(imp_bbox)
         calculation.save()
 
+        # Start computation
         msg = 'Performing requested calculation'
         logger.info(msg)
 
         # Download selected layer objects
-        msg = ('- Downloading hazard layer %s from %s' % (hazard_layer,
-                                                          hazard_server))
-        logger.info(msg)
-
-        H = download(hazard_server, hazard_layer, bbox, raster_resolution)
-
-        msg = ('- Downloading exposure layer %s from %s' % (exposure_layer,
-                                                            exposure_server))
-        logger.info(msg)
-        E = download(exposure_server, exposure_layer, bbox, raster_resolution)
+        layers = []
+        for server, layer_name, bbox in download_layers:
+            msg = ('- Downloading layer %s from %s'
+                   % (layer_name, server))
+            logger.info(msg)
+            L = download(server, layer_name, bbox, raster_resolution)
+            layers.append(L)
 
         # Calculate result using specified impact function
         msg = ('- Calculating impact using %s' % impact_function)
         logger.info(msg)
-
-        impact_filename = calculate_impact(layers=[H, E],
+        impact_filename = calculate_impact(layers=layers,
                                            impact_fcn=impact_function)
 
         # Upload result to internal GeoServer
@@ -187,7 +148,12 @@ def calculate(request, save_output=save_to_geonode):
                              title='output_%s' % start.isoformat(),
                              user=theuser)
     except Exception, e:
-        # FIXME: Reimplement error saving for calculation
+        # FIXME: Reimplement error saving for calculation.
+        # FIXME (Ole): Why should we reimplement?
+        # This is dangerous. Try to raise an exception
+        # e.g. in get_metadata_from_layer. Things will silently fail.
+        # See issue #170
+
         logger.error(e)
         errors = e.__str__()
         trace = exception_format(e)
@@ -227,7 +193,7 @@ def calculate(request, save_output=save_to_geonode):
     # FIXME: Do proper parsing, don't assume caption is the only keyword.
     if 'caption' in result.keywords:
         caption = result.keywords.split('caption:')[1]
-        # FIXME: Hack to return underscores to spaces that was put in place
+        # FIXME (Ole): Return underscores to spaces that was put in place
         # to store it in the first place. See issue #148
         output['caption'] = caption.replace('_', ' ')
     else:
@@ -238,6 +204,11 @@ def calculate(request, save_output=save_to_geonode):
     # they were created automatically by Django
     del output['_user_cache']
     del output['_state']
+
+    # If success == True and errors = '' ...
+    # ... let's make errors=None for backwards compat
+    if output['success'] and len(output['errors']) == 0:
+        output['errors'] = None
 
     jsondata = json.dumps(output)
     return HttpResponse(jsondata, mimetype='application/json')
@@ -378,6 +349,8 @@ def layers(request):
                 # FIXME: This is a temporary measure until we get the keywords:
                 # https://github.com/AIFDR/riab/issues/46
                 # If there is no metadata then try using format category_name
+                # FIXME (Ole): This section should definitely be cleaned up
+                # FIXME (Ole): CLEAN IT - NOW!!!
                 category = name_category[0]
             else:
                 category = None

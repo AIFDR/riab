@@ -20,6 +20,8 @@ from impact.storage.io import get_bounding_box_string
 from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
 
+from impact.storage.utilities import nanallclose
+
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from owslib.wcs import WebCoverageService
 
@@ -172,13 +174,18 @@ class Test_calculations(unittest.TestCase):
         if 'errors' in data:
             errors = data['errors']
             if errors is not None:
-                raise Exception(errors)
+                msg = ('The server returned the error message: %s'
+                       % str(errors))
+                raise Exception(msg)
 
+        assert 'success' in data
         assert 'hazard_layer' in data
         assert 'exposure_layer' in data
         assert 'run_duration' in data
         assert 'run_date' in data
         assert 'layer' in data
+
+        assert data['success']
 
         # Download result and check
         layer_name = data['layer'].split('/')[-1]
@@ -187,6 +194,169 @@ class Test_calculations(unittest.TestCase):
                                 layer_name,
                                 get_bounding_box_string(hazard_filename))
         assert os.path.exists(result_layer.filename)
+
+    def test_jakarta_flood_study(self):
+        """HKV Jakarta flood study calculated correctly using the API
+        """
+
+        # FIXME (Ole): Redo with population as shapefile later
+
+        # Expected values from HKV
+        expected_values = [2485442, 1537920]
+
+        # Name files for hazard level, exposure and expected fatalities
+        population = 'Population_Jakarta_geographic'
+        plugin_name = 'FloodImpactFunction'
+
+        # Upload exposure data for this test
+        exposure_filename = '%s/%s.asc' % (TESTDATA, population)
+        exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+
+        workspace = exposure_layer.workspace
+        msg = 'Expected workspace to be "geonode". Got %s' % workspace
+        assert workspace == 'geonode'
+
+        layer_name = exposure_layer.name
+        msg = 'Expected layer name to be "%s". Got %s' % (population,
+                                                          layer_name)
+        assert layer_name.lower() == population.lower(), msg
+
+        exposure_name = '%s:%s' % (workspace, layer_name)
+
+        # Check metadata
+        assert_bounding_box_matches(exposure_layer, exposure_filename)
+        exp_bbox_string = get_bounding_box_string(exposure_filename)
+        check_layer(exposure_layer, full=True)
+
+        # Now we know that exposure layer is good, lets upload some
+        # hazard layers and do the calculations
+
+        i = 0
+        for filename in ['Flood_Current_Depth_Jakarta_geographic.asc',
+                         'Flood_Design_Depth_Jakarta_geographic.asc']:
+
+            hazard_filename = os.path.join(TESTDATA, filename)
+            exposure_filename = os.path.join(TESTDATA, population)
+
+            # Save
+            hazard_filename = '%s/%s' % (TESTDATA, filename)
+            hazard_layer = save_to_geonode(hazard_filename,
+                                           user=self.user, overwrite=True)
+            hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                     hazard_layer.name)
+
+            # Check metadata
+            assert_bounding_box_matches(hazard_layer, hazard_filename)
+            haz_bbox_string = get_bounding_box_string(hazard_filename)
+            check_layer(hazard_layer, full=True)
+
+            # Run calculation
+            c = Client()
+            rv = c.post('/impact/api/calculate/', data=dict(
+                    hazard_server=INTERNAL_SERVER_URL,
+                    hazard=hazard_name,
+                    exposure_server=INTERNAL_SERVER_URL,
+                    exposure=exposure_name,
+                    bbox=exp_bbox_string,
+                    impact_function=plugin_name,
+                    keywords='test,flood,HKV'))
+
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv['Content-Type'], 'application/json')
+            data = json.loads(rv.content)
+            if 'errors' in data:
+                errors = data['errors']
+                if errors is not None:
+                    raise Exception(errors)
+
+            assert 'hazard_layer' in data
+            assert 'exposure_layer' in data
+            assert 'run_duration' in data
+            assert 'run_date' in data
+            assert 'layer' in data
+
+            # Do calculation manually and check result
+            hazard_raster = read_layer(hazard_filename)
+            H = hazard_raster.get_data(nan=0)
+
+            exposure_raster = read_layer(exposure_filename + '.asc')
+            P = exposure_raster.get_data(nan=0)
+
+            # Calculate impact manually
+            pixel_area = 2500
+            I = numpy.where(H > 0.1, P, 0) / 100000.0 * pixel_area
+
+            # Verify correctness against results from HKV
+            res = sum(I.flat)
+            ref = expected_values[i]
+            #print filename, 'Result=%f' % res, ' Expected=%f' % ref
+            #print 'Pct relative error=%f' % (abs(res-ref)*100./ref)
+
+            msg = 'Got result %f but expected %f' % (res, ref)
+            assert numpy.allclose(res, ref, rtol=1.0e-2), msg
+
+            # Verify correctness of result
+            # Download result and check
+            layer_name = data['layer'].split('/')[-1]
+
+            result_layer = download(INTERNAL_SERVER_URL,
+                                    layer_name,
+                                    get_bounding_box_string(hazard_filename))
+            assert os.path.exists(result_layer.filename)
+
+            calculated_raster = read_layer(result_layer.filename)
+            C = calculated_raster.get_data(nan=0)
+
+            # FIXME (Ole): Bring this back
+            # Check caption
+            #caption = calculated_raster.get_caption()
+            #print
+            #print caption
+            #expct = 'people'
+            #msg = ('Caption %s did not contain expected '
+            #       'keyword %s' % (caption, expct))
+            #assert expct in caption, msg
+
+            # Compare shape and extrema
+            msg = ('Shape of calculated raster differs from reference raster: '
+                   'C=%s, I=%s' % (C.shape, I.shape))
+            assert numpy.allclose(C.shape, I.shape,
+                                  rtol=1e-12, atol=1e-12), msg
+
+            msg = ('Minimum of calculated raster differs from reference '
+                   'raster: '
+                   'C=%s, I=%s' % (numpy.nanmin(C), numpy.nanmin(I)))
+            assert numpy.allclose(numpy.nanmin(C), numpy.nanmin(I),
+                                  rtol=1e-6, atol=1e-12), msg
+            msg = ('Maximum of calculated raster differs from reference '
+                   'raster: '
+                   'C=%s, I=%s' % (numpy.nanmax(C), numpy.nanmax(I)))
+            assert numpy.allclose(numpy.nanmax(C), numpy.nanmax(I),
+                                  rtol=1e-6, atol=1e-12), msg
+
+            # Compare every single value numerically (a bit loose -
+            # probably due to single precision conversions when
+            # data flows through geonode)
+            #
+            # FIXME: Not working - but since this test is about
+            # issue #162 we'll leave it for now. TODO with NAN
+            # Manually verified that the two expected values are correct,
+            # though.
+            #msg = 'Array values of written raster array were not as expected'
+            #print C
+            #print I
+            #print numpy.amax(numpy.abs(C-I))
+            #assert numpy.allclose(C, I, rtol=1e-2, atol=1e-5), msg
+
+            # Check that extrema are in range
+            xmin, xmax = calculated_raster.get_extrema()
+
+            assert numpy.alltrue(C[-numpy.isnan(C)] >= xmin), msg
+            assert numpy.alltrue(C[-numpy.isnan(C)] <= xmax)
+            assert numpy.alltrue(C[-numpy.isnan(C)] >= 0)
+
+            i += 1
 
     def test_metadata_available_after_upload(self):
         """Test metadata is available after upload
@@ -326,6 +496,7 @@ class Test_calculations(unittest.TestCase):
             # Make only a few points were 0
             assert count > len(attributes) - 4
 
+    # FIXME (Ole): Do as part of issue #74
     def XXtest_shakemap_population_exposure(self):
         """Population exposed to groundshaking matches USGS numbers
         """
@@ -486,14 +657,9 @@ class Test_calculations(unittest.TestCase):
                    '' % (layer_name, gn_geotransform, ref_geotransform))
             assert numpy.allclose(ref_geotransform, gn_geotransform), msg
 
-    # FIXME (Ole): work in progress regarding issue #19 and #103.
-    # Would eventually do a definitive end-to-end test that interpolated
-    # values are good.
-    def Xtest_interpolation_example(self):
-        """Interpolation is done correctly with data going through geonode
+    def test_data_resampling_example(self):
+        """Raster data is unchanged when going through geonode
 
-        This data (Maumere scenaria) showed some very wrong results
-        when first attempted in August 2011 - hence this test
         """
 
         # Name file names for hazard level, exposure and expected fatalities
@@ -501,50 +667,158 @@ class Test_calculations(unittest.TestCase):
                            % TESTDATA)
         exposure_filename = ('%s/maumere_pop_prj.shp' % TESTDATA)
 
+        #------------
+        # Hazard data
+        #------------
+        # Read hazard input data for reference
+        H_ref = read_layer(hazard_filename)
+
+        A_ref = H_ref.get_data()
+        depth_min_ref, depth_max_ref = H_ref.get_extrema()
+
         # Upload to internal geonode
         hazard_layer = save_to_geonode(hazard_filename, user=self.user)
         hazard_name = '%s:%s' % (hazard_layer.workspace, hazard_layer.name)
 
+        # Download data again
+        bbox = get_bounding_box_string(hazard_filename)  # The biggest
+        H = download(INTERNAL_SERVER_URL, hazard_name, bbox)
+
+        A = H.get_data()
+        depth_min, depth_max = H.get_extrema()
+
+        # FIXME (Ole): The layer read from file is single precision only:
+        # Issue #17
+        # Here's the explanation why interpolation below produce slightly
+        # different results (but why?)
+        # The layer read from file is single precision which may be due to
+        # the way it is converted from ASC to TIF. In other words the
+        # problem may be in raster.write_to_file. Float64 is
+        # specified there, so this is a mystery.
+        #print 'A', A.dtype          # Double precision
+        #print 'A_ref', A_ref.dtype  # Single precision
+
+        # Compare extrema to values from numpy array
+        assert numpy.allclose(depth_max, numpy.nanmax(A),
+                              rtol=1.0e-12, atol=1.0e-12)
+
+        assert numpy.allclose(depth_max_ref, numpy.nanmax(A_ref),
+                              rtol=1.0e-12, atol=1.0e-12)
+
+        # Compare to reference
+        assert numpy.allclose([depth_min, depth_max],
+                              [depth_min_ref, depth_max_ref],
+                              rtol=1.0e-12, atol=1.0e-12)
+
+        # Compare extrema to values read off QGIS for this layer
+        assert numpy.allclose([depth_min, depth_max], [0.0, 16.68],
+                              rtol=1.0e-6, atol=1.0e-10)
+
+        # Investigate difference visually
+        #from matplotlib.pyplot import matshow, show
+        #matshow(A)
+        #matshow(A_ref)
+        #matshow(A - A_ref)
+        #show()
+
+        #print
+        for i in range(A.shape[0]):
+            for j in range(A.shape[1]):
+                if not numpy.isnan(A[i, j]):
+                    err = abs(A[i, j] - A_ref[i, j])
+                    if err > 0:
+                        msg = ('%i, %i: %.15f, %.15f, %.15f'
+                               % (i, j, A[i, j], A_ref[i, j], err))
+                        raise Exception(msg)
+                    #if A[i,j] > 16:
+                    #    print i, j, A[i, j], A_ref[i, j]
+
+        # Compare elements (nan & numbers)
+        id_nan = numpy.isnan(A)
+        id_nan_ref = numpy.isnan(A_ref)
+        assert numpy.all(id_nan == id_nan_ref)
+        assert numpy.allclose(A[-id_nan], A_ref[-id_nan],
+                              rtol=1.0e-15, atol=1.0e-15)
+
+        #print 'MAX', A[245, 283], A_ref[245, 283]
+        #print 'MAX: %.15f %.15f %.15f' %(A[245, 283], A_ref[245, 283])
+        assert numpy.allclose(A[245, 283], A_ref[245, 283],
+                              rtol=1.0e-15, atol=1.0e-15)
+
+        #--------------
+        # Exposure data
+        #--------------
+        # Read exposure input data for reference
+        E_ref = read_layer(exposure_filename)
+
+        # Upload to internal geonode
         exposure_layer = save_to_geonode(exposure_filename, user=self.user)
         exposure_name = '%s:%s' % (exposure_layer.workspace,
                                    exposure_layer.name)
 
         # Download data again
-        bbox = get_bounding_box_string(hazard_filename)  # The biggest
-        H = download(INTERNAL_SERVER_URL, hazard_name, bbox)
         E = download(INTERNAL_SERVER_URL, exposure_name, bbox)
 
-        A = H.get_data()
-        depth_min, depth_max = H.get_extrema()
-
-        # Compare extrema to values read off QGIS for this layer
-        print 'E', depth_min, depth_max
-        assert numpy.allclose([depth_min, depth_max], [0.0, 16.68],
-                              rtol=1.0e-6, atol=1.0e-10)
-
+        # Check exposure data against reference
         coordinates = E.get_geometry()
+        coordinates_ref = E_ref.get_geometry()
+        assert numpy.allclose(coordinates, coordinates_ref,
+                              rtol=1.0e-12, atol=1.0e-12)
+
         attributes = E.get_data()
+        attributes_ref = E_ref.get_data()
+        for i, att in enumerate(attributes):
+            att_ref = attributes_ref[i]
+            for key in att:
+                assert att[key] == att_ref[key]
 
-        # Interpolate
+        # Test riab's interpolation function
         I = H.interpolate(E, name='depth')
-        Icoordinates = I.get_geometry()
-        Iattributes = I.get_data()
-        assert numpy.allclose(Icoordinates, coordinates)
+        icoordinates = I.get_geometry()
 
-        N = len(Icoordinates)
+        I_ref = H_ref.interpolate(E_ref, name='depth')
+        icoordinates_ref = I_ref.get_geometry()
+
+        assert numpy.allclose(coordinates,
+                              icoordinates,
+                              rtol=1.0e-12, atol=1.0e-12)
+        assert numpy.allclose(coordinates,
+                              icoordinates_ref,
+                              rtol=1.0e-12, atol=1.0e-12)
+
+        iattributes = I.get_data()
+        assert numpy.allclose(icoordinates, coordinates)
+
+        N = len(icoordinates)
         assert N == 891
+
+        # Set tolerance for single precision until issue #17 has been fixed
+        # It appears that the single precision leads to larger interpolation
+        # errors
+        rtol_issue17 = 2.0e-3
+        atol_issue17 = 1.0e-4
 
         # Verify interpolated values with test result
         for i in range(N):
 
-            interpolated_depth = Iattributes[i]['depth']
+            interpolated_depth_ref = I_ref.get_data()[i]['depth']
+            interpolated_depth = iattributes[i]['depth']
+
+            assert nanallclose(interpolated_depth,
+                               interpolated_depth_ref,
+                               rtol=rtol_issue17, atol=atol_issue17)
+
             pointid = attributes[i]['POINTID']
 
             if pointid == 263:
 
+                #print i, pointid, attributes[i],
+                #print interpolated_depth, coordinates[i]
+
                 # Check that location is correct
                 assert numpy.allclose(coordinates[i],
-                                      [122.20367299, -8.61300358])
+                                      [122.20367299, -8.61300358],
+                                      rtol=1.0e-7, atol=1.0e-12)
 
                 # This is known to be outside inundation area so should
                 # near zero
@@ -553,16 +827,23 @@ class Test_calculations(unittest.TestCase):
 
             if pointid == 148:
                 # Check that location is correct
+                #print coordinates[i]
                 assert numpy.allclose(coordinates[i],
-                                      [122.2045912, -8.608483265])
+                                      [122.2045912, -8.608483265],
+                                      rtol=1.0e-7, atol=1.0e-12)
 
                 # This is in an inundated area with a surrounding depths of
                 # 4.531, 3.911
                 # 2.675, 2.583
                 assert interpolated_depth < 4.531
+                assert interpolated_depth < 3.911
                 assert interpolated_depth > 2.583
-                assert numpy.allclose(interpolated_depth, 3.553,
-                                      rtol=1.0e-5, atol=1.0e-5)
+                assert interpolated_depth > 2.675
+
+                #print interpolated_depth
+                # This is a characterisation test for bilinear interpolation
+                assert numpy.allclose(interpolated_depth, 3.62477215491,
+                                      rtol=rtol_issue17, atol=1.0e-12)
 
             # Check that interpolated points are within range
             msg = ('Interpolated depth %f at point %i was outside extrema: '
@@ -570,12 +851,197 @@ class Test_calculations(unittest.TestCase):
                                    depth_min, depth_max))
 
             if not numpy.isnan(interpolated_depth):
-                tol = 1.0e-6
-                #assert depth_min - tol <= interpolated_depth <= depth_max, msg
-                #if interpolated_depth > depth_max:
-                #    print msg
-                #if interpolated_depth < depth_min:
-                #    print msg
+                assert depth_min <= interpolated_depth <= depth_max, msg
+
+    def test_earthquake_exposure_plugin(self):
+        """Population exposure to individual MMI levels can be computed
+        """
+
+        # Upload exposure data for this test
+        # FIXME (Ole): While this dataset is ok for testing,
+        # note that is has been resampled without scaling
+        # so numbers are about 25 times too large.
+        # Consider replacing test populations dataset for good measures,
+        # just in case any one accidentally started using this dataset
+        # for real.
+
+        name = 'Population_2010'
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
+        exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+        exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                   exposure_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(exposure_layer, exposure_filename)
+        exp_bbox_string = get_bounding_box_string(exposure_filename)
+        check_layer(exposure_layer, full=True)
+
+        # Upload hazard data
+        filename = 'Lembang_Earthquake_Scenario.asc'
+        hazard_filename = '%s/%s' % (TESTDATA, filename)
+        hazard_layer = save_to_geonode(hazard_filename,
+                                       user=self.user, overwrite=True)
+        hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                 hazard_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(hazard_layer, hazard_filename)
+        haz_bbox_string = get_bounding_box_string(hazard_filename)
+        check_layer(hazard_layer, full=True)
+
+        # Run calculation
+        c = Client()
+        rv = c.post('/impact/api/calculate/', data=dict(
+                hazard_server=INTERNAL_SERVER_URL,
+                hazard=hazard_name,
+                exposure_server=INTERNAL_SERVER_URL,
+                exposure=exposure_name,
+                bbox=haz_bbox_string,
+                impact_function='EarthquakePopulationExposureFunction',
+                keywords='test,population,exposure,usgs'))
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+        if 'errors' in data:
+            errors = data['errors']
+            if errors is not None:
+                msg = ('The server returned the error message: %s'
+                       % str(errors))
+                raise Exception(msg)
+
+        assert 'success' in data
+        assert 'hazard_layer' in data
+        assert 'exposure_layer' in data
+        assert 'run_duration' in data
+        assert 'run_date' in data
+        assert 'layer' in data
+
+        assert data['success']
+
+        # Download result and check
+        layer_name = data['layer'].split('/')[-1]
+
+        result_layer = download(INTERNAL_SERVER_URL,
+                                layer_name,
+                                get_bounding_box_string(hazard_filename))
+        assert os.path.exists(result_layer.filename)
+
+        # Check calculated values
+        keywords = result_layer.get_keywords()
+
+        assert 'mmi-classes' in keywords
+        assert 'affected-population' in keywords
+
+        mmi_classes = [int(x) for x in keywords['mmi-classes'].split('_')]
+        count = [float(x) for x in keywords['affected-population'].split('_')]
+
+        # Brute force count for each population level
+        population = download(INTERNAL_SERVER_URL,
+                              exposure_name,
+                              get_bounding_box_string(hazard_filename))
+        intensity = download(INTERNAL_SERVER_URL,
+                             hazard_name,
+                             get_bounding_box_string(hazard_filename))
+
+        # Extract data
+        H = intensity.get_data(nan=0)
+        P = population.get_data(nan=0)
+
+        brutecount = {}
+        for mmi in mmi_classes:
+            brutecount[mmi] = 0
+
+        for i in range(P.shape[0]):
+            for j in range(P.shape[1]):
+                mmi = H[i, j]
+                if not numpy.isnan(mmi):
+                    mmi_class = int(round(mmi))
+
+                    pop = P[i, j]
+                    if not numpy.isnan(pop):
+                        brutecount[mmi_class] += pop
+
+        for i, mmi in enumerate(mmi_classes):
+            assert numpy.allclose(count[i], brutecount[mmi], rtol=1.0e-6)
+
+    def test_linked_datasets(self):
+        """Linked datesets can be pulled in e.g. to include gender break down
+        """
+
+        # Upload exposure data for this test. This will automatically
+        # pull in female_pct_yogya.asc through its "associates" keyword
+        name = 'population_yogya'
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
+        exposure_layer = save_to_geonode(exposure_filename,
+                                         user=self.user, overwrite=True)
+        exposure_name = '%s:%s' % (exposure_layer.workspace,
+                                   exposure_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(exposure_layer, exposure_filename)
+        exp_bbox_string = get_bounding_box_string(exposure_filename)
+        check_layer(exposure_layer, full=True)
+
+        # Upload hazard data
+        filename = 'eq_yogya_2006.asc'
+        hazard_filename = '%s/%s' % (TESTDATA, filename)
+        hazard_layer = save_to_geonode(hazard_filename,
+                                       user=self.user, overwrite=True)
+        hazard_name = '%s:%s' % (hazard_layer.workspace,
+                                 hazard_layer.name)
+
+        # Check metadata
+        assert_bounding_box_matches(hazard_layer, hazard_filename)
+        haz_bbox_string = get_bounding_box_string(hazard_filename)
+        check_layer(hazard_layer, full=True)
+
+        # Run calculation
+        c = Client()
+        rv = c.post('/impact/api/calculate/', data=dict(
+                hazard_server=INTERNAL_SERVER_URL,
+                hazard=hazard_name,
+                exposure_server=INTERNAL_SERVER_URL,
+                exposure=exposure_name,
+                bbox=haz_bbox_string,
+                impact_function='EarthquakeFatalityFunction',
+                keywords='test,fatalities,population,usgs'))
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+        if 'errors' in data:
+            errors = data['errors']
+            if errors is not None:
+                msg = ('The server returned the error message: %s'
+                       % str(errors))
+                raise Exception(msg)
+
+        assert 'success' in data
+        assert 'hazard_layer' in data
+        assert 'exposure_layer' in data
+        assert 'run_duration' in data
+        assert 'run_date' in data
+        assert 'layer' in data
+
+        assert data['success']
+
+        # Download result and check
+        layer_name = data['layer'].split('/')[-1]
+
+        result_layer = download(INTERNAL_SERVER_URL,
+                                layer_name,
+                                get_bounding_box_string(hazard_filename))
+        assert os.path.exists(result_layer.filename)
+
+        # Check calculated values
+        keywords = result_layer.get_keywords()
+
+        assert 'caption' in keywords
+
+        # Parse caption and look for the correct numbers
+
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

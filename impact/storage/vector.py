@@ -14,6 +14,7 @@ from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_centroid
 from impact.storage.utilities import geometrytype2string
 
+
 # FIXME (Ole): Consider using pyshp to read and write shapefiles
 #              See http://code.google.com/p/pyshp
 class Vector:
@@ -106,11 +107,13 @@ class Vector:
             # FIXME: Need to establish extent here
 
     def __str__(self):
+
+        g_type_str = geometrytype2string(self.geometry_type)
         return ('Vector data set: %s, %i features, geometry type '
-                '%i (%s)' % (self.name,
+                '%s (%s)' % (self.name,
                              len(self),
-                             self.geometry_type,
-                             geometrytype2string(self.geometry_type)))
+                             str(self.geometry_type),
+                             g_type_str))
 
     def __len__(self):
         """Size of vector layer defined as number of features
@@ -182,10 +185,18 @@ class Vector:
     def get_name(self):
         return self.name
 
-    def get_keywords(self):
+    def get_keywords(self, key=None):
         """Return keywords dictionary
         """
-        return self.keywords
+        if key is None:
+            return self.keywords
+        else:
+            if key in self.keywords:
+                return self.keywords[key]
+            else:
+                msg = ('Keyword %s does not exist in %s: Options are '
+                       '%s' % (key, self.get_name(), self.keywords.keys()))
+                raise Exception(msg)
 
     def get_caption(self):
         """Return 'caption' keyword if present. Otherwise ''.
@@ -231,7 +242,7 @@ class Vector:
 
         self.name = vectorname
         self.filename = filename
-
+        self.geometry_type = None  # In case there are no features
 
         fid = ogr.Open(filename)
         if fid is None:
@@ -312,7 +323,6 @@ class Vector:
         # Store geometry coordinates as a compact numeric array
         self.geometry = geometry
         self.data = data
-
 
     def write_to_file(self, filename):
         """Save vector data to file

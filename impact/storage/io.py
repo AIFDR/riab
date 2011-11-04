@@ -19,6 +19,7 @@ from impact.storage.utilities import LAYER_TYPES
 from impact.storage.utilities import WCS_TEMPLATE
 from impact.storage.utilities import WFS_TEMPLATE
 from impact.storage.utilities import unique_filename
+from impact.storage.utilities import write_keywords
 from impact.storage.utilities import extract_geotransform
 from impact.storage.utilities import geotransform2resolution
 
@@ -112,7 +113,7 @@ def get_bounding_box(filename):
     return layer.get_bounding_box()
 
 
-def bboxlist2string(bbox):
+def bboxlist2string(bbox, decimals=6):
     """Convert bounding box list to comma separated string
 
     Input
@@ -142,7 +143,11 @@ def bboxlist2string(bbox):
                    'original error was "%s".' % (bbox, x, e))
             raise AssertionError(msg)
 
-    return '%.6f,%.6f,%.6f,%.6f' % tuple(bbox)
+    # Make template of the form '%.5f,%.5f,%.5f,%.5f'
+    template = (('%%.%if,' % decimals) * 4)[:-1]
+
+    # Assign numbers and return
+    return template % tuple(bbox)
 
 
 def bboxstring2list(bbox_string):
@@ -225,7 +230,13 @@ def get_metadata_from_layer(layer):
     if layer.datatype == 'raster':
         geotransform = extract_geotransform(layer)
         metadata['geotransform'] = geotransform
-        metadata['resolution'] = geotransform2resolution(geotransform)
+        metadata['resolution'] = geotransform2resolution(geotransform,
+                                                         # Get both resx
+                                                         # and resy
+                                                         isotropic=False)
+    else:
+        metadata['resolution'] = None
+        metadata['geotransform'] = None
 
     # Metadata common to both raster and vector data
     metadata['bounding_box'] = layer.boundingBoxWGS84
@@ -233,16 +244,13 @@ def get_metadata_from_layer(layer):
     metadata['id'] = layer.id
 
     # Extract keywords
+    keyword_dict = {}
     if not hasattr(layer, 'keywords'):
-        msg = 'No keywords in %s. Submit patch to OWSLib maintainers' % layer
-        # FIXME (Ole): Uncomment when OWSLib patch has been submitted
-        #Raise Exception(msg)
+        msg = 'No keywords in %s. Submit patch to OWSLib maintainers.' % layer
+        raise Exception(msg)
     else:
-        keyword_dict = {}
         for keyword in layer.keywords:
             if keyword is not None:
-                # FIXME (Ole): Why would this be None sometimes?
-
                 for keyword_string in keyword.split(','):
                     if ':' in keyword_string:
                         key, value = keyword_string.strip().split(':')
@@ -250,8 +258,19 @@ def get_metadata_from_layer(layer):
                     else:
                         keyword_dict[keyword_string] = None
 
-        metadata['keywords'] = keyword_dict
+    # Add resolution (as a string with one element) so that layer "remembers"
+    # its original resolution,
+    # FIXME (Ole): What is the best way of collapsing 2D resolution to
+    # one number - resx and resy are not always identical!
+    if metadata['resolution'] is not None:
+        keyword_dict['resolution'] = str(metadata['resolution'][0])
 
+    # FIXME (Ole): The statement below does not raise an Exception,
+    # and nothing is written to the log file. See issue #170
+    #raise Exception('weird')
+
+    # Record all keywords as part of the metadata and return
+    metadata['keywords'] = keyword_dict
     return metadata
 
 
@@ -282,7 +301,6 @@ def get_metadata(server_url, layer_name=None):
     # Get metadata for requested layer(s)
     metadata = {}
     for name in layer_names:
-
         if name in wcs.contents:
             layer = wcs.contents[name]
             layer.datatype = 'raster'  # Monkey patch layer type
@@ -534,6 +552,7 @@ def download(server_url, layer_name, bbox, resolution=None):
         if resolution is None:
             # Get native resolution and use that
             resolution = layer_metadata['resolution']
+            #resolution = (resolution, resolution)  #FIXME (Ole): Make nicer
 
         # Download raster using specified bounding box and resolution
         template = WCS_TEMPLATE
@@ -541,6 +560,10 @@ def download(server_url, layer_name, bbox, resolution=None):
         download_url = template % (server_url, layer_name, bbox_string,
                                    resolution[0], resolution[1])
         filename = get_file(download_url, suffix)
+
+    # Write keywords file
+    keywords = layer_metadata['keywords']
+    write_keywords(keywords, os.path.splitext(filename)[0] + '.keywords')
 
     # Instantiate layer from file
     lyr = read_layer(filename)

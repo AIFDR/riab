@@ -14,6 +14,7 @@ from impact.storage.io import save_to_geonode, RisikoException
 from impact.storage.io import check_layer, assert_bounding_box_matches
 from impact.storage.io import get_bounding_box_string
 from impact.storage.io import bboxstring2list
+from impact.storage.utilities import nanallclose
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page
 from impact.storage.io import read_layer
@@ -363,27 +364,32 @@ class Test_geonode_connection(unittest.TestCase):
         assert len(metadata['bounding_box']) == 4
 
         # A little metadata characterisation test
+        # FIXME (Ole): Get this right when new resolution keyword
+        # has been fully sorted out. There are 3 other tests failing at
+        # the moment
         ref = {'layer_type': 'raster',
                'keywords': {'category': 'hazard',
-                            'subcategory': 'earthquake'},
+                            'subcategory': 'earthquake',
+                            'resolution': '0.0112'},
                'geotransform': (105.29857, 0.0112, 0.0,
                                 -5.565233000000001, 0.0, -0.0112),
+               'resolution': 0.0112,
                'title': 'lembang_mmi_hazmap'}
 
         for key in ['layer_type', 'keywords', 'geotransform',
                     'title']:
 
-            msg = ('Expected metadata for key %s to be %s. '
-                   'Instead got %s' % (key, ref[key], metadata[key]))
-            if key == 'geotransform':
-                assert numpy.allclose(metadata[key], ref[key]), msg
-            else:
-                assert metadata[key] == ref[key], msg
-
             if key == 'keywords':
                 kwds = metadata[key]
                 for k in kwds:
                     assert kwds[k] == ref[key][k]
+            else:
+                msg = ('Expected metadata for key %s to be %s. '
+                       'Instead got %s' % (key, ref[key], metadata[key]))
+                if key in ['geotransform', 'resolution']:
+                    assert numpy.allclose(metadata[key], ref[key]), msg
+                else:
+                    assert metadata[key] == ref[key], msg
 
     def test_repeated_upload(self):
         """The same file can be uploaded more than once
@@ -719,7 +725,7 @@ class Test_geonode_connection(unittest.TestCase):
 
         # Get reference values
         H = read_layer(hazard_filename)
-        A_ref = H.get_data()
+        A_ref = H.get_data(nan=True)
         depth_min_ref, depth_max_ref = H.get_extrema()
 
         # Upload to internal geonode
@@ -729,7 +735,7 @@ class Test_geonode_connection(unittest.TestCase):
         # Download data again with native resolution
         bbox = get_bounding_box_string(hazard_filename)
         H = download(INTERNAL_SERVER_URL, hazard_name, bbox)
-        A = H.get_data()
+        A = H.get_data(nan=True)
 
         # Compare shapes
         msg = ('Shape of downloaded raster was [%i, %i]. '
@@ -748,17 +754,30 @@ class Test_geonode_connection(unittest.TestCase):
                               rtol=1.0e-6, atol=1.0e-10), msg
 
         # Compare data number by number
-        assert numpy.allclose(A, A_ref, rtol=1.0e-8)
+        assert nanallclose(A, A_ref, rtol=1.0e-8)
 
     def test_specified_raster_resolution(self):
-        """Raster layer can be downloaded with specific resolution
+        """Raster layers can be downloaded with specific resolution
 
         This is another test for ticket #103
 
-        Native test .asc data has
+        Native test data:
+
+        maumere....asc
         ncols 931
         nrows 463
         cellsize 0.00018
+
+        Population_Jakarta
+        ncols         638
+        nrows         649
+        cellsize      0.00045228819716044
+
+        Population_2010
+        ncols         5525
+        nrows         2050
+        cellsize      0.0083333333333333
+
 
         Here we download it at a range of fixed resolutions that
         are both coarser and finer, and check that the dimensions
@@ -767,59 +786,307 @@ class Test_geonode_connection(unittest.TestCase):
         We also check that the extrema of the subsampled matrix are sane
         """
 
-        # Test for a range of specified resolutions
-        for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
-                    0.0002, 0.0001, 0.00006, 0.00003]:        # Finer
+        for test_filename in ['maumere_aos_depth_20m_land_wgs84.asc',
+                              'Population_Jakarta_geographic.asc',
+                              'Population_2010.asc']:
 
-            hazard_filename = ('%s/maumere_aos_depth_20m_land_wgs84.asc'
-                               % TESTDATA)
+            hazard_filename = ('%s/%s' % (TESTDATA, test_filename))
 
             # Get reference values
             H = read_layer(hazard_filename)
             depth_min_ref, depth_max_ref = H.get_extrema()
+            native_resolution = H.get_resolution()
 
             # Upload to internal geonode
             hazard_layer = save_to_geonode(hazard_filename, user=self.user)
             hazard_name = '%s:%s' % (hazard_layer.workspace,
                                      hazard_layer.name)
 
-            # Download data again
-            bbox = get_bounding_box_string(hazard_filename)
-            H = download(INTERNAL_SERVER_URL, hazard_name,
-                         bbox, resolution=res)
-            A = H.get_data()
+            # Test for a range of resolutions
+            for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
+                        0.0002, 0.0001, 0.00006, 0.00003]:        # Finer
 
-            # Determine expected shape from bbox (W, S, E, N)
-            bb = bboxstring2list(bbox)
-            ref_rows = int(round((bb[3] - bb[1]) / res))
-            ref_cols = int(round((bb[2] - bb[0]) / res))
+                # To save time don't do finest resolution for the
+                # two population sets
+                if test_filename.startswith('Population') and res < 0.00006:
+                    break
 
-            # Compare shapes
-            msg = ('Shape of downloaded raster was [%i, %i]. '
-                   'Expected [%i, %i].' % (A.shape[0], A.shape[1],
-                                           ref_rows, ref_cols))
-            assert numpy.allclose((ref_rows, ref_cols), A.shape,
-                                  rtol=0, atol=0), msg
+                # Set bounding box
+                bbox = get_bounding_box_string(hazard_filename)
+                compare_extrema = True
+                if test_filename == 'Population_2010.asc':
+                    # Make bbox small for finer resolutions to
+                    # save time and to test that as well.
+                    # However, extrema obviously won't match those
+                    # of the full dataset. Once we can clip
+                    # datasets, we can remove this restriction.
+                    if res < 0.005:
+                        bbox = '106.685974,-6.373421,106.974534,-6.079886'
+                        compare_extrema = False
+                bb = bboxstring2list(bbox)
 
-            # Assess that the range of the interpolated data is sane
-            A = numpy.where(A == -9999, 0, A)  # Get rid of -9999
+                # Download data at specified resolution
+                H = download(INTERNAL_SERVER_URL, hazard_name,
+                             bbox, resolution=res)
+                A = H.get_data()
 
-            # We expect exact match of the minimum
-            assert numpy.allclose(depth_min_ref, numpy.amin(A),
-                                  rtol=0, atol=0)
+                # Verify that data has the requested bobx and resolution
+                actual_bbox = H.get_bounding_box()
+                msg = ('Bounding box for %s was not as requested. I got %s '
+                       'but '
+                       'expected %s' % (hazard_name, actual_bbox, bb))
+                assert numpy.allclose(actual_bbox, bb, rtol=1.0e-6)
 
-            # At the maximum it depends on the subsampling
-            if res < 0.0002:
-                # At these resolutions we expect a close match
-                assert numpy.allclose(depth_max_ref, numpy.amax(A),
-                                      rtol=1.0e-10, atol=1.0e-8)
-            elif res < 0.002:
-                # At these resolutions we expect ballpark match (~20%)
-                assert numpy.allclose(depth_max_ref, numpy.amax(A),
-                                      rtol=0.17, atol=0.0)
-            else:
-                # At coarser resolutions, we just want sanity
-                assert 0 < numpy.amax(A) <= depth_max_ref
+                # FIXME (Ole): How do we sensibly resolve the issue with
+                #              resx, resy vs one resolution (issue #173)
+                actual_resolution = H.get_resolution()[0]
+
+                # FIXME (Ole): Resolution is often far from the requested
+                #              see issue #102
+                #              Here we have to accept up to 5%
+                tolerance102 = 5.0e-2
+                msg = ('Resolution of %s was not as requested. I got %s but '
+                       'expected %s' % (hazard_name, actual_resolution, res))
+                assert numpy.allclose(actual_resolution, res,
+                                      rtol=tolerance102), msg
+
+                # Determine expected shape from bbox (W, S, E, N)
+                ref_rows = int(round((bb[3] - bb[1]) / res))
+                ref_cols = int(round((bb[2] - bb[0]) / res))
+
+                # Compare shapes (generally, this may differ by 1)
+                msg = ('Shape of downloaded raster was [%i, %i]. '
+                       'Expected [%i, %i].' % (A.shape[0], A.shape[1],
+                                               ref_rows, ref_cols))
+                assert (ref_rows == A.shape[0] and
+                        ref_cols == A.shape[1]), msg
+
+                # Assess that the range of the interpolated data is sane
+                if not compare_extrema:
+                    continue
+
+                # For these test sets we get exact match of the minimum
+                msg = ('Minimum of %s resampled at resolution %f '
+                       'was %f. Expected %f.' % (hazard_layer.name,
+                                                 res,
+                                                 numpy.nanmin(A),
+                                                 depth_min_ref))
+                assert numpy.allclose(depth_min_ref, numpy.nanmin(A),
+                                      rtol=0.0, atol=0.0), msg
+
+                # At the maximum it depends on the subsampling
+                msg = ('Maximum of %s resampled at resolution %f '
+                       'was %f. Expected %f.' % (hazard_layer.name,
+                                                 res,
+                                                 numpy.nanmax(A),
+                                                 depth_max_ref))
+                if res < native_resolution[0]:
+                    # When subsampling to finer resolutions we expect a
+                    # close match
+                    assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
+                                          rtol=1.0e-10, atol=1.0e-8), msg
+                elif res < native_resolution[0] * 10:
+                    # When upsampling to coarser resolutions we expect
+                    # ballpark match (~20%)
+                    assert numpy.allclose(depth_max_ref, numpy.nanmax(A),
+                                          rtol=0.17, atol=0.0), msg
+                else:
+                    # Upsampling to very coarse resolutions, just want sanity
+                    assert 0 < numpy.nanmax(A) <= depth_max_ref
+
+    def test_raster_scaling(self):
+        """Raster layers can be scaled when resampled
+
+        This is a test for ticket #168
+
+        Native test .asc data has
+
+        ncols         5525
+        nrows         2050
+        cellsize      0.0083333333333333
+
+        Scaling is necessary for raster data that represents density
+        such as population per km^2
+        """
+
+        for test_filename in ['Population_Jakarta_geographic.asc',
+                              'Population_2010.asc']:
+
+            raster_filename = ('%s/%s' % (TESTDATA, test_filename))
+
+            # Get reference values
+            R = read_layer(raster_filename)
+            R_min_ref, R_max_ref = R.get_extrema()
+            native_resolution = R.get_resolution()
+
+            # Upload to internal geonode
+            raster_layer = save_to_geonode(raster_filename, user=self.user)
+            raster_name = '%s:%s' % (raster_layer.workspace,
+                                     raster_layer.name)
+
+            # Test for a range of resolutions
+            for res in [0.02, 0.01, 0.005, 0.002, 0.001, 0.0005,  # Coarser
+                        0.0002]:                                  # Finer
+
+                # To save time don't do finest resolution for the
+                # large population set
+                if test_filename.startswith('Population_2010') and res < 0.005:
+                    break
+
+                bbox = get_bounding_box_string(raster_filename)
+
+                R = download(INTERNAL_SERVER_URL, raster_name,
+                             bbox, resolution=res)
+                A_native = R.get_data(scaling=False)
+                A_scaled = R.get_data(scaling=True)
+
+                sigma = (R.get_resolution()[0] / native_resolution[0]) ** 2
+
+                # Compare extrema
+                expected_scaled_max = sigma * numpy.nanmax(A_native)
+                msg = ('Resampled raster was not rescaled correctly: '
+                       'max(A_scaled) was %f but expected %f'
+                       % (numpy.nanmax(A_scaled), expected_scaled_max))
+
+                assert numpy.allclose(expected_scaled_max,
+                                      numpy.nanmax(A_scaled),
+                                      rtol=1.0e-8, atol=1.0e-8), msg
+
+                expected_scaled_min = sigma * numpy.nanmin(A_native)
+                msg = ('Resampled raster was not rescaled correctly: '
+                       'min(A_scaled) was %f but expected %f'
+                       % (numpy.nanmin(A_scaled), expected_scaled_min))
+                assert numpy.allclose(expected_scaled_min,
+                                      numpy.nanmin(A_scaled),
+                                      rtol=1.0e-8, atol=1.0e-12), msg
+
+                # Compare elementwise
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_native * sigma, A_scaled,
+                                   rtol=1.0e-8, atol=1.0e-8), msg
+
+                # Check that it also works with manual scaling
+                A_manual = R.get_data(scaling=sigma)
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_manual, A_scaled,
+                                   rtol=1.0e-8, atol=1.0e-8), msg
+
+                # Check that an exception is raised for bad arguments
+                try:
+                    R.get_data(scaling='bad')
+                except:
+                    pass
+                else:
+                    msg = 'String argument should have raised exception'
+                    raise Exception(msg)
+
+                try:
+                    R.get_data(scaling='(1, 3)')
+                except:
+                    pass
+                else:
+                    msg = 'Tuple argument should have raised exception'
+                    raise Exception(msg)
+
+                # Check None option without existence of density keyword
+                A_none = R.get_data(scaling=None)
+                msg = 'Data should not have changed'
+                assert nanallclose(A_native, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+                # Try with None and density keyword
+                R.keywords['density'] = 'true'
+                A_none = R.get_data(scaling=None)
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_scaled, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+                R.keywords['density'] = 'Yes'
+                A_none = R.get_data(scaling=None)
+                msg = 'Resampled raster was not rescaled correctly'
+                assert nanallclose(A_scaled, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+                R.keywords['density'] = 'False'
+                A_none = R.get_data(scaling=None)
+                msg = 'Data should not have changed'
+                assert nanallclose(A_native, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+                R.keywords['density'] = 'no'
+                A_none = R.get_data(scaling=None)
+                msg = 'Data should not have changed'
+                assert nanallclose(A_native, A_none,
+                                   rtol=1.0e-12, atol=1.0e-12), msg
+
+    def test_keywords_download(self):
+        """Keywords are downloaded from GeoServer along with layer data
+        """
+
+        # Upload test data
+        filenames = ['Lembang_Earthquake_Scenario.asc',
+                     'Padang_WGS84.shp',
+                     'maumere_aos_depth_20m_land_wgs84.asc']
+        layers = []
+        paths = []
+        for filename in filenames:
+            basename, ext = os.path.splitext(filename)
+
+            path = os.path.join(TESTDATA, filename)
+
+            # Upload to GeoNode
+            layer = save_to_geonode(path, user=self.user, overwrite=True)
+
+            # Record layer and file
+            layers.append(layer)
+            paths.append(path)
+
+        # Check integrity
+        for i, layer in enumerate(layers):
+
+            # Get reference keyword dictionary from file
+            L = read_layer(paths[i])
+            ref_keywords = L.get_keywords()
+
+            # Get keywords metadata from GeoServer
+            layer_name = '%s:%s' % (layer.workspace, layer.name)
+            metadata = get_metadata(INTERNAL_SERVER_URL,
+                                    layer_name)
+            assert 'keywords' in metadata
+            geo_keywords = metadata['keywords']
+            msg = ('Uploaded keywords were not as expected: I got %s '
+                   'but expected %s' % (geo_keywords, ref_keywords))
+            for kw in ref_keywords:
+                # Check that all keywords were uploaded
+                # It is OK for new automatic keywords to have appeared
+                #  (e.g. resolution) - see issue #171
+                assert kw in geo_keywords, msg
+                assert ref_keywords[kw] == geo_keywords[kw], msg
+
+            # Download data
+            bbox = get_bounding_box_string(paths[i])
+            H = download(INTERNAL_SERVER_URL, layer_name, bbox)
+
+            dwn_keywords = H.get_keywords()
+            msg = ('Downloaded keywords were not as expected: I got %s '
+                   'but expected %s' % (dwn_keywords, geo_keywords))
+            assert geo_keywords == dwn_keywords, msg
+
+            # Check that the layer and its .keyword file is there.
+            msg = 'Downloaded layer %s was not found' % H.filename
+            assert os.path.isfile(H.filename), msg
+
+            kw_filename = os.path.splitext(H.filename)[0] + '.keywords'
+            msg = 'Downloaded keywords file %s was not found' % kw_filename
+            assert os.path.isfile(kw_filename), msg
+
+            # Check that keywords are OK when reading downloaded file
+            L = read_layer(H.filename)
+            read_keywords = L.get_keywords()
+            msg = ('Keywords in downloaded file %s were not as expected: '
+                   'I got %s but expected %s'
+                   % (kw_filename, read_keywords, geo_keywords))
+            assert read_keywords == geo_keywords, msg
 
 
 if __name__ == '__main__':

@@ -48,7 +48,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 NOSE_ARGS = [
 #      '--failed',
-#      '--stop',
+      '--stop',
       '--verbosity=2',
       '--with-doctest',
       '--nocapture',

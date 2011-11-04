@@ -109,6 +109,18 @@ def get_plugins(name=None):
         raise Exception(msg)
 
 
+def get_plugin(name):
+    """Get plugin that matches given name
+
+    This is just a wrapper around get_plugins to simplify
+    """
+
+    plugin_list = get_plugins(name)
+    _, impact_function = plugin_list[0].items()[0]
+
+    return impact_function
+
+
 def pretty_function_name(func):
     """Return a human readable name for the function
     if the function has a func.plugin_name use this
@@ -173,6 +185,12 @@ def requirement_check(params, require_str, verbose=False):
     in require_str. Require_str must be a valid python expression
     and evaluate to True or False"""
 
+    # Some keyword should never go into the requirement check
+    # FIXME (Ole): This is not the most robust way. If we get a
+    # more general way of doing metadata we can treat caption and
+    # many other things separately. See issue #148
+    excluded_keywords = ['caption']
+
     execstr = 'def check():\n'
     for key in params.keys():
         if key == '':
@@ -183,12 +201,18 @@ def requirement_check(params, require_str, verbose=False):
                 raise Exception(msg)
             else:
                 continue
+
+        # Check that symbol is not a Python keyword
         if key in keyword.kwlist:
             msg = ('Error in plugin requirements'
                    'Must not use Python keywords as params: %s' % (key))
             logger.error(msg)
             return False
-        if type(params[key]) == type(''):  # is it a string param
+
+        if key in excluded_keywords:
+            continue
+
+        if isinstance(params[key], basestring):
             execstr += '  %s = "%s" \n' % (key.strip(), params[key])
         else:
             execstr += '  %s = %s \n' % (key.strip(), params[key])

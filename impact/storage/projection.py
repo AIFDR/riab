@@ -89,7 +89,17 @@ class Projection:
                    'message: %s' % (str(other), e))
             raise TypeError(msg)
 
-        return self.spatial_reference.IsSame(other.spatial_reference)
+        if self.spatial_reference.IsSame(other.spatial_reference):
+            # Native comparison checks out
+            return True
+        else:
+            # We have seen cases where the native comparison didn't work
+            # for projections that should be identical. See e.g.
+            # https://github.com/AIFDR/riab/issues/160
+            # Hence do a secondary check using the proj4 string
+
+            return (self.get_projection(proj4=True) ==
+                    other.get_projection(proj4=True))
 
     def __ne__(self, other):
         """Override '!=' to allow comparison with other projection objecs

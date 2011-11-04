@@ -9,6 +9,7 @@ from impact.storage.utilities import DRIVER_MAP
 from impact.engine.interpolation import interpolate_raster_vector
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import write_keywords
+from impact.storage.utilities import nanallclose
 from impact.storage.utilities import geotransform2bbox, geotransform2resolution
 
 
@@ -116,9 +117,9 @@ class Raster:
             return False
 
         # Check data
-        if not numpy.allclose(self.get_data(),
-                              other.get_data(),
-                              rtol=rtol, atol=atol):
+        if not nanallclose(self.get_data(),
+                           other.get_data(),
+                           rtol=rtol, atol=atol):
             return False
 
         # Check keywords
@@ -136,10 +137,18 @@ class Raster:
     def get_name(self):
         return self.name
 
-    def get_keywords(self):
+    def get_keywords(self, key=None):
         """Return keywords dictionary
         """
-        return self.keywords
+        if key is None:
+            return self.keywords
+        else:
+            if key in self.keywords:
+                return self.keywords[key]
+            else:
+                msg = ('Keyword %s does not exist in %s: Options are '
+                       '%s' % (self.get_name(), self.keywords.keys()))
+                raise Exception(msg)
 
     def get_caption(self):
         """Return 'caption' keyword if present. Otherwise ''.
@@ -227,7 +236,10 @@ class Raster:
         # Get Dimensions. Note numpy and Gdal swap order
         N, M = A.shape
 
-        # Create empty file
+        # Create empty file.
+        # FIXME (Ole): It appears that this is created as single
+        #              precision even though Float64 is specified
+        #              - see issue #17
         driver = gdal.GetDriverByName(format)
         fid = driver.Create(filename, M, N, 1, gdal.GDT_Float64)
         if fid is None:
@@ -273,10 +285,30 @@ class Raster:
             # Interpolate this raster layer to geometry of X
             return interpolate_raster_vector(self, X, name)
 
-    def get_data(self, nan=False):
+    def get_data(self, nan=True, scaling=None):
         """Get raster data as numeric array
-        If keyword nan is True, nodata values will be replaced with NaN
-        If keyword nan has a numeric value, that will be used for NODATA
+
+        Input
+            nan: Optional flag controlling handling of missing values.
+                 If nan is True (default), nodata values will be replaced
+                 with numpy.nan
+                 If keyword nan has a numeric value, nodata values will
+                 be replaced by that value. E.g. to set missing values to 0,
+                 do get_data(nan=0.0)
+            scaling: Optional flag controlling if data is to be scaled
+                     if it has been resampled. Admissible values are
+                     False: data is retrieved without modification.
+                     True: Data is rescaled based on the squared ratio between
+                           its current and native resolution. This is typically
+                           required if raster data represents a density
+                           such as population per km^2
+                     None: The behaviour will depend on the keyword "density"
+                           associated with the layer. If density is "true" or
+                           "yes" (ignoring case), scaling will be applied
+                           otherwise not. This is the default.
+                     scalar value: If scaling takes a numerical scalar value,
+                                   that will be use to scale the data
+
         """
 
         # FIXME (Ole): Once we have the ability to use numpy.nan throughout,
@@ -309,7 +341,36 @@ class Raster:
             NaN = numpy.ones(A.shape, A.dtype) * NAN
             A = numpy.where(A == nodata, NaN, A)
 
-        return A
+        # Take care of possible scaling
+        if scaling is None:
+            # Redefine scaling from density keyword if possible
+            kw = self.get_keywords()
+            if 'density' in kw and kw['density'].lower() in ['true', 'yes']:
+                scaling = True
+            else:
+                scaling = False
+
+        if scaling is False:
+            # No change
+            sigma = 1
+        elif scaling is True:
+            # Calculate scaling based on resolution change
+
+            actual_res = self.get_resolution(isotropic=True)
+            native_res = self.get_resolution(isotropic=True, native=True)
+            sigma = (actual_res / native_res) ** 2
+        else:
+            # See if scaling can work as a scalar value
+            try:
+                sigma = float(scaling)
+            except Exception, e:
+                msg = ('Keyword scaling "%s" could not be converted to a '
+                       'number. It must be either True, False, None or a '
+                       'number: %s' % (scaling, str(e)))
+                raise Exception(msg)
+
+        # Return possibly scaled data
+        return sigma * A
 
     def get_projection(self, proj4=False):
         """Return projection of this layer as a string.
@@ -402,7 +463,10 @@ class Raster:
         If the internal value is None, the standard -9999 is assumed
         """
 
-        nodata = self.band.GetNoDataValue()
+        if hasattr(self, 'band'):
+            nodata = self.band.GetNoDataValue()
+        else:
+            nodata = None
 
         # Use common default in case nodata was not registered in raster file
         if nodata is None:
@@ -458,27 +522,34 @@ class Raster:
 
         return geotransform2bbox(self.geotransform, self.columns, self.rows)
 
-    def get_resolution(self, isotropic=False):
+    def get_resolution(self, isotropic=False, native=False):
         """Get raster resolution as a 2-tuple (resx, resy)
 
         Input
-            isotropic:
+            isotropic: If True, verify that dx == dy and return dx
+                       If False return 2-tuple (dx, dy)
+            native: Optional flag. If True, return native resolution if
+                                   available. Otherwise return actual.
         """
 
-        resx, resy = geotransform2resolution(self.geotransform)
+        # Get actual resolution first
+        try:
+            res = geotransform2resolution(self.geotransform,
+                                          isotropic=isotropic)
+        except Exception, e:
+            msg = ('Resolution for layer %s could not be obtained: %s '
+                   % (self.get_name(), str(e)))
+            raise Exception(msg)
 
-        if isotropic:
-            msg = ('Resolution for layer %s requested with '
-                   'isotropic=True, but '
-                   'resolutions in the horizontal and vertical '
-                   'are different: resx = %.12f, resy = %.12f. '
-                   % (self.get_name(), resx, resy))
-            assert numpy.allclose(resx, resy,
-                                  rtol=1.0e-6, atol=1.0e-8), msg
-            return resx
-        else:
-            return resx, resy
+        if native:
+            keywords = self.get_keywords()
+            if 'resolution' in keywords:
+                # Clunky but works - see issue #171
+                res = float(keywords['resolution'])
+                if not isotropic:
+                    res = (res, res)
 
+        return res
 
     @property
     def is_raster(self):

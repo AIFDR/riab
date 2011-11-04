@@ -18,15 +18,16 @@ from impact.storage.utilities import write_keywords
 from impact.storage.utilities import read_keywords
 from impact.storage.utilities import bbox_intersection
 from impact.storage.utilities import minimal_bounding_box
+from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_area
 from impact.storage.utilities import calculate_polygon_centroid
 from impact.storage.utilities import geotransform2bbox
 from impact.storage.utilities import geotransform2resolution
+from impact.storage.utilities import nanallclose
 from impact.storage.io import get_bounding_box
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.tests.utilities import same_API
-from impact.tests.utilities import centroid_formula
 from impact.tests.utilities import TESTDATA
 from impact.tests.utilities import FEATURE_COUNTS
 from impact.tests.utilities import GEOTRANSFORMS
@@ -604,12 +605,12 @@ class Test_IO(unittest.TestCase):
 
                 A2 = R2.get_data()
 
-                assert numpy.allclose(numpy.min(A1), numpy.min(A2))
-                assert numpy.allclose(numpy.max(A1), numpy.max(A2))
+                assert numpy.allclose(numpy.nanmin(A1), numpy.nanmin(A2))
+                assert numpy.allclose(numpy.nanmax(A1), numpy.nanmax(A2))
 
                 msg = ('Array values of written raster array were not as '
                        'expected')
-                assert numpy.allclose(A1, A2), msg
+                assert nanallclose(A1, A2), msg
 
                 msg = 'Geotransforms were different'
                 assert R1.get_geotransform() == R2.get_geotransform(), msg
@@ -662,7 +663,7 @@ class Test_IO(unittest.TestCase):
             filename = '%s/%s' % (TESTDATA, rastername)
             R = read_layer(filename)
 
-            A = R.get_data()
+            A = R.get_data(nan=False)
 
             # Verify nodata value
             Amin = min(A.flat[:])
@@ -1199,6 +1200,32 @@ class Test_IO(unittest.TestCase):
             # Check that input box was not changed
             assert adjusted_bbox is not bbox
 
+    def test_buffered_bounding_box(self):
+        """Bounding box can be buffered
+        """
+
+        big = (95.06, -11.0, 141.0, 5.9)
+        mid = [103.28, -8.46, 109.67, -4.68]
+        sml = (106.818998, -6.18585170, 106.82264510, -6.1810)
+
+        for bbox in [big, mid, sml]:
+
+            # Set common resolution which is bigger than the smallest box
+            resolution = (0.1, 0.2)
+
+            dx = bbox[2] - bbox[0]
+            dy = bbox[3] - bbox[1]
+
+            # Calculate minimal bounding box
+            adjusted_bbox = buffered_bounding_box(bbox, resolution)
+
+            # Check that adjusted box exceeds minimal resolution
+            assert adjusted_bbox[2] - adjusted_bbox[0] > 2 * resolution[0]
+            assert adjusted_bbox[3] - adjusted_bbox[1] > 2 * resolution[1]
+
+            # Check that input box was not changed
+            assert adjusted_bbox is not bbox
+
     def test_array2wkt(self):
         """Conversion to wkt data works
 
@@ -1376,11 +1403,14 @@ class Test_IO(unittest.TestCase):
         """
 
         for gt in GEOTRANSFORMS:
-            res = geotransform2resolution(gt)
-
+            res = geotransform2resolution(gt, isotropic=False)
             assert len(res) == 2
             assert numpy.allclose(res[0], gt[1], rtol=0, atol=1.0e-12)
             assert numpy.allclose(res[1], - gt[5], rtol=0, atol=1.0e-12)
+
+            res = geotransform2resolution(gt, isotropic=True)
+            assert numpy.allclose(res, gt[1], rtol=0, atol=1.0e-12)
+            assert numpy.allclose(res, - gt[5], rtol=0, atol=1.0e-12)
 
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')

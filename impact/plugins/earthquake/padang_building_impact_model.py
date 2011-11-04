@@ -50,7 +50,8 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                     layer_type=='raster'
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
-                    layer_type=='vector'
+                    layer_type=='vector' and \
+                    datatype in ['osm', 'itb']
     """
 
     def run(self, layers):
@@ -58,13 +59,16 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         """
 
         # Extract data
-        # FIXME (Ole): This will be replaced by a helper function
-        #              to separate hazard from exposure using keywords
         H = layers[0]  # Ground shaking
         E = layers[1]  # Building locations
 
-        # FIXME (Ole): Not very robust way of deciding
+        # print
+        # print 'kw', E.get_keywords()
+        # print
+        # FIXME (Ole): Why doesn't this layer have keywords? See issue #164
         # Need keyword identifier for each kind of building dataset.
+        # if 'osm' in E.get_keywords('type'):
+        # FIXME (Ole): Not very robust way of deciding
         if E.get_name().lower().startswith('osm'):
             # Map from OSM attributes to the padang building classes
             E = osm2padang(E)
@@ -125,15 +129,15 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
                 count50 += 1
 
         # Create report
-        caption = ('<table border="0" width="320px">'
+        caption = ('<font size="3"> <table border="0" width="320px">'
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
                     '   <tr></tr>'
                     '   <tr><td>%s&#58;</td><td>%i</td></tr>'
-                    '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s (<10%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (10-25%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (25-50%%)&#58;</td><td>%i</td></tr>'
                     '   <tr><td>%s (50-100%%)&#58;</td><td>%i</td></tr>'
-                    '</table>' % (_('Buildings'), _('Total'),
+                    '</table></font>' % (_('Buildings'), _('Total'),
                                   _('All'), N,
                                   _('No damage'), count0,
                                   _('Low damage'), count10,

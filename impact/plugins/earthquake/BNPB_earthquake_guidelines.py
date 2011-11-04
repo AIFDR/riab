@@ -17,7 +17,7 @@ from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
 from impact.plugins.utilities import PointSymbol
-from impact.plugins.mappings import osm2bnpb
+from impact.plugins.mappings import osm2bnpb, unspecific2bnpb
 
 # Damage 'curves' for the two vulnerability classes
 damage_parameters = {'URM': [6, 7],
@@ -56,6 +56,8 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
         if E.get_name().lower().startswith('osm'):
             # Map from OSM attributes to the padang building classes
             E = osm2bnpb(E, target_attribute=self.vclass_tag)
+        else:
+            E = unspecific2bnpb(E, target_attribute=self.vclass_tag)
 
         # Interpolate hazard level to building locations
         H = H.interpolate(E)
@@ -120,9 +122,84 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
                    geometry=coordinates,
                    name='Estimated damage level',
                    keywords={'caption': caption})
+
         return V
 
     def generate_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+
+        if data.is_point_data:
+            return self.generate_point_style(data)
+        elif data.is_polygon_data:
+            return self.generate_polygon_style(data)
+        else:
+            msg = 'Unknown style %s' % str(data)
+            raise Exception(msg)
+
+    def generate_point_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+
+        # Define default behaviour to be used when
+        # - symbol attribute is missing
+        # - attribute value is None or ''
+        DEFAULT_SYMBOL = 'circle'
+
+        symbol_field = None
+
+        # FIXME: Replace these by dict and extend below
+        symbol_keys = [None, '']
+        symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
+
+        # Predefined scales and corresponding font sizes
+        scale_keys = [10000000000, 10000000, 5000000,
+                      1000000, 500000, 250000, 100000]
+        scale_values = [3, 5, 8, 12, 14, 16, 18]
+
+        # Predefined colour classes
+        class_keys = ['No Damage', '10-25', '25-50', '50-100']
+        class_values = [{'min': -0.5, 'max': 0.5,
+                         'color': '#cccccc', 'opacity': '1'},
+                        {'min': 0.5, 'max': 1.5,
+                         'color': '#fecc5c', 'opacity': '1'},
+                        {'min': 1.5, 'max': 2.5,
+                         'color': '#fd8d3c', 'opacity': '1'},
+                        {'min': 2.5, 'max': 3.5,
+                         'color': '#f31a1c', 'opacity': '1'}]
+
+        # Definition of symbols for each attribute value
+        if self.symbol_field in data.get_attribute_names():
+
+            # Get actual symbol field to use
+            symbol_field = self.symbol_field
+
+            symbols = {'Church/Mosque': 'ttf://ESRI US MUTCD 3#0x00F6',
+                       'Commercial (office)': 'ttf://ESRI Business#0x0040',
+                       'Hotel': 'ttf://ESRI Public1#0x00b6',
+                       'Medical facility': 'ttf://ESRI Cartography#0x00D1',
+                       'Other': 'ttf://ESRI Business#0x002D',
+                       'Other industrial': 'ttf://ESRI Business#0x0043',
+                       'Residential': 'ttf://ESRI Cartography#0x00d7',
+                       'Retail': 'ttf://Comic Sans MS#0x0024',
+                       'School': 'ttf://ESRI Cartography#0x00e5',
+                       'Unknown': 'ttf://Comic Sans MS#0x003F',
+                       'Warehouse': 'ttf://ESRI US MUTCD 3#0x00B5'}
+        else:
+            symbols = {None: DEFAULT_SYMBOL, '': DEFAULT_SYMBOL}
+
+        # Generate sld style file
+        params = dict(name=data.get_name(),
+                      damage_field=self.target_field,
+                      symbol_field=symbol_field,
+                      symbols=symbols,
+                      scales=dict(zip(scale_keys, scale_values)),
+                      classifications=dict(zip(class_keys, class_values)))
+
+        # The styles are in $RIAB_HOME/riab/impact/templates/impact/styles
+        return render_to_string('impact/styles/point_classes.sld', params)
+
+    def generate_polygon_style(self, data):
         """Generates a polygon SLD file based on the data values
         """
 
