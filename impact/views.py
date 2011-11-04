@@ -111,7 +111,7 @@ def calculate(request, save_output=save_to_geonode):
         download_layers = [(hazard_server, hazard_layer, haz_bbox),
                            (exposure_server, exposure_layer, exp_bbox)]
 
-        # Add linked layers if any FIXME: TODO!
+        # Add linked layers if any FIXME: STILL TODO!
 
 
         # Get selected impact function
@@ -136,18 +136,6 @@ def calculate(request, save_output=save_to_geonode):
             L = download(server, layer_name, bbox, raster_resolution)
             layers.append(L)
 
-        #msg = ('- Downloading hazard layer %s from %s'
-        #       % (hazard_layer, hazard_server))
-        #logger.info(msg)
-        #H = download(hazard_server, hazard_layer,
-        #             haz_bbox, raster_resolution)
-        #
-        #msg = ('- Downloading exposure layer %s from %s'
-        #       % (exposure_layer, exposure_server))
-        #logger.info(msg)
-        #E = download(exposure_server, exposure_layer,
-        #             exp_bbox, raster_resolution)
-
         # Calculate result using specified impact function
         msg = ('- Calculating impact using %s' % impact_function)
         logger.info(msg)
@@ -166,7 +154,6 @@ def calculate(request, save_output=save_to_geonode):
         # This is dangerous. Try to raise an exception
         # e.g. in get_metadata_from_layer. Things will silently fail.
         # See issue #170
-        #print 'ERRRORRRRRRR'
 
         logger.error(e)
         errors = e.__str__()
