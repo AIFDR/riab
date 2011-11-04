@@ -34,15 +34,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from impact.storage.io import dummy_save, download
 from impact.storage.io import get_metadata, get_layer_descriptors
-from impact.storage.io import bboxlist2string, bboxstring2list
-from impact.storage.io import check_bbox_string
+from impact.storage.io import bboxlist2string
 from impact.storage.io import save_to_geonode
-from impact.storage.utilities import bbox_intersection
-from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import titelize
 from impact.plugins.core import get_plugin, get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
-from impact.engine.core import get_resolutions, get_bounding_boxes
+from impact.engine.core import get_common_resolution, get_bounding_boxes
 from impact.models import Calculation, Workspace
 
 from geonode.maps.utils import get_valid_user
@@ -77,7 +74,7 @@ def calculate(request, save_output=save_to_geonode):
         hazard_layer = data['hazard']
         exposure_server = data['exposure_server']
         exposure_layer = data['exposure']
-        bbox = data['bbox']
+        requested_bbox = data['bbox']
         keywords = data['keywords']
 
     if request.user.is_anonymous():
@@ -103,43 +100,12 @@ def calculate(request, save_output=save_to_geonode):
         exp_metadata = get_metadata(exposure_server, exposure_layer)
 
         # Determine common resolution in case of raster layers
-        raster_resolution = get_resolutions(haz_metadata, exp_metadata)
+        raster_resolution = get_common_resolution(haz_metadata, exp_metadata)
 
-        # Input checks
-        msg = ('Invalid bounding box %s (%s). '
-               'It must be a string' % (str(bbox), type(bbox)))
-        assert isinstance(bbox, basestring), msg
-        check_bbox_string(bbox)
-
-        # Get bounding boxes for layers and viewport
-        haz_bbox = haz_metadata['bounding_box']
-        exp_bbox = exp_metadata['bounding_box']
-        vpt_bbox = bboxstring2list(bbox)
-
-        # New bounding box for data common to hazard, exposure and viewport
-        # Download only data within this intersection
-        intersection_bbox = bbox_intersection(vpt_bbox, haz_bbox, exp_bbox)
-        if intersection_bbox is None:
-            # Bounding boxes did not overlap
-            msg = ('Bounding boxes of hazard data [%s], exposure data [%s] '
-                   'and viewport [%s] did not overlap, so no computation was '
-                   'done. Please make sure you pan to where the data is and '
-                   'that hazard and exposure data overlaps.'
-                   % (bboxlist2string(haz_bbox, decimals=3),
-                      bboxlist2string(exp_bbox, decimals=3),
-                      bboxlist2string(vpt_bbox, decimals=3)))
-            logger.info(msg)
-            raise Exception(msg)
-
-        # Grow hazard bbox to buffer this common bbox in case where
-        # hazard is raster and exposure is vector
-        if (haz_metadata['layer_type'] == 'raster' and
-            exp_metadata['layer_type'] == 'vector'):
-
-            haz_res = haz_metadata['resolution']
-            haz_bbox = buffered_bounding_box(intersection_bbox, haz_res)
-        else:
-            haz_bbox = intersection_bbox
+        # Get reconciled bounding boxes
+        haz_bbox, exp_bbox, imp_bbox = get_bounding_boxes(haz_metadata,
+                                                          exp_metadata,
+                                                          requested_bbox)
 
         # Get selected impact function
         impact_function = get_plugin(impact_function_name)
@@ -147,7 +113,7 @@ def calculate(request, save_output=save_to_geonode):
 
         # Record information calculation object and save it
         calculation.impact_function_source = impact_function_source
-        calculation.bbox = bboxlist2string(intersection_bbox)
+        calculation.bbox = bboxlist2string(imp_bbox)
         calculation.save()
 
         # Start computation
@@ -165,7 +131,7 @@ def calculate(request, save_output=save_to_geonode):
                % (exposure_layer, exposure_server))
         logger.info(msg)
         E = download(exposure_server, exposure_layer,
-                     intersection_bbox, raster_resolution)
+                     exp_bbox, raster_resolution)
 
         # Calculate result using specified impact function
         msg = ('- Calculating impact using %s' % impact_function)
