@@ -31,5 +31,5 @@ if __name__ == '__main__':
         t0 = time.time()
         uploaded = save_to_geonode(thefile,
                                    overwrite=True,
-                                   check_metadata=False)  # Speeds it up
+                                   check_metadata=True)
         print 'Finished uploading in %.f seconds' % (time.time() - t0)

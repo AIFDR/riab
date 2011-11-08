@@ -761,10 +761,6 @@ def save_file_to_geonode(filename, user=None, title=None,
                '%s' % (filename, str(LAYER_TYPES)))
         raise RisikoException(msg)
 
-    # Use file name to derive title if not specified
-    if title is None or title == '':
-        title = os.path.split(basename)[-1]
-
     # Try to find a file with a .keywords extension
     # and create a keywords list from there.
     # It is assumed that the keywords are separated
@@ -772,6 +768,7 @@ def save_file_to_geonode(filename, user=None, title=None,
     # Empty keyword lines are ignored (as this causes issues downstream)
     keyword_list = []
     keyword_file = basename + '.keywords'
+    kw_title = None
     if os.path.exists(keyword_file):
         f = open(keyword_file, 'r')
         for line in f.readlines():
@@ -784,6 +781,10 @@ def save_file_to_geonode(filename, user=None, title=None,
             # Strip any spaces after or before the colons if present
             if ':' in raw_keyword:
                 keyword = ':'.join([x.strip() for x in raw_keyword.split(':')])
+
+            # Grab title if present
+            if 'title' in keyword:
+                kw_title = keyword.split(':')[1]
 
             # FIXME (Ole): Replace spaces by underscores and store keyword.
             # See issue #148
@@ -820,6 +821,13 @@ def save_file_to_geonode(filename, user=None, title=None,
         # The specified file is the one to upload
         upload_filename = filename
 
+    # Use file name or keywords to derive title if not specified
+    if title is None or title == '':
+        if kw_title is None:
+            title = os.path.split(basename)[-1]
+        else:
+            title = kw_title
+
     # Attempt to upload the layer
     try:
         # Upload
@@ -832,15 +840,20 @@ def save_file_to_geonode(filename, user=None, title=None,
         # FIXME (Ole): This workaround should be revisited.
         #              This fx means that keywords can't have spaces
         #              Really need a generic way of getting this kind of
-        #              info in and out of GeoNode
+        #              info in and out of GeoNode. See issue #148
         layer.keywords = ' '.join(keyword_list)
         layer.save()
     except GeoNodeException, e:
         # Layer did not upload. Convert GeoNodeException to RisikoException
         raise RisikoException(e)
     else:
-        logmsg = ('Uploaded "%s" with name "%s".'
-                  % (basename, layer.name))
+
+        # FIXME (Ole): Why the fuck is layer.name and layer.title equal?
+        #logmsg = ('Uploaded "%s" with name "%s" and title "%s".'
+        #          % (basename, layer.name, layer.title))
+        logmsg = ('Uploaded "%s" with name "%s" and title "%s".'
+                  % (basename, layer.name, title))
+
         if not check_metadata:
             logmsg += ' Did not explicitly verify metadata.'
             logger.info(logmsg)
@@ -853,9 +866,9 @@ def save_file_to_geonode(filename, user=None, title=None,
                 try:
                     check_layer(layer)
                 except Exception, errmsg:
-                    logger.info('Metadata for layer %s not yet ready - '
-                                'trying again. Error message was: %s'
-                                % (layer.name, errmsg))
+                    logger.debug('Metadata for layer %s not yet ready - '
+                                 'trying again. Error message was: %s'
+                                 % (layer.name, errmsg))
                     time.sleep(0.3)
                 else:
                     ok = True
