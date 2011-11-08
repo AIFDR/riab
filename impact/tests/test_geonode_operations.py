@@ -364,20 +364,18 @@ class Test_geonode_connection(unittest.TestCase):
         assert len(metadata['bounding_box']) == 4
 
         # A little metadata characterisation test
-        # FIXME (Ole): Get this right when new resolution keyword
-        # has been fully sorted out. There are 3 other tests failing at
-        # the moment
         ref = {'layer_type': 'raster',
                'keywords': {'category': 'hazard',
                             'subcategory': 'earthquake',
-                            'resolution': '0.0112'},
+                            'resolution': '0.0112',
+                            'unit': 'MMI'},
                'geotransform': (105.29857, 0.0112, 0.0,
                                 -5.565233000000001, 0.0, -0.0112),
-               'resolution': 0.0112,
+               'resolution': (0.0112, 0.0112),
                'title': 'lembang_mmi_hazmap'}
 
         for key in ['layer_type', 'keywords', 'geotransform',
-                    'title']:
+                    'resolution', 'title']:
 
             if key == 'keywords':
                 kwds = metadata[key]
