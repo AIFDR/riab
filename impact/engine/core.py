@@ -11,6 +11,7 @@ from impact.storage.projection import DEFAULT_PROJECTION
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import bbox_intersection
 from impact.storage.utilities import buffered_bounding_box
+from impact.storage.utilities import is_sequence
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.storage.io import check_bbox_string
 
@@ -211,7 +212,7 @@ def get_bounding_boxes(haz_metadata, exp_metadata, req_bbox):
     Input
         haz_metadata: Metadata for hazard layer
         exp_metadata: Metadata for exposure layer
-        req_bbox: Bounding box (string) as requested by HTML POST.
+        req_bbox: Bounding box (string as requested by HTML POST, or list)
 
     Output
         haz_bbox: Bounding box to be used for hazard layer.
@@ -224,16 +225,22 @@ def get_bounding_boxes(haz_metadata, exp_metadata, req_bbox):
          is vector data to make sure points always can be interpolated
     """
 
-    # Input checks
-    msg = ('Invalid bounding box %s (%s). '
-           'It must be a string' % (str(req_bbox), type(req_bbox)))
-    assert isinstance(req_bbox, basestring), msg
-    check_bbox_string(req_bbox)
+    # Check requested bounding box and establish viewport bounding box
+    if isinstance(req_bbox, basestring):
+        check_bbox_string(req_bbox)
+        vpt_bbox = bboxstring2list(req_bbox)
+    elif is_sequence(req_bbox):
+        x = bboxlist2string(req_bbox)
+        check_bbox_string(x)
+        vpt_bbox = bboxstring2list(x)
+    else:
+        msg = ('Invalid bounding box %s (%s). '
+               'It must be a string or a list' % (str(req_bbox), type(req_bbox)))
+        raise Exception(msg)
 
-    # Get bounding boxes for layers and viewport
+    # Get bounding boxes for layers
     haz_bbox = haz_metadata['bounding_box']
     exp_bbox = exp_metadata['bounding_box']
-    vpt_bbox = bboxstring2list(req_bbox)
 
     # New bounding box for data common to hazard, exposure and viewport
     # Download only data within this intersection

@@ -3,7 +3,7 @@ import numpy
 import sys
 import os
 
-from impact.engine.core import calculate_impact
+from impact.engine.core import calculate_impact, get_bounding_boxes
 from impact.engine.interpolation2d import interpolate_raster
 from impact.storage.io import read_layer
 
@@ -984,6 +984,61 @@ class Test_Engine(unittest.TestCase):
 
             if not numpy.isnan(interpolated_depth):
                 assert depth_min <= interpolated_depth <= depth_max, msg
+
+    def test_non_overlapping_bboxes(self):
+        """Non overlapping bounding boxes causes exception to be raised
+        """
+
+
+
+
+        # Reduced versions of metadata dictionaries
+        haz_metadata = {'layer_type': 'raster',
+                        'title': 'lembang_earthquake_scenario',
+                        'bounding_box': (105.3000035,
+                                         -8.3749994999999995,
+                                         110.2914705,
+                                         -5.5667784999999999),
+                        'keywords': {'category': 'hazard',
+                                     'resolution': '0.008333',
+                                     'subcategory': 'earthquake'},
+                        'resolution': (0.0083330000000000001,
+                                       0.0083330000000000001)}
+
+        exp_metadata = {'layer_type': 'raster',
+                        'title': 'population_2010',
+                        'bounding_box': (94.972335000000001,
+                                         -11.009721000000001,
+                                         141.0140016666665,
+                                         6.0736123333332639),
+                        'keywords': {'category': 'exposure',
+                                     'resolution': '0.00833333333333',
+                                     'subcategory': 'population'},
+                        'resolution': (0.0083333333333333003,
+                                       0.0083333333333333003)}
+
+        # First, do some that work
+        view_port = '94.972335,-11.009721,141.014002,6.073612'
+        bbox = get_bounding_boxes(haz_metadata, exp_metadata, view_port)
+
+        view_port = [94.972335,-11.009721,141.014002,6.073612]
+        bbox = get_bounding_boxes(haz_metadata, exp_metadata, view_port)
+
+        view_port = [105.3000035,-8.3749994999999995,110.2914705,-5.5667784999999999]
+        bbox = get_bounding_boxes(haz_metadata, exp_metadata, view_port)
+
+        # Then one where boxes don't overlap
+
+        view_port = [105.3,-4.3,110.29,-2.5]
+        try:
+            bbox = get_bounding_boxes(haz_metadata, exp_metadata, view_port)
+        except Exception, e:
+            msg = 'Did not find expected error message in %s' % str(e)
+            assert 'did not overlap' in str(e), msg
+        else:
+            msg = 'Non ovelapping bounding boxes should have raised an exception'
+            raise Exception(msg)
+
 
 
 if __name__ == '__main__':

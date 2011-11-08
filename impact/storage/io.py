@@ -420,6 +420,8 @@ def check_bbox_string(bbox_string):
     assert isinstance(bbox_string, basestring), msg
 
     # Use checks from string to list conversion
+    # FIXME (Ole): Would be better to separate the checks from the conversion
+    # and use those checks directly.
     minx, miny, maxx, maxy = bboxstring2list(bbox_string)
 
     # Check semantic integrity
