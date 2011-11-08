@@ -74,7 +74,7 @@ class Test_geonode_connection(unittest.TestCase):
         # Check integrity
         layer_names = [l.name for l in layers]
         for layer in layers:
-            msg = 'Layer %s was uploaded but not expected' % layer.name
+            msg = 'Layer %s was uploaded but not expected.' % layer.name
             assert layer.name in expected_layers, msg
 
             # Uncomment to reproduce issue #102

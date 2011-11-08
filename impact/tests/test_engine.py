@@ -1028,7 +1028,6 @@ class Test_Engine(unittest.TestCase):
         bbox = get_bounding_boxes(haz_metadata, exp_metadata, view_port)
 
         # Then one where boxes don't overlap
-
         view_port = [105.3,-4.3,110.29,-2.5]
         try:
             bbox = get_bounding_boxes(haz_metadata, exp_metadata, view_port)

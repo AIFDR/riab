@@ -823,10 +823,24 @@ def save_file_to_geonode(filename, user=None, title=None,
 
     # Use file name or keywords to derive title if not specified
     if title is None or title == '':
+        # FIXME (Ole): If we set title to anything but the filename,
+        # we get the upload test to fail. See issue #180
+        # Clean this up after issue #180 has been addressed
+        title = os.path.split(basename)[-1]
+
+        # FIXME (Ole): This is what we want (issue #180)
+        #if kw_title is None:
+        #    title = os.path.split(basename)[-1]
+        #else:
+        #    title = kw_title
+
+        # FIXME (Ole): This is just a work-around for now
         if kw_title is None:
-            title = os.path.split(basename)[-1]
+            layer_title = os.path.split(basename)[-1]
         else:
-            title = kw_title
+            layer_title = kw_title
+    else:
+        layer_title = title
 
     # Attempt to upload the layer
     try:
@@ -848,11 +862,18 @@ def save_file_to_geonode(filename, user=None, title=None,
         raise RisikoException(e)
     else:
 
-        # FIXME (Ole): Why the fuck is layer.name and layer.title equal?
+        #print
+        #print 'layer', layer
+        #print 'name', layer.name
+        #print 'title', layer.title
+        #print 'id', layer.id
+
+        # FIXME (Ole): Why are layer.name and layer.title equal?
+        #              See issue #180
         #logmsg = ('Uploaded "%s" with name "%s" and title "%s".'
         #          % (basename, layer.name, layer.title))
         logmsg = ('Uploaded "%s" with name "%s" and title "%s".'
-                  % (basename, layer.name, title))
+                  % (basename, layer.name, layer_title))
 
         if not check_metadata:
             logmsg += ' Did not explicitly verify metadata.'
