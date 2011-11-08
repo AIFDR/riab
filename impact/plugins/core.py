@@ -277,3 +277,64 @@ def compatible_layers(func, layer_descriptors):
             layers.append(layer_name)
 
     return layers
+
+#-------------------------------
+# Helpers for individual plugins
+#-------------------------------
+
+def get_hazard_layers(layers):
+    """Get list of layers that have category=='hazard'
+    """
+
+    return extract_layers(layers, 'category', 'hazard')
+
+
+def get_hazard_layer(layers):
+    """Get hazard layer from list of layers
+
+    If there are more than one, only the first is returned.
+    Use get_hazard_layers if more are expected and needed
+
+    If no layers fit the description None is returned
+    """
+
+    L = get_hazard_layers(layers)
+    if len(L) > 0:
+        return L[0]
+    else:
+        return None
+
+
+def get_exposure_layers(layers):
+    """Get list of layers that have category=='exposure'
+    """
+
+    return extract_layers(layers, 'category', 'exposure')
+
+
+def get_exposure_layer(layers):
+    """Get exposure layer from list of layers
+
+    If there are more than one, only the first is returned.
+    Use get_hazard_layers if more are expected and needed
+
+    If no layers fit the description None is returned
+    """
+
+    L = get_exposure_layers(layers)
+    if len(L) > 0:
+        return L[0]
+    else:
+        return None
+
+
+def extract_layers(layers, keyword, value):
+    """Extract layers with specified keyword/value pair
+    """
+
+    extracted_layers = []
+    for layer in layers:
+        if value in layer.get_keywords(keyword):
+            extracted_layers.append(layer)
+
+    return extracted_layers

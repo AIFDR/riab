@@ -1,6 +1,7 @@
 import numpy
 
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.raster import Raster
 from django.utils.translation import ugettext as _
 
@@ -27,8 +28,8 @@ class TsunamiPopulationImpactFunction(FunctionProvider):
         #threshold = 1  # Depth above which people are regarded affected [m]
 
         # Identify hazard and exposure layers
-        inundation = layers[0]  # Tsunami inundation [m]
-        population = layers[1]  # Population density
+        inundation = get_hazard_layer(layers)    # Tsunami inundation [m]
+        population = get_exposure_layer(layers)  # Population density
 
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth

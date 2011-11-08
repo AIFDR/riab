@@ -1,6 +1,7 @@
 import numpy
 
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.raster import Raster
 
 
@@ -34,8 +35,8 @@ class FloodImpactFunction(FunctionProvider):
         thresholds = [0.1, 0.2, 0.3, 0.5, 0.8, 1.0]
 
         # Identify hazard and exposure layers
-        inundation = layers[0]  # Flood inundation [m]
-        population = layers[1]  # Population density [people/100000 m^2]
+        inundation = get_hazard_layer(layers)  # Flood inundation [m]
+        population = get_exposure_layer(layers)  # Density [people/100000 m^2]
 
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth

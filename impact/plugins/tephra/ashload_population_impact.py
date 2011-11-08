@@ -1,6 +1,7 @@
 import numpy
 
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.raster import Raster
 
 
@@ -32,8 +33,8 @@ class TephraPopulationImpactFunction(FunctionProvider):
         threshold = 1  # Load above which people are regarded affected [kg/m2]
 
         # Identify hazard and exposure layers
-        inundation = layers[0]  # Tephra load [kg/m2]
-        population = layers[1]  # Population density [people/km^2]
+        inundation = get_hazard_layer(layers)    # Tephra load [kg/m2]
+        population = get_exposure_layer(layers)  # Density [people/km^2]
 
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth

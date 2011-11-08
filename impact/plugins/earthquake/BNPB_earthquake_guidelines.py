@@ -12,6 +12,7 @@ the guidelines.
 
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
@@ -34,12 +35,9 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
 
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
-                    layer_type=='vector'
+                    layer_type=='vector' and \
+                    datatype=='osm'
     """
-
-    # FIXME (Ole): Something like this too
-    # and \
-    #       datatype=='osm'
 
     vclass_tag = 'VCLASS'
     target_field = 'DMGLEVEL'
@@ -49,8 +47,8 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
         """
 
         # Extract data
-        H = layers[0]  # Ground shaking
-        E = layers[1]  # Building locations
+        H = get_hazard_layer(layers)    # Ground shaking
+        E = get_exposure_layer(layers)  # Building locations
 
         # Map from OSM attributes to the guideline classes (URM and RM)
         # FIXME (Ole): Not very robust way of deciding

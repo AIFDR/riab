@@ -1,5 +1,6 @@
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
@@ -27,10 +28,8 @@ class FloodBuildingImpactFunction(FunctionProvider):
         """
 
         # Extract data
-        # FIXME (Ole): This will be replaced by a helper function
-        #              to separate hazard from exposure using keywords
-        H = layers[0]  # Depth
-        E = layers[1]  # Building locations
+        H = get_hazard_layer(layers)     # Depth
+        E = get_exposure_layer(layers)  # Building locations
 
         # Interpolate hazard level to building locations
         H = H.interpolate(E)

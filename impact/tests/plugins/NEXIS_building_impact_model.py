@@ -4,6 +4,7 @@ import scipy
 
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 
 from impact.engine.utilities import MAXFLOAT
 from impact.plugins.utilities import Damage_curve
@@ -73,10 +74,8 @@ class TsunamiBuildingLossFunction(FunctionProvider):
         """
 
         # Extract data
-        # FIXME (Ole): This will be replaced by a helper function
-        #              to separate hazard from exposure using keywords
-        H = layers[0]  # Ground shaking
-        E = layers[1]  # Building locations
+        H = get_hazard_layer(layers)    # Ground shaking
+        E = get_exposure_layer(layers)  # Building locations
 
         # Interpolate hazard level to building locations
         H = H.interpolate(E)

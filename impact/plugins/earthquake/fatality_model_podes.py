@@ -17,6 +17,7 @@ Eventually, this will be scripted and eventually work directly with the WFS
 
 import numpy
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.raster import Raster
 from impact.storage.vector import Vector
 
@@ -52,8 +53,8 @@ class EarthquakeFatalityFunctionPodes(FunctionProvider):
         """
 
         # Identify input layers
-        H = layers[0]  # Intensity
-        E = layers[1]  # Exposure - population counts
+        H = get_hazard_layer(layers)   # Intensity
+        E = get_exposure_layer(layers)  # Exposure - population counts
 
         # Interpolate hazard level to building locations
         H = H.interpolate(E)

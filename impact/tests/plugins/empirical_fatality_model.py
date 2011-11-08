@@ -1,4 +1,5 @@
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.raster import Raster
 
 import scipy
@@ -27,8 +28,8 @@ class EmpiricalFatalityFunction(FunctionProvider):
         """
 
         # Identify input layers
-        intensity = layers[0]
-        population = layers[1]
+        intensity = get_hazard_layer(layers)
+        population = get_exposure_layer(layers)
 
         # Extract data
         H = intensity.get_data(nan=0)

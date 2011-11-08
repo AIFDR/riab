@@ -1,5 +1,6 @@
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.vector import Vector
 
 # FIXME: Need style for this and allow the name to
@@ -25,8 +26,8 @@ class TephraImpactFunction(FunctionProvider):
         """
 
         # Extract data
-        H = layers[0]  # Ash load
-        E = layers[1]  # Building locations
+        H = get_hazard_layer(layers)    # Ash load
+        E = get_exposure_layer(layers)  # Building locations
 
         # Interpolate hazard level to building locations
         H = H.interpolate(E, 'load')

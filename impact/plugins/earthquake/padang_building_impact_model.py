@@ -21,6 +21,7 @@ Class Building Type                              Median (MMI)  Beta (MMI)
 
 from django.template.loader import render_to_string
 from impact.plugins.core import FunctionProvider
+from impact.plugins.core import get_hazard_layer, get_exposure_layer
 from impact.storage.vector import Vector
 from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
@@ -61,8 +62,8 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         """
 
         # Extract data
-        H = layers[0]  # Ground shaking
-        E = layers[1]  # Building locations
+        H = get_hazard_layer(layers)    # Ground shaking
+        E = get_exposure_layer(layers)  # Building locations
 
         # print
         # print 'kw', E.get_keywords()
