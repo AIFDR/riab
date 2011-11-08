@@ -51,9 +51,6 @@ def calculate_impact(layers, impact_fcn,
     impact_function = impact_fcn()
 
     # Pass input layers to plugin
-
-    # FIXME (Ole): When issue #21 has been fully implemented, this
-    #              return value should be a list of layers.
     F = impact_function.run(layers)
 
     # Write result and return filename

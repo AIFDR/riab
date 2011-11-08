@@ -268,6 +268,7 @@ class Test_calculations(unittest.TestCase):
             if 'errors' in data:
                 errors = data['errors']
                 if errors is not None:
+                    msg = 'Error returned from POST: %s' % str(errors)
                     raise Exception(errors)
 
             assert 'hazard_layer' in data

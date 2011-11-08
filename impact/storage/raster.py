@@ -146,8 +146,8 @@ class Raster:
             if key in self.keywords:
                 return self.keywords[key]
             else:
-                msg = ('Keyword %s does not exist in %s: Options are '
-                       '%s' % (self.get_name(), self.keywords.keys()))
+                msg = ('Keyword "%s" does not exist in %s: Options are '
+                       '%s' % (key, self.get_name(), self.keywords.keys()))
                 raise Exception(msg)
 
     def get_caption(self):
