@@ -11,7 +11,9 @@ class TephraImpactFunction(FunctionProvider):
 
     :param requires category=='hazard' and \
                     subcategory.startswith('tephra') and \
-                    layer_type=='raster'
+                    layer_type=='raster' and \
+                    unit=='kg/m^2'
+
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
                     layer_type=='vector'

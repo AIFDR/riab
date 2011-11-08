@@ -29,7 +29,9 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
 
     :param requires category=='hazard' and \
                     subcategory.startswith('earthquake') and \
-                    layer_type=='raster'
+                    layer_type=='raster' and \
+                    unit=='MMI'
+
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
                     layer_type=='vector'

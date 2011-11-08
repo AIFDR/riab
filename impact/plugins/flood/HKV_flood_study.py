@@ -13,6 +13,7 @@ class FloodImpactFunction(FunctionProvider):
                     subcategory.startswith('flood') and \
                     layer_type=='raster' and \
                     unit=='m'
+
     :param requires category=='exposure' and \
                     subcategory.startswith('population') and \
                     layer_type=='raster'

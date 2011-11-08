@@ -8,12 +8,14 @@ from django.utils.translation import ugettext as _
 class TsunamiPopulationImpactFunction(FunctionProvider):
     """Risk plugin for tsunami impact on population data
 
-    :param requires category=="hazard" and \
-                    subcategory.startswith("tsunami") and \
-                    layer_type=="raster"
-    :param requires category=="exposure" and \
-                    subcategory.startswith("population") and \
-                    layer_type=="raster"
+    :param requires category=='hazard' and \
+                    subcategory.startswith('tsunami') and \
+                    layer_type=='raster' and \
+                    unit=='m'
+
+    :param requires category=='exposure' and \
+                    subcategory.startswith('population') and \
+                    layer_type=='raster'
 
     """
 
