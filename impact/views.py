@@ -108,8 +108,8 @@ def calculate(request, save_output=save_to_geonode):
                                                           requested_bbox)
 
         # Record layers to download
-        download_layers = [(hazard_server, hazard_layer, haz_bbox),
-                           (exposure_server, exposure_layer, exp_bbox)]
+        download_layers = [(exposure_server, exposure_layer, exp_bbox),
+                           (hazard_server, hazard_layer, haz_bbox)]
 
         # Add linked layers if any FIXME: STILL TODO!
 
