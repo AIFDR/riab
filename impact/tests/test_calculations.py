@@ -968,17 +968,23 @@ class Test_calculations(unittest.TestCase):
             assert numpy.allclose(count[i], brutecount[mmi], rtol=1.0e-6)
 
     def test_linked_datasets(self):
-        """Linked datesets can be pulled in e.g. to include gender break down
+        """Linked datasets can be pulled in e.g. to include gender break down
         """
 
-        # Upload exposure data for this test. This will automatically
-        # pull in female_pct_yogya.asc through its "linked" keyword
+        # Upload exposure data for this test. This points to the additional
+        # layer female_pct_yogya.asc through its "linked" keyword
         name = 'population_yogya'
         exposure_filename = '%s/%s.asc' % (TESTDATA, name)
         exposure_layer = save_to_geonode(exposure_filename,
                                          user=self.user, overwrite=True)
         exposure_name = '%s:%s' % (exposure_layer.workspace,
                                    exposure_layer.name)
+
+        # Upload linked dataset
+        name = 'female_pct_yogya'
+        exposure_filename = '%s/%s.asc' % (TESTDATA, name)
+        save_to_geonode(exposure_filename,
+                        user=self.user, overwrite=True)
 
         # Check metadata
         assert_bounding_box_matches(exposure_layer, exposure_filename)
@@ -1014,6 +1020,8 @@ class Test_calculations(unittest.TestCase):
         data = json.loads(rv.content)
         if 'errors' in data:
             errors = data['errors']
+            # FIXMO (Ole): It'd be extremely handy to have the stacktrace
+            #              here as well as the error message.
             if errors is not None:
                 msg = ('The server returned the error message: %s'
                        % str(errors))

@@ -3,6 +3,7 @@
 Provides the function calculate_impact()
 """
 
+import os
 import sys
 import numpy
 
@@ -14,6 +15,7 @@ from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import is_sequence
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.storage.io import check_bbox_string
+from impact.storage.io import get_metadata
 from impact.engine.utilities import REQUIRED_KEYWORDS
 
 import logging
@@ -292,3 +294,46 @@ def get_bounding_boxes(haz_metadata, exp_metadata, req_bbox):
     exp_bbox = imp_bbox = intersection_bbox
 
     return haz_bbox, exp_bbox, imp_bbox
+
+
+def get_linked_layers(main_layers):
+    """Get list of layers that are required by main layers
+
+    Input
+       main_layers: List of layers of the form (server, layer_name,
+                                                bbox, metadata)
+    Output
+       new_layers: New layers flagged by the linked keywords in main layers
+
+
+    Algorithm will recursively pull layers from new layers if their
+    keyword linked exists and points to available layers.
+    """
+
+    # FIXME: I don't think the naming is very robust.
+    # Main layer names and workspaces come from the app, while
+    # we just use the basename from the keywords for the linked layers.
+    # Not sure if the basename will always work as layer name.
+
+    new_layers = []
+    for server, name, bbox, metadata in main_layers:
+
+        workspace, layername = name.split(':')
+
+        keywords = metadata['keywords']
+        if 'linked' in keywords:
+            basename, _ = os.path.splitext(keywords['linked'])
+            new_layer = '%s:%s' % (workspace, basename)
+            if new_layer == name:
+                msg = 'Layer %s linked to itself' % name
+                raise Exception(msg)
+
+            new_metadata = get_metadata(server, new_layer)
+            new_layers.append((server, new_layer, bbox, new_metadata))
+
+    # Recursively search for linked layers required by the newly added layers
+    if len(new_layers) > 0:
+        new_layers += get_linked_layers(new_layers)
+
+    # Return list of new layers
+    return new_layers

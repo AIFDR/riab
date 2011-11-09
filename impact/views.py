@@ -40,6 +40,7 @@ from impact.storage.utilities import titelize
 from impact.plugins.core import get_plugin, get_plugins, compatible_layers
 from impact.engine.core import calculate_impact
 from impact.engine.core import get_common_resolution, get_bounding_boxes
+from impact.engine.core import get_linked_layers
 from impact.models import Calculation, Workspace
 
 from geonode.maps.utils import get_valid_user
@@ -108,10 +109,13 @@ def calculate(request, save_output=save_to_geonode):
                                                           requested_bbox)
 
         # Record layers to download
-        download_layers = [(exposure_server, exposure_layer, exp_bbox),
-                           (hazard_server, hazard_layer, haz_bbox)]
+        download_layers = [(exposure_server, exposure_layer,
+                            exp_bbox, exp_metadata),
+                           (hazard_server, hazard_layer,
+                            haz_bbox, haz_metadata)]
 
-        # Add linked layers if any FIXME: STILL TODO!
+        # Add linked layers if any
+        download_layers += get_linked_layers(download_layers)
 
         # Get selected impact function
         impact_function = get_plugin(impact_function_name)
@@ -128,7 +132,7 @@ def calculate(request, save_output=save_to_geonode):
 
         # Download selected layer objects
         layers = []
-        for server, layer_name, bbox in download_layers:
+        for server, layer_name, bbox, _ in download_layers:
             msg = ('- Downloading layer %s from %s'
                    % (layer_name, server))
             logger.info(msg)
