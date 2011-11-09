@@ -972,7 +972,7 @@ class Test_calculations(unittest.TestCase):
         """
 
         # Upload exposure data for this test. This will automatically
-        # pull in female_pct_yogya.asc through its "associates" keyword
+        # pull in female_pct_yogya.asc through its "linked" keyword
         name = 'population_yogya'
         exposure_filename = '%s/%s.asc' % (TESTDATA, name)
         exposure_layer = save_to_geonode(exposure_filename,

@@ -34,10 +34,10 @@ This is for those who either want to try out the software and/or modify it. For 
 
 To install a RISIKO development environment, start a terminal window, cd to your favorite development area and run the following::
 
- wget http://bit.ly/risiko-install
- bash risiko-install
+ wget http://bit.ly/riab-install
+ bash riab-install
 
-This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it. Note if you want to move the installation you need to run risiko-uninstall and install it again in the new location. It is OK to run risiko-install again on an existing installation e.g. to update it.
+This will create a working development installation and provide guidance on how to run the test suite, setup the server and try it. Note if you want to move the installation you need to run risiko-uninstall and install it again in the new location. It is OK to run riab-install again on an existing installation e.g. to update it.
 
 To run the test suite, you'll need the commands::
 
@@ -46,10 +46,10 @@ To run the test suite, you'll need the commands::
 
 To upload the bundled demo data, you'll need to do the following::
 
- risiko-activate 
- risiko-clean 
- risiko-start 
- risiko-upload risiko_demo_data 
+ risiko-activate
+ risiko-clean
+ risiko-start
+ risiko-upload risiko_demo_data
 
 when this is finished point the browser to 127.0.0.1:8000, select layers and try the risk calculator.
 
