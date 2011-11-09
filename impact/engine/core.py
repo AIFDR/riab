@@ -14,9 +14,11 @@ from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import is_sequence
 from impact.storage.io import bboxlist2string, bboxstring2list
 from impact.storage.io import check_bbox_string
+from impact.engine.utilities import REQUIRED_KEYWORDS
 
 import logging
 logger = logging.getLogger('risiko')
+
 
 def calculate_impact(layers, impact_fcn,
                      comment=''):
@@ -74,9 +76,19 @@ def calculate_impact(layers, impact_fcn,
 
 
 def check_data_integrity(layer_files):
-    """Read list of layer files and verify that that they have the same
-    projection and georeferencing.
+    """Read list of layer files and verify that that they have correct keywords
+    as well as the same projection and georeferencing.
     """
+
+    # Link to documentation
+    manpage = ('http://risiko_dev.readthedocs.org/en/latest/usage/'
+               'plugins/development.html')
+    instructions = ('Please add keywords as <keyword>:<value> pairs '
+                    'either in '
+                    'the .keywords file or directly into the '
+                    'embedded GeoServer. For more information '
+                    'please read the sections on impact functions '
+                    'and keywords in the manual: %s' % manpage)
 
     # Set default values for projection and geotransform.
     # Enforce DEFAULT (WGS84).
@@ -86,6 +98,18 @@ def check_data_integrity(layer_files):
     coordinates = None
 
     for layer in layer_files:
+
+        # Check that critical keywords exist and are non empty
+        keywords = layer.get_keywords()
+        for kw in REQUIRED_KEYWORDS:
+            msg = ('Layer %s did not have required keyword "%s". '
+                   '%s' % (layer.name, kw, instructions))
+            assert kw in keywords, msg
+
+            val = keywords[kw]
+            msg = ('No value found for keyword "%s" in layer %s. '
+                   '%s' % (kw, layer.name, instructions))
+            assert val, msg
 
         # Ensure that projection is consistent across all layers
         if reference_projection is None:
@@ -106,7 +130,7 @@ def check_data_integrity(layer_files):
                 msg = ('Geotransforms in input raster layers are different: '
                        '%s %s' % (geotransform, layer.get_geotransform()))
                 # FIXME (Ole): Use high tolerance until we find out
-                # why geoserver changes resolution.
+                # why geoserver changes resolution (issue #102)
                 assert numpy.allclose(geotransform,
                                       layer.get_geotransform(),
                                       rtol=1.0e-1), msg

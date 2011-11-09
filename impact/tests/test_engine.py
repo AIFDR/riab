@@ -1024,7 +1024,10 @@ class Test_Engine(unittest.TestCase):
         view_port = [94.972335,-11.009721,141.014002,6.073612]
         bbox = get_bounding_boxes(haz_metadata, exp_metadata, view_port)
 
-        view_port = [105.3000035,-8.3749994999999995,110.2914705,-5.5667784999999999]
+        view_port = [105.3000035,
+                     -8.3749994999999995,
+                     110.2914705,
+                     -5.5667784999999999]
         bbox = get_bounding_boxes(haz_metadata, exp_metadata, view_port)
 
         # Then one where boxes don't overlap
@@ -1035,8 +1038,69 @@ class Test_Engine(unittest.TestCase):
             msg = 'Did not find expected error message in %s' % str(e)
             assert 'did not overlap' in str(e), msg
         else:
-            msg = 'Non ovelapping bounding boxes should have raised an exception'
+            msg = ('Non ovelapping bounding boxes should have raised '
+                   'an exception')
             raise Exception(msg)
+
+
+    def test_layer_integrity_raises_exception(self):
+        """Layers without keywords raise exception
+        """
+
+        population = 'Population_Jakarta_geographic.asc'
+        plugin_name = 'Flood Impact Function'
+
+        hazard_layers = ['Flood_Current_Depth_Jakarta_geographic.asc',
+                         'Flood_Design_Depth_Jakarta_geographic.asc']
+
+        for i, filename in enumerate(hazard_layers):
+            hazard_filename = os.path.join(TESTDATA, filename)
+            exposure_filename = os.path.join(TESTDATA, population)
+
+            # Get layers using API
+            H = read_layer(hazard_filename)
+            E = read_layer(exposure_filename)
+
+            plugin_list = get_plugins(plugin_name)
+            IF = plugin_list[0][plugin_name]
+
+            # Call impact calculation engine normally
+            impact_filename = calculate_impact(layers=[H, E],
+                                               impact_fcn=IF)
+
+            # Make keyword value empty and verify exception is raised
+            expected_category = E.keywords['category']
+            E.keywords['category'] = ''
+            try:
+                impact_filename = calculate_impact(layers=[H, E],
+                                                   impact_fcn=IF)
+            except AssertionError, e:
+                assert 'No value found' in str(e)
+            else:
+                msg = 'Empty keyword value should have raised exception'
+                raise Exception(msg)
+
+            # Restore for next test
+            E.keywords['category'] = expected_category
+
+            # Remove critical keywords and verify exception is raised
+            if i == 0:
+                del H.keywords['category']
+            else:
+                del H.keywords['subcategory']
+
+            try:
+                impact_filename = calculate_impact(layers=[H, E],
+                                                   impact_fcn=IF)
+            except AssertionError, e:
+                assert 'did not have required keyword' in str(e)
+            else:
+                msg = 'Missing keyword should have raised exception'
+                raise Exception(msg)
+
+
+
+
 
 
 
