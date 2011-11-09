@@ -1075,6 +1075,7 @@ class Test_Engine(unittest.TestCase):
                 impact_filename = calculate_impact(layers=[H, E],
                                                    impact_fcn=IF)
             except AssertionError, e:
+                # Check expected error message
                 assert 'No value found' in str(e)
             else:
                 msg = 'Empty keyword value should have raised exception'
@@ -1093,6 +1094,7 @@ class Test_Engine(unittest.TestCase):
                 impact_filename = calculate_impact(layers=[H, E],
                                                    impact_fcn=IF)
             except AssertionError, e:
+                # Check expected error message
                 assert 'did not have required keyword' in str(e)
             else:
                 msg = 'Missing keyword should have raised exception'
