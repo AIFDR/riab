@@ -48,7 +48,9 @@ fi
 
 echo ">>> Downloading bundled pre-requisites"
 pushd .
-#export RISIKO_DATASOURCE="http://data.riskinabox.org"  # Cloud Front (up to 24h delay before refreshing, but can be faster in some areas once data is up to date)
+#export RISIKO_DATASOURCE="http://data.riskinabox.org"  # Cloud Front (up to 24h delay before refreshing, but can be faster in some areas once data is up to date). Perhaps look at invalidating data when updated: See
+#http://stackoverflow.com/questions/1268158/force-cloudfront-distribution-file-update
+#http://www.subchild.com/2010/09/17/amazon-cloudfront-php-invalidator/
 export RISIKO_DATASOURCE="http://aifdr.s3.amazonaws.com"
 
 # FIXME(Ole): One must delete these files from /usr/share/risiko to force a fresh download
