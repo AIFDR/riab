@@ -328,8 +328,15 @@ def get_linked_layers(main_layers):
                 msg = 'Layer %s linked to itself' % name
                 raise Exception(msg)
 
-            new_metadata = get_metadata(server, new_layer)
-            new_layers.append((server, new_layer, bbox, new_metadata))
+            try:
+                new_metadata = get_metadata(server, new_layer)
+            except Exception, e:
+                msg = ('Linked layer %s could not be found: %s'
+                       % (basename, str(e)))
+                logger.info(msg)
+                #raise Exception(msg)
+            else:
+                new_layers.append((server, new_layer, bbox, new_metadata))
 
     # Recursively search for linked layers required by the newly added layers
     if len(new_layers) > 0:
