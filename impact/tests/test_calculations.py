@@ -968,7 +968,7 @@ class Test_calculations(unittest.TestCase):
             assert numpy.allclose(count[i], brutecount[mmi], rtol=1.0e-6)
 
     def test_linked_datasets(self):
-        """Linked datasets can be pulled in e.g. to include gender break down
+        """Linked datasets can be pulled in e.g. to include gender breakdown
         """
 
         # Upload exposure data for this test. This points to the additional
@@ -1047,9 +1047,20 @@ class Test_calculations(unittest.TestCase):
         # Check calculated values
         keywords = result_layer.get_keywords()
 
-        assert 'caption' in keywords
+        msg = 'Calculation did not produce a caption as expected'
+        assert 'caption' in keywords, msg
 
-        # Parse caption and look for the correct numbers
+        msg = 'Caption %s not as expected' % keywords['caption']
+        assert '<table' in keywords['caption'], msg  # Table tag is there
+        assert '166057350' in keywords['caption'], msg  # Population count
+        assert '14416' in keywords['caption'], msg  # Estimated fatalities
+
+        # Gender info
+        assert '84377433' in keywords['caption'], msg  # Tot female
+        assert '81679916' in keywords['caption'], msg  # Tot male
+
+        assert '7268' in keywords['caption'], msg  # Female fatilities
+        assert '7147' in keywords['caption'], msg  # Male fatalities
 
 
 if __name__ == '__main__':
