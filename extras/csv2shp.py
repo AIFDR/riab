@@ -45,13 +45,19 @@ def csv2shp(path, lonname='Bujur', latname='Lintang'):
 
     # Write as shapefile
     basename, _ = os.path.splitext(path)
-    V.write_to_file(basename + '.shp')
+    shpfile = basename + '.shp'
+    V.write_to_file(shpfile)
 
     fid = open(basename + '.keywords', 'w')
     fid.write('category:exposure\n')
     fid.write('subcategory:building\n')
     fid.write('datatype:sigab\n')
     fid.close()
+
+    print 'Created shape file %s' % shpfile
+    print 'To upload to Risiko, run'
+    print 'risiko-upload %s' % shpfile
+    print
 
 def usage():
     s = 'csv2shp.py [csvfile | dir]'
@@ -67,8 +73,9 @@ if __name__ == '__main__':
 
     if os.path.isdir(name):
         for filename in glob.glob(name + '/*.csv'):
-            print filename
             csv2shp(filename)
+        print 'To upload entire directory to Risiko, run'
+        print 'risiko-upload %s' % name
     else:
         csv2shp(name)
 
