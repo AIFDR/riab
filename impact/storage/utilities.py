@@ -263,7 +263,7 @@ def read_keywords(filename):
     return keywords
 
 
-def extract_geotransform(layer):
+def extract_WGS84_geotransform(layer):
     """Extract geotransform from OWS layer object.
 
     Input
@@ -271,6 +271,52 @@ def extract_geotransform(layer):
 
     Output:
         geotransform: GDAL geotransform (www.gdal.org/gdal_tutorial.html)
+
+    Notes:
+        The datum of the returned geotransform is always WGS84 geographic
+        irrespective of the native datum/projection.
+
+        Unlike the code for extracting native geotransform, this one
+        does not require registration to be offset by half a pixel.
+        Unit test test_geotransform_from_geonode in test_calculations verifies
+        that the two extraction methods are equivalent for WGS84 layers.
+    """
+
+    # Get bounding box in WGS84 geographic coordinates
+    bbox = layer.boundingBoxWGS84
+    top_left_x = bbox[0]
+    top_left_y = bbox[3]
+    bottom_right_x = bbox[2]
+    bottom_right_y = bbox[1]
+
+    # Get number of rows and columns
+    grid = layer.grid
+    ncols = int(grid.highlimits[0]) + 1
+    nrows = int(grid.highlimits[1]) + 1
+
+    # Derive resolution
+    we_pixel_res = (bottom_right_x - top_left_x) / ncols
+    ns_pixel_res = (bottom_right_y - top_left_y) / nrows
+
+    # Return geotransform 6-tuple with rotation 0
+    x_rotation = 0.0
+    y_rotation = 0.0
+
+    return (top_left_x, we_pixel_res, x_rotation,
+            top_left_y, y_rotation, ns_pixel_res)
+
+
+def extract_native_geotransform(layer):
+    """Extract native geotransform from OWS layer object.
+
+    Input
+        layer: Raster layer object e.g. obtained from WebCoverageService
+
+    Output:
+        geotransform: GDAL geotransform (www.gdal.org/gdal_tutorial.html)
+
+    Note:
+        This is only used for test purposes
     """
 
     grid = layer.grid
@@ -290,7 +336,6 @@ def extract_geotransform(layer):
 
     return (adjusted_top_left_x, we_pixel_res, x_rotation,
             adjusted_top_left_y, y_rotation, ns_pixel_res)
-
 
 def geotransform2bbox(geotransform, columns, rows):
     """Convert geotransform to bounding box

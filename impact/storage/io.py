@@ -20,7 +20,7 @@ from impact.storage.utilities import WCS_TEMPLATE
 from impact.storage.utilities import WFS_TEMPLATE
 from impact.storage.utilities import unique_filename
 from impact.storage.utilities import write_keywords
-from impact.storage.utilities import extract_geotransform
+from impact.storage.utilities import extract_WGS84_geotransform
 from impact.storage.utilities import geotransform2resolution
 
 from owslib.wcs import WebCoverageService
@@ -228,7 +228,7 @@ def get_metadata_from_layer(layer):
     # Metadata specific to layer types
     metadata['layer_type'] = layer.datatype
     if layer.datatype == 'raster':
-        geotransform = extract_geotransform(layer)
+        geotransform = extract_WGS84_geotransform(layer)
         metadata['geotransform'] = geotransform
         metadata['resolution'] = geotransform2resolution(geotransform,
                                                          # Get both resx

@@ -21,6 +21,8 @@ from impact.storage.io import read_layer
 from impact.storage.io import get_metadata
 
 from impact.storage.utilities import nanallclose
+from impact.storage.utilities import extract_WGS84_geotransform
+from impact.storage.utilities import extract_native_geotransform
 
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from owslib.wcs import WebCoverageService
@@ -629,11 +631,16 @@ class Test_calculations(unittest.TestCase):
             assert 'errors' in data_out, msg
 
     def test_geotransform_from_geonode(self):
-        """Geotransforms of GeoNode layers can be correctly determined
+        """Geotransforms of WGS84 GeoNode layers can be correctly determined
+
+        This checks that geotransform derived from file is identical to
+        geotransform retrieved from GeoNode metadata
         """
 
         for filename in ['lembang_mmi_hazmap.asc',
-                         'test_grid.asc']:
+                         'test_grid.asc',
+                         'Shakemap_Padang_2009.asc',
+                         'Ashload_Gede_VEI4_geographic.asc']:
 
             # Upload file to GeoNode
             f = os.path.join(TESTDATA, filename)
@@ -656,7 +663,98 @@ class Test_calculations(unittest.TestCase):
             msg = ('Geotransform obtained from GeoNode for layer %s '
                    'was not correct. I got %s but expected %s'
                    '' % (layer_name, gn_geotransform, ref_geotransform))
-            assert numpy.allclose(ref_geotransform, gn_geotransform), msg
+            assert numpy.allclose(ref_geotransform, gn_geotransform,
+                                  rtol=1.0e-12, atol=1.0e-12), msg
+
+            # Get native geotransform and check that too
+            wcs = WebCoverageService(INTERNAL_SERVER_URL, version='1.0.0')
+            layer = wcs.contents[layer_name]
+            native_geotransform = extract_native_geotransform(layer)
+            WGS84_geotransform = extract_WGS84_geotransform(layer)
+
+            msg = ('Native geotransform obtained from GeoNode for layer %s '
+                   'was not correct. I got %s but expected %s'
+                   '' % (layer_name, native_geotransform, ref_geotransform))
+            assert numpy.allclose(ref_geotransform, native_geotransform,
+                                  rtol=1.0e-12, atol=1.0e-12), msg
+
+            msg = ('WGS84 geotransform obtained from GeoNode for layer %s '
+                   'was not correct. I got %s but expected %s'
+                   '' % (layer_name, WGS84_geotransform, ref_geotransform))
+            assert numpy.allclose(ref_geotransform, WGS84_geotransform,
+                                  rtol=1.0e-12, atol=1.0e-12), msg
+
+
+    def test_UTM_geotransform_from_geonode(self):
+        """Geotransforms of UTM GeoNode layers can be correctly determined
+
+        This checks WGS84 geotransform of a UTM layer
+        """
+
+        filename = 'tsunami_max_inundation_depth_BB_utm.asc'
+
+        # Upload file to GeoNode
+        f = os.path.join(TESTDATA, filename)
+        layer = save_to_geonode(f, user=self.user)
+
+        # Reference from data reprojected by
+        # http://home.hiwaay.net/~taylorc/toolbox/geography/geoutm.html
+
+        ncols = 776
+        nrows = 711
+        xllcorner = 150.12002735070763   # (Easting 239690)
+        yllcorner = -35.78277784312858   # (Northing 6036317)
+                                         # Zone 56S
+
+        xurcorner = 150.29589179661414   # (xllcorner + 20 * 776)
+        yurcorner = -35.658697457692824  # (yllcorner + 20 * 711)
+
+        cellsizex = (xurcorner - xllcorner) / ncols
+        cellsizey = (yurcorner - yllcorner) / nrows
+
+
+        ref_geotransform = [xllcorner, cellsizex, 0.0,
+                            yllcorner + cellsizey * nrows, 0.0, -cellsizey]
+
+        # Get geotransform from GeoNode
+        layer_name = layer.typename
+        metadata = get_metadata(INTERNAL_SERVER_URL, layer_name)
+
+        geotransform_name = 'geotransform'
+        msg = ('Could not find attribute "%s" in metadata. '
+               'Values are: %s' % (geotransform_name, metadata.keys()))
+        assert geotransform_name in metadata, msg
+
+        gn_geotransform = metadata[geotransform_name]
+        msg = ('Geotransform obtained from GeoNode for layer %s '
+               'was not correct. I got %s but expected %s'
+               '' % (layer_name, gn_geotransform, ref_geotransform))
+
+        # This is not exact - the y coordinate and y resolution differ up to
+        # 6%. However, this may be close enough given the completely different
+        # origins of the reprojection. Worth checking with GeoServer though.
+        assert numpy.allclose(ref_geotransform[:3], gn_geotransform[:3],
+                              rtol=1.0e-12, atol=1.0e-12), msg  # West and x-resolution
+        assert numpy.allclose(ref_geotransform[3], gn_geotransform[3],
+                              rtol=1.0e-6, atol=1.0e-6), msg  # North
+        assert numpy.allclose(ref_geotransform[4:], gn_geotransform[4:],
+                              rtol=6.0e-2, atol=1.0e-6), msg  # y-resolution
+
+        # Read raster file and obtain reference native resolution
+        R = read_layer(f)
+        ref_geotransform = R.get_geotransform()
+
+        # Get native geotransform and check that too
+        wcs = WebCoverageService(INTERNAL_SERVER_URL, version='1.0.0')
+        layer = wcs.contents[layer_name]
+        native_geotransform = extract_native_geotransform(layer)
+
+        msg = ('Native geotransform obtained from GeoNode for layer %s '
+               'was not correct. I got %s but expected %s'
+               '' % (layer_name, native_geotransform, ref_geotransform))
+        assert numpy.allclose(ref_geotransform, native_geotransform,
+                              rtol=1.0e-12, atol=1.0e-12), msg
+
 
     def test_data_resampling_example(self):
         """Raster data is unchanged when going through geonode
