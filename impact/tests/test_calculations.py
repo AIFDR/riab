@@ -736,7 +736,7 @@ class Test_calculations(unittest.TestCase):
         assert numpy.allclose(ref_geotransform[:3], gn_geotransform[:3],
                               rtol=1.0e-12, atol=1.0e-12), msg  # West and x-resolution
         assert numpy.allclose(ref_geotransform[3], gn_geotransform[3],
-                              rtol=1.0e-6, atol=1.0e-6), msg  # North
+                              rtol=1.0e-3, atol=1.0e-6), msg  # North
         assert numpy.allclose(ref_geotransform[4:], gn_geotransform[4:],
                               rtol=6.0e-2, atol=1.0e-6), msg  # y-resolution
 
