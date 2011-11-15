@@ -311,9 +311,6 @@ class Raster:
 
         """
 
-        # FIXME (Ole): Once we have the ability to use numpy.nan throughout,
-        #              make that the default and name everything better
-
         if hasattr(self, 'data'):
             A = self.data
             assert A.shape[0] == self.rows and A.shape[1] == self.columns
