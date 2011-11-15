@@ -9,10 +9,11 @@ category: exposure
 subcategory: population
 title: Population density Yogyakarta
 datatype: population density
-linked: female_pct_yogya.tif,poor_pct_yogya.tif
+linked: female_pct_yogya.tif
 density: yes
 
-Note, that it is currently not possible to have a space between the linked layers!
+Note, that it is currently not possible to have more than one linked layers.
+However, linked layers can link to other layers in a daisy chain manner.
 
 
 Possible keywords and their values
