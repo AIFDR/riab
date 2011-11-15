@@ -100,3 +100,25 @@ When fixed, merge fix back into both master and develop
 
 Delete hotfix branch
     * git branch -d <hotfixbranch>
+
+
+
+Process for developing in a fork
+================================
+
+
+To create a fork
+----------------
+
+
+To merge fork back into the main repository
+-------------------------------------------
+
+To checkout someone else's fork
+-------------------------------
+
+(example)
+git remote add jeff git://githup.com/jj0hns0n/riab.git
+git remote update
+git checkout -b impact_map jeff/impact_map
+
