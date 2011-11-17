@@ -18,7 +18,7 @@ from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
 from impact.plugins.utilities import PointSymbol
-from impact.plugins.mappings import osm2bnpb, unspecific2bnpb
+from impact.plugins.mappings import osm2bnpb, unspecific2bnpb, sigab2bnpb
 
 # Damage 'curves' for the two vulnerability classes
 damage_parameters = {'URM': [6, 7],
@@ -35,8 +35,7 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
 
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
-                    layer_type=='vector' and \
-                    datatype=='osm'
+                    layer_type=='vector'
     """
 
     vclass_tag = 'VCLASS'
@@ -50,12 +49,19 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
         H = get_hazard_layer(layers)    # Ground shaking
         E = get_exposure_layer(layers)  # Building locations
 
-        # Map from OSM attributes to the guideline classes (URM and RM)
-        # FIXME (Ole): Not very robust way of deciding
-        # Need keyword identifier for each kind of building dataset.
-        if E.get_name().lower().startswith('osm'):
-            # Map from OSM attributes to the padang building classes
-            E = osm2bnpb(E, target_attribute=self.vclass_tag)
+        keywords = E.get_keywords()
+        if 'datatype' in keywords:
+            datatype = keywords['datatype']
+            print 'Got', datatype
+            if datatype.lower() == 'osm':
+                # Map from OSM attributes to the guideline classes (URM and RM)
+                E = osm2bnpb(E, target_attribute=self.vclass_tag)
+            elif datatype.lower() == 'sigab':
+                # Map from SIGAB attributes to the guideline classes
+                # (URM and RM)
+                E = sigab2bnpb(E)
+            else:
+                E = unspecific2bnpb(E, target_attribute=self.vclass_tag)
         else:
             E = unspecific2bnpb(E, target_attribute=self.vclass_tag)
 

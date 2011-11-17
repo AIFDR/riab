@@ -27,7 +27,7 @@ from django.utils.translation import ugettext as _
 from impact.plugins.utilities import PointZoomSize
 from impact.plugins.utilities import PointClassColor
 from impact.plugins.utilities import PointSymbol
-from impact.plugins.mappings import osm2padang
+from impact.plugins.mappings import osm2padang, sigab2padang
 import scipy.stats
 
 
@@ -54,7 +54,7 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
     :param requires category=='exposure' and \
                     subcategory.startswith('building') and \
                     layer_type=='vector' and \
-                    datatype in ['osm', 'itb']
+                    datatype in ['osm', 'itb', 'sigab']
     """
 
     def run(self, layers):
@@ -65,16 +65,13 @@ class PadangEarthquakeBuildingDamageFunction(FunctionProvider):
         H = get_hazard_layer(layers)    # Ground shaking
         E = get_exposure_layer(layers)  # Building locations
 
-        # print
-        # print 'kw', E.get_keywords()
-        # print
-        # FIXME (Ole): Why doesn't this layer have keywords? See issue #164
-        # Need keyword identifier for each kind of building dataset.
-        # if 'osm' in E.get_keywords('type'):
-        # FIXME (Ole): Not very robust way of deciding
-        if E.get_name().lower().startswith('osm'):
+        datatype = E.get_keywords()['datatype']
+        if datatype.lower() == 'osm':
             # Map from OSM attributes to the padang building classes
             E = osm2padang(E)
+            vclass_tag = 'VCLASS'
+        elif datatype.lower() == 'sigab':
+            E = sigab2padang(E)
             vclass_tag = 'VCLASS'
         else:
             vclass_tag = 'TestBLDGCl'

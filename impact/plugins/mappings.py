@@ -110,6 +110,74 @@ def osm2padang(E):
                keywords=E.get_keywords())
     return V
 
+def sigab2padang(E):
+    """Map SIGAB attributes to Padang vulnerability classes
+
+    Input
+        E: Vector object representing the SIGAB data
+
+    Output:
+        Vector object like E, but with one new attribute ('VCLASS')
+        representing the vulnerability class used in the Padang dataset
+
+    """
+
+    # Input check
+    required = ['Struktur_B', 'Lantai', 'Atap', 'Dinding', 'Tingkat']
+    actual = E.get_attribute_names()
+
+    msg = ('Input data to sigab2bnpb must have attributes %s. '
+           'It has %s' % (str(required), str(actual)))
+    for attribute in required:
+        assert attribute in actual, msg
+
+    # Start mapping
+    N = len(E)
+    attributes = E.get_data()
+    for i in range(N):
+        levels = E.get_data('Tingkat', i).lower()
+        structure = E.get_data('Struktur_B', i).lower()
+        roof_type = E.get_data('Atap', i).lower()
+        wall_type = E.get_data('Dinding', i).lower()
+        floor_type = E.get_data('Lantai', i).lower()
+        if levels == 'none' or structure == 'none':
+            vulnerability_class = 2
+        else:
+            if int(levels) >= 2:
+                vulnerability_class = 7  # RC low
+            else:
+                # Low
+                if structure in ['beton bertulang']:
+                    vulnerability_class = 6  # Concrete shear
+                elif structure.startswith('rangka'):
+                    vulnerability_class = 8  # Confined
+                elif 'kayu' in structure or 'wood' in structure:
+                    vulnerability_class = 9  # Wood
+                else:
+                    vulnerability_class = 2  # URM
+
+        # Store new attribute value
+        attributes[i]['VCLASS'] = vulnerability_class
+
+        # Selfcheck for use with osm_080811.shp
+        if E.get_name() == 'osm_080811':
+            if levels > 0:
+                msg = ('Got %s expected %s. levels = %f, structure = %s'
+                       % (vulnerability_class,
+                          attributes[i]['TestBLDGCl'],
+                          levels,
+                          structure))
+                assert numpy.allclose(attributes[i]['TestBLDGCl'],
+                                      vulnerability_class), msg
+
+    # Create new vector instance and return
+    V = Vector(data=attributes,
+               projection=E.get_projection(),
+               geometry=E.get_geometry(),
+               name=E.get_name() + ' mapped to Padang vulnerability classes',
+               keywords=E.get_keywords())
+    return V
+
 
 def osm2bnpb(E, target_attribute='VCLASS'):
     """Map OSM attributes to BNPB vulnerability classes
@@ -220,3 +288,117 @@ def unspecific2bnpb(E, target_attribute='VCLASS'):
                name=E.get_name() + ' mapped to BNPB vulnerability class URM',
                keywords=E.get_keywords())
     return V
+
+
+def sigab2bnpb(E, target_attribute='VCLASS'):
+    """Map SIGAB point data to BNPB vulnerability classes
+
+    Input
+        E: Vector object representing the OSM data
+        target_attribute: Optional name of the attribute containing
+                          the mapped vulnerability class. Default
+                          value is 'VCLASS'
+
+    Output:
+        Vector object like E, but with one new attribute (e.g. 'VCLASS')
+        representing the vulnerability class used in the guidelines
+    """
+
+    # Input check
+    required = ['Struktur_B', 'Lantai', 'Atap', 'Dinding', 'Tingkat']
+    actual = E.get_attribute_names()
+
+    msg = ('Input data to sigab2bnpb must have attributes %s. '
+           'It has %s' % (str(required), str(actual)))
+    for attribute in required:
+        assert attribute in actual, msg
+
+    # Start mapping
+    N = len(E)
+    attributes = E.get_data()
+    for i in range(N):
+        levels = E.get_data('Tingkat', i).lower()
+        structure = E.get_data('Struktur_B', i).lower()
+        roof_type = E.get_data('Atap', i).lower()
+        wall_type = E.get_data('Dinding', i).lower()
+        floor_type = E.get_data('Lantai', i).lower()
+        if levels == 'none' or structure == 'none':
+            vulnerability_class = 'URM'
+        elif structure.startswith('beton') or structure.startswith('kayu'):
+            vulnerability_class = 'RM'
+        else:
+            if int(levels) >= 2:
+                vulnerability_class = 'RM'
+            else:
+                vulnerability_class = 'URM'
+
+        # Store new attribute value
+        attributes[i][target_attribute] = vulnerability_class
+
+    # Create new vector instance and return
+    V = Vector(data=attributes,
+               projection=E.get_projection(),
+               geometry=E.get_geometry(),
+               name=E.get_name() + ' mapped to BNPB vulnerability classes',
+               keywords=E.get_keywords())
+    return V
+
+
+
+def XX_printout_stats_only_sigab2bnpb(E, target_attribute='VCLASS'):
+    """Map SIGAB point data to BNPB vulnerability classes
+
+    Input
+        E: Vector object representing the OSM data
+        target_attribute: Optional name of the attribute containing
+                          the mapped vulnerability class. Default
+                          value is 'VCLASS'
+
+    Output:
+        Vector object like E, but with one new attribute (e.g. 'VCLASS')
+        representing the vulnerability class used in the guidelines
+    """
+
+    # Input check
+    #required = ['Bangunan', 'Halaman', 'Struktur_B', 'Level', 'Lantai', 'Atap', 'Dinding', 'Tingkat']
+    actual = E.get_attribute_names()
+    #print actual
+
+
+
+    #msg = ('Input data to osm2bnpb must have attributes %s. '
+    #       'It has %s' % (str(required), str(actual)))
+    #for attribute in required:
+    #    assert attribute in actual, msg
+
+    # Start mapping
+    fields = {}
+    N = len(E)
+    print 'Total number of attributes', N
+    attributes = E.get_data()
+    count = 0
+    for i in range(N):
+        for key in actual: #required:
+            if key not in fields:
+                fields[key] = {}
+
+            val = E.get_data(key, i).lower()
+            if val not in fields[key]:
+                fields[key][val] = 0
+
+            # Count incidences of each value
+            fields[key][val] += 1
+
+
+    fid = open('/home/nielso/sigab_stats.txt', 'w')
+    for key in actual:  #required:
+        print
+        print key
+        fid.write('\n%s\n' % key)
+        for val in fields[key]:
+            print '    %s: %i' % (str(val), fields[key][val])
+            fid.write('    %s: %i\n' % (str(val), fields[key][val]))
+
+    fid.close()
+
+
