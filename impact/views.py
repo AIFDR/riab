@@ -133,8 +133,8 @@ def calculate(request, save_output=save_to_geonode):
         # Download selected layer objects
         layers = []
         for server, layer_name, bbox, _ in download_layers:
-            msg = ('- Downloading layer %s from %s'
-                   % (layer_name, server))
+            msg = ('- Downloading layer %s from %s with bbox=%s and res=%s'
+                   % (layer_name, server, str(bbox), str(raster_resolution)))
             logger.info(msg)
             L = download(server, layer_name, bbox, raster_resolution)
             layers.append(L)

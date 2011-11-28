@@ -52,7 +52,6 @@ class EarthquakeGuidelinesFunction(FunctionProvider):
         keywords = E.get_keywords()
         if 'datatype' in keywords:
             datatype = keywords['datatype']
-            print 'Got', datatype
             if datatype.lower() == 'osm':
                 # Map from OSM attributes to the guideline classes (URM and RM)
                 E = osm2bnpb(E, target_attribute=self.vclass_tag)
