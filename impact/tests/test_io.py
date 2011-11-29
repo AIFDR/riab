@@ -1411,6 +1411,103 @@ class Test_IO(unittest.TestCase):
             assert numpy.allclose(res, gt[1], rtol=0, atol=1.0e-12)
             assert numpy.allclose(res, - gt[5], rtol=0, atol=1.0e-12)
 
+
+
+    def test_reading_and_writing_of_vector_line_data(self):
+        """Vector line data can be read and written correctly
+        """
+
+        # Read and verify test data
+        vectorname = 'indonesia_highway_sample.shp'
+
+        filename = '%s/%s' % (TESTDATA, vectorname)
+        layer = read_layer(filename)
+        geometry = layer.get_geometry()
+        attributes = layer.get_data()
+
+        # Check basic data integrity
+        N = len(layer)
+
+        assert len(geometry) == N
+        assert len(attributes) == N
+        assert len(attributes[0]) == 3
+
+        assert FEATURE_COUNTS[vectorname] == N
+        assert isinstance(layer.get_name(), basestring)
+
+        # Check projection
+        wkt = layer.get_projection(proj4=False)
+        assert wkt.startswith('GEOGCS')
+
+        assert layer.projection == Projection(DEFAULT_PROJECTION)
+
+        # Check each line
+        for i in range(N):
+            geom = geometry[i]
+            n = geom.shape[0]
+            # A line should have more than one point.
+            assert n > 1
+            # A point should have two dimensions.
+            assert geom.shape[1] == 2
+
+            # Check that not all points are the same
+            max_dist = 0
+            for j in range(n):
+                d = numpy.sum((geom[j] - geom[0]) ** 2) / n
+                if d > max_dist:
+                    max_dist = d
+            assert max_dist > 0
+
+        expected_features = {0: {'LANES': 2,
+                                 'TYPE': 'primary',
+                                 'NAME': 'route1'},
+                             1: {'LANES': 1,
+                                 'TYPE': 'secondary',
+                                 'NAME': 'route2'}}
+
+        field_names = None
+        for i in range(N):
+            # Consistency with attributes read manually with qgis
+
+            if i in expected_features:
+                att = attributes[i]
+                exp = expected_features[i]
+
+                for key in exp:
+                    msg = ('Expected attribute %s was not found in feature %i'
+                           % (key, i))
+                    assert key in att, msg
+
+                    a = att[key]
+                    e = exp[key]
+                    msg = 'Got %s: "%s" but expected "%s"' % (key, a, e)
+                    assert a == e, msg
+
+        # Write data back to file
+        # FIXME (Ole): I would like to use gml here, but OGR does not
+        #              store the spatial reference! Ticket #18
+        out_filename = unique_filename(suffix='.shp')
+        write_vector_data(attributes, wkt, geometry, out_filename)
+
+        # Read again and check
+        layer = read_layer(out_filename)
+        geometry_new = layer.get_geometry()
+        attributes_new = layer.get_data()
+
+        N = len(layer)
+        assert len(geometry_new) == N
+        assert len(attributes_new) == N
+
+        for i in range(N):
+            assert numpy.allclose(geometry[i],
+                                  geometry_new[i],
+                                  rtol=1.0e-6)  # OGR works in single precision
+
+            assert len(attributes_new[i]) == 3
+            for key in attributes_new[i]:
+                assert attributes_new[i][key] == attributes[i][key]
+
+
 if __name__ == '__main__':
     suite = unittest.makeSuite(Test_IO, 'test')
     runner = unittest.TextTestRunner(verbosity=2)
