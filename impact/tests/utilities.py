@@ -18,6 +18,7 @@ FEATURE_COUNTS = {'lembang_schools.shp': 144,
                   'kecamatan_geo.shp': 42,
                   'Padang_WGS84.shp': 3896,
                   'OSM_building_polygons_20110905.shp': 34960,
+                  'indonesia_highway_sample.shp': 2,
                   'OSM_subset.shp': 79}
 
 # For testing

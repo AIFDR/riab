@@ -298,8 +298,18 @@ class Vector:
                     geometry.append(numpy.array(coordinates,
                                                 dtype='d',
                                                 copy=False))
+                elif self.geometry_type == ogr.wkbLineString:
+                    M = G.GetPointCount()
+                    coordinates = []
+                    for j in range(M):
+                        coordinates.append((G.GetX(j), G.GetY(j)))
+
+                    # Record entire line as an Mx2 numpy array
+                    geometry.append(numpy.array(coordinates,
+                                                dtype='d',
+                                                copy=False))
                 else:
-                    msg = ('Only point and polygon geometries are supported. '
+                    msg = ('Only point, line and polygon geometries are supported. '
                            'Geometry in filename %s '
                            'was %s.' % (filename,
                                         G.GetGeometryType()))
@@ -647,6 +657,11 @@ class Vector:
     @property
     def is_polygon_data(self):
         return self.is_vector and self.geometry_type == ogr.wkbPolygon
+
+    @property
+    def is_line_data(self):
+        return self.is_vector and self.geometry_type == ogr.wkbLineString
+
 
 
 #----------------------------------
