@@ -4,7 +4,7 @@ import numpy
 from impact.engine.interpolation2d import interpolate2d, interpolate_raster
 from impact.tests.utilities import combine_coordinates
 from impact.storage.utilities import nanallclose
-
+from impact.tests.utilities import TestCaseSlow
 
 def linear_function(x, y):
     """Auxiliary function for use with interpolation test
@@ -13,7 +13,7 @@ def linear_function(x, y):
     return x + y / 2.0
 
 
-class Test_interpolate(unittest.TestCase):
+class Test_interpolate(TestCaseSlow):
 
     def test_linear_interpolation_basic(self):
         """Interpolation library works for linear function - basic test

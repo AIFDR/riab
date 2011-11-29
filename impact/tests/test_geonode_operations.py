@@ -17,6 +17,7 @@ from impact.storage.io import bboxstring2list
 from impact.storage.utilities import nanallclose
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
 from impact.tests.utilities import get_web_page
+from impact.tests.utilities import TestCaseSlow
 from impact.storage.io import read_layer
 
 #---Jeff
@@ -30,7 +31,7 @@ def ns(tag):
 #---
 
 
-class Test_geonode_connection(unittest.TestCase):
+class Test_geonode_connection(TestCaseSlow):
     """Tests file uploads, metadata etc
     """
 

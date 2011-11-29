@@ -25,6 +25,7 @@ from impact.storage.utilities import extract_WGS84_geotransform
 from impact.storage.utilities import extract_native_geotransform
 
 from impact.tests.utilities import TESTDATA, INTERNAL_SERVER_URL
+from impact.tests.utilities import TestCaseSlow
 from owslib.wcs import WebCoverageService
 
 
@@ -40,7 +41,7 @@ def lembang_damage_function(x):
     return value
 
 
-class Test_calculations(unittest.TestCase):
+class Test_calculations(TestCaseSlow):
     """Tests of Risiko calculations
     """
 

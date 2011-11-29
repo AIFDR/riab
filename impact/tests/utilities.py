@@ -4,6 +4,7 @@ import types
 import numpy
 from django.conf import settings
 from impact.storage.io import download, get_bounding_box, get_metadata
+from unittest import TestSuite
 
 TESTDATA = os.path.join(os.environ['RIAB_HOME'], 'risiko_test_data')
 
@@ -110,3 +111,30 @@ def combine_coordinates(x, y):
     points = numpy.array(points)
 
     return points
+
+class TestCaseSlow(TestSuite):
+    pass
+
+
+
+from nose.plugins.base import Plugin
+
+class SlowTestsSelector(Plugin):
+    def options(self, parser, env):
+        parser.add_option("--exclude-slow",
+                          dest="hammer", action="store_false",
+                          default=None)
+        parser.add_option("--include-all",
+                          dest="hammer", action="store_true",
+                          default=None)
+
+
+    def configure(self, options, config):
+        self.hammer = options.hammer
+        self.enabled = True or options.hammer is not None
+
+    def wantClass(self, cls):
+        if self.hammer:
+            return True
+        elif issubclass(cls, TestCaseSlow):
+            return False

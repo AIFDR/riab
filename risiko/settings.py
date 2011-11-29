@@ -64,8 +64,9 @@ NOSE_ARGS = [
 
 #COVERAGE_EXCLUDE_MODULES = ('geonode',)
 
-#NOSE_PLUGINS = [
-#        ]
+NOSE_PLUGINS = [
+    'impact.tests.utilities.SlowTestsSelector',
+        ]
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.

@@ -31,6 +31,7 @@ from impact.tests.utilities import same_API
 from impact.tests.utilities import TESTDATA
 from impact.tests.utilities import FEATURE_COUNTS
 from impact.tests.utilities import GEOTRANSFORMS
+from impact.tests.utilities import TestCaseSlow
 
 
 # Auxiliary function for raster test
@@ -41,7 +42,7 @@ def linear_function(x, y):
     return x + y / 2.
 
 
-class Test_IO(unittest.TestCase):
+class Test_IO(TestCaseSlow):
     """Tests for reading and writing of raster and vector data
     """
 
