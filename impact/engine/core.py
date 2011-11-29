@@ -323,6 +323,10 @@ def get_linked_layers(main_layers):
         keywords = metadata['keywords']
         if 'linked' in keywords:
             basename, _ = os.path.splitext(keywords['linked'])
+
+            # FIXME (Ole): Geoserver converts names to lowercase @#!!
+            basename = basename.lower()
+
             new_layer = '%s:%s' % (workspace, basename)
             if new_layer == name:
                 msg = 'Layer %s linked to itself' % name

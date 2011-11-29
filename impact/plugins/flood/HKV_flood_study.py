@@ -1,7 +1,7 @@
 import numpy
-
+from numpy import nansum as sum
 from impact.plugins.core import FunctionProvider
-from impact.plugins.core import get_hazard_layer, get_exposure_layer
+from impact.plugins.core import get_hazard_layer, get_exposure_layers
 from impact.storage.raster import Raster
 
 
@@ -36,7 +36,31 @@ class FloodImpactFunction(FunctionProvider):
 
         # Identify hazard and exposure layers
         inundation = get_hazard_layer(layers)  # Flood inundation [m]
-        population = get_exposure_layer(layers)  # Density [people/100000 m^2]
+
+        # Get population and gender ratio
+        population = gender_ratio = None
+        for layer in get_exposure_layers(layers):
+            keywords = layer.get_keywords()
+
+            if 'datatype' not in keywords:
+                population = layer
+            else:
+                datatype = keywords['datatype']
+
+                if 'population' in datatype and 'density' in datatype:
+                    population = layer
+
+                if 'female' in datatype and 'ratio' in datatype:
+                    gender_ratio_unit = keywords['unit']
+
+                    msg = ('Unit for gender ratio must be either '
+                           '"percent" or "ratio"')
+                    assert gender_ratio_unit in ['percent', 'ratio'], msg
+
+                    gender_ratio = layer
+
+        msg = 'No population layer was found in: %s' % str(layers)
+        assert population is not None, msg
 
         # Extract data as numeric arrays
         D = inundation.get_data(nan=0.0)  # Depth
@@ -55,26 +79,63 @@ class FloodImpactFunction(FunctionProvider):
             P = population.get_data(nan=0.0, scaling=True)
             I = numpy.where(D > threshold, P, 0)
 
+        if gender_ratio is not None:
+            # Extract gender ratio at each pixel (as ratio)
+            G = gender_ratio.get_data(nan=0.0)
+            if gender_ratio_unit == 'percent':
+                G /= 100
+
+            # Calculate breakdown
+            P_female = P * G
+            P_male = P - P_female
+
+            I_female = I * G
+            I_male = I - I_female
+
+
         # Generate text with result for this study
-        number_of_people_affected = numpy.nansum(I.flat)
-        caption = ('%i people affected by flood levels greater '
-                   'than %i cm' % (number_of_people_affected,
-                                   threshold * 100))
+        total = str(int(sum(P.flat) / 1000))
+        count = str(int(sum(I.flat) / 1000))
 
         # Create report
         caption = ('<table border="0" width="320px">'
-                   '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
-                   '   <tr></tr>' % ('Min flood levels', 'People affected'))
+                   '   <tr><td><b>%s&#58;</b></td>'
+                   '<td align="right"><b>%s</b></td></tr>'
+                   % ('Jumlah Penduduk', total))
+        if gender_ratio is not None:
+            total_female = str(int(sum(P_female.flat) / 1000))
+            total_male = str(int(sum(P_male.flat) / 1000))
 
-        counts = []
-        for i, threshold in enumerate(thresholds):
-            I_tmp = numpy.where(D > threshold, P, 0)
-            counts.append(numpy.nansum(I_tmp.flat))
 
-            caption += '   <tr><td>%s m</td><td>%i</td></tr>' % (threshold,
-                                                                 counts[i])
+            caption += ('        <tr><td>%s&#58;</td>'
+                        '<td align="right">%s</td></tr>'
+                        % (' - Wanita', total_female))
+            caption += ('        <tr><td>%s&#58;</td>'
+                        '<td align="right">%s</td></tr>'
+                        % (' - Pria', total_male))
+            caption += '<tr><td>&nbsp;</td></tr>'  # Blank separation row
+
+        caption += ('   <tr><td><b>%s&#58;</b></td>'
+                    '<td align="right"><b>%s</b></td></tr>'
+                    % ('Perkiraan Jumlah Terdampak (> %.1fm)' % threshold,
+                       count))
+
+        if gender_ratio is not None:
+            affected_female = str(int(sum(I_female.flat) / 1000))
+            affected_male = str(int(sum(I_male.flat) / 1000))
+
+
+            caption += ('        <tr><td>%s&#58;</td>'
+                        '<td align="right">%s</td></tr>'
+                        % (' - Wanita', affected_female))
+            caption += ('        <tr><td>%s&#58;</td>'
+                        '<td align="right">%s</td></tr>'
+                        % (' - Pria', affected_male))
 
         caption += '</table>'
+
+        caption += '<br>'  # Blank separation row
+        caption += 'Catatan&#58; Semua nomor x 1000'
 
         # Create raster object and return
         R = Raster(I,
