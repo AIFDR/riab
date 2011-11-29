@@ -178,6 +178,7 @@ class Test_Engine(unittest.TestCase):
 
         # Expected values from HKV
         expected_values = [2485442, 1537920]
+        expected_strings = ['<b>2479</b>', '<b>1533</b>']
 
         i = 0
         for filename in ['Flood_Current_Depth_Jakarta_geographic.asc',
@@ -226,9 +227,9 @@ class Test_Engine(unittest.TestCase):
 
             # Check caption
             caption = calculated_raster.get_caption()
-            expct = '<b>2479</b>'  # Number of people affected (HTML)
+            expct = expected_strings[i]  # Number of people affected (HTML)
             msg = ('Caption %s did not contain expected '
-                   'keyword %s' % (caption, expct))
+                   'string %s' % (caption, expct))
             assert expct in caption, msg
 
             # Compare shape and extrema
