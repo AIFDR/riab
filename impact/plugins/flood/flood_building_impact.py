@@ -22,17 +22,23 @@ class FloodBuildingImpactFunction(FunctionProvider):
     """
 
     target_field = 'AFFECTED'
+    plugin_name = 'Ditutup Sementara'
 
     def run(self, layers):
         """Risk plugin for tsunami population
         """
 
+        threshold = 1.0  # Flood threshold [m]
+
         # Extract data
-        H = get_hazard_layer(layers)    # Depth
+        H_org = get_hazard_layer(layers)    # Depth
         E = get_exposure_layer(layers)  # Building locations
 
+        # FIXME (Ole): interpolate does not carry original name through,
+        # so get_name gives "Vector Layer" :-)
+
         # Interpolate hazard level to building locations
-        H = H.interpolate(E)
+        H = H_org.interpolate(E)
 
         # Extract relevant numerical data
         coordinates = E.get_geometry()
@@ -52,7 +58,7 @@ class FloodBuildingImpactFunction(FunctionProvider):
             dep = float(depth[i].values()[0])
 
             # Tag and count
-            if dep > 0.1:
+            if dep > threshold:
                 affected = 99.5
                 count += 1
             else:
@@ -70,16 +76,28 @@ class FloodBuildingImpactFunction(FunctionProvider):
             building_impact.append(result_dict)
 
         # Create report
-        caption = ('<table border="0" width="320px">'
+        caption = ('<b>Apabila terjadi "%s" perkiraan dampak terhadap "%s" '
+                   'kemungkinan yang terjadi&#58;</b><br><br><p>' % (H_org.get_name(),
+                                                    E.get_name()))
+        caption += ('<table border="0" width="320px">'
                    '   <tr><th><b>%s</b></th><th><b>%s</b></th></th>'
                     '   <tr></tr>'
                     '   <tr><td>%s&#58;</td><td>%i</td></tr>'
-                    '   <tr><td>%s (> 10 cm) &#58;</td><td>%i</td></tr>'
-                    '   <tr><td>%s (< 10 cm) &#58;</td><td>%i</td></tr>'
-                    '</table>' % (_('Buildings'), _('Total'),
-                                  _('All'), N,
-                                  _('Inundated'), count,
-                                  _('Not inundated'), N - count))
+                    '   <tr><td>%s &#58;</td><td>%i</td></tr>'
+                    '   <tr><td>%s &#58;</td><td>%i</td></tr>'
+                    #'   <tr><td>%s (> %.2f m) &#58;</td><td>%i</td></tr>'
+                    #'   <tr><td>%s (< %.2f m) &#58;</td><td>%i</td></tr>'
+                    '</table>' % (_('Gedung'), _('Jumlah'),
+                                  _('Semua'), N,
+                                  #_('Terendam'), threshold, count,
+                                  #_('Tidak terendam'), threshold, N - count))
+                                  _('Ditutup'), count,
+                                  _('Dibuka'), N - count))
+
+        caption += '<br>'  # Blank separation row
+        caption += '<b>Catatan&#58;</b><br>'
+        caption += ('Bangunan perlu ditutup ketika ketika banjir '
+                   'lebih dari %.1f m' % threshold)
 
         # Create vector layer and return
         V = Vector(data=building_impact,
@@ -90,6 +108,101 @@ class FloodBuildingImpactFunction(FunctionProvider):
         return V
 
     def generate_style(self, data):
+        """Generates and SLD file based on the data values
+        """
+
+        if data.is_point_data:
+            return self.generate_point_style(data)
+        elif data.is_polygon_data:
+            return self.generate_polygon_style(data)
+        else:
+            msg = 'Unknown style %s' % str(data)
+            raise Exception(msg)
+
+    def generate_polygon_style(self, data):
+        """Generates a polygon SLD file based on the data values
+        """
+
+        # FIXME (Ole): Return static style to start with: ticket #144
+        style = """<?xml version="1.0" encoding="UTF-8"?>
+<sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml" version="1.0.0">
+  <sld:NamedLayer>
+    <sld:Name>earthquake_impact</sld:Name>
+    <sld:UserStyle>
+      <sld:Name>earthquake_impact</sld:Name>
+      <sld:Title/>
+      <sld:FeatureTypeStyle>
+        <sld:Name>name</sld:Name>
+        <sld:Rule>
+          <sld:Name>1</sld:Name>
+          <sld:Title>Low</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsLessThan>
+              <ogc:PropertyName>AFFECTED</ogc:PropertyName>
+              <ogc:Literal>25</ogc:Literal>
+            </ogc:PropertyIsLessThan>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#1EFC7C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#0EEC6C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>2</sld:Name>
+          <sld:Title>Medium</sld:Title>
+          <ogc:Filter>
+            <ogc:And>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>AFFECTED</ogc:PropertyName>
+              <ogc:Literal>25</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>AFFECTED</ogc:PropertyName>
+                <ogc:Literal>75</ogc:Literal>
+              </ogc:PropertyIsLessThan>
+            </ogc:And>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#FD8D3C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#ED7D2C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+        <sld:Rule>
+          <sld:Name>3</sld:Name>
+          <sld:Title>High</sld:Title>
+          <ogc:Filter>
+            <ogc:PropertyIsGreaterThanOrEqualTo>
+              <ogc:PropertyName>AFFECTED</ogc:PropertyName>
+              <ogc:Literal>75</ogc:Literal>
+              </ogc:PropertyIsGreaterThanOrEqualTo>
+          </ogc:Filter>
+          <sld:PolygonSymbolizer>
+            <sld:Fill>
+              <sld:CssParameter name="fill">#F31A1C</sld:CssParameter>
+            </sld:Fill>
+            <sld:Stroke>
+              <sld:CssParameter name="stroke">#E30A0C</sld:CssParameter>
+            </sld:Stroke>
+          </sld:PolygonSymbolizer>
+        </sld:Rule>
+      </sld:FeatureTypeStyle>
+    </sld:UserStyle>
+  </sld:NamedLayer>
+</sld:StyledLayerDescriptor>
+"""
+
+        return style
+
+
+    def generate_point_style(self, data):
         """Generates and SLD file based on the data values
         """
 

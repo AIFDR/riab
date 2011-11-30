@@ -412,7 +412,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             border: false,
             html: "<div><p>"+
                     "<a href='http://bnpb.go.id' target='_blank'><img src='theme/app/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 10px; float: left' /></a>"+
-                    "<a href='http://www.jakarta.go.id' target='_blank'><img src='theme/app/img/dki_logo.png' alt='DKI' title='DKI' style='padding-left: 1px; float: left' /></a>"+
+                    "<a href='http://www.jakarta.go.id' target='_blank'><img src='theme/app/img/dki_logo.png' alt='DKI' title='DKI' style='padding-left: 10px; float: left' /></a>"+
                   "</p></div>",
             xtype: "panel",
             defaults: {

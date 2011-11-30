@@ -17,10 +17,11 @@ class FloodImpactFunction(FunctionProvider):
 
     :param requires category=='exposure' and \
                     subcategory.startswith('population') and \
-                    layer_type=='raster'
+                    layer_type=='raster' and \
+                    datatype=='population'
     """
 
-    plugin_name = 'Perlu evakuasi'
+    plugin_name = 'Perlu Evakuasi'
 
     @staticmethod
     def run(layers):
@@ -33,8 +34,7 @@ class FloodImpactFunction(FunctionProvider):
         """
 
         # Depth above which people are regarded affected [m]
-        threshold = 0.1
-        thresholds = [0.1, 0.2, 0.3, 0.5, 0.8, 1.0]
+        threshold = 1.0  # Threshold [m]
 
         # Identify hazard and exposure layers
         inundation = get_hazard_layer(layers)  # Flood inundation [m]
@@ -49,7 +49,7 @@ class FloodImpactFunction(FunctionProvider):
             else:
                 datatype = keywords['datatype']
 
-                if 'population' in datatype and 'density' in datatype:
+                if 'population' in datatype:
                     population = layer
 
                 if 'female' in datatype and 'ratio' in datatype:
@@ -100,30 +100,29 @@ class FloodImpactFunction(FunctionProvider):
         count = str(int(sum(I.flat) / 1000))
 
         # Create report
-        caption = ('<b>Apabila terjadi "%s" perkiraan dampak kepada "%s" '
-                   'mungkin&#58;</b><br><br><p>' % (inundation.get_name(),
+        caption = ('<b>Apabila terjadi "%s" perkiraan dampak terhadap "%s" '
+                   'kemungkinan yang terjadi&#58;</b><br><br><p>' % (inundation.get_name(),
                                        population.get_name()))
-        caption += ('<table border="0" width="320px">'
-                   '   <tr><td><b>%s&#58;</b></td>'
-                   '<td align="right"><b>%s</b></td></tr>'
-                   % ('Jumlah Penduduk', total))
-        if gender_ratio is not None:
-            total_female = str(int(sum(P_female.flat) / 1000))
-            total_male = str(int(sum(P_male.flat) / 1000))
+        caption += ('<table border="0" width="320px">')
+                   #'   <tr><td><b>%s&#58;</b></td>'
+                   #'<td align="right"><b>%s</b></td></tr>'
+                   #% ('Jumlah Penduduk', total))
+        # if gender_ratio is not None:
+        #     total_female = str(int(sum(P_female.flat) / 1000))
+        #     total_male = str(int(sum(P_male.flat) / 1000))
 
 
-            caption += ('        <tr><td>%s&#58;</td>'
-                        '<td align="right">%s</td></tr>'
-                        % (' - Wanita', total_female))
-            caption += ('        <tr><td>%s&#58;</td>'
-                        '<td align="right">%s</td></tr>'
-                        % (' - Pria', total_male))
-            caption += '<tr><td>&nbsp;</td></tr>'  # Blank separation row
+        #     caption += ('        <tr><td>%s&#58;</td>'
+        #                 '<td align="right">%s</td></tr>'
+        #                 % (' - Wanita', total_female))
+        #     caption += ('        <tr><td>%s&#58;</td>'
+        #                 '<td align="right">%s</td></tr>'
+        #                 % (' - Pria', total_male))
+        #    caption += '<tr><td>&nbsp;</td></tr>'  # Blank separation row
 
         caption += ('   <tr><td><b>%s&#58;</b></td>'
                     '<td align="right"><b>%s</b></td></tr>'
-                    % ('Perkiraan Jumlah Terdampak (> %.1fm)' % threshold,
-                       count))
+                    % ('Perlu Evakuasi (x 1000)', count))
 
         if gender_ratio is not None:
             affected_female = str(int(sum(I_female.flat) / 1000))
@@ -140,7 +139,11 @@ class FloodImpactFunction(FunctionProvider):
         caption += '</table>'
 
         caption += '<br>'  # Blank separation row
-        caption += 'Catatan&#58; Semua nomor x 1000'
+        caption += '<b>Catatan&#58;</b><br>'
+        caption += '- Jumlah penduduk Jakarta %s<br>' % total
+        caption += '- Jumlah dalam ribuan<br>'
+        caption += ('- Penduduk dianggap perlu dievakuasi ketika '
+                    'banjir lebih dari %.1f m.' % threshold)
 
         # Create raster object and return
         R = Raster(I,
