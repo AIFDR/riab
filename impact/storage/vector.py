@@ -287,6 +287,16 @@ class Vector:
                 self.geometry_type = G.GetGeometryType()
                 if self.geometry_type == ogr.wkbPoint:
                     geometry.append((G.GetX(), G.GetY()))
+                elif self.geometry_type == ogr.wkbLineString:
+                    M = G.GetPointCount()
+                    coordinates = []
+                    for j in range(M):
+                        coordinates.append((G.GetX(j), G.GetY(j)))
+
+                    # Record entire line as an Mx2 numpy array
+                    geometry.append(numpy.array(coordinates,
+                                                dtype='d',
+                                                copy=False))
                 elif self.geometry_type == ogr.wkbPolygon:
                     ring = G.GetGeometryRef(0)
                     M = ring.GetPointCount()
@@ -298,21 +308,27 @@ class Vector:
                     geometry.append(numpy.array(coordinates,
                                                 dtype='d',
                                                 copy=False))
-                elif self.geometry_type == ogr.wkbLineString:
-                    M = G.GetPointCount()
-                    coordinates = []
-                    for j in range(M):
-                        coordinates.append((G.GetX(j), G.GetY(j)))
+                #elif self.geometry_type == ogr.wkbMultiPolygon:
+                #    # FIXME: Unpact multiple polygons to simple polygons
+                #    # For hints on how to unpact see http://osgeo-org.1803224.n2.nabble.com/gdal-dev-Shapefile-Multipolygon-with-interior-rings-td5391090.html
 
-                    # Record entire line as an Mx2 numpy array
-                    geometry.append(numpy.array(coordinates,
-                                                dtype='d',
-                                                copy=False))
+                #    ring = G.GetGeometryRef(0)
+                #    M = ring.GetPointCount()
+                #    coordinates = []
+                #    for j in range(M):
+                #        coordinates.append((ring.GetX(j), ring.GetY(j)))
+
+                #    # Record entire polygon ring as an Mx2 numpy array
+                #    geometry.append(numpy.array(coordinates,
+                #                                dtype='d',
+                #                                copy=False))
+
                 else:
-                    msg = ('Only point, line and polygon geometries are supported. '
-                           'Geometry in filename %s '
+                    msg = ('Only point, line and polygon geometries are '
+                           'supported. '
+                           'Geometry type in filename %s '
                            'was %s.' % (filename,
-                                        G.GetGeometryType()))
+                                        self.geometry_type))
                     raise Exception(msg)
 
             # Record attributes by name
@@ -655,14 +671,12 @@ class Vector:
         return self.is_vector and self.geometry_type == ogr.wkbPoint
 
     @property
-    def is_polygon_data(self):
-        return self.is_vector and self.geometry_type == ogr.wkbPolygon
-
-    @property
     def is_line_data(self):
         return self.is_vector and self.geometry_type == ogr.wkbLineString
 
-
+    @property
+    def is_polygon_data(self):
+        return self.is_vector and self.geometry_type == ogr.wkbPolygon
 
 #----------------------------------
 # Helper functions for class Vector

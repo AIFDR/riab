@@ -14,9 +14,8 @@ How do I reproject a spatial data file to WGS84 geographic coordinates
   For raster data, use gdalwarp, for example
   gdalwarp -t_srs EPSG:4326 <source>.tif <target>.tif
 
-  For vector data use ogr2ogr. For example
-  ogr2ogr -t_srs EPSG:4326 <target>.shp <source>.shp
-
+  For vector data use ogr2ogr. For example from TM-3 zone 48.2
+  ogr2ogr -s_srs EPSG:23834 -t_srs EPSG:4326 <target>.shp <source>.shp
 
 My Risiko production server is live but no map shows?
 ::
