@@ -906,7 +906,6 @@ class Test_geonode_connection(unittest.TestCase):
         Scaling is necessary for raster data that represents density
         such as population per km^2
         """
-
         for test_filename in ['Population_Jakarta_geographic.asc',
                               'Population_2010.asc']:
 

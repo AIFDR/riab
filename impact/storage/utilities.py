@@ -7,6 +7,7 @@ import numpy
 from osgeo import ogr
 from tempfile import mkstemp
 from urllib2 import urlopen
+import math
 
 # Spatial layer file extensions that are recognised in Risiko
 # FIXME: Perhaps add '.gml', '.zip', ...
@@ -775,6 +776,56 @@ def calculate_polygon_centroid(polygon):
 
     # Translate back to real location
     C = numpy.array([Cx, Cy]) + P_origin
+    return C
+
+def points_between_points(point1, point2, delta):
+    """Creates an array of points between two points given a delta
+
+       u = (x1-x0, y1-y0)/L, where
+       L=sqrt( (x1-x0)^2 + (y1-y0)^2).
+       If r is the resolution, then the
+       points will be given by       
+       (x0, y0) + u * n * r for n = 1, 2, ....
+       while len(n*u*r) < L
+    """
+    x0, y0 = point1
+    x1, y1 = point2
+    L = math.sqrt(math.pow((x1-x0),2) + math.pow((y1-y0), 2)) 
+    pieces = int(L / delta)
+    uu = numpy.array([x1 - x0, y1 -y0]) / L
+    points = [point1]
+    for nn in range(pieces):
+        point = point1 + uu * (nn + 1) * delta
+        points.append(point)
+    return numpy.array(points)
+
+def points_along_line(line, delta):
+    """Calculate a list of points along a line with a given delta
+
+    Input
+        line: Numeric array of points (longitude, latitude).
+        delta: Decimal number to be used as step
+
+    Output
+        V: Numeric array of points (longitude, latitude).
+
+    Sources
+        http://paulbourke.net/geometry/polyarea/
+        http://en.wikipedia.org/wiki/Centroid
+    """
+
+    # Make sure it is numeric
+    P = numpy.array(line)
+    points = []
+    for i in range(len(P)-1):
+        pts = points_between_points(P[i], P[i+1], delta)
+        # If the first point of this list is the same
+        # as the last one recorded, do not use it
+        if len(points) > 0:
+            if numpy.allclose(points[-1], pts[0]):
+                pts = pts[1:]
+        points.extend(pts)
+    C = numpy.array(points)
     return C
 
 

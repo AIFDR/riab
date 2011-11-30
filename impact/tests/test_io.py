@@ -22,6 +22,7 @@ from impact.storage.utilities import buffered_bounding_box
 from impact.storage.utilities import array2wkt
 from impact.storage.utilities import calculate_polygon_area
 from impact.storage.utilities import calculate_polygon_centroid
+from impact.storage.utilities import points_along_line
 from impact.storage.utilities import geotransform2bbox
 from impact.storage.utilities import geotransform2resolution
 from impact.storage.utilities import nanallclose
@@ -1379,6 +1380,55 @@ class Test_IO(unittest.TestCase):
                    geometry=[C],
                    name='Test centroid')
         V.write_to_file(out_filename)
+
+
+    def test_line_to_points(self):
+        """Points along line are computed correctly
+        """
+        delta = 1
+        # Create simple line
+        L = numpy.array([[0, 0], [2, 0]])
+        V = points_along_line(L, 1)
+
+        expected_V = [[0, 0], [1, 0], [2, 0]]
+        msg = ('Calculated points were %s, expected '
+               '%s' % (V, expected_V))
+        assert numpy.allclose(V,expected_V), msg
+
+        # Not starting at zero
+        # Create line
+        L2 = numpy.array([[168, -2], [170, -2], [170, 0]])
+        V2 = points_along_line(L2, delta)
+
+        expected_V2 = [[168, -2], [169, -2], [170, -2],
+                      [170, -1], [170, 0]]
+        msg = ('Calculated points were %s, expected '
+               '%s' % (V2, expected_V2))
+        assert numpy.allclose(V2, expected_V2), msg
+
+        # Realistic polygon
+        filename = '%s/%s' % (TESTDATA, 'indonesia_highway_sample.shp')
+        layer = read_layer(filename)
+        geometry = layer.get_geometry()
+        attributes = layer.get_data()
+
+        P = geometry[0]
+        C = points_along_line(P, delta)
+
+        # Check against reference centroid
+        expected_v = [[ 106.7168975 ,   -6.15530081],
+                      [ 106.85224176,   -6.15344678],
+                      [ 106.93660016,   -6.21370279]]
+        assert numpy.allclose(C, expected_v, rtol=1.0e-8)
+
+        # Store points to file (to e.g. check with qgis)
+        out_filename = unique_filename(prefix='test_points_along_line', suffix='.shp')
+        V = Vector(data=None,
+                   projection=DEFAULT_PROJECTION,
+                   geometry=[C],
+                   name='Test points_along_line')
+        V.write_to_file(out_filename)
+
 
     def test_geotransform2bbox(self):
         """Bounding box can be extracted from geotransform
