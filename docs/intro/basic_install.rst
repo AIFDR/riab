@@ -42,6 +42,10 @@ To run the test suite, you'll need the commands::
  risiko-activate
  risiko-test
 
+..note:: By default ``risiko-test`` only runs a subset of all the test available.
+         To run the full test suite you have to pass it the ``--all`` flag::
+           risiko-test --all
+
 To upload the bundled demo data, you'll need to do the following::
 
  risiko-activate
