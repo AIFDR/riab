@@ -28,7 +28,7 @@ class FloodBuildingImpactFunction(FunctionProvider):
         """
 
         # Extract data
-        H = get_hazard_layer(layers)     # Depth
+        H = get_hazard_layer(layers)    # Depth
         E = get_exposure_layer(layers)  # Building locations
 
         # Interpolate hazard level to building locations
