@@ -1105,6 +1105,29 @@ class Test_Engine(unittest.TestCase):
 
 
 
+    def test_flood_on_roads(self):
+        """Jakarta flood impact on roads calculated correctly
+        """
+        floods = 'Flood_Current_Depth_Jakarta_geographic.asc'
+        roads = 'indonesia_highway_sample.shp'
+        plugin_name = 'Flood Road Impact Function'
+
+        hazard_filename = os.path.join(TESTDATA, floods)
+        exposure_filename = os.path.join(TESTDATA, roads)
+
+        # Get layers using API
+        H = read_layer(hazard_filename)
+        E = read_layer(exposure_filename)
+
+        plugin_list = get_plugins(plugin_name)
+        IF = plugin_list[0][plugin_name]
+
+        impact_filename = calculate_impact(layers=[H, E],
+                                                   impact_fcn=IF)
+ 
+        print impact_filename
+
+
 
 
 if __name__ == '__main__':
