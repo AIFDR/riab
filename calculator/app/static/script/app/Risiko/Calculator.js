@@ -16,16 +16,19 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
     ptype: "app_calculator",
 
     /* @i18n begin */
-    hazardComboLabelText: gettext("Hazard"),
-    exposureComboLabelText: gettext("Exposure"),
-    functionComboLabelText: gettext("Function"),
+    hazardComboLabelText: gettext("Apabila Terjadi"),
+    exposureComboLabelText: gettext("Berapa Banyak"),
+    functionComboLabelText: gettext("Yang Mungkin"),
     resetButtonText: gettext("Reset"),
-    calculateButtonText: gettext("Calculate"),
-    calculatingText: gettext("Calculating"),
-    calculatorTitleText: gettext("Impact Calculator"),
-    hazardSelectText: gettext("Select Hazard ..."),
+    calculateButtonText: gettext("Jawab"),
+    calculatingText: gettext("Sedang menjawab"),
+    calculatorTitleText: gettext("Pertanyaan"),
+    hazardSelectText: gettext("Pilih bahaya ..."),
+    exposureSelectText: gettext("Pilih apa yang terkena ..."),
+    functionSelectText: gettext("Pilih dampak ..."),
+    /*hazardSelectText: gettext("Select Hazard ..."),
     exposureSelectText: gettext("Select Exposure ..."),
-    functionSelectText: gettext("Select Function ..."),
+    functionSelectText: gettext("Select Function ..."),*/
     /* @i18n end */
 
     addOutput: function(config) {
@@ -389,7 +392,7 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
 			}]
         }, {
             id: "resultpanelcontainer",
-            title: 'Kalkulasi Hasil',
+            title: 'Jawaban',
             flex: 1,
             frame: true,
             border: true,
@@ -408,7 +411,8 @@ Risiko.Calculator = Ext.extend(gxp.plugins.Tool, {
             frame: false,
             border: false,
             html: "<div><p>"+
-                    "<a href='http://bnpb.go.id' target='_blank'><img src='theme/app/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 100px; float: left' /></a>"+
+                    "<a href='http://bnpb.go.id' target='_blank'><img src='theme/app/img/bnpb_logo.png' alt='BNPB' title='BNPB' style='padding-left: 10px; float: left' /></a>"+
+                    "<a href='http://www.jakarta.go.id' target='_blank'><img src='theme/app/img/dki_logo.png' alt='DKI' title='DKI' style='padding-left: 1px; float: left' /></a>"+
                   "</p></div>",
             xtype: "panel",
             defaults: {

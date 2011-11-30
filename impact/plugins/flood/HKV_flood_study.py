@@ -20,6 +20,8 @@ class FloodImpactFunction(FunctionProvider):
                     layer_type=='raster'
     """
 
+    plugin_name = 'Perlu evakuasi'
+
     @staticmethod
     def run(layers):
         """Risk plugin for earthquake fatalities
@@ -98,7 +100,10 @@ class FloodImpactFunction(FunctionProvider):
         count = str(int(sum(I.flat) / 1000))
 
         # Create report
-        caption = ('<table border="0" width="320px">'
+        caption = ('<b>Apabila terjadi "%s" perkiraan dampak kepada "%s" '
+                   'mungkin&#58;</b><br><br><p>' % (inundation.get_name(),
+                                       population.get_name()))
+        caption += ('<table border="0" width="320px">'
                    '   <tr><td><b>%s&#58;</b></td>'
                    '<td align="right"><b>%s</b></td></tr>'
                    % ('Jumlah Penduduk', total))

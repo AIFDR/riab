@@ -136,6 +136,7 @@ def pretty_function_name(func):
                 func_name += c
     else:
         func_name = func.plugin_name
+
     return func_name
 
 
