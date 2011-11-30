@@ -24,6 +24,7 @@ from impact.storage.io import save_to_geonode, check_layer
 from impact.storage.io import download
 from impact.storage.io import read_layer
 from impact.tests.utilities import TESTDATA
+from impact.tests.utilities import TestCaseSlow
 from django.test.client import Client
 from django.conf import settings
 from django.utils import simplejson as json
@@ -246,52 +247,8 @@ class Test_plugins(unittest.TestCase):
         self.assertEqual(rv['Content-Type'], 'application/json')
         data = json.loads(rv.content)
 
-    def test_plugin_selection(self):
-        """Verify the plugins can recognize compatible layers.
-        """
-        # Upload a raster and a vector data set
-        hazard_filename = os.path.join(TESTDATA,
-                                       'Earthquake_Ground_Shaking.asc')
-        hazard_layer = save_to_geonode(hazard_filename,
-                                       user=self.user,
-                                       overwrite=True)
-        check_layer(hazard_layer, full=True)
 
-        msg = 'No keywords found in layer %s' % hazard_layer.name
-        assert len(hazard_layer.keywords) > 0, msg
-
-        exposure_filename = os.path.join(TESTDATA,
-                                         'lembang_schools.shp')
-        exposure_layer = save_to_geonode(exposure_filename)
-        check_layer(exposure_layer, full=True)
-        msg = 'No keywords found in layer %s' % exposure_layer.name
-        assert len(exposure_layer.keywords) > 0, msg
-
-        c = Client()
-        rv = c.post('/impact/api/functions/', data={})
-
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv['Content-Type'], 'application/json')
-        data = json.loads(rv.content)
-
-        assert 'functions' in data
-
-        functions = data['functions']
-
-        # FIXME (Ariel): This test should implement an alternative function to
-        # parse the requirements, but for now it will just take the buildings
-        # damage one.
-        for function in functions:
-            if function['name'] == 'Earthquake Building Damage Function':
-                layers = function['layers']
-
-                msg_tmpl = 'Expected layer %s in list of compatible layers: %s'
-
-                hazard_msg = msg_tmpl % (hazard_layer.typename, layers)
-                assert hazard_layer.typename in layers, hazard_msg
-
-                exposure_msg = msg_tmpl % (exposure_layer.typename, layers)
-                assert exposure_layer.typename in layers, exposure_msg
+class Test_plugins_slow(TestCaseSlow):
 
     def test_padang_building_examples(self):
         """Padang building impact calculation works through the API
@@ -404,6 +361,56 @@ class Test_plugins(unittest.TestCase):
                 assert verified_count > 0, msg
                 msg = 'Number buildings was not 3896.'
                 assert count == 3896, msg
+
+
+    def test_plugin_selection(self):
+        """Verify the plugins can recognize compatible layers.
+        """
+        # Upload a raster and a vector data set
+        hazard_filename = os.path.join(TESTDATA,
+                                       'Earthquake_Ground_Shaking.asc')
+        hazard_layer = save_to_geonode(hazard_filename,
+                                       user=self.user,
+                                       overwrite=True)
+        check_layer(hazard_layer, full=True)
+
+        msg = 'No keywords found in layer %s' % hazard_layer.name
+        assert len(hazard_layer.keywords) > 0, msg
+
+        exposure_filename = os.path.join(TESTDATA,
+                                         'lembang_schools.shp')
+        exposure_layer = save_to_geonode(exposure_filename)
+        check_layer(exposure_layer, full=True)
+        msg = 'No keywords found in layer %s' % exposure_layer.name
+        assert len(exposure_layer.keywords) > 0, msg
+
+        c = Client()
+        rv = c.post('/impact/api/functions/', data={})
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv['Content-Type'], 'application/json')
+        data = json.loads(rv.content)
+
+        assert 'functions' in data
+
+        functions = data['functions']
+
+        # FIXME (Ariel): This test should implement an alternative function to
+        # parse the requirements, but for now it will just take the buildings
+        # damage one.
+        for function in functions:
+            if function['name'] == 'Earthquake Building Damage Function':
+                layers = function['layers']
+
+                msg_tmpl = 'Expected layer %s in list of compatible layers: %s'
+
+                hazard_msg = msg_tmpl % (hazard_layer.typename, layers)
+                assert hazard_layer.typename in layers, hazard_msg
+
+                exposure_msg = msg_tmpl % (exposure_layer.typename, layers)
+                assert exposure_layer.typename in layers, exposure_msg
+
+
 
 if __name__ == '__main__':
     os.environ['DJANGO_SETTINGS_MODULE'] = 'risiko.settings'

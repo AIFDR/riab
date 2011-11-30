@@ -13,6 +13,7 @@ from impact.storage.io import write_raster_data
 from impact.plugins import get_plugins
 
 from impact.tests.utilities import TESTDATA
+from impact.tests.utilities import TestCaseSlow
 from impact.tests.plugins import empirical_fatality_model
 from impact.tests.plugins import NEXIS_building_impact_model
 
@@ -393,184 +394,6 @@ class Test_Engine(unittest.TestCase):
             assert max_damage <= 100
             #print 'Extrema', mmi_filename, min_damage, max_damage
             #print len(MMI)
-
-    def test_earthquake_impact_OSM_data(self):
-        """Earthquake layer interpolation to OSM building data works
-
-        The impact function used is based on the guidelines plugin
-
-        This test also exercises interpolation of hazard level (raster) to
-        building locations (vector data).
-        """
-
-        # FIXME: Still needs some reference data to compare to
-        for mmi_filename in ['Shakemap_Padang_2009.asc',
-                             # Time consuming
-                             #'Earthquake_Ground_Shaking.asc',
-                             'Lembang_Earthquake_Scenario.asc']:
-
-            # Name file names for hazard level and exposure
-            hazard_filename = '%s/%s' % (TESTDATA, mmi_filename)
-            exposure_filename = ('%s/OSM_building_polygons_20110905.shp'
-                                 % TESTDATA)
-
-            # Calculate impact using API
-            H = read_layer(hazard_filename)
-            E = read_layer(exposure_filename)
-
-            plugin_name = 'Earthquake Guidelines Function'
-            plugin_list = get_plugins(plugin_name)
-            assert len(plugin_list) == 1
-            assert plugin_list[0].keys()[0] == plugin_name
-
-            IF = plugin_list[0][plugin_name]
-            impact_filename = calculate_impact(layers=[H, E],
-                                               impact_fcn=IF)
-
-            # Read input data
-            hazard_raster = read_layer(hazard_filename)
-            A = hazard_raster.get_data()
-            mmi_min, mmi_max = hazard_raster.get_extrema()
-
-            exposure_vector = read_layer(exposure_filename)
-            coordinates = exposure_vector.get_geometry()
-            attributes = exposure_vector.get_data()
-
-            # Read calculated result
-            impact_vector = read_layer(impact_filename)
-            icoordinates = impact_vector.get_geometry()
-            iattributes = impact_vector.get_data()
-
-            # Verify interpolated MMI with test result
-            for i in range(len(iattributes)):
-                calculated_mmi = iattributes[i]['MMI']
-
-                if numpy.isnan(calculated_mmi):
-                    continue
-
-                # Check that interpolated points are within range
-                msg = ('Interpolated mmi %f from file %s was outside '
-                       'extrema: [%f, %f] at point %i '
-                       % (calculated_mmi, hazard_filename,
-                          mmi_min, mmi_max, i))
-                assert mmi_min <= calculated_mmi <= mmi_max, msg
-
-                calculated_dam = iattributes[i]['DMGLEVEL']
-                assert calculated_dam in [1, 2, 3]
-
-    def test_tsunami_loss_use_case(self):
-        """Building loss from tsunami use case works
-        """
-
-        # This test merely exercises the use case as there is
-        # no reference data. It does check the sanity of values as
-        # far as possible.
-
-        hazard_filename = ('%s/tsunami_max_inundation_depth_BB_'
-                           'geographic.asc' % TESTDATA)
-        exposure_filename = ('%s/tsunami_exposure_BB.shp' % TESTDATA)
-        exposure_with_depth_filename = ('%s/tsunami_exposure_BB_'
-                                        'with_depth.shp' % TESTDATA)
-        reference_impact_filename = ('%s/tsunami_impact_assessment_'
-                                     'BB.shp' % TESTDATA)
-
-        # Calculate impact using API
-        H = read_layer(hazard_filename)
-        E = read_layer(exposure_filename)
-
-        plugin_name = 'Tsunami Building Loss Function'
-        plugin_list = get_plugins(plugin_name)
-        assert len(plugin_list) == 1
-        assert plugin_list[0].keys()[0] == plugin_name
-
-        IF = plugin_list[0][plugin_name]
-        impact_filename = calculate_impact(layers=[H, E],
-                                           impact_fcn=IF)
-
-        # Read calculated result
-        impact_vector = read_layer(impact_filename)
-        icoordinates = impact_vector.get_geometry()
-        iattributes = impact_vector.get_data()
-        N = len(icoordinates)
-
-        # Ensure that calculated point locations coincide with
-        # original exposure point locations
-        ref_exp = read_layer(exposure_filename)
-        refcoordinates = ref_exp.get_geometry()
-
-        assert N == len(refcoordinates)
-        msg = ('Coordinates of impact results do not match those of '
-               'exposure data')
-        assert numpy.allclose(icoordinates, refcoordinates), msg
-
-        # Ensure that calculated point locations coincide with
-        # original exposure point (with depth) locations
-        ref_depth = read_layer(exposure_with_depth_filename)
-        refdepth_coordinates = ref_depth.get_geometry()
-        refdepth_attributes = ref_depth.get_data()
-        assert N == len(refdepth_coordinates)
-        msg = ('Coordinates of impact results do not match those of '
-               'exposure data (with depth)')
-        assert numpy.allclose(icoordinates, refdepth_coordinates), msg
-
-        # Read reference results
-        hazard_raster = read_layer(hazard_filename)
-        A = hazard_raster.get_data()
-        depth_min, depth_max = hazard_raster.get_extrema()
-
-        ref_impact = read_layer(reference_impact_filename)
-        refimpact_coordinates = ref_impact.get_geometry()
-        refimpact_attributes = ref_impact.get_data()
-
-        # Check for None
-        for i in range(N):
-            if refimpact_attributes[i] is None:
-                msg = 'Element %i was None' % i
-                raise Exception(msg)
-
-        # Check sanity of calculated attributes
-        for i in range(N):
-            lon, lat = icoordinates[i]
-
-            depth = iattributes[i]['DEPTH']
-
-            # Ignore NaN's
-            if numpy.isnan(depth):
-                continue
-
-            structural_damage = iattributes[i]['STRUCT_DAM']
-            contents_damage = iattributes[i]['CONTENTS_D']
-            for imp in [structural_damage, contents_damage]:
-                msg = ('Percent damage was outside range: %f' % imp)
-                assert 0 <= imp <= 1, msg
-
-            structural_loss = iattributes[i]['STRUCT_LOS']
-            contents_loss = iattributes[i]['CONTENTS_L']
-            if depth < 0.3:
-                assert structural_loss == 0.0
-                assert contents_loss == 0.0
-            else:
-                assert structural_loss > 0.0
-                assert contents_loss > 0.0
-
-            number_of_people = iattributes[i]['NEXIS_PEOP']
-            people_affected = iattributes[i]['PEOPLE_AFF']
-            people_severely_affected = iattributes[i]['PEOPLE_SEV']
-
-            if 0.01 < depth < 1.0:
-                assert people_affected == number_of_people
-            else:
-                assert people_affected == 0
-
-            if depth >= 1.0:
-                assert people_severely_affected == number_of_people
-            else:
-                assert people_severely_affected == 0
-
-            # Contents and structural damage is done according
-            # to different damage curves and should therefore be different
-            if depth > 0 and contents_damage > 0:
-                assert contents_damage != structural_damage
 
     def test_tephra_load_impact(self):
         """Hypothetical tephra load scenario can be computed
@@ -1103,6 +926,186 @@ class Test_Engine(unittest.TestCase):
 
 
 
+class Test_Engine_Slow(TestCaseSlow):
+
+    def test_earthquake_impact_OSM_data(self):
+        """Earthquake layer interpolation to OSM building data works
+
+        The impact function used is based on the guidelines plugin
+
+        This test also exercises interpolation of hazard level (raster) to
+        building locations (vector data).
+        """
+
+        # FIXME: Still needs some reference data to compare to
+        for mmi_filename in ['Shakemap_Padang_2009.asc',
+                             # Time consuming
+                             #'Earthquake_Ground_Shaking.asc',
+                             'Lembang_Earthquake_Scenario.asc']:
+
+            # Name file names for hazard level and exposure
+            hazard_filename = '%s/%s' % (TESTDATA, mmi_filename)
+            exposure_filename = ('%s/OSM_building_polygons_20110905.shp'
+                                 % TESTDATA)
+
+            # Calculate impact using API
+            H = read_layer(hazard_filename)
+            E = read_layer(exposure_filename)
+
+            plugin_name = 'Earthquake Guidelines Function'
+            plugin_list = get_plugins(plugin_name)
+            assert len(plugin_list) == 1
+            assert plugin_list[0].keys()[0] == plugin_name
+
+            IF = plugin_list[0][plugin_name]
+            impact_filename = calculate_impact(layers=[H, E],
+                                               impact_fcn=IF)
+
+            # Read input data
+            hazard_raster = read_layer(hazard_filename)
+            A = hazard_raster.get_data()
+            mmi_min, mmi_max = hazard_raster.get_extrema()
+
+            exposure_vector = read_layer(exposure_filename)
+            coordinates = exposure_vector.get_geometry()
+            attributes = exposure_vector.get_data()
+
+            # Read calculated result
+            impact_vector = read_layer(impact_filename)
+            icoordinates = impact_vector.get_geometry()
+            iattributes = impact_vector.get_data()
+
+            # Verify interpolated MMI with test result
+            for i in range(len(iattributes)):
+                calculated_mmi = iattributes[i]['MMI']
+
+                if numpy.isnan(calculated_mmi):
+                    continue
+
+                # Check that interpolated points are within range
+                msg = ('Interpolated mmi %f from file %s was outside '
+                       'extrema: [%f, %f] at point %i '
+                       % (calculated_mmi, hazard_filename,
+                          mmi_min, mmi_max, i))
+                assert mmi_min <= calculated_mmi <= mmi_max, msg
+
+                calculated_dam = iattributes[i]['DMGLEVEL']
+                assert calculated_dam in [1, 2, 3]
+
+
+    def test_tsunami_loss_use_case(self):
+        """Building loss from tsunami use case works
+        """
+
+        # This test merely exercises the use case as there is
+        # no reference data. It does check the sanity of values as
+        # far as possible.
+
+        hazard_filename = ('%s/tsunami_max_inundation_depth_BB_'
+                           'geographic.asc' % TESTDATA)
+        exposure_filename = ('%s/tsunami_exposure_BB.shp' % TESTDATA)
+        exposure_with_depth_filename = ('%s/tsunami_exposure_BB_'
+                                        'with_depth.shp' % TESTDATA)
+        reference_impact_filename = ('%s/tsunami_impact_assessment_'
+                                     'BB.shp' % TESTDATA)
+
+        # Calculate impact using API
+        H = read_layer(hazard_filename)
+        E = read_layer(exposure_filename)
+
+        plugin_name = 'Tsunami Building Loss Function'
+        plugin_list = get_plugins(plugin_name)
+        assert len(plugin_list) == 1
+        assert plugin_list[0].keys()[0] == plugin_name
+
+        IF = plugin_list[0][plugin_name]
+        impact_filename = calculate_impact(layers=[H, E],
+                                           impact_fcn=IF)
+
+        # Read calculated result
+        impact_vector = read_layer(impact_filename)
+        icoordinates = impact_vector.get_geometry()
+        iattributes = impact_vector.get_data()
+        N = len(icoordinates)
+
+        # Ensure that calculated point locations coincide with
+        # original exposure point locations
+        ref_exp = read_layer(exposure_filename)
+        refcoordinates = ref_exp.get_geometry()
+
+        assert N == len(refcoordinates)
+        msg = ('Coordinates of impact results do not match those of '
+               'exposure data')
+        assert numpy.allclose(icoordinates, refcoordinates), msg
+
+        # Ensure that calculated point locations coincide with
+        # original exposure point (with depth) locations
+        ref_depth = read_layer(exposure_with_depth_filename)
+        refdepth_coordinates = ref_depth.get_geometry()
+        refdepth_attributes = ref_depth.get_data()
+        assert N == len(refdepth_coordinates)
+        msg = ('Coordinates of impact results do not match those of '
+               'exposure data (with depth)')
+        assert numpy.allclose(icoordinates, refdepth_coordinates), msg
+
+        # Read reference results
+        hazard_raster = read_layer(hazard_filename)
+        A = hazard_raster.get_data()
+        depth_min, depth_max = hazard_raster.get_extrema()
+
+        ref_impact = read_layer(reference_impact_filename)
+        refimpact_coordinates = ref_impact.get_geometry()
+        refimpact_attributes = ref_impact.get_data()
+
+        # Check for None
+        for i in range(N):
+            if refimpact_attributes[i] is None:
+                msg = 'Element %i was None' % i
+                raise Exception(msg)
+
+        # Check sanity of calculated attributes
+        for i in range(N):
+            lon, lat = icoordinates[i]
+
+            depth = iattributes[i]['DEPTH']
+
+            # Ignore NaN's
+            if numpy.isnan(depth):
+                continue
+
+            structural_damage = iattributes[i]['STRUCT_DAM']
+            contents_damage = iattributes[i]['CONTENTS_D']
+            for imp in [structural_damage, contents_damage]:
+                msg = ('Percent damage was outside range: %f' % imp)
+                assert 0 <= imp <= 1, msg
+
+            structural_loss = iattributes[i]['STRUCT_LOS']
+            contents_loss = iattributes[i]['CONTENTS_L']
+            if depth < 0.3:
+                assert structural_loss == 0.0
+                assert contents_loss == 0.0
+            else:
+                assert structural_loss > 0.0
+                assert contents_loss > 0.0
+
+            number_of_people = iattributes[i]['NEXIS_PEOP']
+            people_affected = iattributes[i]['PEOPLE_AFF']
+            people_severely_affected = iattributes[i]['PEOPLE_SEV']
+
+            if 0.01 < depth < 1.0:
+                assert people_affected == number_of_people
+            else:
+                assert people_affected == 0
+
+            if depth >= 1.0:
+                assert people_severely_affected == number_of_people
+            else:
+                assert people_severely_affected == 0
+
+            # Contents and structural damage is done according
+            # to different damage curves and should therefore be different
+            if depth > 0 and contents_damage > 0:
+                assert contents_damage != structural_damage
 
 
 
