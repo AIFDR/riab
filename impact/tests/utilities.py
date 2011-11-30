@@ -124,14 +124,16 @@ class SlowTestsSelector(Plugin):
         parser.add_option("--exclude-slow",
                           dest="hammer", action="store_false",
                           default=None)
-        parser.add_option("--include-all",
+        parser.add_option("--all",
                           dest="hammer", action="store_true",
                           default=None)
 
 
     def configure(self, options, config):
         self.hammer = options.hammer
-        self.enabled = True or options.hammer is not None
+        #FIXME(Ariel): Having this enabled by default is discouraged in
+        # the nose plugins docs.
+        self.enabled = True 
 
     def wantClass(self, cls):
         if self.hammer:
