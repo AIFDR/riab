@@ -5,8 +5,8 @@ from impact.plugins.core import get_hazard_layer, get_exposure_layers
 from impact.storage.raster import Raster
 
 
-class FloodImpactFunction(FunctionProvider):
-    """Risk plugin for flood impact
+class FloodEvacuationFunction(FunctionProvider):
+    """Risk plugin for flood evacuation
 
     :author HKV
     :rating 1
@@ -149,7 +149,7 @@ class FloodImpactFunction(FunctionProvider):
         R = Raster(I,
                    projection=inundation.get_projection(),
                    geotransform=inundation.get_geotransform(),
-                   name='People affected',
+                   name='People evacuated',
                    keywords={'caption': caption})
         return R
 

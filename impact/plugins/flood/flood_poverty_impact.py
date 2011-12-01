@@ -34,7 +34,7 @@ class FloodPovertyImpactFunction(FunctionProvider):
         """
 
         # Depth above which people are regarded affected [m]
-        threshold = 0.3
+        threshold = 1.0
 
         # Identify hazard and exposure layers
         inundation = get_hazard_layer(layers)  # Flood inundation [m]
