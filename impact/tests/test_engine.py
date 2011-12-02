@@ -1125,8 +1125,7 @@ class Test_Engine(unittest.TestCase):
         impact_filename = calculate_impact(layers=[H, E],
                                                    impact_fcn=IF)
  
-        print impact_filename
-
+        #FIXME: Add assertions to verify the calculation was done correctly
 
 
 

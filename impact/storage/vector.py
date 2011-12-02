@@ -23,7 +23,7 @@ class Vector:
     """
 
     def __init__(self, data=None, projection=None, geometry=None,
-                 name='Vector layer', keywords=None):
+                 name='Vector layer', keywords=None, geometry_type=None):
         """Initialise object with either geometry or filename
 
         Input
@@ -44,6 +44,7 @@ class Vector:
 
                       Keywords can for example be used to display text
                       about the layer in a web application.
+            geometry_type: Optional geometry type to avoid guessing.
 
         Note that if data is a filename, all other arguments are ignored
         as they will be inferred from the file.
@@ -90,8 +91,10 @@ class Vector:
             assert is_sequence(geometry), msg
             self.geometry = geometry
 
-            self.geometry_type = get_geometry_type(geometry)
-
+            if geometry_type is None:
+                self.geometry_type = get_geometry_type(geometry)
+            else:
+                self.geometry_type = geometry_type
             msg = 'Projection must be specified'
             assert projection is not None, msg
             self.projection = Projection(projection)
@@ -475,6 +478,9 @@ class Vector:
                 geom.SetPoint_2D(0, x, y)
             elif self.geometry_type == ogr.wkbPolygon:
                 wkt = array2wkt(geometry[i], geom_type='POLYGON')
+                geom = ogr.CreateGeometryFromWkt(wkt)
+            elif self.geometry_type == ogr.wkbLineString:
+                wkt = array2wkt(geometry[i], geom_type='LINESTRING')
                 geom = ogr.CreateGeometryFromWkt(wkt)
             else:
                 msg = 'Geometry type %s not implemented' % self.geometry_type

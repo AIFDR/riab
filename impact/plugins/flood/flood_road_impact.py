@@ -8,7 +8,7 @@ from impact.plugins.utilities import PointClassColor
 from impact.plugins.utilities import PointSymbol
 from impact.storage.vector import convert_line_to_points
 import scipy.stats
-
+import ogr
 
 class FloodRoadImpactFunction(FunctionProvider):
     """Risk plugin for flood impact on road data
@@ -57,7 +57,13 @@ class FloodRoadImpactFunction(FunctionProvider):
         num_classes = 10
         classes = range(num_classes)
         difference = (max_value - min_value) / num_classes
-
+        # We are going to do the analysis by segments.
+        # Since we have N-1 segments, one data point has
+        # to be ignored, we will assign each segment the attributes of
+        # N-1, therefore the value in the last point will be ignored.
+        temp_line = []
+        affected_line_data = []
+        affected_line_coordinates = []
         for i in range(N):
             dep = float(depth[i].values()[0])
             affected = classes[0]
@@ -75,18 +81,45 @@ class FloodRoadImpactFunction(FunctionProvider):
             for key in attributes:
                 result_dict[key] = E.get_data(key, i)
 
-            # Record result for this feature
             road_impact.append(result_dict)
+
+            if len(temp_line) == 0:
+                # This is the first feature, as explained above,
+                # ignore it for the line calculation.
+                temp_line = [coordinates[i]]
+                continue
+            
+            # Group items into lines when they have the same level
+            # and attributes.
+            same_name = road_impact[i-1]['NAME'] == result_dict['NAME']
+            same_level = road_impact[i-1]['AFFECTED'] == result_dict['AFFECTED']
+
+            if not same_name:
+                affected_line_coordinates.append(temp_line)
+                affected_line_data.append(road_impact[i-1])
+                temp_line = []
+            else:
+                temp_line.append(coordinates[i])
+                if not same_level:
+                    affected_line_coordinates.append(temp_line)
+                    affected_line_data.append(road_impact[i-1])
+                    temp_line = [coordinates[i],]
 
         # Create report
         caption = ('')
 
+        # Make sure the data and coordinates are in sync.
+        msg = 'Coordinates and data arrays for lines should have the same length'
+        assert len(affected_line_data) == len(affected_line_coordinates), msg
+
         # Create vector layer and return
-        V = Vector(data=road_impact,
+        V = Vector(data=affected_line_data,
                    projection=E.get_projection(),
-                   geometry=coordinates,
+                   geometry=affected_line_coordinates,
                    name='Estimated roads affected',
-                   keywords={'caption': caption})
+                   keywords={'caption': caption},
+                   geometry_type = ogr.wkbLineString,
+                   )
         return V
 
     def generate_style(self, data):
@@ -99,8 +132,9 @@ class FloodRoadImpactFunction(FunctionProvider):
         symbol_keys = [None, '']
         symbol_values = [DEFAULT_SYMBOL, DEFAULT_SYMBOL]
 
-        scale_keys = [10000000000,]
-        scale_values = [4,]
+        scale_keys = [10000000000, 10000000, 5000000, 1000000,
+                              500000, 250000, 100000]
+        scale_values = [3, 3, 3, 3, 4, 8, 14]
 
         class_keys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',]
         class_values = [{'min': 0, 'max': 1,
