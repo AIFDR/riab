@@ -142,7 +142,7 @@ class FloodImpactFunction(FunctionProvider):
         caption += '<b>Catatan&#58;</b><br>'
         caption += '- Jumlah penduduk Jakarta %s<br>' % total
         caption += '- Jumlah dalam ribuan<br>'
-        caption += ('- Penduduk dianggap perlu terdampak ketika '
+        caption += ('- Penduduk dianggap terdampak ketika '
                     'banjir lebih dari %.1f m.' % threshold)
 
         # Create raster object and return

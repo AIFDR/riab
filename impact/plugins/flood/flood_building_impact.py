@@ -95,8 +95,8 @@ class FloodBuildingImpactFunction(FunctionProvider):
                                   _('Dibuka'), N - count))
 
         caption += '<br>'  # Blank separation row
-        caption += '<b>Catatan&#58;</b><br>'
-        caption += ('Bangunan perlu ditutup ketika ketika banjir '
+        caption += '<b>Anggapan&#58;</b><br>'
+        caption += ('Bangunan perlu ditutup ketika banjir '
                    'lebih dari %.1f m' % threshold)
 
         # Create vector layer and return
