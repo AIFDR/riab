@@ -12,6 +12,7 @@ def shp2csv(filename):
     """Store shape file attribute table as csv file
 
     Geometry is ignored
+    If there are any commas in the fields, they are removed
     """
 
     basename, ext = os.path.splitext(filename)
@@ -31,7 +32,7 @@ def shp2csv(filename):
     for x in data:
         s = ''
         for key in headers:
-            val = str(x[key])
+            val = str(x[key]).replace(',', '')
             s += val + ','
         s = s[:-1]
         fid.write(s + '\n')
