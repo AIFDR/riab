@@ -9,6 +9,20 @@ from impact.storage.vector import Vector
 from impact.storage.projection import DEFAULT_PROJECTION
 
 def csv2shp(path, lonname='Bujur', latname='Lintang'):
+    """Convert spatial csv data to shapefile.
+
+    Input
+        path: absolute pathname of csv file
+        lonname: Optional name for longitude
+        latname: Optional name for latitude
+
+    Output
+        Dictionary of field names and their unique attribute values
+
+    """
+
+    # Dictionary of unique fieldnames and possible attribute values
+    fields = {}
 
     # Read csv data
     reader = csv.DictReader(open(path, 'r'))
@@ -26,6 +40,10 @@ def csv2shp(path, lonname='Bujur', latname='Lintang'):
            'field names are: %s' % (latname, path, str(fieldnames)))
     assert latname in fieldnames, msg
 
+    # Record fieldnames
+    for fieldname in fieldnames:
+        fields[fieldname] = {}
+
     # Extract point geometry
     lon = [float(x[lonname]) for x in data]
     lat = [float(x[latname]) for x in data]
@@ -35,7 +53,16 @@ def csv2shp(path, lonname='Bujur', latname='Lintang'):
     for i, D in enumerate(data):
         D_clean = {}
         for key in D:
-            D_clean[key.replace(' ', '_')] = D[key]
+            val = D[key]
+            D_clean[key.replace(' ', '_')] = val
+
+            # Record unique values
+            if not val in fields[key]:
+                fields[key][val] = 0
+
+            fields[key][val] += 1
+
+        # Store cleaned data point
         data[i] = D_clean
 
     # Create vector object
@@ -59,6 +86,8 @@ def csv2shp(path, lonname='Bujur', latname='Lintang'):
     print 'risiko-upload %s' % shpfile
     print
 
+    return fields
+
 def usage():
     s = 'csv2shp.py [csvfile | dir]'
     return s
@@ -72,11 +101,37 @@ if __name__ == '__main__':
     name = sys.argv[1]
 
     if os.path.isdir(name):
+        fields = {}
         for filename in glob.glob(name + '/*.csv'):
-            csv2shp(filename)
+            D = csv2shp(filename)
+
+            # Record all attributes and their unique values
+            for key in D:
+                if key not in fields:
+                    fields[key] = {}
+
+                for val in D[key]:
+                    if val not in fields[key]:
+                        fields[key][val] = 0
+
+                    # Update count
+                    fields[key][val] += D[key][val]
+
+
         print 'To upload entire directory to Risiko, run'
         print 'risiko-upload %s' % name
     else:
-        csv2shp(name)
+        fields = csv2shp(name)
 
+
+    # Stats
+    print
+    for key in fields:
+        if key.lower() in ['no', 'lintang', 'bujur', 'nama_obyek']:
+            continue
+
+        print
+        print '%s:' % key
+        for val in fields[key]:
+            print '  %s [%i]' % (val, fields[key][val])
 
