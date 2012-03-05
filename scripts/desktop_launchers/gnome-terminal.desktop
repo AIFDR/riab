@@ -1,0 +1,18 @@
+
+[Desktop Entry]
+Name=Terminal
+Comment=Use the command line
+TryExec=gnome-terminal
+Exec=gnome-terminal  --execute bash -i -c "~/riskinabox/riab/extras/launch; bash"
+Icon=utilities-terminal
+Type=Application
+X-GNOME-DocPath=gnome-terminal/index.html
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-Bugzilla-Product=gnome-terminal
+X-GNOME-Bugzilla-Component=BugBuddyBugs
+X-GNOME-Bugzilla-Version=2.32.0
+Categories=GNOME;GTK;Utility;TerminalEmulator;
+StartupNotify=true
+OnlyShowIn=GNOME;
+X-Ubuntu-Gettext-Domain=gnome-terminal
+Name[en_US]=Start Risiko Server
