@@ -1,0 +1,18 @@
+
+[Desktop Entry]
+Version=1.0
+Name=Firefox Web Browser
+Comment=Browse the World Wide Web
+GenericName=Web Browser
+Exec=firefox http://127.0.0.1:8000
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=firefox
+Categories=Application;Internet;Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/vnd.mozilla.xul+xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;
+StartupWMClass=Firefox
+StartupNotify=true
+Comment[en_US.UTF-8]=Browse Risiko
+GenericName[en_US.UTF-8]=Start Risiko Client
+Name[en_US]=Start Risiko Client
